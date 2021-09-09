@@ -168,3 +168,11 @@ ofd:
   httpUrl: http://jxfpapi.ele-cloud.com/OFDParse
   ofdPreviewUrl: http://jxfpapi.ele-cloud.com/OFDPreview
   ofdPngUrl: http://jxfpapi.ele-cloud.com/image
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include:
+          - health

@@ -113,17 +113,17 @@
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
-<!--        <repository>-->
-<!--            <id>private_repository</id>-->
-<!--            <url>http://59.110.53.16:8081/nexus/content/groups/public/</url>-->
-<!--            <releases>-->
-<!--                <enabled>true</enabled>-->
-<!--            </releases>-->
-<!--            <snapshots>-->
-<!--                <enabled>true</enabled>-->
-<!--                <updatePolicy>always</updatePolicy>-->
-<!--            </snapshots>-->
-<!--        </repository>-->
+        <repository>
+            <id>private_repository</id>
+            <url>http://59.110.53.16:8081/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
         <repository>
             <id>aliyun-repos</id>
             <name>Aliyun Repository</name>
