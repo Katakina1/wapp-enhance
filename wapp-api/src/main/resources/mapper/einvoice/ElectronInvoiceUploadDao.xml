@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.einvoice.dao.ElectronInvoiceUploadDao">
+
+    <insert id="saveElectronInvoice" useGeneratedKeys="true" keyProperty="invoice.id"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/INSERT INTO t_dx_invoice(
+        		invoice_type,
+	     		invoice_code,
+	     		invoice_no,
+        		gf_tax_no,
+        		gf_name,
+        		xf_tax_no,
+        		xf_name,
+        		invoice_amount,
+        		tax_amount,
+        		total_amount,
+        		invoice_date,
+        		user_account,
+        		user_name,
+        		valid,
+        		uuid,
+        		create_date,
+        		update_date,
+        		scan_id,
+        		notes,
+        		check_code,
+        		qs_status,
+        		qs_type,
+        		qs_date
+        	)
+        VALUES (#{invoice.invoiceType},#{invoice.invoiceCode},#{invoice.invoiceNo},#{invoice.gfTaxNo},
+        		#{invoice.gfName},#{invoice.xfTaxNo},#{invoice.xfName},
+        		#{invoice.invoiceAmount},#{invoice.taxAmount},#{invoice.totalAmount},#{invoice.invoiceDate, jdbcType=TIMESTAMP},
+        		#{invoice.userAccount},#{invoice.userName},
+        		1,#{invoice.uuid},getdate(),getdate(),
+        		#{invoice.scanId},#{invoice.notes},#{invoice.checkCode},
+        		#{invoice.qsStatus},#{invoice.qsType},getdate())
+    </insert>
+
+    <insert id="saveElectronLog"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceLog">
+		/**mycat:schema=${schemaLabel}*/insert into t_dx_electron_log(
+		invoice_no,
+		invoice_code,
+		file_path,
+		create_date,
+		file_name
+		)values(
+		#{invoiceLog.invoiceNo},
+		#{invoiceLog.invoiceCode},
+		#{invoiceLog.filePath},
+		getdate(),
+		#{invoiceLog.fileName}
+		)
+	</insert>
+
+    <insert id="saveElectronImg"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceImage">
+		/**mycat:schema=${schemaLabel}*/insert into t_dx_invoice_img(
+		image_path,
+		uuid,
+		valid,
+		scan_id,
+		create_date,
+		update_date
+		)values(
+		#{invoiceImage.imagePath},
+		#{invoiceImage.uuid},
+		1,
+		#{invoiceImage.scanId},
+		getdate(),
+		getdate()
+		)
+	</insert>
+
+    <delete id="deleteElectronInvoice">
+		/**mycat:schema=${schemaLabel}*/DELETE FROM t_dx_invoice WITH(ROWLOCK) WHERE id = #{id}
+	</delete>
+
+    <insert id="saveRecordInvoice" useGeneratedKeys="true" keyProperty="recordInvoice.id"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.RecordInvoice">
+		/**mycat:schema=${schemaLabel}*/INSERT INTO t_dx_record_invoice(
+		invoice_type,
+		invoice_code,
+		invoice_no,
+		invoice_date,
+		gf_tax_no,
+		gf_name,
+		gf_address_and_phone,
+		gf_bank_and_no,
+		xf_tax_no,
+		xf_name,
+		xf_address_and_phone,
+		xf_bank_and_no,
+		invoice_amount,
+		tax_amount,
+		total_amount,
+		valid,
+		uuid,
+		create_date,
+		check_code,
+		source_system,
+		remark,
+		invoice_status,
+		detail_yesorno,
+		qs_status,
+		qs_type,
+		qs_date,
+		machinecode
+		)
+		VALUES (#{recordInvoice.invoiceType},#{recordInvoice.invoiceCode},#{recordInvoice.invoiceNo},#{recordInvoice.invoiceDate, jdbcType=TIMESTAMP},
+		#{recordInvoice.gfTaxNo},#{recordInvoice.gfName},
+		#{recordInvoice.gfAddressAndPhone},#{recordInvoice.gfBankAndNo},#{recordInvoice.xfTaxNo},#{recordInvoice.xfName},
+		#{recordInvoice.xfAddressAndPhone},#{recordInvoice.xfBankAndNo},
+		#{recordInvoice.invoiceAmount},#{recordInvoice.taxAmount},#{recordInvoice.totalAmount},#{recordInvoice.valid},
+		#{recordInvoice.uuid},getdate(),
+		#{recordInvoice.checkCode},#{recordInvoice.sourceSystem},#{recordInvoice.remark},#{recordInvoice.invoiceStatus},
+		#{recordInvoice.detailYesorno},#{recordInvoice.qsStatus},#{recordInvoice.qsType},getdate(),#{recordInvoice.machinecode})
+	</insert>
+
+    <insert id="saveRecordInvoiceDetail" parameterType="java.util.ArrayList">
+        /**mycat:schema=${schemaLabel}*/INSERT INTO t_dx_record_invoice_detail(
+        uuid,invoice_code,invoice_no,detail_no,goods_name,model,unit,num,unit_price,detail_amount,tax_rate,tax_amount,
+        cph,lx,txrqq,txrqz,goods_num
+        )
+        VALUES
+        <foreach collection="detailList" item="item" separator=",">
+            (
+            #{item.uuid},#{item.invoiceCode},#{item.invoiceNo},#{item.detailNo},#{item.goodsName},#{item.model},
+            #{item.unit},#{item.num},#{item.unitPrice},#{item.detailAmount},
+            #{item.taxRate},#{item.taxAmount},#{item.cph},#{item.lx},#{item.txrqq},#{item.txrqz},#{item.goodsNum}
+            )
+        </foreach>
+    </insert>
+
+    <resultMap id="ElectronInvoiceMap"
+               type="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceEntity">
+        <id column="id" property="id"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_serial_no" property="invoiceSerialNo"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="xf_tax_no" property="xfTaxNo"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="user_account" property="userAccount"/>
+        <result column="user_name" property="userName"/>
+        <result column="qs_status" property="qsStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="qs_date" property="qsDate"/>
+        <result column="valid" property="valid"/>
+        <result column="check_code" property="checkCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="scan_id" property="scanId"/>
+        <result column="uuid" property="uuid"/>
+        <result column="notes" property="notes"/>
+    </resultMap>
+
+    <select id="selectElectronInvoiceById" resultMap="ElectronInvoiceMap">
+        /**mycat:schema=${schemaLabel}*/select
+        id,
+        invoice_no,
+        invoice_code,
+        qs_status,
+        check_code,
+        invoice_date,
+        gf_tax_no,
+        xf_tax_no,
+        invoice_amount,
+        tax_amount,
+        total_amount,
+        scan_id,
+        uuid
+        from t_dx_invoice WITH(NOLOCK)
+        where valid = 1
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+        <if test="uuid != null and uuid != ''">
+            and uuid = #{uuid}
+        </if>
+    </select>
+
+    <delete id="deleteRecordInvoice">
+		/**mycat:schema=${schemaLabel}*/DELETE FROM t_dx_record_invoice WHERE uuid = #{uuid}
+	</delete>
+
+    <delete id="deleteRecordInvoiceDetail">
+		/**mycat:schema=${schemaLabel}*/DELETE FROM t_dx_record_invoice_detail WHERE uuid = #{uuid}
+	</delete>
+
+    <update id="updateElectronInvoice">
+        /**mycat:schema=${schemaLabel}*/UPDATE t_dx_invoice WITH(ROWLOCK)
+        SET
+        gf_tax_no=#{invoice.gfTaxNo},
+        gf_name=#{invoice.gfName},
+        xf_tax_no=#{invoice.xfTaxNo},
+        xf_name=#{invoice.xfName},
+        <if test="invoice.userAccount != null and invoice.userAccount != ''">
+            user_account=#{invoice.userAccount},
+        </if>
+        <if test="invoice.userName != null and invoice.userName != ''">
+            user_name=#{invoice.userName},
+        </if>
+        total_amount=#{invoice.totalAmount},
+        invoice_amount=#{invoice.invoiceAmount},
+        tax_amount=#{invoice.taxAmount},
+        invoice_date=#{invoice.invoiceDate},
+        qs_status=#{invoice.qsStatus},
+        notes=#{invoice.notes},
+        update_date = getdate(),
+        qs_date = getdate(),
+        check_code = #{invoice.checkCode}
+        WHERE invoice_code=#{invoice.invoiceCode} and invoice_no=#{invoice.invoiceNo}
+    </update>
+
+    <resultMap id="InvoiceImgMap" type="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceImage">
+        <id column="id" property="id"/>
+        <result column="image_path" property="imagePath"/>
+    </resultMap>
+
+    <select id="getImg" resultMap="InvoiceImgMap">
+        /**mycat:schema=${schemaLabel}*/SELECT id,image_path FROM t_dx_invoice_img
+        WHERE valid = 1
+        <if test="uuid != null and uuid != ''">
+            AND uuid = #{uuid}
+        </if>
+        <if test="scanId != null and scanId != ''">
+            AND scan_id = #{scanId}
+        </if>
+    </select>
+
+	<update id="updateElectronInvoiceImg">
+		/**mycat:schema=${schemaLabel}*/UPDATE t_dx_invoice_img
+		SET
+		image_path = #{invoiceImage.imagePath},
+		scan_id = #{invoiceImage.scanId},
+		update_date = getdate()
+		WHERE uuid=#{invoiceImage.uuid}
+	</update>
+
+    <delete id="deleteInvoiceImg">
+		/**mycat:schema=${schemaLabel}*/DELETE FROM t_dx_invoice_img WHERE uuid = #{uuid}
+	</delete>
+
+    <select id="selectElectronInvoiceAll" resultMap="ElectronInvoiceMap">
+		/**mycat:schema=${schemaLabel}*/select *
+		from t_dx_invoice WITH(NOLOCK)
+		where id = #{id}
+	</select>
+
+    <insert id="saveDelElectronInvoice"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceEntity">
+		/**mycat:schema=${schemaLabel}*/INSERT INTO t_dx_invoice_del(
+		invoice_type,
+		invoice_code,
+		invoice_no,
+		gf_tax_no,
+		gf_name,
+		xf_tax_no,
+		invoice_amount,
+		tax_amount,
+		total_amount,
+		invoice_date,
+		user_account,
+		user_name,
+		valid,
+		uuid,
+		create_date,
+		update_date,
+		scan_id,
+		notes,
+		qs_date
+		)
+		VALUES (#{invoice.invoiceType},#{invoice.invoiceCode},#{invoice.invoiceNo},#{invoice.gfTaxNo},
+		#{invoice.gfName},#{invoice.xfTaxNo},
+		#{invoice.invoiceAmount},#{invoice.taxAmount},#{invoice.totalAmount},#{invoice.invoiceDate, jdbcType=TIMESTAMP},
+		#{invoice.userAccount},#{invoice.userName},
+		#{invoice.valid},#{invoice.uuid},#{invoice.createDate, jdbcType=TIMESTAMP},#{invoice.updateDate, jdbcType=TIMESTAMP},
+		#{invoice.scanId},#{invoice.notes},#{invoice.qsDate})
+	</insert>
+
+    <resultMap id="RecordInvoiceMap" type="com.xforceplus.wapp.modules.einvoice.entity.RecordInvoice">
+        <id column="id" property="id"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="xf_tax_no" property="xfTaxNo"/>
+        <result column="xf_name" property="xfName"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="gx_user_account" property="gxUserAccount"/>
+        <result column="gx_user_name" property="gxUserName"/>
+        <result column="invoice_status" property="invoiceStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="qs_type" property="qsType"/>
+        <result column="qs_date" property="qsDate"/>
+        <result column="valid" property="valid"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="uuid" property="uuid"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="selectRecordInvoiceAll" resultMap="RecordInvoiceMap">
+		/**mycat:schema=${schemaLabel}*/select
+		invoice_type,invoice_no,invoice_code,gf_tax_no,gf_name,xf_tax_no,xf_name,invoice_date,gx_user_account,
+		gx_user_name,invoice_status,create_date,qs_type,qs_date,valid,invoice_date,invoice_amount,tax_amount,uuid,remark
+		from t_dx_record_invoice WITH(NOLOCK)
+		where uuid = #{uuid}
+	</select>
+
+    <insert id="saveDelRecordInvoice"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.RecordInvoice">
+		/**mycat:schema=${schemaLabel}*/INSERT INTO t_dx_invoice_del(
+		invoice_type,
+		invoice_code,
+		invoice_no,
+		gf_tax_no,
+		gf_name,
+		xf_tax_no,
+		invoice_amount,
+		tax_amount,
+		total_amount,
+		invoice_date,
+		user_account,
+		user_name,
+		valid,
+		uuid,
+		create_date,
+		notes,
+		qs_date
+		)
+		VALUES (#{invoice.invoiceType},#{invoice.invoiceCode},#{invoice.invoiceNo},#{invoice.gfTaxNo},
+		#{invoice.gfName},#{invoice.xfTaxNo},
+		#{invoice.invoiceAmount},#{invoice.taxAmount},#{invoice.totalAmount},#{invoice.invoiceDate, jdbcType=TIMESTAMP},
+		#{invoice.gxUserAccount},#{invoice.gxUserName},
+		#{invoice.valid},#{invoice.uuid},#{invoice.createDate, jdbcType=TIMESTAMP},
+		#{invoice.remark},#{invoice.qsDate})
+	</insert>
+
+    <update id="updateDelRecordInvoice">
+		/**mycat:schema=${schemaLabel}*/UPDATE t_dx_invoice_del
+		SET
+		invoice_type = #{invoice.invoiceType},
+		invoice_code = #{invoice.invoiceCode},
+		invoice_no = #{invoice.invoiceNo},
+		gf_tax_no = #{invoice.gfTaxNo},
+		gf_name = #{invoice.gfName},
+		xf_tax_no = #{invoice.xfTaxNo},
+		invoice_amount = #{invoice.invoiceAmount},
+		tax_amount = #{invoice.taxAmount},
+		total_amount = #{invoice.totalAmount},
+		invoice_date = #{invoice.invoiceDate, jdbcType=TIMESTAMP},
+		user_account = #{invoice.userAccount},
+		user_name = #{invoice.userName},
+		valid = #{invoice.valid},
+		create_date = #{invoice.createDate, jdbcType=TIMESTAMP},
+		update_date = #{invoice.updateDate, jdbcType=TIMESTAMP},
+		scan_id = #{invoice.scanId},
+		notes = #{invoice.notes},
+		qs_date = #{invoice.qsDate}
+		WHERE uuid = #{invoice.uuid}
+	</update>
+
+    <select id="selectDelInvoiceCount" resultType="Integer">
+		/**mycat:schema=${schemaLabel}*/select count(1)
+		from t_dx_invoice_del
+		where uuid = #{uuid}
+	</select>
+
+    <update id="updateRecordInvoice">
+		/**mycat:schema=${schemaLabel}*/UPDATE t_dx_record_invoice WITH(ROWLOCK)
+		SET
+		qs_date = getdate()
+		qs_status = 1,
+		qs_type = 5
+		WHERE uuid = #{uuid}
+	</update>
+
+	<select id="selectGfTaxNo" resultType="string">
+		/**mycat:schema=${schemaLabel}*/SELECT t.taxno
+		FROM t_ac_org t
+		INNER JOIN t_ac_user_taxno tuser ON tuser.orgid = t.orgid
+		WHERE tuser.userid = #{userId}
+	</select>
+</mapper>

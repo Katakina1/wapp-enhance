@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.MenuDao">
+
+    <sql id="condition">
+        <if test="entity.menucode != null and entity.menucode.trim()!=''">and `menucode` like concat('%',#{entity.menucode},'%')</if>
+        <if test="entity.parentid != null">and `parentid` = #{entity.parentid}</if>
+        <if test="entity.orgid != null">and `orgid` = #{entity.orgid}</if>
+        <if test="entity.menuname != null and entity.menuname.trim()!=''">and `menuname` like concat('%',#{entity.menuname},'%')</if>
+        <if test="entity.menulabel != null and entity.menulabel!=''">and `menulabel` = #{entity.menulabel}</if>
+        <if test="entity.menuaction != null">and `menuaction` = #{entity.menuaction}</if>
+        <if test="entity.menulevel != null">and `menulevel` = #{entity.menulevel}</if>
+        <if test="entity.menudesc != null">and `menudesc` = #{entity.menudesc}</if>
+        <if test="entity.isfunc != null">and `isfunc` = #{entity.isfunc}</if>
+        <if test="entity.isbottom != null">and `isbottom` = #{entity.isbottom}</if>
+        <if test="entity.subsysid != null">and `subsysid` = #{entity.subsysid}</if>
+        <if test="entity.sortno != null">and `sortno` = #{entity.sortno}</if>
+        <if test="entity.image != null">and `image` = #{entity.image}</if>
+        <if test="entity.menulayer != null">and `menulayer` = #{entity.menulayer}</if>
+        <if test="entity.menuIds != null">
+            and `parentid` in
+            <foreach item="id" collection="entity.menuIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </sql>
+
+
+
+    <select id="getUserMenuList" resultType="com.xforceplus.wapp.modules.base.entity.MenuEntity">
+        /**mycat:schema=${schemaLabel}*/ SELECT t3.* FROM t_ac_menu t3 WHERE t3.menuid IN
+        (SELECT t2.menuid FROM t_ac_role_menu t2 WHERE t2.roleid IN
+        (SELECT t1.roleid FROM t_ac_user_role t1 WHERE t1.userid = #{userId}))
+        ORDER BY t3.sortno + 0 ASC
+    </select>
+
+    <select id="getUserMenuListOfParentId" resultType="com.xforceplus.wapp.modules.base.entity.MenuEntity">
+		/**mycat:schema=${schemaLabel}*/ SELECT t3.* FROM `t_ac_menu` t3 WHERE t3.`menuid` IN
+		(SELECT t2.`menuid` FROM `t_ac_role_menu` t2 WHERE t2.`roleid` IN
+		(SELECT t1.roleid FROM `t_ac_user_role` t1 WHERE t1.`userid` = #{userId}))
+		AND  t3.`parentid` = #{parentId}
+		ORDER BY t3.sortno + 0 ASC
+	</select>
+
+    <select id="queryObject" resultType="com.xforceplus.wapp.modules.base.entity.MenuEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_menu where menuid = #{menuId}
+	</select>
+
+    <insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.MenuEntity" useGeneratedKeys="true"
+            keyProperty="entity.menuid">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_menu
+		(
+			`menuid`,
+			`menucode`,
+			`parentid`,
+			`orgid`,
+			`menuname`,
+			`menulabel`,
+			`menuaction`,
+			`menulevel`,
+			`menudesc`,
+			`isfunc`,
+			`isbottom`,
+			`subsysid`,
+			`sortno`,
+			`image`,
+			`create_time`,
+			`create_by`,
+			`last_modify_time`,
+			`last_modify_by`,
+			`menulayer`
+		)
+		values
+		(
+			#{entity.menuid},
+			#{entity.menucode},
+			#{entity.parentid},
+			#{entity.orgid},
+			#{entity.menuname},
+			#{entity.menulabel},
+			#{entity.menuaction},
+			#{entity.menulevel},
+			#{entity.menudesc},
+			#{entity.isfunc},
+			#{entity.isbottom},
+			#{entity.subsysid},
+			#{entity.sortno},
+			#{entity.image},
+			#{entity.createTime},
+			#{entity.createBy},
+			#{entity.lastModifyTime},
+			#{entity.lastModifyBy},
+			#{entity.menulayer}
+		)
+	</insert>
+
+    <select id="queryListParentId" resultType="com.xforceplus.wapp.modules.base.entity.MenuEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_menu where parentid = #{parentId} order by menuid asc
+	</select>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.MenuEntity">
+        /**mycat:schema=${schemaLabel}*/ select m.*,(select p.menuname from t_ac_menu p where p.menuid = m.parentid) as parentName
+        from t_ac_menu m
+        <where>
+            <include refid="condition"/>
+        </where>
+        order by m.sortno + 0 asc
+        <if test="entity.offset != null and entity.limit != null">
+            limit #{entity.offset}, #{entity.limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_menu
+        <where>
+            <include refid="condition"/>
+        </where>
+    </select>
+
+    <update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.MenuEntity">
+        /**mycat:schema=${schemaLabel}*/ update t_ac_menu
+        <set>
+            <if test="entity.menucode != null">`menucode` = #{entity.menucode},</if>
+            <if test="entity.parentid != null">`parentid` = #{entity.parentid},</if>
+            <if test="entity.orgid != null">`orgid` = #{entity.orgid},</if>
+            <if test="entity.menuname != null">`menuname` = #{entity.menuname},</if>
+            <if test="entity.menulabel != null">`menulabel` = #{entity.menulabel},</if>
+            <if test="entity.menuaction != null">`menuaction` = #{entity.menuaction},</if>
+            <if test="entity.menulevel != null">`menulevel` = #{entity.menulevel},</if>
+            <if test="entity.menudesc != null">`menudesc` = #{entity.menudesc},</if>
+            <if test="entity.isfunc != null">`isfunc` = #{entity.isfunc},</if>
+            <if test="entity.isbottom != null">`isbottom` = #{entity.isbottom},</if>
+            <if test="entity.subsysid != null">`subsysid` = #{entity.subsysid},</if>
+            <if test="entity.sortno != null">`sortno` = #{entity.sortno},</if>
+            <if test="entity.image != null">`image` = #{entity.image},</if>
+            <if test="entity.lastModifyTime != null">`last_modify_by` = #{entity.lastModifyTime},</if>
+            <if test="entity.lastModifyBy != null">`last_modify_by` = #{entity.lastModifyBy},</if>
+            <if test="entity.menulayer != null">`menulayer` = #{entity.menulayer},</if>
+        </set>
+        where menuid = #{entity.menuid}
+    </update>
+
+    <update id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from  t_ac_menu where menuid = #{menuId}
+	</update>
+
+    <update id="updateBottom">
+		/**mycat:schema=${schemaLabel}*/ UPDATE t_ac_menu
+		SET
+		isbottom=1
+		WHERE menuid = #{menuId}
+	</update>
+
+    <delete id="deleteBatch" parameterType="int">
+        /**mycat:schema=${schemaLabel}*/ delete from t_ac_menu where menuid in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

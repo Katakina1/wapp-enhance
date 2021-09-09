@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.ImportCheckDao">
+
+    <!-- 更新符合条件的认证处理状态为已认证 -->
+    <update id="submit">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET auth_status = '1',
+        gx_date = getdate(),
+        gx_type='2',
+        gx_user_account=#{loginName},
+        gx_user_name=#{userName},
+        sfygx= 1
+        WHERE id IN (
+        <foreach collection="list" item="item" separator=",">
+            #{item.id}
+        </foreach>
+        )
+    </update>
+</mapper>

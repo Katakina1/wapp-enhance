@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.InvoiceAuthMonthlyReportDao">
+    <select id="getList" resultType="com.xforceplus.wapp.modules.report.entity.DailyReportEntity">
+        /**mycat:schema=${schemaLabel}*/SELECT
+        rzh_belong_date rzhDate,
+        ifnull(sum(1), 0) count,
+        ifnull(sum(invoice_amount), 0) amount,
+        ifnull(sum(tax_amount), 0) tax
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1'and invoice_type in ('01','03','14') AND rzh_yesorno='1' AND gf_tax_no=#{map.gfName} AND rzh_belong_date like concat(#{map.rzhBelongDate},'%')
+        GROUP BY rzh_belong_date
+        ORDER BY rzh_belong_date ASC
+    </select>
+
+</mapper>

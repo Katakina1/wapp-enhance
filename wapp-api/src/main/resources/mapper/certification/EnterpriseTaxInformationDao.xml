@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.EnterpriseTaxInformationDao">
+	<select id="queryTotal" resultType="Integer" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		count(1)
+ 		from t_dx_tax_current
+		where 1=1
+		<if test="map.taxNo != null and map.taxNo != ''and map.taxNo != '-1'">
+			and taxno = #{map.taxNo}
+		</if>
+		<if test="map.declarePeriod !=null and map.declarePeriod != '-1' and  map.declarePeriod != ''">
+			and declare_period = #{map.declarePeriod}
+		</if>
+		<if test="map.creditRating !=null and map.creditRating != '-1' and  map.creditRating != ''">
+			and credit_rating = #{map.creditRating}
+		</if>
+		AND taxno in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		or  old_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+	  
+	</select>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.certification.entity.EnterpriseTaxInformationEntity" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		id
+		,taxno 				  	
+		,old_tax_no 			oldTaxNo
+		,taxname			  	
+		,current_tax_period   	currentTaxPeriod
+		,select_start_date	 	selectStartDate
+		,select_end_date		selectEndDate
+		,operation_end_date		operationEndDate
+		,credit_rating		 	creditRating
+		,declare_period		 	declarePeriod
+		,update_time			updateTime
+		,create_time			createTime
+		from t_dx_tax_current
+		where 1=1
+
+		<if test="map.taxNo != null and map.taxNo != ''and map.taxNo != '-1'">
+			and taxno = #{map.taxNo}
+		</if>
+		<if test="map.declarePeriod !=null and map.declarePeriod != '-1' and  map.declarePeriod != ''">
+			and declare_period = #{map.declarePeriod}
+		</if>
+		<if test="map.creditRating !=null and map.creditRating != '-1' and  map.creditRating != ''">
+			and credit_rating = #{map.creditRating}
+		</if>
+		AND taxno in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		or  old_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		<if test="map.offset != null and map.limit != null">
+			limit #{map.offset}, #{map.limit}
+		</if>
+	</select>
+
+	<select id="queryListAll" resultType="com.xforceplus.wapp.modules.certification.entity.EnterpriseTaxInformationEntity" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		id
+		,taxno
+		,old_tax_no 			oldTaxNo
+		,taxname
+		,current_tax_period   currentTaxPeriod
+		,select_start_date	 	selectStartDate
+		,select_end_date		selectEndDate
+		,operation_end_date		operationEndDate
+		,credit_rating		 	creditRating
+		,declare_period		 	declarePeriod
+		,update_time			updateTime
+		,create_time			createTime
+		from t_dx_tax_current
+		where 1=1
+		<if test="map.taxNo != null and map.taxNo != ''and map.taxNo != '-1'">
+			and taxno = #{map.taxNo}
+		</if>
+		<if test="map.declarePeriod !=null and map.declarePeriod != '-1' and  map.declarePeriod != ''">
+			and declare_period = #{map.declarePeriod}
+		</if>
+		<if test="map.creditRating !=null and map.creditRating != '-1' and  map.creditRating != ''">
+			and credit_rating = #{map.creditRating}
+		</if>
+		AND taxno in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		or  old_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+
+	</select>
+
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.InvoiceAuthenticationSummaryStatisticsDao">
+
+    <!--认证发票汇总报表-->
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.report.entity.InvoiceAuthenticationStatisticEntity">
+        /**mycat:schema=${schemaLabel}*/ SELECT
+        tdri.rzh_belong_date dqskssq,
+        count(0) invoiceCount,
+        SUM(tdri.invoice_amount) totalAmount,
+        SUM(tdri.tax_amount) taxAmount
+        FROM t_dx_record_invoice tdri WITH(NOLOCK)
+        INNER JOIN t_ac_org tao WITH(NOLOCK) ON tao. taxno= tdri.gf_tax_no
+        INNER JOIN t_ac_user_taxno taut WITH(NOLOCK) ON taut.orgid=tao.orgid
+        where tdri.rzh_yesorno='1'AND tdri.valid='1' AND taut.userid=#{map.userId}
+        <if test="map.dqskssq !=null and map.dqskssq!=''">
+            AND left(tdri.rzh_belong_date,4)=#{map.dqskssq}
+        </if>
+        GROUP BY rzh_belong_date
+        ORDER BY rzh_belong_date desc
+    </select>
+
+    <!--合计iqGrid金额，税额-->
+    <select id="queryTotalResult" resultType="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        /**mycat:schema=${schemaLabel}*/ SELECT
+        count(1) totalCount,
+        sum(b.totalAmount) totalAmount,
+        sum(b.taxAmount) totalTax
+        from
+        (SELECT
+        tdri.rzh_belong_date dqskssq,
+        count(0) invoiceCount,
+        SUM(tdri.invoice_amount) totalAmount,
+        SUM(tdri.tax_amount) taxAmount
+        FROM t_dx_record_invoice tdri WITH(NOLOCK)
+        INNER JOIN t_ac_org tao WITH(NOLOCK) ON tao. taxno= tdri.gf_tax_no
+        INNER JOIN t_ac_user_taxno WITH(NOLOCK) taut ON taut.orgid=tao.orgid
+        where tdri.rzh_yesorno='1'AND tdri.valid='1' AND taut.userid=#{condition.userId}
+        <if test="condition.dqskssq !=null and condition.dqskssq!=''">
+            AND left(tdri.rzh_belong_date,4)=#{condition.dqskssq}
+        </if>
+        GROUP BY rzh_belong_date) b
+
+    </select>
+</mapper>

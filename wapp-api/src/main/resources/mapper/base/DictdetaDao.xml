@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.DictdetaDao">
+
+	<sql id="condition">
+		<if test="entity.dicttype != null"> and `dicttype` = #{entity.dicttype} </if>
+		<if test="entity.dictname != null  and entity.dictname != ''"> and `dictname` LIKE concat(concat('%',#{entity.dictname}),'%')  </if>
+		<if test="entity.sortno != null"> and `sortno` = #{entity.sortno} </if>
+		<if test="entity.status != null"> and `status` = #{entity.status}</if>
+		<if test="entity.dictcode != null and entity.dictcode != '' "> and `dictcode`  LIKE concat(concat('%',#{entity.dictcode}),'%') </if>
+		<if test="entity.createTime != null"> and `create_time` = #{entity.createTime} </if>
+		<if test="entity.createBy != null"> and `create_by` = #{entity.createBy} </if>
+		<if test="entity.lastModifyTime != null"> and `last_modify_time` = #{entity.lastModifyTime} </if>
+		<if test="entity.lastModifyBy != null"> and `last_modify_by` = #{entity.lastModifyBy} </if>
+	</sql>
+
+	<select id="queryObject" resultType="com.xforceplus.wapp.modules.base.entity.DictdetaEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_dictdeta where dictid = #{dictid}
+	</select>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.DictdetaEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_dictdeta
+		<where>
+			<include refid="condition" />
+		</where>
+		order by dictid asc
+		<if test="entity.offset != null and entity.limit != null">
+			limit #{entity.offset}, #{entity.limit}
+		</if>
+	</select>
+
+	<select id="queryTotal" resultType="int">
+		/**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_dictdeta
+		<where>
+			<include refid="condition" />
+		</where>
+	</select>
+ 
+	<insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.DictdetaEntity">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_dictdeta
+		(
+			`dictid`,
+			`dicttype`,
+			`dictname`,
+			`sortno`,
+			`status`,
+			`dictcode`,
+			`create_time`,
+			`create_by`,
+			`last_modify_time`,
+			`last_modify_by`
+		)
+		values
+		(
+			#{entity.dictid},
+			#{entity.dicttype},
+			#{entity.dictname},
+			#{entity.sortno},
+			#{entity.status},
+			#{entity.dictcode},
+			#{entity.createTime},
+			#{entity.createBy},
+			#{entity.lastModifyTime},
+			#{entity.lastModifyBy}
+		)
+	</insert>
+
+	<update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.DictdetaEntity">
+		/**mycat:schema=${schemaLabel}*/ update t_ac_dictdeta
+		<set>
+			<if test="entity.dicttype != null">`dicttype` = #{entity.dicttype}, </if>
+			<if test="entity.dictname != null">`dictname` = #{entity.dictname}, </if>
+			<if test="entity.sortno != null">`sortno` = #{entity.sortno}, </if>
+			<if test="entity.status != null">`status` = #{entity.status},</if>
+			<if test="entity.dictcode != null">`dictcode` = #{entity.dictcode}, </if>
+			<if test="entity.lastModifyTime != null">`last_modify_time` = #{entity.lastModifyTime}, </if>
+			<if test="entity.lastModifyBy != null">`last_modify_by` = #{entity.lastModifyBy}, </if>
+		</set>
+		where dictid = #{entity.dictid}
+	</update>
+
+	<delete id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_dictdeta where dictid = #{dictid}
+	</delete>
+</mapper>

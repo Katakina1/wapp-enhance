@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.signin.dao.ScannerSignDao">
+    <select id="getMaxSerialNo" resultType="java.lang.String">
+        SELECT MAX(invoice_serial_no + 0)
+        FROM t_dx_invoice  where  invoice_serial_no like CONCAT(DATE_FORMAT(getdate(),'%Y%m%d'),'%')
+    </select>
+
+    <select id="getOrgTaxGfName" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.signin.entity.OrgTaxNoInfo">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        SELECT
+       ot.taxno as tax_code,
+       ot.orgname as company_name,
+        ot.orgid AS  orgid
+        FROM
+        t_ac_org ot
+        WHERE
+        ot.taxno  = #{gfTaxNo}
+        and ot.orgtype=5
+    </select>
+
+    <update id="deleteInvoice" parameterType="java.lang.Long">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        DELETE FROM t_dx_invoice
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByUuid" resultType="com.xforceplus.wapp.modules.signin.entity.InvoiceSavePo">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        select invoice_code,invoice_no,scan_id,qs_status as invoice_status,invoice_type,user_name from t_dx_invoice WITH(NOLOCK) where uuid=#{uuid,jdbcType=VARCHAR}
+    </select>
+
+
+
+    <insert id="saveInvoice" parameterType="com.xforceplus.wapp.modules.signin.entity.InvoiceSavePo"
+            useGeneratedKeys="true" keyProperty="id">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        INSERT INTO t_dx_invoice WITH(ROWLOCK)
+        (	invoice_type,
+        invoice_code,
+        invoice_serial_no,
+        invoice_no,
+        gf_tax_no,
+        gf_name,
+        invoice_amount,
+        tax_amount,
+        total_amount,
+        xf_tax_no,
+        xf_name,
+        check_code,
+        invoice_date,
+        user_account,
+        user_name,
+        qs_status,
+        valid,
+        qs_type,
+        uuid,
+        create_date,
+        qs_date,
+        scan_id,
+        notes)
+        VALUES (	#{invoiceType, jdbcType=TINYINT},
+        #{invoiceCode, jdbcType=VARCHAR},
+        #{invoiceSerialNo, jdbcType=VARCHAR},
+        #{invoiceNo, jdbcType=VARCHAR},
+        #{gfTaxNo, jdbcType=VARCHAR},
+        #{gfName, jdbcType=VARCHAR},
+        #{invoiceAmount, jdbcType=DECIMAL},
+        #{taxAmount, jdbcType=DECIMAL},
+        #{totalAmount, jdbcType=DECIMAL},
+        #{xfTaxNo, jdbcType=VARCHAR},
+        #{xfName, jdbcType=VARCHAR},
+        #{checkCode, jdbcType=VARCHAR},
+        #{invoiceDate, jdbcType=DATE},
+        #{userAccount, jdbcType=VARCHAR},
+        #{userName, jdbcType=VARCHAR},
+        #{invoiceStatus, jdbcType=TINYINT},
+        1,
+        1,
+        #{uuid, jdbcType=VARCHAR},
+        #{createDate, jdbcType=TIMESTAMP},
+        getdate(),
+        #{scanId},
+        #{notes})
+    </insert>
+
+    <!-- 根据code和no查询底账表 -->
+    <select id="queryByCodeAndNo" parameterType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceQueryByCodeAndNoPo"
+            resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceQueryByCodeAndNoVo">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        SELECT
+        d.invoice_code invoiceCode,
+        d.invoice_no invoiceNo,
+        d.invoice_type invoiceType,
+        d.gf_tax_no gfTaxNo,
+        d.gf_name gfName,
+        d.xf_tax_no xfTaxNo,
+        d.xf_name xfName,
+        d.invoice_date invoiceDate,
+        d.invoice_amount invoiceAmount,
+        d.tax_amount taxAmount,
+        d.total_amount totalAmount,
+        d.invoice_status invoiceStatus
+        FROM t_dx_record_invoice d WITH(NOLOCK)
+        WHERE d.invoice_code = #{invoiceCode}
+        AND d.invoice_no = #{invoiceNo}
+    </select>
+
+    <insert id="saveImg"
+            >
+        /**mycat:schema=${schemaLabel}*/
+        INSERT INTO t_dx_invoice_img
+        (
+        image_path,
+        scan_id,
+        valid,
+        create_date,
+        uuid,
+        update_date)
+        VALUES (
+        #{savePo.imagePath},
+        #{savePo.scanId},
+        1,
+        getdate(),
+        #{savePo.uuid},
+        getdate())
+        ON DUPLICATE KEY UPDATE update_date = getdate(),image_path =#{savePo.imagePath},scan_id=#{savePo.scanId}
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        DELETE
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE invoice_type = 2 and uuid = #{uuId};
+    </delete>
+
+    <!-- 根据uuId查询单条底账信息 -->
+    <select id="recordInvoiceByUuid" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.signin.entity.InvoiceScan">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+
+        SELECT * FROM t_dx_record_invoice WITH(NOLOCK) WHERE uuid =#{uuId}
+    </select>
+
+    <insert id="insertFromScan" parameterType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceCreateSignPo">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        INSERT INTO t_dx_record_invoice with(ROWLOCK)(
+		invoice_type,
+		invoice_code,
+		invoice_no,
+		invoice_date,
+		gf_tax_no,
+		gf_name,
+		xf_tax_no,
+		invoice_amount,
+		tax_amount,
+		total_amount,
+		remark,
+		uuid,
+		qs_status,
+		qs_date,
+		invoice_status,
+		valid,
+		create_date
+		) VALUES(
+		#{invoiceType},
+		#{invoiceCode},
+		#{invoiceNo},
+		#{invoiceDate},
+		#{gfTaxNo},
+		#{gfName},
+		#{xfTaxNo},
+		#{invoiceAmount},
+		#{taxAmount},
+		#{totalAmount},
+		#{notes},
+		#{uuid},
+		1,
+		#{qsDate},
+		0,
+		0,
+		#{createDate}
+		)
+    </insert>
+
+    <!-- 根据scanId查询 -->
+    <select id="getImg" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.signin.entity.InvoiceImgQueryVo">
+ /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        image,
+        image_path,
+        uuid,
+        scan_id
+        FROM t_dx_invoice_img
+        WHERE scan_id = #{scanId}
+    </select>
+    <!-- 物理删除图片 -->
+    <delete id="deleteInvoiceImg" parameterType="java.lang.String">
+/**mycat:schema=${schemaLabel}*/
+        DELETE FROM t_dx_invoice_img
+        WHERE
+        scan_id = #{scanId};
+    </delete>
+
+    <!-- 扫描表物理删除 -->
+    <delete id="invoiceDelete" parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        DELETE
+        FROM
+        t_dx_invoice
+        WHERE uuid = #{uuId}
+    </delete>
+
+    <!-- 删除已签收发票底账处理状态改成未签收 -->
+    <update id="updateRecordInvoiceHandleState" parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        UPDATE t_dx_record_invoice d WITH(ROWLOCK)
+        SET
+
+        d.qs_type=null,
+        d.qs_status =0,
+        d.qs_date = NULL
+        WHERE
+        d.uuid =#{uuId}
+    </update>
+
+    <!-- 未签收发票底账处理状态改成已签收 -->
+    <update id="updateRecordInvoiceState" parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        UPDATE t_dx_record_invoice d WITH(ROWLOCK)
+        SET
+        d.qs_type=1,
+        d.qs_status =1,
+        d.qs_date = getdate()
+        WHERE
+        d.uuid =#{uuId}
+    </update>
+
+    <select id="selectByInvoice" resultType="com.xforceplus.wapp.modules.signin.entity.InvoiceSavePo">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        SELECT
+        t.invoice_code,
+        t.invoice_no,
+        t.qs_status as invoiceStatus,
+        t.invoice_type,
+        t.user_name,
+        t.scan_id
+        FROM
+        t_dx_invoice t
+        WHERE
+       t.uuid=#{uuid,jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteRecordInvoiceById" parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        DELETE
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE   uuid = #{uuId};
+    </delete>
+
+    <select id="findDelByUuid" resultType="com.xforceplus.wapp.modules.signin.entity.InvoiceSavePo">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        SELECT
+        t.invoice_code,
+        t.invoice_no,
+        t.invoice_type,
+        t.user_name
+        FROM
+        t_dx_invoice_del t
+        WHERE
+        t.uuid=#{uuid,jdbcType=VARCHAR}
+    </select>
+<delete id="delDel" parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+  DELETE  FROM t_dx_invoice_del WHERE
+        uuid =#{uuId}
+</delete>
+
+    <update id="savedel"  parameterType="java.lang.String">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        	insert into t_dx_invoice_del(
+            invoice_type,
+            invoice_code,
+            invoice_serial_no,
+            invoice_no,
+            gf_tax_no,
+            gf_name,
+            invoice_amount,
+            tax_amount,
+            total_amount,
+            xf_tax_no,
+            invoice_date,
+            user_account,
+            user_name,
+
+            invoice_status,
+            valid,
+            uuid,
+            create_date,
+            update_date,
+            qs_date,
+            scan_id,
+            notes
+            )
+            select invoice_type,
+            invoice_code,
+            invoice_serial_no,
+            invoice_no,
+            gf_tax_no,
+            gf_name,
+            invoice_amount,
+            tax_amount,
+            total_amount,
+            xf_tax_no,
+            invoice_date,
+            user_account,
+            user_name,
+            qs_status as invoice_status,
+            valid,
+            uuid,
+            getdate(),
+            update_date,
+            qs_date,
+            scan_id,
+            notes from t_dx_invoice WITH(NOLOCK) where uuid = #{uuId}
+
+    </update>
+
+    <delete id="deleteElectronInvoice">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        DELETE FROM t_dx_invoice WITH(ROWLOCK) WHERE id = #{id}
+    </delete>
+
+    <insert id="saveRecordInvoice" useGeneratedKeys="true" keyProperty="recordInvoice.id"
+            parameterType="com.xforceplus.wapp.modules.einvoice.entity.RecordInvoice">
+/**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        INSERT INTO t_dx_record_invoice with(ROWLOCK)(
+        invoice_type,
+        invoice_code,
+        invoice_no,
+        invoice_date,
+        gf_tax_no,
+        gf_name,
+        gf_address_and_phone,
+        gf_bank_and_no,
+        xf_tax_no,
+        xf_name,
+        xf_address_and_phone,
+        xf_bank_and_no,
+        invoice_amount,
+        tax_amount,
+        total_amount,
+        valid,
+        uuid,
+        create_date,
+        check_code,
+        source_system,
+        remark,
+        invoice_status,
+        detail_yesorno,
+        qs_status,
+        qs_type,
+        qs_date
+        )
+        VALUES (#{recordInvoice.invoiceType},#{recordInvoice.invoiceCode},#{recordInvoice.invoiceNo},#{recordInvoice.invoiceDate, jdbcType=TIMESTAMP},
+        #{recordInvoice.gfTaxNo},#{recordInvoice.gfName},
+        #{recordInvoice.gfAddressAndPhone},#{recordInvoice.gfBankAndNo},#{recordInvoice.xfTaxNo},#{recordInvoice.xfName},
+        #{recordInvoice.xfAddressAndPhone},#{recordInvoice.xfBankAndNo},
+        #{recordInvoice.invoiceAmount},#{recordInvoice.taxAmount},#{recordInvoice.totalAmount},#{recordInvoice.valid},
+        #{recordInvoice.uuid},getdate(),
+        #{recordInvoice.checkCode},#{recordInvoice.sourceSystem},#{recordInvoice.remark},#{recordInvoice.invoiceStatus},
+        #{recordInvoice.detailYesorno},#{recordInvoice.qsStatus},#{recordInvoice.qsType},getdate())
+    </insert>
+
+    <insert id="saveRecordInvoiceDetail" parameterType="java.util.ArrayList">
+        /**mycat:schema='${@com.xforceplus.wapp.common.utils.ShiroUtils@getschema()}'*/
+        INSERT INTO t_dx_record_invoice_detail(
+        uuid,invoice_code,invoice_no,detail_no,goods_name,model,unit,num,unit_price,detail_amount,tax_rate,tax_amount,
+        cph,lx,txrqq,txrqz,goods_num
+        )
+        VALUES
+        <foreach collection="detailList" item="item" separator=",">
+            (
+            #{item.uuid},#{item.invoiceCode},#{item.invoiceNo},#{item.detailNo},#{item.goodsName},#{item.model},
+            #{item.unit},#{item.num},#{item.unitPrice},#{item.detailAmount},
+            #{item.taxRate},#{item.taxAmount},#{item.cph},#{item.lx},#{item.txrqq},#{item.txrqz},#{item.goodsNum}
+            )
+        </foreach>
+    </insert>
+
+
+</mapper>

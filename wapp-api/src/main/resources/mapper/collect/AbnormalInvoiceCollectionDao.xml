@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.collect.dao.AbnormalInvoiceCollectionDao">
+
+    <resultMap id="resultCollectionMap" type="com.xforceplus.wapp.modules.collect.entity.CollectListStatistic">
+        <id column="id" property="id" />
+        <result column="gf_tax_no" property="gfTaxNo" />
+        <result column="create_date" property="createDate" />
+        <result column="gf_name" property="gfName" />
+        <result column="collectCount" property="collectCount" />
+        <result column="sumTotalAmount" property="sumTotalAmount" />
+        <result column="sumTaxAmount" property="sumTaxAmount" />
+    </resultMap>
+
+    <!-- 获取人员可以查看的数据 -->
+    <sql id="getAuthData">
+        (
+         SELECT tdri.* FROM t_dx_record_invoice tdri WITH(NOLOCK)
+        LEFT JOIN t_ac_org tao WITH(NOLOCK) ON tao.taxno = tdri.gf_tax_no
+        LEFT JOIN t_ac_user_taxno taut WITH(NOLOCK) ON taut.orgid = tao.orgid
+        WHERE taut.userid = #{userId}
+        ) a
+    </sql>
+
+    <sql id="selectAbnormalCollectionSql">
+        SELECT
+        temp.create_date,
+        temp.gf_tax_no,
+        temp.collectCount,
+        temp.sumTotalAmount,
+        temp.sumTaxAmount,
+        ttdri.orgname gf_name
+        FROM
+        (
+        SELECT
+        date_format(create_date,'%Y-%m-%d') create_date,
+        gf_tax_no,
+        COUNT(gf_tax_no) collectCount,
+        truncate(SUM(invoice_amount),2) sumTotalAmount,
+        truncate(SUM(tax_amount),2) sumTaxAmount
+        FROM
+        (
+        SELECT
+        id,
+        create_date,
+        gf_tax_no,
+        gf_name,
+        invoice_amount,
+        tax_amount
+        FROM
+        <include refid="getAuthData"/>
+        WHERE source_system = '0' AND invoice_status != '0'
+        <if test="gfName != null and gfName != ''">
+            AND gf_name = #{gfName}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND date_format(create_date,'%Y-%m-%d') >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND date_format(create_date,'%Y-%m-%d')  <= #{createEndDate} ]]>
+        </if>
+        ) asi
+        GROUP BY gf_tax_no,date_format(create_date,'%Y-%m-%d')
+        ) temp
+        LEFT JOIN t_ac_org ttdri ON  ttdri.taxno = temp.gf_tax_no
+    </sql>
+
+    <!-- 获得异常发票采集数据的总行数 -->
+    <select id="getAbnormalInvoiceCollectionCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT COUNT(1) FROM (
+        <include refid="selectAbnormalCollectionSql"/>
+        ) t
+    </select>
+
+    <!-- 获得异常发票采集数据集 -->
+    <select id="selectAbnormalInvoiceCollection" resultMap="resultCollectionMap">
+        /**mycat:schema=${schemaLabel}*/
+        <include refid="selectAbnormalCollectionSql"/>
+        ORDER BY create_date DESC
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getAbnormalSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        truncate(sum(sumTotalAmount),2) summationTotalAmount,
+        truncate(sum(sumTaxAmount),2) summationTaxAmount
+        FROM (
+        <include refid="selectAbnormalCollectionSql"/>
+        ) a
+    </select>
+</mapper>

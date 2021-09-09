@@ -1,0 +1,129 @@
+# Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+  port: 8385
+  servlet:
+    context-path: /dxhy_yxgl_api
+
+# mysql
+spring:
+  # 环境 dev|test|prod
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      enabled: true
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    password:      # 密码（默认为空）
+    timeout: 6000ms  # 连接超时时长（毫秒）
+    jedis:
+      pool:
+        max-active: 1000  # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1ms      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 10      # 连接池中的最大空闲连接
+        min-idle: 5       # 连接池中的最小空闲连接
+
+dxhy:
+  redis:
+    open: false  # 是否开启redis缓存  true开启   false关闭
+  shiro:
+    redis: false # true表示shiro session存到redis里，需要开启redis，才会生效【分布式场景】
+
+#mybatis
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.xforceplus.wapp.entity
+  global-config:
+    #主键类型  0:"数据库ID自增", 1:"用户输入ID",2:"全局唯一ID (数字类型唯一ID)", 3:"全局唯一ID UUID";
+    id-type: 0
+    #字段策略 0:"忽略判断",1:"非 NULL 判断"),2:"非空判断"
+    field-strategy: 2
+    #驼峰下划线转换
+    db-column-underline: true
+    #刷新mapper 调试神器
+    refresh-mapper: true
+    #数据库大写下划线转换
+    #capital-mode: true
+    #序列接口实现类配置
+    #key-generator: com.baomidou.springboot.xxx
+    #逻辑删除配置
+    logic-delete-value: -1
+    logic-not-delete-value: 0
+    #自定义填充策略接口实现
+    #meta-object-handler: com.baomidou.springboot.xxx
+    #自定义SQL注入器
+    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+
+logging:
+  path: /home/vn03qsx/logs/yxgl/
+  file: ${logging.path}yxgl_api
+
+#图片存储路径
+filePathConstan:
+    localImageRootPath: /home/vn03qsx/jxfp/image/
+    tempPath: /home/vn03qsx/jxfp/temp/zip/      # 文件暂存路径
+    depositPath: /home/vn03qsx/jxfp/zipto/ # 文件存储路
+    tempImgPath: /home/vn03qsx/jxfp/temp/imgzip/      # 图片临时存储路径z
+    signInImgPath: /home/vn03qsx/jxfp/temp/image/     #扫码签收图片暂存路径
+    sapLocalTempPath: /home/vn03qsx/jxfp/sap/temp/         #sap本地临时目录
+    remoteCostFileRootPath: /home/wapp/jxfp/cost/
+    remoteCostFileTempRootPath: /home/wapp/jxfp/temp/cost/
+    remoteImageRootPath: /home/wapp/jxfp/image/
+    sapRemoteRootPath: /home/wapp/jxfp/sap/source/   #sap源文件目录
+    sapRemoteBakPath: /home/wapp/jxfp/sap/bak/       #sap备份目录
+
+#sftp配置
+pro:
+  sftp:
+    host: 10.233.68.155  #10.44.100.123
+    username: VN03QSX
+    password: Qwer123456
+    default:
+      port: 22
+      timeout: 60000
+
+# Mycat配置
+mycat:
+    default_schema_label: db_210  # 默认的分库schema名称
+#账号中心AccountCent配置
+AccountCent:
+    url: http://103.237.6.99:40002/infoControl/jxuser/
+    isService: false   #是否使用账号中心 true 使用 false 不使用
+# token配置
+token:
+    expire_time: 1800000 #过期时间，单位秒
+    #客户单登录配置
+CustomerCent:
+            customerMenuPre: customer     #客户单默认菜单的menuCode前缀
+            customerTokenValue: customerTokenValue  #客户单不启用token验证是传过来的值
+
+#设置代理（Proxy）访问目标地址
+proxy:
+    switch: 1  # 1开   0关
+    hostname: wmtproxy.homeoffice.cn.wal-mart.com
+    port: 8080
+    scheme: http
+
+
+ofd:
+  eachDir: false  #是否开启全路径扫描 true 开启  false  不开启
+  detail: false  # 是否需要明细  true 需要  false 不需要
+  analysis:
+    type: local   #解析方式  http： 为采用ofd服务解析 local: 采用本地服务进行解析
+  httpUrl: http://sims.ele-cloud.com/odf-sign-verify/ofd/getDetail  # ofd 服务解析地址
+  ofdPngUrl: http://10.1.2.51:8091/taxControl/invoice/business/v1.0/convertPng # ofd转png地址
+  ofdPreviewUrl: http://jxfpapi.ele-cloud.com/OFDPreview
+

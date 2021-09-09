@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.IntelligentizeCheckDao">
+	<select id="queryTotal" resultType="Integer" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		count(1)
+		from t_dx_record_invoice t WITH(NOLOCK)
+		where 1=1
+		AND gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		<if test="map.invoiceNo != null and map.invoiceNo != ''">
+			and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+		</if>
+		<if test="map.qsStatus !=null and map.qsStatus != '-1'">
+			and qs_status = #{map.qsStatus}
+		</if>
+		<if test="map.qsType !=null and map.qsType != '-1'">
+			and qs_type = #{map.qsType}
+		</if>
+		<if test="map.qsDate1 != null and map.qsDate1 != ''">
+			<![CDATA[ AND date_format(qs_date,'%Y-%m-%d') >= #{map.qsDate1} ]]>
+		</if>
+		<if test="map.qsDate2 != null and map.qsDate2 != ''">
+			<![CDATA[ AND date_format(qs_date,'%Y-%m-%d')  <= #{map.qsDate2} ]]>
+		</if>
+		<if test="map.invoiceType !=null and map.invoiceType != '-1'">
+			and invoice_type = #{map.invoiceType}
+		</if>
+		<if test="map.gfName != null and map.gfName != '-1'and  map.gfName != ''">
+			and gf_tax_no = #{map.gfName}
+		</if>
+		<if test="map.xfName != null and map.xfName != ''">
+			and xf_name like concat('%',concat(#{map.xfName},'%'))
+		</if>
+		and rzh_yesorno=0
+		and invoice_status=0
+		and invoice_amount>0
+		AND (SELECT c.current_tax_period FROM t_dx_tax_current c WHERE c.taxno=t.gf_tax_no)>=date_format(invoice_date,'%Y%m')
+		and IF (
+		invoice_date >= '2017-07-01 00:00:00',
+
+		DATE_ADD(invoice_date,INTERVAL 359 DAY) >= getdate(),
+
+		DATE_ADD(invoice_date,INTERVAL 179 DAY) >= getdate()
+		)
+		and tax_amount>=0
+		and auth_status in (0,5)
+		and invoice_type in (01,14,03)
+	</select>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.certification.entity.InvoiceCertificationEntity" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		id               ,
+    	invoice_code 	 invoiceCode,
+    	invoice_no 		 invoiceNo,
+    	invoice_date	 invoiceDate,
+    	gf_name 		 gfName,
+    	xf_name 		 xfName,
+		invoice_amount   invoiceAmount,
+    	tax_amount 		 taxAmount,
+		qs_status 		 qsStatus,
+		qs_date 		 qsDate,
+		qs_type 		 qsType
+ 		from t_dx_record_invoice t WITH(NOLOCK)
+ 		where 1=1
+		AND gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		<if test="map.qsStatus !=null and map.qsStatus != '-1'">
+			and qs_status = #{map.qsStatus}
+		</if>
+		<if test="map.qsType !=null and map.qsType != '-1'">
+			and qs_type = #{map.qsType}
+		</if>
+		<if test="map.qsDate1 != null and map.qsDate1 != ''">
+			<![CDATA[ AND date_format(qs_date,'%Y-%m-%d') >= #{map.qsDate1} ]]>
+		</if>
+		<if test="map.qsDate2 != null and map.qsDate2 != ''">
+			<![CDATA[ AND date_format(qs_date,'%Y-%m-%d')  <= #{map.qsDate2} ]]>
+		</if>
+		<if test="map.invoiceType !=null and map.invoiceType != '-1'">
+			and invoice_type = #{map.invoiceType}
+		</if>
+		<if test="map.gfName != null and map.gfName != '-1' and map.gfName != ''">
+			and gf_tax_no = #{map.gfName}
+		</if>
+		<if test="map.xfName != null and map.xfName != ''">
+			and xf_name like concat('%',concat(#{map.xfName},'%'))
+		</if>
+		<if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+			<![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{map.invoiceDate1} ]]>
+		</if>
+		<if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+			<![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{map.invoiceDate2} ]]>
+		</if>
+
+ 		and rzh_yesorno=0
+		and invoice_status=0
+		and invoice_amount>0
+		AND (SELECT c.current_tax_period FROM t_dx_tax_current c WHERE c.taxno=t.gf_tax_no)>=date_format(invoice_date,'%Y%m')
+		and IF (
+		invoice_date >= '2017-07-01 00:00:00',
+
+		DATE_ADD(invoice_date,INTERVAL 359 DAY) >= getdate(),
+
+		DATE_ADD(invoice_date,INTERVAL 179 DAY) >= getdate()
+		)
+		and tax_amount>=0
+		and auth_status in (0,5)
+		and invoice_type in (01,14,03)
+		<if test="map.priorityFiltrate == '-1' ">
+			order by invoice_date desc,tax_amount
+		</if>
+		<if test="map.priorityFiltrate == '1' ">
+			order by invoice_date asc, tax_amount
+		</if>
+	</select>
+
+	<update id="intelligentizeCheck">
+        /**mycat:schema=${schemaLabel}*/
+		update t_dx_record_invoice WITH(ROWLOCK) set
+		gx_date = getdate(),
+		auth_status = 1,
+		gx_type = 3,
+		gx_user_account=#{loginName},
+		gx_user_name=#{userName}
+        where ID = #{id}
+	</update>
+
+	
+	<select id="selectCheck" resultType="com.xforceplus.wapp.modules.certification.entity.InvoiceCertificationEntity" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		id               ,
+		invoice_code 	 invoiceCode,
+		invoice_no 		 invoiceNo,
+		invoice_type     invoiceType,
+		invoice_date	 invoiceDate,
+		gf_name 		 gfName,
+		xf_name 		 xfName,
+		invoice_amount   invoiceAmount,
+		tax_amount 		 taxAmount,
+		qs_status 		 qsStatus,
+		qs_date 		 qsDate,
+		qs_type 		 qsType
+		from t_dx_record_invoice WITH(NOLOCK)
+		where id=#{id}
+	</select>
+
+
+
+</mapper>

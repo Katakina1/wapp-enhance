@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.einvoice.dao.EinvoiceQueryDao">
+
+    <resultMap id="QueryElectronInvoiceMap" type="com.xforceplus.wapp.modules.einvoice.entity.ElectronInvoiceEntity">
+        <id column="id" property="id" />
+        <result column="invoice_type" property="invoiceType" />
+        <result column="invoice_no" property="invoiceNo" />
+        <result column="invoice_code" property="invoiceCode" />
+        <result column="qs_type" property="qsType" />
+        <result column="qs_status" property="qsStatus" />
+        <result column="check_code" property="checkCode" />
+        <result column="invoice_date" property="invoiceDate" />
+        <result column="gf_tax_no" property="gfTaxNo" />
+        <result column="xf_tax_no" property="xfTaxNo" />
+        <result column="invoice_amount" property="invoiceAmount" />
+        <result column="tax_amount" property="taxAmount" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="scan_id" property="scanId" />
+        <result column="notes" property="notes" />
+        <result column="uuid" property="uuid" />
+    </resultMap>
+
+    <select id="queryInvoiceList" resultMap="QueryElectronInvoiceMap">
+        /**mycat:schema=${schemaLabel}*/select
+        t.id,
+        t.invoice_type,
+        t.invoice_no,
+        t.invoice_code,
+        t.qs_type,
+        t.qs_status,
+        t.check_code,
+        t.invoice_date,
+        t.gf_tax_no,
+        t.xf_tax_no,
+        t.invoice_amount,
+        t.tax_amount,
+        t.total_amount,
+        t.scan_id,
+        t.notes,
+        t.uuid
+        from t_dx_invoice t WITH(NOLOCK)
+        WHERE t.valid = 1 AND (t.invoice_type = '10' or t.invoice_type = '14')
+        and t.user_name=(SELECT username from t_ac_user where userid=#{query.userId})
+        and t.user_account=(SELECT loginname from t_ac_user where userid=#{query.userId})
+        <if test="query.gfTaxNo != null and query.gfTaxNo != ''">
+            AND t.gf_tax_no LIKE CONCAT('%',#{query.gfTaxNo},'%')
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != ''">
+            AND t.invoice_no LIKE CONCAT('%',#{query.invoiceNo},'%')
+        </if>
+        <if test="query.qsStartDate != null and query.qsStartDate != ''">
+            <![CDATA[ AND t.qs_date >= DATE_FORMAT(#{query.qsStartDate}, '%Y-%m-%d')]]>
+        </if>
+        <if test="query.qsEndDate != null and query.qsEndDate != ''">
+            <![CDATA[ AND t.qs_date  < DATE_ADD(DATE_FORMAT(#{query.qsEndDate}, '%Y-%m-%d'),INTERVAL 1 DAY)]]>
+        </if>
+        <!--
+        <if test="query.taxNos != null">
+            AND t.gf_tax_no IN
+            <foreach collection="query.taxNos" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        -->
+        order by t.invoice_date desc, t.id desc
+        <if test="query.offset != null and query.limit != null">
+            limit #{query.offset}, #{query.limit}
+        </if>
+    </select>
+
+    <select id="queryInvoiceListCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/select count(1)
+        from t_dx_invoice t WITH(NOLOCK)
+        WHERE t.valid = 1 AND (t.invoice_type = '10' or t.invoice_type = '14')
+        and t.user_name=(SELECT username from t_ac_user where userid=#{query.userId})
+        and t.user_account=(SELECT loginname from t_ac_user where userid=#{query.userId})
+        <if test="query.gfTaxNo != null and query.gfTaxNo != ''">
+            AND t.gf_tax_no LIKE CONCAT('%',#{query.gfTaxNo},'%')
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != ''">
+            AND t.invoice_no LIKE CONCAT('%',#{query.invoiceNo},'%')
+        </if>
+        <if test="query.qsStartDate != null and query.qsStartDate != ''">
+            <![CDATA[ AND t.qs_date >= DATE_FORMAT(#{query.qsStartDate}, '%Y-%m-%d')]]>
+        </if>
+        <if test="query.qsEndDate != null and query.qsEndDate != ''">
+            <![CDATA[ AND t.qs_date  < DATE_ADD(DATE_FORMAT(#{query.qsEndDate}, '%Y-%m-%d'),INTERVAL 1 DAY)]]>
+        </if>
+        <!--
+       <if test="query.taxNos != null">
+           AND t.gf_tax_no IN
+           <foreach collection="query.taxNos" item="item" index="index" open="(" separator="," close=")">
+               #{item}
+           </foreach>
+       </if>
+       -->
+   </select>
+
+   <select id="queryInvoiceListForExport" resultMap="QueryElectronInvoiceMap">
+       /**mycat:schema=${schemaLabel}*/select
+       t.id,
+       t.invoice_no,
+       t.invoice_code,
+       t.qs_type,
+       t.qs_status,
+       t.invoice_date,
+       t.invoice_amount,
+       t.tax_amount,
+       t.total_amount,
+       t.notes
+       from t_dx_invoice t WITH(NOLOCK)
+       and t.user_name=(SELECT username from t_ac_user where userid=#{query.userId})
+       and t.user_account=(SELECT loginname from t_ac_user where userid=#{query.userId})
+       where t.valid = 1 AND (t.invoice_type = '10' or t.invoice_type = '14')
+       <if test="query.gfTaxNo != null and query.gfTaxNo != ''">
+           AND t.gf_tax_no LIKE CONCAT('%',#{query.gfTaxNo},'%')
+       </if>
+       <if test="query.invoiceNo != null and query.invoiceNo != ''">
+           AND t.invoice_no LIKE CONCAT('%',#{query.invoiceNo},'%')
+       </if>
+       <if test="query.qsStartDate != null and query.qsStartDate != ''">
+           <![CDATA[ AND t.qs_date >= DATE_FORMAT(#{query.qsStartDate}, '%Y-%m-%d')]]>
+       </if>
+       <if test="query.qsEndDate != null and query.qsEndDate != ''">
+           <![CDATA[ AND t.qs_date  < DATE_ADD(DATE_FORMAT(#{query.qsEndDate}, '%Y-%m-%d'),INTERVAL 1 DAY)]]>
+       </if>
+       <!--
+       <if test="query.taxNos != null">
+           AND t.gf_tax_no IN
+           <foreach collection="query.taxNos" item="item" index="index" open="(" separator="," close=")">
+             #{item}
+           </foreach>
+       </if>
+       -->
+       order by t.invoice_date desc, t.id desc
+   </select>
+
+   <select id="selectGfTaxNo" resultType="string">
+       /**mycat:schema=${schemaLabel}*/SELECT t.taxno
+       FROM t_ac_org t
+       INNER JOIN t_ac_user_taxno tuser ON tuser.orgid = t.orgid
+       WHERE tuser.userid = #{userId}
+   </select>
+</mapper>
