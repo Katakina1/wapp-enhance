@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.ImportCertificationDao">
+
+    <!-- 根据发票号码，发票代码查询发票类型 -->
+    <select id="checkInvoiceExist" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+      /**mycat:schema=${schemaLabel}*/
+      SELECT
+        tdri.id,
+        tdri.invoice_type invoiceType,
+        tdri.invoice_status invoiceStatus,
+        tdri.tax_amount taxAmount,
+        tdri.invoice_amount invoiceAmount,
+         tdri.total_amount totalAmount,
+        tdtc.current_tax_period rzhBelongDate,
+        tdri.invoice_date invoiceDate,
+        tdri.rzh_yesorno rzhYesorno,
+        tdri.auth_status authStatus,
+        tdri.valid valid,
+        tdri.gf_tax_no gfTaxNo
+      FROM t_dx_record_invoice tdri
+      LEFT JOIN t_dx_tax_current tdtc ON tdtc.taxno = tdri.gf_tax_no
+      WHERE invoice_no=#{invoiceNo} AND invoice_code=#{invoiceCode}
+    </select>
+    
+    <!-- 根据发票号码，发票代码查询发票税局信息 -->
+    <select id="queryInvoiceInfo" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+      /**mycat:schema=${schemaLabel}*/
+      SELECT
+        tdri.id id,       
+        tdri.invoice_code invoiceCode,
+        tdri.invoice_no invoiceNo, 
+        tdri.invoice_date invoiceDate,
+        tdri.check_code checkCode,
+		tdri.gf_tax_no gfTaxNo,
+		tdri.gf_name gfName,
+        tdri.tax_amount taxAmount,
+        tdri.invoice_amount invoiceAmount,   
+        tdri.total_amount totalAmount,      
+        tdri.xf_name xfName,
+		tdri.xf_tax_no xfTaxNo,
+		tdri.invoice_type invoiceType
+      FROM t_dx_record_invoice tdri
+      WHERE invoice_no=#{invoiceNo} AND invoice_code=#{invoiceCode}
+    </select>
+    
+
+    <!-- 更新符合条件的认证处理状态为已认证（2），认证类型改为导入认证（6） -->
+    <update id="updateAuthHandleStatus">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET auth_status = '2',
+        gx_date = getdate(),
+        gx_type='6',
+        confirm_user=#{userAccount}
+        WHERE id IN (
+        <foreach collection="list" item="item" separator=",">
+            #{item.id}
+        </foreach>
+        )
+    </update>
+    <!-- 添加当前税款所属期-->
+    <update id="updateAuthHandleStatusAndTaxPeriod">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET auth_status = '2',
+        gx_date = getdate(),
+        gx_type='6',
+        confirm_user=#{userAccount},
+        rzh_belong_date=#{entity.currentTaxPeriod}
+        WHERE id = #{entity.id}
+    </update>
+    <!-- 获取当前登录人下绑定的税号 -->
+    <select id="getTaxNoList" resultType="String">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT tao.taxno FROM t_ac_org tao
+        LEFT JOIN t_ac_user_taxno taut ON taut.orgid = tao.orgid
+        WHERE taut.userid = #{userId}
+    </select>
+    
+    <select id="checkScanPoint" resultType="Integer" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		count(1)
+		from t_ac_user t
+		where 1=1
+		AND  userid=#{userId}
+		and extf0=#{scanPoint}
+	</select>
+	
+	
+	 <select id="checkBilltypeCode" resultType="Integer" >
+		/**mycat:schema=${schemaLabel}*/
+		select count(1) from  (select * from t_ac_billtype where billtypecode = #{billtypeCode}) t1
+
+		left join  t_ac_user_billtype t2 on t1.billtypeid = t2.billtypeid
+
+		where userid = #{userId}
+	</select>
+	
+    
+</mapper>

@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.posuopei.dao.DetailsDao">
+    <resultMap id="invoiceResultMaps" type="com.xforceplus.wapp.modules.posuopei.entity.DetailEntity">
+        <id column="id" property="id"/>
+        <result column="uuid" property="uuid"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="detail_no" property="detailNo"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="model" property="model"/>
+        <result column="unit" property="unit"/>
+        <result column="num" property="num"/>
+        <result column="unit_price" property="unitPrice"/>
+        <result column="detail_amount" property="detailAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="cph" property="cph"/>
+        <result column="lx" property="lx"/>
+        <result column="txrqq" property="txrqq"/>
+        <result column="txrqz" property="txrqz"/>
+        <result column="goods_num" property="goodsNum"/>
+    </resultMap>
+
+    <resultMap id="invoiceMaps" type="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        <id column="id" property="id"/>
+        <result column="invoiceId" property="invoiceId"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="gf_address_and_phone" property="gfAddressAndPhone"/>
+        <result column="gf_bank_and_no" property="gfBankAndNo"/>
+        <result column="xf_tax_no" property="xfTaxNo"/>
+        <result column="xf_name" property="xfName"/>
+        <result column="xf_address_and_phone" property="xfAddressAndPhone"/>
+        <result column="xf_bank_and_no" property="xfBankAndNo"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="remark" property="remark"/>
+        <result column="invoice_status" property="invoiceStatus"/>
+        <result column="status_update_date" property="statusUpdateDate"/>
+        <result column="last_update_date" property="lastUpdateDate"/>
+        <result column="rzh_date" property="rzhDate"/>
+        <result column="qs_date" property="qsDate"/>
+        <result column="rzh_belong_date_late" property="rzhBelongDateLate"/>
+        <result column="rzh_belong_date" property="rzhBelongDate"/>
+        <result column="confirm_user" property="confirmUser"/>
+        <result column="confirm_date" property="confirmDate"/>
+        <result column="rzh_type" property="rzhType"/>
+        <result column="rzh_yesorno" property="rzhYesorno"/>
+        <result column="gx_user_account" property="gxUserAccount"/>
+        <result column="gx_user_name" property="gxUserName"/>
+        <result column="source_system" property="sourceSystem"/>
+        <result column="valid" property="valid"/>
+        <result column="uuid" property="uuid"/>
+        <result column="create_date" property="createDate"/>
+        <result column="gx_date" property="gxDate"/>
+        <result column="rzh_back_msg" property="rzhBackMsg"/>
+        <result column="dqskssq" property="dqskssq"/>
+        <result column="gxjzr" property="gxjzr"/>
+        <result column="gxfwq" property="gxfwq"/>
+        <result column="gxfwz" property="gxfwz"/>
+        <result column="sfygx" property="sfygx"/>
+        <result column="detail_yesorno" property="detailYesorno"/>
+        <result column="gx_type" property="gxType"/>
+        <result column="auth_status" property="authStatus"/>
+        <result column="machinecode" property="machinecode"/>
+        <result column="send_date" property="sendDate"/>
+        <result column="rzlx" property="rzlx"/>
+        <result column="sfdbts" property="sfdbts"/>
+        <result column="qs_type" property="qsType"/>
+        <result column="qs_status" property="qsStatus"/>
+        <result column="check_code" property="checkCode"/>
+        <result column="txfbz" property="txfbz"/>
+        <result column="lslbz" property="lslbz"/>
+        <result column="out_status" property="outStatus"/>
+        <result column="out_invoice_amout" property="outInvoiceAmout"/>
+        <result column="out_tax_amount" property="outTaxAmount"/>
+        <result column="out_reason" property="outReason"/>
+        <result column="out_remark" property="outRemark"/>
+        <result column="out_date" property="outDate"/>
+        <result column="out_by" property="outBy"/>
+        <result column="matchno" property="matchNo"/>
+        <result column="matchstatus" property="matchStatus"/>
+        <result column="matchdate" property="matchDate"/>
+        <result column="matchuser" property="matchUser"/>
+        <result column="matcherrinfo" property="matchErrInfo"/>
+        <result column="vendorid" property="vendorId"/>
+        <result column="matchcost" property="matchCost"/>
+        <result column="matchvat" property="matchVat"/>
+        <result column="machinecode" property="machinecode"/>
+        <result column="confirm_user" property="confirmUser"/>
+        <result column="vendor_id" property="vendorCode"/>
+        <result column="matchserializeid" property="matchSerializeId"/>
+    </resultMap>
+    <resultMap id="MatchMap" type="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">
+        <id column="id" property="id"/>
+        <result column="reason_for_cancel" property="reasonForCancel"/>
+        <result column="venderid" property="venderid"/>
+        <result column="claim_amount" property="claimAmount"/>
+        <result column="matchno" property="matchno"/>
+        <result column="po_num" property="poNum"/>
+        <result column="claim_num" property="claimNum"/>
+        <result column="invoice_num" property="invoiceNum"/>
+        <result column="match_status" property="matchingType"/>
+        <result column="settlementamount" property="settlementamount"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="match_remarks" property="matchRemarks"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="match_date" property="matchDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="po_amount" property="poAmount"/>
+        <result column="printcode" property="printcode"/>
+        <result column="scan_match_status" property="scanMactchStatus"/>
+        <result column="orgname" property="venderName"/>
+    </resultMap>
+    <!--匹配查询-->
+    <select id="getMatchList" resultMap="MatchMap">
+        <if test="offset != null and limit != null">
+            SELECT
+            TOP (#{limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.id DESC ) AS rownumber, o.*
+            FROM(
+        </if>
+              SELECT t_dx_match.*,tao.orgname FROM t_dx_match WITH(NOLOCK) left join t_ac_user tau WITH(NOLOCK) on t_dx_match.venderid=tau.usercode
+              LEFT join t_ac_org tao on tao.orgid=tau.orgid
+              WHERE 1=1
+         <if test="venderid !=null and venderid !=''">
+            and venderid=#{venderid}
+         </if>
+        <if test="gfTaxNo !=null and gfTaxNo !='' and gfTaxNo !='-1'">
+            and jvcode=#{gfTaxNo}
+         </if>
+              AND match_status in ('2','3','4')
+
+              AND id in (
+        SELECT matchid FROM t_dx_match_po_claim_invoice WITH(NOLOCK)
+        <where>
+
+            <if test="poCode !=null and poCode !=''">
+                and ( code in (SELECT id FROM t_dx_po_detail WITH(NOLOCK) where pocode like concat('%',concat(#{poCode},'%')))
+                AND code_type='1')
+            </if>
+            <if test="claimNo !=null and claimNo !=''">
+                and (code in (SELECT id FROM t_dx_return_goods WITH(NOLOCK) where return_goods_code like concat('%',concat(#{claimNo},'%')))
+                AND code_type='2')
+            </if>
+            <if test="invoiceNo !=null and invoiceNo !=''">
+                and (code in (SELECT id FROM t_dx_record_invoice WITH(NOLOCK) where invoice_no like concat('%',concat(#{invoiceNo},'%')))
+                AND code_type='0')
+            </if>
+
+
+        </where>
+        )
+        <if test="matchDateStart !=null and matchDateStart !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),match_date,20) ,0,11) >= #{matchDateStart} ]]>
+        </if>
+        <if test="matchDateEnd !=null and matchDateEnd !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),match_date,20),0,11)  <= #{matchDateEnd} ]]>
+        </if>
+
+
+        <if test="offset != null and limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{offset}
+        </if>
+
+    </select>
+    <select id="getMatchCount" resultType="Integer">
+
+        SELECT count(* )
+        FROM t_dx_match WITH(NOLOCK)
+        WHERE 1=1
+        <if test="venderid !=null and venderid !=''">
+            and venderid=#{venderid}
+        </if>
+        <if test="gfTaxNo !=null and gfTaxNo !='' and gfTaxNo !='-1'">
+            and jvcode=#{gfTaxNo}
+        </if>
+        AND match_status in ('2','3','4')
+
+        AND id in (
+        SELECT matchid FROM t_dx_match_po_claim_invoice WITH(NOLOCK)
+        <where>
+
+            <if test="poCode !=null and poCode !=''">
+                AND ( code in (SELECT id FROM t_dx_po_detail WITH(NOLOCK) where pocode like concat('%',concat(#{poCode},'%')))
+                AND code_type='1')
+            </if>
+            <if test="claimNo !=null and claimNo !=''">
+                AND (code in (SELECT id FROM t_dx_return_goods WITH(NOLOCK) where return_goods_code like concat('%',concat(#{claimNo},'%')))
+                AND code_type='2')
+            </if>
+            <if test="invoiceNo !=null and invoiceNo !=''">
+                AND (code in (SELECT id FROM t_dx_record_invoice WITH(NOLOCK) where invoice_no like concat('%',concat(#{invoiceNo},'%')))
+                AND code_type='0')
+            </if>
+
+        </where>
+        )
+        <if test="matchDateStart !=null and matchDateStart !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),match_date,20),0,11)  >= #{matchDateStart} ]]>
+        </if>
+        <if test="matchDateEnd !=null and matchDateEnd !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),match_date,20),0,11)  <= #{matchDateEnd} ]]>
+        </if>
+    </select>
+    <select id="getInvoiceDetail" resultMap="invoiceResultMaps">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT uuid FROM t_dx_record_invoice where id=#{id})
+    </select>
+
+
+    <select id="getInvoiceDetailTotal" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        count(1)
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT uuid FROM t_dx_record_invoice where id=#{id})
+    </select>
+
+    <select id="getDetailInfo" resultType="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        /**mycat:schema=${schemaLabel}*/
+        select
+        a.*,
+        a.dxhy_match_status matchStatus,
+        b.user_name qsBy
+        FROM t_dx_record_invoice a WITH(NOLOCK)
+        LEFT JOIN t_dx_invoice b WITH(NOLOCK) ON a.uuid=b.uuid
+        WHERE a.id=#{id}
+    </select>
+
+    <select id="getOutInfo" resultType="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        out_date outDate,
+        out_by outBy,
+        out_reason outReason,
+        out_invoice_amout outInvoiceAmout,
+        out_tax_amount outTaxAmount
+        from t_dx_record_invoice_out WITH(NOLOCK)
+        where uuid=#{uuid} and is_cancel='0'
+        order by out_date asc
+    </select>
+
+    <!--<select id="getResultDetail" resultType="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">-->
+        <!--/**mycat:schema=${schemaLabel}*/-->
+        <!--select-->
+        <!--matchNo,-->
+        <!--buyTaxNo,-->
+        <!--sellTaxNo,-->
+        <!--invSum,-->
+        <!--invTaxSum,-->
+        <!--invCount,-->
+        <!--bnSum,-->
+        <!--unmatchReason,-->
+        <!--bnTaxSum,-->
+        <!--bnCount,-->
+        <!--matchStatus,-->
+        <!--matchUser,-->
+        <!--matchDate,-->
+        <!--unmatchUser,-->
+        <!--unmatchDateTime,-->
+        <!--unmatchDesc,-->
+        <!--buyTaxNo,-->
+        <!--unmatchDesc,-->
+        <!--auditUser,-->
+        <!--auditDateTime,-->
+        <!--status,-->
+        <!--auditDesc-->
+        <!--FROM t_dx_match-->
+        <!--WHERE matchid=#{id}-->
+    <!--</select>-->
+
+
+    <select id="getMatchDetailList" resultType="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        /**mycat:schema=${schemaLabel}*/
+        select
+        id,
+        matchNo,
+        gf_name  gfName,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+		xf_name xfName,
+		gf_tax_no gfTaxNo,
+		xf_tax_no xfTaxNo,
+        invoice_date  invoiceDate
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        where  matchNo=#{macthId}
+    </select>
+
+
+    <select id="getVehicleDetail" resultType="com.xforceplus.wapp.modules.posuopei.entity.DetailVehicleEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM t_dx_vehicle_sale_invoice WITH(NOLOCK)
+        WHERE uuid IN (SELECT uuid FROM t_dx_record_invoice WHERE id=#{id})
+    </select>
+
+
+
+    <update id="cancelClaim">
+        UPDATE t_dx_return_goods WITH(ROWLOCK)
+        SET match_status='6',
+        matchno=null
+        WHERE matchno=#{matchno}
+    </update>
+
+    <update id="cancelInvoice">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET dxhy_match_status='6',
+         matchno=null,
+         settlementAmount=0,
+         scan_match_status='0'
+        WHERE matchno=#{matchno}
+    </update>
+
+    <select id="getPoJiLu" resultType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        SELECT
+        tdpoci.code id,
+        tdpoci.change_amount changeAmount,
+        tdpod.pocode pocode
+        FROM t_dx_match_po_claim_invoice tdpoci WITH(NOLOCK)　
+        LEFT JOIN t_dx_po_detail tdpod WITH(NOLOCK)
+        on tdpoci.code=tdpod.id
+        WHERE tdpoci.code_type='1'
+        AND tdpoci.matchid=#{matchno}
+    </select>
+
+    <update id="cancelPo">
+        UPDATE t_dx_po_detail WITH(ROWLOCK)
+        SET dxhy_match_status=#{matchStatus},
+         matchno=null,
+         amountunpaid=amountunpaid+#{changeAmount},
+         amountpaid=amountpaid-#{changeAmount}
+        WHERE id=#{id}
+    </update>
+
+    <update id="deletePo">
+        UPDATE t_dx_po_detail WITH(ROWLOCK)
+        SET dxhy_match_status=#{matchStatus},
+        receiptAmount=#{changeAmount},
+        matchno=null,
+        amountunpaid=#{changeAmount},
+        amountpaid=0
+        WHERE id=#{id}
+    </update>
+
+
+    <select id="ifChangePoFatherStatus" resultType="Integer">
+        SELECT count(*) FROM t_dx_po_detail WITH(NOLOCK)
+        WHERE pocode=#{pocode}
+        AND dxhy_match_status in ('0','6')
+
+    </select>
+
+    <select id="ifBFPP" resultType="Integer">
+        SELECT count(*)
+        FROM
+        t_dx_match_po_claim_invoice WITH(NOLOCK)
+        WHERE  code=#{id}
+        AND code_type='1'
+        AND matchid in(SELECT id FROM t_dx_match WHERE match_status in ('2','3','4') AND matchno is not NULL )
+    </select>
+
+    <update id="cancelMatch">
+        UPDATE t_dx_match WITH(ROWLOCK)
+        SET match_status='6',
+         matchno=null,
+         scan_match_status='2'
+        WHERE matchno=#{matchno}
+        AND host_status !='1'
+    </update>
+
+    <update id="deleMatch">
+        UPDATE t_dx_match WITH(ROWLOCK)
+        SET match_status='6',
+        matchno=null,
+        scan_match_status='2'
+        WHERE matchno=#{matchno}
+        AND host_status !='0'
+    </update>
+
+
+    <select id="getImg" resultType="String">
+
+          SELECT scan_id FROM  t_dx_invoice WITH(NOLOCK) where uuid in (
+            SELECT uuid FROM t_dx_record_invoice WHERE matchno=#{matchno}
+          )
+    </select>
+    <select id="selectMatchEntity" resultType="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">
+
+       SELECT match_date matchDate,settlementamount settlementamount,claim_amount claimAmount,po_amount poAmount,match_cover cover,venderid venderid
+        FROM t_dx_match WITH(NOLOCK) WHERE matchno=#{matchno}
+
+    </select>
+
+    <select id="selectPoDetail" resultType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        SELECT id id,traction_id_seq tractionIdSeq,receiptAmount receiptAmount,amountpaid amountpaid,amountunpaid amountunpaid,pocode pocode FROM t_dx_po_detail WITH(NOLOCK)
+        WHERE traction_id_seq=#{receiptid}
+    </select>
+
+    <update id="updatePodetail">
+        UPDATE t_dx_po_detail WITH(ROWLOCK)
+        SET receiptAmount=#{receiptAmount},
+        amountunpaid=#{amountunpaid}
+        WHERE id=#{id}
+    </update>
+<update id="upDateWriteStatus">
+    UPDATE t_ac_dictdeta WITH(ROWLOCK) SET dictcode=N'1' WHERE dictname='write'
+</update>
+    <select id="selectVenderName" resultType="java.lang.String">
+      SELECT
+	   orgname
+       FROM
+       t_ac_org WITH(NOLOCK) LEFT JOIN  t_ac_user WITH(NOLOCK) on t_ac_org.orgid = t_ac_user.orgid
+	   where usercode = #{venderid}
+    </select>
+
+</mapper>

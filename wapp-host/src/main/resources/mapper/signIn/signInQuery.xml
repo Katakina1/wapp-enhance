@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.signin.dao.SignInqueryDao">
+    <select id="queryTotal" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        count(1)
+        from t_dx_invoice t WITH(NOLOCK)
+        where t.qs_status=1
+        and valid = 1
+        AND t.gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{query.userId}))
+        <if test="query.invoiceType != null and query.invoiceType != ''and query.invoiceType!='-1'">
+            and t.invoice_type= #{query.invoiceType}
+        </if>
+        <if test="query.shName != null and query.shName!='' and query.shName!='-1' ">
+            and t.gf_tax_no = #{query.shName}
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != '' and query.invoiceNo!='-1'">
+            and t.invoice_no like concat('%',concat(#{query.invoiceNo},'%'))
+        </if>
+        <if test="query.invoiceDate1 != null and query.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(t.qs_date,'%Y-%m-%d') >= #{query.invoiceDate1} ]]>
+        </if>
+        <if test="query.invoiceDate2 != null and query.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(t.qs_date,'%Y-%m-%d')  <= #{query.invoiceDate2} ]]>
+        </if>
+    </select>
+
+    <select id="getRecordIncoiceList" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        t.id,
+        t.invoice_code invoiceCode,
+        t.invoice_no invoiceNo,
+        t.invoice_date invoiceDate,
+        t.invoice_type invoiceType,
+        t.qs_type qsType,
+        t.gf_name gfName,
+        t.xf_name xfName,
+        t.invoice_amount invoiceAmount,
+        t.tax_amount taxAmount,
+        t.qs_date signInDate,
+        t.qs_status qsStatus,
+        t.notes notes
+        from t_dx_invoice t WITH(NOLOCK)
+        where t.qs_status=1
+        and valid = 1
+        AND t.gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{query.userId}))
+        <if test="query.invoiceType!=null and query.invoiceType!='' and query.invoiceType!='-1'">
+            and t.invoice_type= #{query.invoiceType}
+        </if>
+        <if test="query.shName!=null and query.shName!='' and query.shName!='-1'">
+            and t.gf_tax_no = #{query.shName}
+        </if>
+        <if test="query.invoiceNo!= null and query.invoiceNo!= '' and query.invoiceNo!='-1'">
+            and t.invoice_no like concat('%',concat(#{query.invoiceNo},'%'))
+        </if>
+        <if test="query.invoiceDate1!= null and query.invoiceDate1!= ''">
+            <![CDATA[ AND date_format(t.qs_date,'%Y-%m-%d') >= #{query.invoiceDate1} ]]>
+        </if>
+        <if test="query.invoiceDate2!= null and query.invoiceDate2!= ''">
+            <![CDATA[ AND date_format(t.qs_date,'%Y-%m-%d')  <= #{query.invoiceDate2} ]]>
+        </if>
+        order by t.invoice_date desc
+        <if test="query.offset != null and query.limit != null">
+            limit #{query.offset}, #{query.limit}
+        </if>
+    </select>
+
+    <select id="queryAllList" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        t.id,
+        t.invoice_code invoiceCode,
+        t.invoice_no invoiceNo,
+        t.invoice_date invoiceDate,
+        t.gf_name gfName,
+        t.xf_name xfName,
+        t.qs_type qsType,
+        t.invoice_amount invoiceAmount,
+        t.tax_amount taxAmount,
+        t.qs_date signInDate,
+        t.qs_status qsStatus,
+        t.notes notes
+        from t_dx_invoice t WITH(NOLOCK)
+        where t.qs_status=1
+        and valid = 1
+        AND t.gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{params.userId}))
+        <if test="params.invoiceType!=null and params.invoiceType!='' and params.invoiceType!='-1'">
+            and t.invoice_type= #{params.invoiceType}
+        </if>
+        <if test="params.shName!=null and params.shName!='' and params.shName!='-1'">
+            and t.gf_tax_no = #{params.shName}
+        </if>
+        <if test="params.invoiceNo!= null and params.invoiceNo!= '' and params.invoiceNo!='-1'">
+            and t.invoice_no like concat('%',concat(#{params.invoiceNo},'%'))
+        </if>
+        <if test="params.invoiceDate1!= null and params.invoiceDate1!= ''">
+            <![CDATA[ AND date_format(t.qs_date,'%Y-%m-%d') >= #{params.invoiceDate1} ]]>
+        </if>
+        <if test="params.invoiceDate2!= null and params.invoiceDate2!= ''">
+            <![CDATA[ AND date_format(t.qs_date,'%Y-%m-%d')  <= #{params.invoiceDate2} ]]>
+        </if>
+        order by t.invoice_date desc
+    </select>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="orgname" property="label" />
+    </resultMap>
+    <select id="searchGf" resultMap="optionMap">
+        /**mycat:schema=${schemaLabel}*/
+        select taxno, orgname from t_ac_org where orgid in (select orgid from t_ac_user_taxno where userid=#{userId})
+    </select>
+</mapper>

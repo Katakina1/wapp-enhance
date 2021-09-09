@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.posuopei.dao.SubmitOutstandingReportDao">
+
+
+
+    <insert id="insertSubmitOutstandingReport" parameterType="com.xforceplus.wapp.modules.posuopei.entity.SubmitOutstandingReportEntity">
+        insert into t_dx_submit_qutstanding_report WITH (ROWLOCK)
+        (
+        datet,
+        input_user,
+        jv,
+        vendor_no,
+        inv_no,
+        invoice_cost,
+        tax_amount,
+        tax_rate,
+        tax_type,
+        wm_cost,
+        batch_id,
+        po_no,
+        trans,
+        rece,
+        errcode,
+        errdesc,
+        errstatus,
+        invoice_date
+
+        )values(
+        getdate(),
+        #{entity.inputUser},
+        #{entity.jv},
+        #{entity.vendorNo},
+        #{entity.invNo},
+        #{entity.invoiceCost},
+        #{entity.taxAmount},
+        #{entity.taxRate},
+        #{entity.taxType},
+        #{entity.wmCost},
+        #{entity.batchId},
+        #{entity.poNo},
+        #{entity.trans},
+        #{entity.rece},
+        #{entity.errcode},
+        #{entity.errdesc},
+        #{entity.errstatus},
+        #{entity.invoiceDate}
+        )
+    </insert>
+
+    <select id="getNineCount" resultType="Integer">
+     select count(a.abc) from (
+     select count(1) as abc from t_dx_submit_qutstanding_report where batch_id=#{batchId} and
+     errcode='999' AND datediff( hour,datet,GETDATE())>0 GROUP BY convert(nvarchar(10),datet,120)) as a
+    </select>
+    <delete id="deleteBatchid">
+     delete t_dx_submit_qutstanding_report with(rowlock) where errcode in('A0010','B0004') and batch_id=#{batchId}
+    </delete>
+</mapper>

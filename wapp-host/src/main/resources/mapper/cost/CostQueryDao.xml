@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.cost.dao.CostQueryDao">
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        select * from (
+        select id, vender_id, vender_name, bank_name, bank_account,
+        (select email from t_ac_staff_info where staff_no=t_dx_settlement.approver_email) approverEmail,
+        settlement_amount, walmart_status, cost_no, create_date, remark,
+        ROW_NUMBER() OVER(Order by create_date) AS rownum
+        from t_dx_settlement WITH(NOLOCK) where valid='1'
+        <if test="venderId != null and venderId != ''">
+            and vender_id=#{venderId}
+        </if>
+        <if test="costNo != null and costNo != ''">
+            and cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="createDate1 != null and createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{createDate1} ]]>
+        </if>
+        <if test="createDate2 != null and createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23)  <= #{createDate2} ]]>
+        </if>
+        <if test="walmartStatus !=null and walmartStatus !=''">
+            and walmart_status = #{walmartStatus}
+        </if>
+        ) a where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1)
+        from t_dx_settlement WITH(NOLOCK) where valid='1' and vender_id=#{venderId}
+        <if test="costNo != null and costNo != ''">
+            and cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="createDate1 != null and createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{createDate1} ]]>
+        </if>
+        <if test="createDate2 != null and createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23)  <= #{createDate2} ]]>
+        </if>
+        <if test="walmartStatus !=null and walmartStatus !=''">
+            and walmart_status = #{walmartStatus}
+        </if>
+    </select>
+
+    <select id="getInvoice" resultType="com.xforceplus.wapp.modules.cost.entity.RecordInvoiceEntity">
+        select b.invoice_code, b.invoice_no, b.invoice_type, b.invoice_date, b.invoice_amount, b.tax_amount,
+        b.total_amount, b.gf_tax_no, b.gf_name, b.check_code, a.invoice_status
+        from  t_dx_settlement_invoice b left join t_dx_record_invoice a
+        on a.invoice_code=b.invoice_code and a.invoice_no=b.invoice_no
+        where b.cost_no=#{costNo}
+    </select>
+
+    <select id="getRate" resultType="com.xforceplus.wapp.modules.cost.entity.RateEntity">
+        select id, invoice_amount, tax_rate, tax_amount from t_dx_settlement_rate
+        where cost_no=#{costNo} and invoice_code=#{invoiceCode} and invoice_no like #{invoiceNo}+'%'
+    </select>
+
+    <select id="getCost" resultType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+        select id,
+        cost_type, cost_type_name,
+        cost_time, cost_amount, cost_use,
+        cost_dept, cost_dept_id, project_code,
+        instance_id oldBindId, bpms_id,
+        (select (cost_amount-covered_amount) from t_dx_settlement_match_detail where t_dx_settlement_cost.bpms_id=t_dx_settlement_match_detail.bpms_id) surplusAmount
+        from t_dx_settlement_cost
+        where rate_id=#{rateId}
+    </select>
+
+    <select id="getFile" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementFileEntity">
+        select id, file_name, file_type, file_path
+        from t_dx_settlement_file where cost_no=#{costNo}
+    </select>
+
+    <select id="getStatusOptions" resultType="com.xforceplus.wapp.modules.cost.entity.SelectionOptionEntity">
+        select dictcode optionKey,
+        dictname optionName
+        from t_ac_dictdeta where dicttype=(select dicttypeid from t_ac_dicttype where dicttypecode='COST_STATUS')
+    </select>
+
+    <select id="formatEmail" resultType="java.lang.String">
+        select email from t_ac_staff_info where staff_no=#{staffNo}
+    </select>
+
+</mapper>

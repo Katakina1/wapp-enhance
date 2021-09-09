@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://10.233.50.22:1433;DatabaseName=wwapp
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: svcacctwwapp
+    password: 9RMI4dMyr1uZvths
+    initial-size: 1
+    min-idle: 1
+    max-active: 20
+    test-on-borrow: true
+    max-wait: 60000
+    time-between-eviction-runs-millis: 60000
+    min-evictable-idle-time-millis: 300000
+    validation-query: SELECT 1 FROM DUAL
+    test-While-Idle: true
+    test-on-return: false
+    pool-prepared-statements: false
+    max-pool-prepared-statement-per-connection-size: 20
+    filters: stat,wall,log4j,config

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.modules.job.dao.VendorMasterDao" >
+
+    <!-- 获取数据字典时间 -->
+    <select id="findDict" resultType="com.xforceplus.wapp.modules.job.pojo.vendorMaster.DictPo">
+          SELECT dictname ,dictcode from t_ac_dictdeta
+          where dicttype in (
+          select dicttypeid from t_ac_dicttype where dicttypecode='VENDORMASTER'
+          )
+  </select>
+
+    <insert id="inserVendorLog" parameterType="com.xforceplus.wapp.modules.job.pojo.vendorMaster.VendorLog">
+        insert into t_dx_vendorMaster_log with(rowlock) (
+         req_date,req_text,res_date,res_text,total,status,type
+        )
+        values (
+        #{vlog.reqDate},#{vlog.reqText},#{vlog.resDate},#{vlog.resText},#{vlog.total},#{vlog.status},${'0'}
+        )
+    </insert>
+
+    <!-- 查询vendor信息是否已经存到数据库 -->
+    <select id="findOrgByTaxnoAndId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(1) from  t_ac_org with(nolock) where taxno =#{taxno} and orgid=#{orgid} and account=#{bankAccount}
+    </select>
+
+    <!-- 查询vendor信息是否已经存到数据库   没有用户的情况查询 -->
+    <select id="findOrgByTaxno" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity">
+        select top(1) * from  t_ac_org with(nolock) where taxno =#{taxno} and (orgname = #{name} or taxname=#{name}) and orgtype='8'
+    </select>
+
+    <!-- 查询用户表是否已经有供应商号-->
+    <select id="findUserById" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        select top(1) * from t_ac_user with(nolock) where usercode = #{username}
+    </select>
+
+    <!-- 更新用户信息 -->
+    <update id="updateUser" parameterType="com.xforceplus.wapp.modules.job.pojo.vendorMaster.Table1">
+        update t_ac_user with(rowlock) set
+        username=#{data.VendorName},
+        usertype=#{data.TypeCode} ,
+        finusername=#{data.FinanceContactPerson1},
+        fax = #{data.FinanceFaxNumber1} ,
+        finphone=#{data.FinanceTelephoneNumber1},
+        phone=#{data.FinanceTelephoneNumber1},
+        email=#{data.EmailAddress1},
+        finemail=#{data.EmailAddress1},
+        last_modify_time=getdate(),
+        last_modify_by=#{modifyBy},
+        post_address=#{data.Address1},
+        status=#{data.userStatus},
+        bank_name=#{data.bankName},
+        bank_account=#{data.bankAccount},
+        city=#{data.city},
+        extf0=#{data.holdStatus},
+        extf1=#{data.deletionStatus}
+         where   usercode = #{data.VendorNumber}
+    </update>
+
+    <!-- 更新机构信息 -->
+    <update id="updateOrg" >
+        update t_ac_org with(rowlock) set taxno =#{data.TaxNumber}
+         ,orgname=#{data.VendorName}
+         ,taxname=#{data.VendorName}
+         ,orgcode=#{data.VendorNumber}
+         ,bank =#{data.bankName}
+         ,account=#{data.bankAccount}
+          where orgid=#{orgid}
+    </update>
+
+    <!-- 插入用户信息 -->
+    <insert id="insertUser"   useGeneratedKeys="true" keyProperty="data.userid">
+      insert into  t_ac_user with(rowlock) (
+        username ,usercode,password,loginname,email,orgid,phone,usertype,create_time,create_by,status,plainpassword,fax,finusername,finphone,finemail,post_address,bank_name,bank_account,org_level,city,extf0,extf1
+        )
+        values (
+        #{data.VendorName},#{data.VendorNumber},#{password},#{data.VendorNumber},#{data.EmailAddress1},
+        #{data.orgid},#{data.FinanceTelephoneNumber1},#{data.TypeCode},getdate(),#{createBy},#{data.userStatus},#{data.VendorNumber},
+        #{data.FinanceFaxNumber1},#{data.FinanceContactPerson1},#{data.FinanceTelephoneNumber1},#{data.EmailAddress1},#{data.Address1},
+        #{data.bankName},#{data.bankAccount},${'2'},#{data.city},#{data.holdStatus},#{data.deletionStatus}
+        )
+
+    </insert>
+
+    <!-- 插入角色信息 -->
+    <insert id="insertRole">
+        insert into t_ac_user_role with(rowlock) (userid,roleid) values (#{userid},#{roleid})
+    </insert>
+
+
+    <!-- 插入机构信息     parent id =3   type = 8 -->
+    <insert id="insertOrgInfo" useGeneratedKeys="true" keyProperty="data.orgid">
+        insert into t_ac_org with(rowlock) (
+          orgcode,orgname,taxno,taxname,parentid,orgtype,create_time,create_by,company,orglevel
+        )
+        values (
+         #{orgcode},#{data.VendorName},#{data.TaxNumber},#{data.VendorName},${'3'},${'8'},getdate(),#{createBy},#{company},${'3'}
+        )
+    </insert>
+
+    <!-- 通过code获取id-->
+    <select id="findRoleIdByCode" resultType="java.lang.Integer">
+        select roleid from t_ac_role with(nolock) where rolecode=#{code}
+    </select>
+</mapper>

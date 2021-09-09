@@ -1,0 +1,1471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.posuopei.dao.MatchDao">
+
+    <resultMap id="poMap" type="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        <id column="id" property="id"/>
+        <result column="traction_id" property="tractionId"/>
+        <result column="pocode" property="pocode"/>
+        <result column="receiptid" property="receiptid"/>
+        <result column="receiptAmount" property="receiptAmount"/>
+        <result column="taxrate" property="taxrate"/>
+        <result column="venderid" property="venderid"/>
+        <result column="due_date" property="dueDate"/>
+        <result column="receiptdate" property="receiptdate"/>
+        <result column="amountpaid" property="amountpaid"/>
+        <result column="amountunpaid" property="amountunpaid"/>
+        <result column="jvcode" property="jvcode"/>
+        <result column="vendername" property="vendername"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="dxhy_match_status" property="dxhyMatchStatus"/>
+        <result column="matchno" property="matchno"/>
+        <result column="po_type" property="poType"/>
+        <result column="tractionNbr" property="tractionNbr"/>
+        <result column="seq" property="seq"/>
+        <result column="traction_id_seq" property="tractionIdSeq"/>
+        <result column="invoice_no" property="invoiceId"/>
+    </resultMap>
+
+    <resultMap id="cMap" type="com.xforceplus.wapp.modules.posuopei.entity.ClaimEntity">
+        <id column="id" property="id"/>
+        <id column="traction_id_seq" property="tractionIdSeq"/>
+        <result column="return_goods_code" property="claimno"/>
+        <result column="supplier_association" property="venderid"/>
+        <result column="return_cost_amount" property="claimAmount"/>
+        <result column="exchangeno" property="exchangeno"/>
+        <result column="return_goods_date" property="postdate"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="match_status" property="matchstatus"/>
+        <result column="traction_id" property="tractionId"/>
+        <result column="matchno" property="matchno"/>
+        <result column="seq" property="seq"/>
+        <result column="jvcode" property="jvcode"/>
+        <result column="dept" property="dept"/>
+        <result column="invoiceNo" property="invoiceno"/>
+        <result column="tractionNbr" property="tractionNbr"/>
+    </resultMap>
+    <resultMap id="MaMap" type="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">
+        <id column="id" property="id"/>
+        <result column="reason_for_cancel" property="reasonForCancel"/>
+        <result column="venderid" property="venderid"/>
+        <result column="claim_amount" property="claimAmount"/>
+        <result column="match_status" property="matchingType"/>
+        <result column="settlementamount" property="invoiceAmount"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="match_remarks" property="matchRemarks"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="match_date" property="matchDate"/>
+        <result column="po_amount" property="poAmount"/>
+        <result column="scan_match_status" property="scanMactchStatus"/>
+    </resultMap>
+    <resultMap id="MatchMapss" type="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">
+        <id column="id" property="id"/>
+        <result column="reason_for_cancel" property="reasonForCancel"/>
+        <result column="venderid" property="venderid"/>
+        <result column="claim_amount" property="claimAmount"/>
+        <result column="matchno" property="matchno"/>
+        <result column="po_num" property="poNum"/>
+        <result column="claim_num" property="claimNum"/>
+        <result column="invoice_num" property="invoiceNum"/>
+        <result column="match_status" property="matchingType"/>
+        <result column="settlementamount" property="settlementamount"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="match_remarks" property="matchRemarks"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="match_date" property="matchDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="po_amount" property="poAmount"/>
+        <result column="printcode" property="printcode"/>
+        <result column="match_cover" property="cover"/>
+    </resultMap>
+
+
+    <resultMap id="invoiceMap" type="com.xforceplus.wapp.modules.posuopei.entity.InvoiceEntity">
+        <id column="id" property="id"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="xf_tax_no" property="xfTaxNo"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="venderid" property="venderid"/>
+        <result column="vendername" property="vendername"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="dxhy_match_status" property="dxhyMatchStatus"/>
+        <result column="source_system" property="systemSource"/>
+        <result column="detail_yesorno" property="detailYesorno"/>
+        <result column="check_code" property="checkNo"/>
+        <result column="jvcode" property="jvcode"/>
+        <result column="matchno" property="matchno"/>
+        <result column="dk_invoiceAmount" property="dkinvoiceAmount"/>
+        <result column="settlementAmount" property="settlementAmount"/>
+        <result column="tp_status" property="tpStatus"/>
+        <result column="flow_type" property="flowType"/>
+        <result column="deductible_tax_rate" property="deductibleTaxRate"/>
+        <result column="deductible_tax" property="deductibleTax"/>
+        <result column="uuid" property="uuid"/>
+    </resultMap>
+
+    <select id="hostPoList" resultMap="poMap">
+         SELECT tdpd.receiptdate,tdpd.jvcode,tdpd.venderid,tdpd.seq,tdpd.traction_id_seq,tdpd.pocode,tdpd.traction_id,tdpd.pocode,tdpd.tractionNbr,tdpd.receiptid,tdpd.po_type,tdpd.receiptAmount amountpaid,tdpd.amountunpaid amountunpaid
+         FROM t_dx_po_detail tdpd WITH(NOLOCK) LEFT join t_dx_match_po_claim_invoice tdmpci WITH(NOLOCK) on tdpd.id=tdmpci.code
+         where
+         tdmpci.matchid=#{matchno}
+         and tdmpci.code_type='1'
+          order BY  tdmpci.id
+    </select>
+
+    <select id="getDueDate" resultType="Date">
+        SELECT TOP 1 tdpd.due_date
+        FROM t_dx_po_detail tdpd WITH(NOLOCK) LEFT join t_dx_match_po_claim_invoice tdmpci WITH(NOLOCK) on tdpd.id=tdmpci.code
+        where
+        tdmpci.matchid=#{matchno}
+        and tdmpci.code_type='1'
+        and tdpd.po_type in (1,4)
+        order BY  tdpd.due_date DESC
+    </select>
+
+
+
+    <select id="poListDetail" resultMap="poMap">
+
+        SELECT * FROM t_dx_po_detail WITH(NOLOCK) where id in(
+        select code from t_dx_match_po_claim_invoice WITH(NOLOCK) where matchno=#{matchno} and code_type='1'
+        )
+
+    </select>
+    <select id="claimList" resultMap="cMap">
+        SELECT * FROM t_dx_return_goods WITH(NOLOCK) 
+        WHERE
+        matchno=#{matchno}
+    </select>
+
+
+    <select id="getPoMatchNo" resultType="String" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        SELECT matchno from t_dx_po_detail WITH(NOLOCK) 
+        where receiptid=#{entity.receiptid}
+        AND  pocode=#{entity.pocode}
+        and traction_id=#{entity.tractionId}
+    </select>
+
+    <select id="getClaimMatchNo" resultType="String" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        SELECT matchno from t_dx_return_goods WITH(NOLOCK) 
+        where traction_id=#{entity.tractionId}
+    </select>
+
+    <select id="invoiceList" resultMap="invoiceMap">
+        SELECT * FROM t_dx_record_invoice WITH(NOLOCK) 
+        WHERE
+        matchno=#{matchno}
+        ORDER BY invoice_amount
+    </select>
+
+
+    <select id="poQueryList" resultMap="poMap">
+        select *
+        from
+        (SELECT
+        pocode,
+        max(receiptdate) receiptdate,
+        SUM (receiptAmount) receiptAmount,
+        SUM (amountpaid) amountpaid,
+        SUM (amountunpaid) amountunpaid
+        FROM
+        t_dx_po_detail WITH(NOLOCK) 
+        WHERE
+        dxhy_match_status in ('0','1','5','6')
+        and host_status='1'
+        and venderid=#{venderid}
+        AND jvcode=#{jvcode}
+        GROUP BY
+        pocode) as A
+        WHERE 1=1
+        <if test="pocode !=null and pocode !=''">
+            AND A.pocode like concat('%',concat(#{pocode},'%'))
+        </if>
+        <if test="poDateStart !=null and poDateStart !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),A.receiptdate,20),0,11)  >= #{poDateStart} ]]>
+        </if>
+        <if test="poDateEnd !=null and poDateEnd !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),A.receiptdate,20),0,11)  <= #{poDateEnd} ]]>
+        </if>
+        ORDER BY A.receiptdate DESC
+    </select>
+    <select id="poQueryCount" resultType="Integer">
+        select count(*)
+        from
+        (SELECT
+        pocode,
+        max(receiptdate) receiptdate,
+        SUM (receiptAmount) receiptAmount,
+        SUM (amountpaid) amountpaid,
+        SUM (amountunpaid) amountunpaid
+        FROM
+        t_dx_po_detail WITH(NOLOCK) 
+        WHERE
+        dxhy_match_status in ('0','1','5','6')
+        and host_status='1'
+        and venderid=#{venderid}
+        AND jvcode=#{jvcode}
+        GROUP BY
+        pocode) as A
+        WHERE 1=1
+        <if test="pocode !=null and pocode !=''">
+            AND A.pocode like concat('%',concat(#{pocode},'%'))
+        </if>
+        <if test="poDateStart !=null and poDateStart !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),A.receiptdate,20),0,11)  >= #{poDateStart} ]]>
+        </if>
+        <if test="poDateEnd !=null and poDateEnd !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),A.receiptdate,20),0,11)  <= #{poDateEnd} ]]>
+        </if>
+    </select>
+
+
+
+
+    <select id="claimQueryList" resultMap="cMap">
+        SELECT * FROM t_dx_return_goods WITH(NOLOCK) 
+        <where>
+            supplier_association=#{venderid}
+            <!--AND gfname=#{gfname}-->
+            AND jvcode=#{jvcode}
+            and match_status in ('0','1','5','6')
+            and host_status='1'
+            <if test="claimno !=null and claimno !=''">
+               AND return_goods_code like concat('%',concat(#{claimno},'%'))
+            </if>
+            <if test="claimDateStart !=null and claimDateStart !=''">
+                <![CDATA[ AND SUBSTRING(convert(varchar(100),return_goods_date,20),0,11)  >= #{claimDateStart} ]]>
+            </if>
+            <if test="claimDateEnd !=null and claimDateEnd !=''">
+                <![CDATA[ AND SUBSTRING(convert(varchar(100),return_goods_date,20),0,11)  <= #{claimDateEnd} ]]>
+            </if>
+
+        </where>
+        order by return_goods_date
+    </select>
+
+    <select id="claimQueryCount" resultType="Integer">
+        SELECT count(1) FROM t_dx_return_goods WITH(NOLOCK) 
+        <where>
+            supplier_association=#{venderid}
+            <!--AND gfname=#{gfname}-->
+            AND jvcode=#{jvcode}
+            and match_status in ('0','1','5','6')
+            and host_status='1'
+            <if test="claimno !=null and claimno !=''">
+                AND return_goods_code like concat('%',concat(#{claimno},'%'))
+            </if>
+            <if test="claimDateStart !=null and claimDateStart !=''">
+                <![CDATA[ AND SUBSTRING(convert(varchar(100),return_goods_date,20),0,11)  >= #{claimDateStart} ]]>
+            </if>
+            <if test="claimDateEnd !=null and claimDateEnd !=''">
+                <![CDATA[ AND SUBSTRING(convert(varchar(100),return_goods_date,20),0,11)  <= #{claimDateEnd} ]]>
+            </if>
+        </where>
+    </select>
+
+    <select id="ifExist" resultMap="invoiceMap">
+        SELECT * FROM t_dx_record_invoice WITH(NOLOCK) 
+        where uuid=#{uuid}
+
+    </select>
+
+    <select id="invoiceQueryList" resultMap="invoiceMap">
+        SELECT * FROM t_dx_record_invoice WITH(NOLOCK) 
+        WHERE
+            uuid=#{uuid}
+    </select>
+
+    <select id="invoiceQueryListPP" resultMap="invoiceMap">
+        SELECT
+        id,
+        invoice_no,
+        invoice_code,
+        invoice_date,
+        gf_tax_no,
+        xf_tax_no,
+        invoice_type,
+        dk_invoiceAmount invoice_amount,
+        tax_amount,
+        venderid,
+        vendername,
+        total_amount,
+        tax_rate,
+        dxhy_match_status,
+        source_system,
+        detail_yesorno,
+        check_code,
+        jvcode,
+        matchno,
+        settlementAmount,
+        uuid,
+        flow_type
+        from t_dx_record_invoice WITH(NOLOCK)
+        WHERE
+        uuid=#{uuid}
+    </select>
+
+    <select id="invoiceQueryCount" resultType="Integer">
+        SELECT count(*) FROM t_dx_record_invoice WITH(NOLOCK) 
+        <where>
+            <if test=""></if>
+        </where>
+    </select>
+
+    <insert id="saveInvoice">
+        INSERT INTO t_dx_record_invoice WITH(ROWLOCK)(
+        invoice_code,
+        invoice_no,
+        invoice_amount,
+        invoice_date,
+        total_amount,
+        tax_amount,
+        tax_rate,
+        venderid,
+        dxhy_match_status,
+        source_system,
+        detail_yesorno,
+        uuid,
+        jvcode,
+        gf_name,
+        invoice_type,
+        gf_tax_no,
+        check_code,
+        xf_name,
+        xf_tax_no,
+        flow_type,
+        create_date,
+        invoice_status,
+        tp_status,
+        company_code
+
+        ) VALUES (
+        #{invoiceCode},
+        #{invoiceNo},
+        #{invoiceAmount},
+        #{invoiceDate},
+        #{totalAmount},
+        #{taxAmount},
+        #{taxRate},
+        #{venderid},
+        '0',
+        '2',
+        '0',
+        #{uuid},
+        #{jvcode},
+        #{gfName},
+        #{invoiceType},
+        #{gfTaxno},
+        #{checkNo},
+        #{xfName},
+        #{xfTaxNo},
+        '1',
+        getdate(),
+        '0',
+        '0',
+        #{companyCode}
+
+        )
+    </insert>
+
+
+    <update id="cancelInvoiceMatch">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET tp_status='1'
+        WHERE matchno=#{matchno}
+    </update>
+
+    <select id="checkInvoiceMatchStatus" resultType="Integer">
+        select count(1) from t_dx_record_invoice WITH(NOLOCK) 
+        where uuid=#{uuid}
+        and dxhy_match_status in('0','1','5','6')
+
+    </select>
+    <insert id="saveInvoicePP">
+        INSERT INTO t_dx_record_invoice WITH(ROWLOCK)(
+        invoice_code,
+        invoice_no,
+        dk_invoiceAmount,
+        invoice_date,
+        total_amount,
+        tax_amount,
+        tax_rate,
+        venderid,
+        dxhy_match_status,
+        source_system,
+        detail_yesorno,
+        uuid,
+        jvcode,
+        gf_name,
+        invoice_type,
+        gf_tax_no,
+        check_code,
+        xf_name,
+        xf_tax_no,
+        flow_type,
+        create_date,
+        tp_status,
+        company_code,
+        invoice_status
+        ) VALUES (
+        #{invoiceCode},
+        #{invoiceNo},
+        #{invoiceAmount},
+        #{invoiceDate},
+        #{totalAmount},
+        #{taxAmount},
+        #{taxRate},
+        #{venderid},
+        '0',
+        '2',
+        '0',
+        #{uuid},
+        #{jvcode},
+        #{gfName},
+        #{invoiceType},
+        #{gfTaxno},
+        #{checkNo},
+        #{xfName},
+        #{xfTaxNo},
+        '1',
+        getdate(),
+        '0',
+        #{companyCode},
+        '0'
+        )
+    </insert>
+    <!--插入税率-->
+    <update id="update">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        set
+        tax_rate=#{taxRate},
+         flow_type='1'
+        where id=#{id}
+    </update>
+
+
+    <!--获取销方信息-->
+    <select id="getXfMessage" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">
+        SELECT orgname,taxno
+        FROM t_ac_org
+        WHERE orgid in(SELECT orgid FROM t_ac_user WHERE usercode=#{venderid})
+        AND orgtype='8'
+    </select>
+    <!--插入供应商号和jvcode-->
+    <update id="updateVenderid">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        set
+        venderid=#{venderid},
+        jvcode=#{jvcode},
+        company_code=#{companyCode}
+        where id=#{id}
+    </update>
+    <!--覆盖-->
+    <update id="allUpdate">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        set
+        tax_rate=#{taxRate},
+        invoice_amount= #{invoiceAmount},
+        invoice_date=#{invoiceDate},
+        total_amount=#{totalAmount},
+        tax_amount=#{taxAmount},
+        venderid=#{venderid},
+        dxhy_match_status='0',
+        source_system='2',
+        detail_yesorno='0',
+        uuid=#{uuid},
+        jvcode=#{jvcode},
+        gf_name=#{gfName},
+        gf_tax_no=#{gfTaxno},
+        check_code=#{checkNo},
+        flow_type='1',
+        company_code=#{companyCode}
+        where id=#{id}
+    </update>
+
+    <!--覆盖-->
+    <update id="allUpdatePP">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        set
+        tax_rate=#{taxRate},
+        dk_invoiceAmount= #{invoiceAmount},
+        invoice_date=#{invoiceDate},
+        total_amount=#{totalAmount},
+        tax_amount=#{taxAmount},
+        venderid=#{venderid},
+        dxhy_match_status='0',
+        source_system='2',
+        detail_yesorno='0',
+        uuid=#{uuid},
+        jvcode=#{jvcode},
+        gf_name=#{gfName},
+        gf_tax_no=#{gfTaxno},
+        check_code=#{checkNo},
+        flow_type='1',
+        company_code=#{companyCode}
+        where id=#{id}
+    </update>
+    <select id="getGfNameAndTaxNo" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">
+        select orgname,taxno,orgcode
+        from 	t_ac_org
+        where  orgtype=5
+    </select>
+
+    <select id="getCompanyCode" resultType="String">
+        select company_code
+        from 	t_ac_org
+        where  orgtype=5
+        and orgcode=#{jvcode}
+    </select>
+
+    <select id="getPartion" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">
+      SELECT dictname,dictcode from t_ac_dictdeta
+      where dicttype in (
+      select dicttypeid from t_ac_dicttype where dicttypename=#{theKey}
+      )
+    </select>
+
+    <select id="getDicdeta" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">
+    SELECT dictname,dictcode from t_ac_dictdeta
+    where dicttype in (
+    select dicttypeid from t_ac_dicttype where dicttypename in( select dictname from t_ac_dictdeta where dictcode=#{theKey})
+
+    )
+</select>
+
+    <update id="updateWriteScreenType">
+        update t_ac_dictdeta set dictcode=#{theKey}
+        where dicttype in (
+        select dicttypeid from t_ac_dicttype where dicttypename='write'
+        )
+    </update>
+
+    <!--<select id="getQuestionType" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">-->
+        <!--SELECT dictname partition from t_ac_dictdeta-->
+        <!--where dicttype in (-->
+        <!--select dicttypeid from t_ac_dicttype where dicttypename=N'问题类型'-->
+        <!--)-->
+    <!--</select>-->
+
+    <select id="getPoUnPay" resultType="BigDecimal">
+        SELECT amountunpaid
+        FROM t_dx_po_detail WITH(NOLOCK) 
+        WHERE
+         dxhy_match_status in('0','6')
+        AND (host_status in('0','1','10','13') or (host_status is null))
+        AND receiptid=#{receiptid}
+        AND pocode=#{poCode}
+    </select>
+
+    <select id="getGfTaxNo" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">
+        select taxno,orgname
+        from 	t_ac_org
+        where  orgtype=5
+        AND orgcode=#{orgcode}
+    </select>
+
+    <select id="checkPo" resultType="BigDecimal">
+        SELECT sum(amountunpaid) FROM t_dx_po_detail WHERE
+        jvcode=#{jvcode}
+        AND venderid=#{venderid}
+        AND dxhy_match_status in('0','6')
+        AND (host_status in('0','1','10','13') or (host_status is null))
+        AND pocode=#{poCode}
+    </select>
+
+    <select id="getReceiptList" resultMap="poMap">
+        SELECT * FROM t_dx_po_detail WITH(NOLOCK) 
+        WHERE
+        pocode=#{poCode}
+        AND dxhy_match_status in('0','6')
+        AND (host_status in('0','1','10','13') or (host_status is null))
+        ORDER BY SUBSTRING(receiptid, 2, 9)  asc,cast(seq as int) asc
+    </select>
+
+    <select id="checkClaim" resultType="Integer">
+        SELECT count(* ) FROM t_dx_return_goods WITH(NOLOCK) WHERE
+        jvcode=#{jvcode}
+        AND supplier_association=#{venderid}
+        AND return_cost_amount = #{claimAmount}
+        AND match_status in('0','6')
+        AND return_goods_code=#{claimno}
+    </select>
+
+    <select id="getDefaultMessage" resultType="com.xforceplus.wapp.modules.posuopei.entity.OrgEntity">
+        select o.orgcode,u.usercode,u.username,o.orgname
+        from 	t_ac_org o left JOIN t_ac_user u on o.orgid=u.orgid
+        where  o.orgtype=8 and u.userid=#{userId}
+    </select>
+<!--匹配成功更新底账表-->
+    <update id="updateInvioceMatch">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET dxhy_match_status=#{matchStatus},
+            settlementAmount=#{invoiceAmount},
+            red_money_amount=#{invoiceAmount},
+            matchno=#{matchno},
+            match_date=getdate(),
+            flow_type='1'
+            WHERE id=#{id}
+            and dxhy_match_status in('0','1','5','6')
+    </update>
+    <!--匹配成功更新PO表-->
+    <update id="updatePoMatch">
+        UPDATE t_dx_po_detail WITH(ROWLOCK)
+        SET dxhy_match_status=#{dxhyMatchStatus},
+              amountunpaid=#{amountunpaid},
+              amountpaid=#{amountpaid},
+              matchno=#{matchno}
+
+
+
+        WHERE id=#{id}
+    </update>
+
+    <!--更新duedate-->
+    <update id="updatePoDueDate">
+        UPDATE t_dx_po_detail WITH (ROWLOCK)
+        SET due_date=#{dueDate}
+        WHERE  traction_id_seq=#{tractionIdSeq}
+    </update>
+
+    <!--匹配成功更新索赔表-->
+    <update id="updateCliamMatch">
+        UPDATE t_dx_return_goods WITH(ROWLOCK)
+        SET match_status=#{matchStatus},
+        matchno=#{matchno}
+        WHERE id=#{id}
+    </update>
+
+    <!--生成票单关联号-->
+    <update id="updateMatchMatchno">
+        UPDATE t_dx_match WITH (ROWLOCK)
+        SET
+        matchno=#{matchno}
+        WHERE id=#{id}
+    </update>
+
+    <update id="updateCover">
+        UPDATE t_dx_match WITH (ROWLOCK)
+        SET
+        match_cover=#{cover}
+        WHERE id=#{id}
+    </update>
+    <insert id="insertMatch" parameterType="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity" useGeneratedKeys="true" keyProperty="entity.id">
+        INSERT INTO t_dx_match WITH (ROWLOCK)
+        (
+        match_status,
+        venderid,
+        reason_for_cancel,
+        settlementamount,
+        po_amount,
+        claim_amount,
+        match_remarks,
+        match_date,
+        gf_name,
+        po_num,
+        claim_num,
+        invoice_num,
+        invoice_amount,
+        gf_taxno,
+        scan_match_status,
+        match_cover,
+        host_status
+        )
+        VALUES(
+        #{entity.matchingType},
+        #{entity.venderid},
+        #{entity.reasonForCancel},
+        #{entity.settlementamount},
+        #{entity.poAmount},
+        #{entity.claimAmount},
+        #{entity.matchRemarks},
+        getdate(),
+        #{entity.gfName},
+        #{entity.poNum},
+        #{entity.claimNum},
+        #{entity.invoiceNum},
+        #{entity.invoiceAmount},
+        #{entity.gfTaxNo},
+        '0',
+        #{entity.cover},
+        '0'
+        )
+
+    </insert>
+
+    <insert id="insertSonOfMatch" parameterType="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_dx_match_po_claim_invoice
+        (
+        matchid,
+        code_type,
+        code,
+        change_amount,
+        amount
+        )
+        VALUES(
+        #{matchid},
+
+        #{codeType},
+          #{code},
+        #{changeAmount},
+        #{amount}
+
+        )
+
+    </insert>
+
+
+
+
+
+
+    <!--host@-->
+    <update id="hostUpdatePo" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        update t_dx_po_detail WITH(ROWLOCK)
+        set host_status=#{entity.hoststatus},
+        receiptAmount=#{entity.receiptAmount},
+        <choose>
+            <when test="entity.hoststatus==1">
+                amountpaid=0,
+                amountunpaid=#{entity.receiptAmount},
+            </when>
+            <otherwise>
+                amountpaid=#{entity.receiptAmount},
+                amountunpaid=0,
+            </otherwise>
+        </choose>
+        created_date=getdate()
+
+        where traction_id_seq=#{entity.tractionIdSeq}
+        and (dxhy_match_status = '0' or dxhy_match_status = '1' or dxhy_match_status = '5' or dxhy_match_status = '6')
+
+    </update>
+    <!--写屏前例外更新订单金额-->
+    <update id="hostUpdatePoAmount" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        update t_dx_po_detail WITH(ROWLOCK)
+        set amountpaid=0,
+         amountunpaid=#{entity.amountpaid},
+         host_status=#{entity.hoststatus},
+         created_date=getdate()
+        where traction_id_seq=#{entity.tractionIdSeq}
+    </update>
+
+    <update id="hostUpdatePoStatus" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        update t_dx_po_detail WITH(ROWLOCK)
+        set host_status=#{entity.hoststatus},
+        created_date=getdate()
+
+        where traction_id_seq=#{entity.tractionIdSeq}
+        and (dxhy_match_status='2' or dxhy_match_status='3' or dxhy_match_status='4')
+
+    </update>
+
+    <update id="hostUpdateClaim" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        update t_dx_return_goods WITH(ROWLOCK)
+        set host_status=#{entity.hoststatus},
+        created_date=getdate()
+        where traction_id_seq=#{entity.tractionIdSeq}
+
+    </update>
+
+
+    <insert id="insertPo" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        INSERT into t_dx_po_detail WITH(ROWLOCK)
+        (receiptid,
+        pocode,
+        receiptdate,
+        receiptAmount,
+        taxrate,
+        amountpaid,
+        amountunpaid,
+        jvcode,
+        venderid,
+        po_type,
+        traction_id,
+        host_status,
+        due_date,
+        tractionNbr,
+        seq,
+        traction_id_seq,
+        invoice_no,
+        vendername,
+        created_date
+        ) VALUES (
+        #{entity.receiptid},
+        #{entity.pocode},
+        #{entity.receiptdate},
+
+        #{entity.receiptAmount},
+        #{entity.taxrate},
+
+       <choose>
+           <when test="entity.hoststatus==1">
+               0,
+               #{entity.receiptAmount},
+           </when>
+           <otherwise>
+               #{entity.receiptAmount},
+               0,
+           </otherwise>
+       </choose>
+        #{entity.jvcode},
+        #{entity.venderid},
+        #{entity.poType},
+        #{entity.tractionId},
+        #{entity.hoststatus},
+        #{entity.dueDate},
+        #{entity.tractionNbr},
+        #{entity.seq},
+        #{entity.tractionIdSeq},
+        #{entity.invoiceId},
+        #{entity.vendername},
+        getdate()
+        )
+    </insert>
+
+
+
+    <select id="ifAddPoFatherAmount" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity" resultType="Integer">
+        SELECT count(*)
+        FROM t_dx_po_detail WITH(NOLOCK) 
+        WHERE traction_id=#{entity.tractionId}
+        AND seq!=#{entity.seq}
+    </select>
+
+
+    <select id="ifAddPoExist" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity" resultType="com.xforceplus.wapp.modules.posuopei.entity.HostPoEntity">
+        SELECT matchno,traction_id_seq tractionIdSeq
+        FROM t_dx_po_detail WITH(NOLOCK) 
+
+        WHERE  traction_id_seq=#{entity.tractionIdSeq}
+
+    </select>
+
+    <select id="ifUPPoHostStatus" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity" resultType="Integer">
+        SELECT count(traction_id_seq)
+        FROM t_dx_po_detail WITH(NOLOCK) 
+
+        WHERE  traction_id_seq=#{entity.tractionIdSeq}
+        and dxhy_match_status in('0','1','5','6')
+
+    </select>
+
+    <select id="ifAddClaimExist" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity" resultType="Integer">
+        SELECT count(1)
+        FROM t_dx_return_goods WITH(NOLOCK) 
+        WHERE traction_id_seq=#{entity.tractionIdSeq}
+    </select>
+
+
+
+    <insert id="insertClaimFather" parameterType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        INSERT into t_dx_return_goods WITH(ROWLOCK)
+        (
+        return_goods_code,
+        return_cost_amount,
+        return_goods_date,
+        supplier_association,
+        jvcode,
+        dept,
+        invoiceNo,
+        traction_id,
+        tractionNbr,
+        seq,
+        traction_id_seq,
+        created_date,
+        host_status,
+        exchangeno
+        ) VALUES (
+        #{entity.tractionNbr},
+        #{entity.receiptAmount},
+        #{entity.receiptdate},
+        #{entity.venderid},
+        #{entity.jvcode},
+        #{entity.dept},
+        #{entity.invoiceId},
+        #{entity.tractionId},
+        #{entity.tractionNbr},
+        #{entity.seq},
+        #{entity.tractionIdSeq},
+        getdate(),
+        #{entity.hoststatus},
+        #{entity.storeNbr}
+
+        )
+    </insert>
+    <update id="upDateInvoiceHostStatus">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET host_status=#{hostStatus},
+        host_date=#{hostDate}
+        WHERE
+        invoice_no=#{invoiceNo}
+        <![CDATA[ AND convert(varchar(100),invoice_date,20)= #{invoiceDate} ]]>
+        and venderid=#{vendor}
+    </update>
+
+    <select id="getInvoiceMatchno" resultType="String">
+        select DISTINCT matchno from t_dx_record_invoice WITH(NOLOCK) 
+        where  invoice_no=#{invoiceNo}
+        <![CDATA[ AND convert(varchar(100),invoice_date,20)= #{invoiceDate} ]]>
+        and venderid=#{vendor}
+    </select>
+    <select id="getMatchLists" resultMap="MatchMapss">
+        SELECT * FROM t_dx_match WITH(NOLOCK)
+        WHERE  match_status in ('2','3','4')
+        AND scan_match_status='1'
+        AND (host_status = 'B0003' or host_status='100' or host_status='0' or host_status='A0010' or host_status='11' or host_status='B0004'or host_status='B0001')
+        AND (isdel is NULL OR isdel='0')
+        order by venderid desc
+    </select>
+
+    <select id="getMatchListsAm" resultMap="MatchMapss">
+        SELECT top(4000) * FROM t_dx_match WITH(NOLOCK)
+        WHERE  match_status in ('2','3','4')
+        AND scan_match_status='1'
+        AND (host_status = 'B0003' or host_status='100' or host_status='0' or host_status='A0010' or host_status='11' or host_status='B0004' or host_status='B0001')
+        AND (isdel is NULL OR isdel='0')
+        order by venderid desc
+    </select>
+
+    <select id="getChooseMatchLists" resultMap="MatchMapss" parameterType="Long">
+        SELECT * FROM t_dx_match WITH(NOLOCK)
+        WHERE  match_status in ('2','3','4')
+        AND scan_match_status='1'
+        AND host_status not in('1','8')
+        AND matchno in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getMatchHostStatus" resultType="Integer">
+         SELECT count(1) FROM t_dx_match WITH(NOLOCK) 
+        WHERE  match_status in ('2','3','4')
+       <!-- AND scan_match_status='1'-->
+        AND host_status = '1'
+        and matchno=#{matchno}
+    </select>
+    <insert id="insertClaimDetail" parameterType="com.xforceplus.wapp.modules.posuopei.entity.ClaimDetailEntity">
+        insert into t_dx_return_goods_detail
+        (
+        return_goods_code,
+        goods_name,
+        goods_price,
+        goods_number,
+        goods_amount,
+        tax_rate,
+        store_nbr,
+        item_nbr,
+        upc_nbr,
+        dept_nbr,
+        final_date,
+        vendor_stock_id,
+        vnpk_cost,
+        vnpk_qty,
+        gategory_nbr,
+        vndr_nbr
+        )values(
+        #{entity.returnGoodsCode},
+        #{entity.goodsName},
+        #{entity.goodsPrice},
+        #{entity.goodsNumber},
+        #{entity.goodsAmount},
+        #{entity.taxRate},
+        #{entity.storeNbr},
+        #{entity.itemNbr},
+        #{entity.upcNbr},
+        #{entity.deptNbr},
+        #{entity.finalDate},
+        #{entity.vendorStockId},
+        #{entity.vnpkCost},
+        #{entity.vnpkQty},
+        #{entity.gategoryNbr},
+        #{entity.vndrNbr}
+        )
+    </insert>
+
+
+
+    <select id="getInvoice" resultMap="invoicesMap">
+        SELECT * FROM t_dx_record_invoice WITH(NOLOCK) 
+        WHERE
+        venderid=#{venderid}
+        AND invoice_no=#{invoice_no}
+        AND total_amount=#{invoice_amount}
+        AND matchno is not null
+    </select>
+
+    <update id="upDateHostStatus">
+       UPDATE t_dx_match WITH (ROWLOCK)
+       SET host_status=#{hostStatus}
+       WHERE matchno=#{matchno}
+        and host_status !='1'
+    </update>
+
+    <update id="revertDateHostStatus">
+       UPDATE t_dx_match WITH (ROWLOCK)
+       SET host_status='0'
+       WHERE matchno=#{matchno}
+        and host_status !='1'
+    </update>
+
+
+    <resultMap id="invoicesMap" type="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        <id column="id" property="id"/>
+        <result column="venderid" property="vendorId"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="matchno" property="matchno"/>
+    </resultMap>
+
+    <select id="getMatch" resultMap="MatchMapss">
+        SELECT * FROM t_dx_match WITH(NOLOCK) 
+        WHERE  matchno= #{matchno}
+    </select>
+
+    <update id="updateMatchHostStatus">
+        UPDATE t_dx_match WITH (ROWLOCK)
+        SET
+        host_status=#{host_status}
+        WHERE id=#{id}
+    </update>
+
+    <insert id="insertTaskLog">
+        INSERT into t_ac_task_log
+        (task_name,task_start_time,result,exception)
+        values
+        (#{taskName},getdate(),#{result},#{exception})
+    </insert>
+
+    <insert id="insertPoList">
+        INSERT into t_dx_po_detail WITH(ROWLOCK)
+        (receiptid,
+        pocode,
+        receiptdate,
+        receiptAmount,
+        taxrate,
+        amountpaid,
+        amountunpaid,
+        jvcode,
+        venderid,
+        po_type,
+        traction_id,
+        host_status,
+        due_date,
+        tractionNbr,
+        seq,
+        traction_id_seq,
+        invoice_no,
+        vendername,
+        created_date
+        ) VALUES
+        <foreach collection="List" item="entity" index="index" separator=",">
+            (
+            #{entity.receiptid},
+            #{entity.pocode},
+            #{entity.receiptdate},
+
+            #{entity.receiptAmount},
+            #{entity.taxrate},
+
+            <choose>
+                <when test="entity.hoststatus==1">
+                    0,
+                    #{entity.receiptAmount},
+                </when>
+                <otherwise>
+                    #{entity.receiptAmount},
+                    0,
+                </otherwise>
+            </choose>
+            #{entity.jvcode},
+            #{entity.venderid},
+            #{entity.poType},
+            #{entity.tractionId},
+            #{entity.hoststatus},
+            #{entity.dueDate},
+            #{entity.tractionNbr},
+            #{entity.seq},
+            #{entity.tractionIdSeq},
+            #{entity.invoiceId},
+            #{entity.vendername},
+            getdate()
+            )
+
+        </foreach>
+
+    </insert>
+    <insert id="insertPoListCopy">
+        INSERT into t_dx_po_detail_copy
+        (receiptid,
+        pocode,
+        receiptdate,
+        receiptAmount,
+        taxrate,
+        amountpaid,
+        amountunpaid,
+        jvcode,
+        venderid,
+        po_type,
+        traction_id,
+        host_status,
+        due_date,
+        tractionNbr,
+        seq,
+        traction_id_seq,
+        invoice_no,
+        vendername,
+        created_date
+        ) VALUES
+        <foreach collection="List" item="entity" index="index" separator=",">
+            (
+            #{entity.receiptid},
+            #{entity.pocode},
+            #{entity.receiptdate},
+
+            #{entity.receiptAmount},
+            #{entity.taxrate},
+
+            <choose>
+                <when test="entity.hoststatus==1">
+                    0,
+                    #{entity.receiptAmount},
+                </when>
+                <otherwise>
+                    #{entity.receiptAmount},
+                    0,
+                </otherwise>
+            </choose>
+            #{entity.jvcode},
+            #{entity.venderid},
+            #{entity.poType},
+            #{entity.tractionId},
+            #{entity.hoststatus},
+            #{entity.dueDate},
+            #{entity.tractionNbr},
+            #{entity.seq},
+            #{entity.tractionIdSeq},
+            #{entity.invoiceId},
+            #{entity.vendername},
+            getdate()
+            )
+
+        </foreach>
+
+    </insert>
+    <select id="getPoCopyList" resultMap="poMap">
+        SELECT
+        tdpdc.*,
+        tdpd.matchno
+        FROM
+            t_dx_po_detail_copy tdpdc
+        INNER JOIN t_dx_po_detail tdpd ON tdpdc.traction_id_seq = tdpd.traction_id_seq
+        WHERE
+            tdpd.dxhy_match_status = '2'
+        OR tdpd.dxhy_match_status = '3'
+        OR tdpd.dxhy_match_status = '4'
+    </select>
+
+    <select id="getPoCopyList1" resultMap="poMap">
+        SELECT
+        tdpdc.*,
+        tdpd.matchno
+        FROM
+        t_dx_po_detail_copy tdpdc
+        INNER JOIN t_dx_po_detail tdpd WITH(NOLOCK) ON tdpdc.traction_id_seq = tdpd.traction_id_seq
+        WHERE
+       tdpd.dxhy_match_status != '2'
+        AND tdpd.dxhy_match_status != '3'
+        AND tdpd.dxhy_match_status != '4'
+    </select>
+
+    <select id="getPoCopyList2" resultMap="poMap">
+       SELECT
+	    tdpdc.*
+        FROM
+            t_dx_po_detail_copy tdpdc
+        LEFT JOIN t_dx_po_detail tdpd WITH(NOLOCK)  ON tdpdc.traction_id_seq = tdpd.traction_id_seq
+        WHERE
+            tdpd.traction_id_seq IS NULL
+    </select>
+
+    <select id="getPoCopyList3" resultMap="poMap">
+        SELECT
+        tdpdc.*
+        FROM
+        t_dx_po_detail_copy tdpdc
+    </select>
+
+    <delete id="deletePoCopy">
+        TRUNCATE TABLE t_dx_po_detail_copy;
+    </delete>
+
+
+    <!--host-->
+    <update id="hostUpdatePoTraction">
+        <foreach item="entity" collection="list" open="" separator=";" close="">
+        update t_dx_po_detail WITH(ROWLOCK)
+        set host_status=#{entity.hoststatus},
+        receiptAmount=#{entity.receiptAmount},
+        <choose>
+            <when test="entity.hoststatus==1">
+                amountpaid=0,
+                amountunpaid=#{entity.receiptAmount},
+            </when>
+            <otherwise>
+                amountpaid=#{entity.receiptAmount},
+                amountunpaid=0,
+            </otherwise>
+        </choose>
+        created_date=getdate()
+
+        where traction_id_seq=#{entity.tractionIdSeq}
+        and (dxhy_match_status = '0' or dxhy_match_status = '1' or dxhy_match_status = '5' or dxhy_match_status = '6')
+
+
+        </foreach>
+    </update>
+
+
+    <update id="hostUpdatePoStatusTraction" >
+        <foreach item="entity" collection="list" open="" separator=";" close="">
+        update t_dx_po_detail WITH(ROWLOCK)
+        set host_status=#{entity.hoststatus},
+        created_date=getdate()
+
+        where traction_id_seq=#{entity.tractionIdSeq}
+        and (dxhy_match_status='2' or dxhy_match_status='3' or dxhy_match_status='4')
+
+        </foreach>
+    </update>
+
+
+    <insert id="insertClaimCopyList" >
+        INSERT into t_dx_return_goods_copy
+        (
+        return_goods_code,
+        return_cost_amount,
+        return_goods_date,
+        supplier_association,
+        jvcode,
+        dept,
+        invoiceNo,
+        traction_id,
+        tractionNbr,
+        seq,
+        traction_id_seq,
+        created_date,
+        host_status,
+        exchangeno
+        ) VALUES
+        <foreach collection="list" index="index" item="entity" separator="," >
+        (
+        #{entity.tractionNbr},
+        #{entity.receiptAmount},
+        #{entity.receiptdate},
+        #{entity.venderid},
+        #{entity.jvcode},
+        #{entity.dept},
+        #{entity.invoiceId},
+        #{entity.tractionId},
+        #{entity.tractionNbr},
+        #{entity.seq},
+        #{entity.tractionIdSeq},
+        getdate(),
+        #{entity.hoststatus},
+        #{entity.storeNbr}
+        )
+        </foreach>
+    </insert>
+
+    <insert id="insertClaimList" >
+        INSERT into t_dx_return_goods WITH(ROWLOCK)
+        (
+        return_goods_code,
+        return_cost_amount,
+        return_goods_date,
+        supplier_association,
+        jvcode,
+        dept,
+        invoiceNo,
+        traction_id,
+        tractionNbr,
+        seq,
+        traction_id_seq,
+        created_date,
+        host_status,
+        exchangeno
+        ) VALUES
+        <foreach collection="list" index="index" item="entity" separator="," >
+            (
+            #{entity.tractionNbr},
+            #{entity.claimAmount},
+            #{entity.postdate},
+            #{entity.venderid},
+            #{entity.jvcode},
+            #{entity.dept},
+            #{entity.invoiceno},
+            #{entity.tractionId},
+            #{entity.tractionNbr},
+            #{entity.seq},
+            #{entity.tractionIdSeq},
+            getdate(),
+            #{entity.hoststatus},
+            #{entity.exchangeno}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateClaimList">
+        <foreach collection="list" item="entity" index="index" separator=";">
+            update t_dx_return_goods WITH(ROWLOCK)
+            set host_status=#{entity.hoststatus},
+            created_date=getdate()
+            where traction_id_seq=#{entity.tractionIdSeq}
+        </foreach>
+    </update>
+
+    <delete id="deleteClaimCopy">
+        TRUNCATE TABLE t_dx_return_goods_copy
+    </delete>
+
+
+    <select id="getClaimCopyList" resultMap="cMap">
+        SELECT
+        tdrgc.*
+        FROM
+        t_dx_return_goods_copy tdrgc
+        LEFT JOIN t_dx_return_goods tdrg ON tdrgc.traction_id_seq = tdrg.traction_id_seq
+        WHERE
+        tdrg.traction_id_seq IS NULL
+    </select>
+
+
+    <select id="getClaimCopyList1" resultMap="cMap">
+        SELECT
+        tdrgc.*
+        FROM
+        t_dx_return_goods_copy tdrgc
+        INNER JOIN t_dx_return_goods tdrg ON tdrgc.traction_id_seq = tdrg.traction_id_seq
+    </select>
+
+
+    <select id="getClaimCopyList2" resultType="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        SELECT
+        return_goods_code tractionNbr,
+        return_cost_amount receiptAmount,
+        return_goods_date receiptdate,
+        supplier_association venderid,
+        jvcode,
+        dept,
+        invoiceNo invoiceId,
+        traction_id,
+        tractionNbr,
+        seq,
+        traction_id_seq tractionIdSeq,
+        host_status hoststatus,
+        exchangeno storeNbr
+        FROM
+        t_dx_return_goods_copy
+    </select>
+
+    <select id="transferProcPo">
+        exec proc_po ;
+    </select>
+
+    <!--<select id="checkPoSupplement">-->
+        <!--select t_ac_proc_po from t_ac_pro_supplement where code='0'-->
+    <!--</select>-->
+
+    <!--<select id="checkClaimSupplement">-->
+        <!--select t_ac_proc_claim from t_ac_pro_supplement where code='0'-->
+    <!--</select>-->
+
+    <!--<update id="ondatePoSupplement">-->
+        <!--UPDATE t_ac_pro_supplement  set  t_ac_proc_po='1' where code='0'-->
+    <!--</update>-->
+
+    <!--<update id="onClaimSupplement">-->
+        <!--UPDATE t_ac_pro_supplement  set  t_ac_proc_claim='1' where code='0'-->
+    <!--</update>-->
+
+    <!--<update id="offPoSupplement">-->
+        <!--UPDATE t_ac_pro_supplement  set  t_ac_proc_po='0' where code='0'-->
+    <!--</update>-->
+
+    <!--<update id="offClaimSupplement">-->
+        <!--UPDATE t_ac_pro_supplement  set  t_ac_proc_claim='0' where code='0'-->
+    <!--</update>-->
+    <select id="transferProcClaim">
+        exec proc_claim ;
+    </select>
+    
+    <update id="adjustment" >
+        UPDATE t_dx_po_detail WITH(ROWLOCK)
+        SET amountpaid = receiptAmount,
+         amountunpaid = 0
+        WHERE
+            host_status != '1'
+        AND (
+            dxhy_match_status = '0'
+            OR dxhy_match_status = '1'
+            OR dxhy_match_status = '5'
+            OR dxhy_match_status = '6'
+        )
+        and amountpaid !=receiptAmount;
+        UPDATE t_dx_po_detail WITH(ROWLOCK)
+        SET amountunpaid = receiptAmount,
+         amountpaid = 0
+        WHERE
+            host_status = '1'
+        AND (
+            dxhy_match_status = '0'
+            OR dxhy_match_status = '1'
+            OR dxhy_match_status = '5'
+            OR dxhy_match_status = '6'
+        )
+        and amountunpaid !=receiptAmount;
+    </update>
+    <delete id="delPo">
+        DELETE from t_dx_po_detail WITH(ROWLOCK) where pocode in('0000700888','0000756888','0000538520')
+    </delete>
+
+    <insert id="insertRobotMessage" parameterType="com.xforceplus.wapp.modules.posuopei.entity.RobotMessageEntity">
+        INSERT INTO t_dx_robot_message with(rowlock)
+        (
+        message_id,
+        request_message,
+        status,
+        create_date
+        )
+        VALUES(
+        #{entity.messageId},
+        #{entity.requestMessage},
+        #{entity.status},
+        getdate()
+        )
+    </insert>
+    <select id="selectRequestMessage" resultType="java.lang.String">
+     select top(1) request_message from t_dx_robot_message with(nolock) where message_id=#{messageId} order by create_date desc
+    </select>
+
+    <update id="updateRobotMessage" parameterType="com.xforceplus.wapp.modules.posuopei.entity.RobotMessageEntity">
+        UPDATE t_dx_robot_message with(rowlock)
+        SET response_message = #{entity.responseMessage},
+         status = #{entity.status},
+         update_date= getdate()
+        WHERE
+            message_id = #{entity.messageId}
+    </update>
+    <update id="updateIsDel">
+        update t_dx_match with(rowlock)
+        set
+        isdel = #{isdel}
+        where
+        matchno = #{matchno}
+    </update>
+</mapper>

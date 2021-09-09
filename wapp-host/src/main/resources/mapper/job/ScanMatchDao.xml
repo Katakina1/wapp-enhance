@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.modules.job.dao.ScanMatchDao" >
+    <resultMap id="MaMap" type="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">
+        <id column="id" property="id"/>
+        <result column="reason_for_cancel" property="reasonForCancel"/>
+        <result column="venderid" property="venderid"/>
+        <result column="claim_amount" property="claimAmount"/>
+        <result column="match_status" property="matchingType"/>
+        <result column="settlementamount" property="invoiceAmount"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="match_remarks" property="matchRemarks"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="match_date" property="matchDate"/>
+        <result column="po_amount" property="poAmount"/>
+    </resultMap>
+    <!-- 获取内部红票匹配通过的数据 -->
+    <select id="getAllDatas" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.RedInvoiceData">
+        select * from t_dx_makeout_redInvoice where [amount_match_yesorno] = '1' and scan_match_status in ('0','2')
+    </select>
+
+    <!-- 内部红票 根据序列号查询对应的发票数据 -->
+    <select id="selectInvoicesBySerialNumber" resultType="java.lang.String">
+        select concat(invoice_code,invoice_no) from t_dx_redInvoice_detail where serial_number = #{serialNumber}
+    </select>
+
+    <!-- 统计是否还有未签收的发票数据 -->
+    <select id="getCountNotSign" resultType="java.lang.String">
+        select invoice_no from t_dx_record_invoice WITH(NOLOCK) where 1=1  and (qs_status='0' or qs_status='' or qs_status is null)and uuid in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+
+    </select>
+
+    <!-- 更新内部红票扫描匹配信息-->
+    <update id="updateMatchInfo" parameterType="com.xforceplus.wapp.modules.redInvoiceManager.entity.RedInvoiceData">
+        update t_dx_makeout_redInvoice set scan_match_status = #{data.scanMatchStatus} where serial_number=#{data.serialNumber}
+    </update>
+
+    <!-- 添加内部原因-->
+    <update id="updateStatusAndReason" parameterType="com.xforceplus.wapp.modules.redInvoiceManager.entity.RedInvoiceData">
+        update t_dx_makeout_redInvoice set scan_match_status = #{data.scanMatchStatus} ,scan_fail_reason=#{data.scanFailReason} where serial_number=#{data.serialNumber}
+    </update>
+    <!-- 更新底账库里的扫描匹配状态-->
+    <update id="updateRecordInvoice">
+        update t_dx_record_invoice with (rowlock) set scan_match_status  = #{status} ,scan_match_date = getdate()
+        <if test='#{status=="1"}'>
+			,scan_fail_reason=''
+		</if>
+where  uuid in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 更新底账库里的eps-->
+    <update id="updateRecordInvoices">
+        update t_dx_record_invoice with (rowlock) set scan_match_status  = #{status} ,scan_match_date = getdate(),eps_no = #{epsNo}
+        <if test='#{status=="1"}'>
+            ,scan_fail_reason=''
+        </if>
+        where  uuid in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 查询还没有扫描匹配的数据  外部红票-->
+    <select id="selectOuterRedInvoice" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+       SELECT t.* FROM t_dx_red_ticket_matching t LEFT JOIN t_dx_record_invoice d on t.red_notice_number = d.red_notice_number where d.qs_status='1' and t.scan_match_status in ('0','2');
+    </select>
+
+    <!-- 更新扫描匹配状态  外部红票-->
+    <update id="updateOutMatch">
+        update t_dx_red_ticket_matching set scan_match_status = '1' where id = #{id}
+    </update>
+
+    <!-- 更新底账表数据 外部红票 -->
+    <update id="updateRecordInvoiceByRedNotice">
+        update t_dx_record_invoice WITH(ROWLOCK) set scan_match_status = '1' ,scan_match_date = getdate()  where 1=1 and  red_notice_number in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateRecordReason" >
+        update t_dx_record_invoice WITH(ROWLOCK) set scan_fail_reason=#{reason} ,scan_match_status ='2' where uuid in
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 查询符合条件的索赔数据    po索赔匹配 -->
+    <select id="findpoMatchDatas" resultMap="MaMap">
+        select * from t_dx_match  with(nolock) where match_status in ('2','3','4') and  scan_match_status in ('0','2')
+    </select>
+
+    <!-- 查询发票uuid    po索赔匹配 -->
+    <select id="findInvoicesById" resultType="java.lang.String">
+          SELECT
+                concat (d.invoice_code, d.invoice_no)
+            FROM
+                t_dx_match_po_claim_invoice t with(nolock)
+            LEFT JOIN t_dx_record_invoice d with(nolock) ON t.code = d.id
+            WHERE
+                t.matchid =#{id}
+            AND t.code_type = '0'
+    </select>
+
+    <update id="updatePoMatchById">
+          update t_dx_match WITH (ROWLOCK) set scan_match_status =#{status}  where  id = #{id}
+    </update>
+    <update id="updatePoScanFailReason">
+          update t_dx_match WITH (ROWLOCK) set scan_match_status =#{status} ,scan_fail_reason=#{reason} where  id = #{id}
+    </update>
+    <!--  查询出费用数据  -->
+    <select id="findNotScanCost" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        select * from t_dx_settlement t WITH(NOLOCK) where scan_status in ('0','2') and walmart_status = '1'
+        AND EXISTS (select 1 from t_dx_invoice t2 WITH(NOLOCK) where t.cost_no = t2.cost_no)
+    </select>
+
+    <select id="getInvoiceByCostNo" resultType="java.lang.String">
+        select concat(invoice_code,invoice_no) from t_dx_settlement_invoice where cost_no =#{costNo}
+    </select>
+    <!-- 更新费用匹配的扫描匹配状态 -->
+    <update id="updateCostMatchById">
+         update t_dx_settlement WITH(ROWLOCK) set scan_status =#{status} ,scan_fail_reason ='',scan_date=getdate()  where  cost_no = #{costNo}
+    </update>
+
+    <update id="updateCostFailReason">
+         update t_dx_settlement WITH(ROWLOCK) set scan_status =#{status} ,scan_fail_reason = #{reason},scan_date=getdate() where  cost_no = #{costNo} and walmart_status = '1'
+    </update>
+
+    <update id="updateCostScan">
+        update t_dx_record_invoice WITH(ROWLOCK) set scan_match_status =#{status} ,scan_fail_reason = #{reason},scan_match_date =getdate() where  uuid = #{uuId}
+    </update>
+
+    <!-- 查找费用单下的发票数据 -->
+    <select id="findInvoicesByCostNo" resultType="com.xforceplus.wapp.modules.cost.entity.RecordInvoiceEntity">
+        select cost_no,
+        invoice_type,
+        invoice_code,
+        invoice_no,
+        tax_amount,
+        invoice_amount,
+        invoice_date,
+        total_amount
+        from t_dx_settlement_invoice where cost_no=#{costNo} and invoice_type != ''
+    </select>
+
+    <!-- 查询扫描表中的发票数据-->
+    <select id="findScanInvoices" resultType="com.xforceplus.wapp.modules.cost.entity.RecordInvoiceEntity">
+      select cost_no,
+      invoice_type,
+      invoice_code,
+      invoice_no,
+      venderid,
+      invoice_amount,
+      tax_amount,
+      invoice_date,
+      total_amount
+      from  t_dx_invoice where cost_no =#{costNo} and flow_type='2' and file_type='1' and qs_status='1' and isdel !='1'
+    </select>
+
+
+    <!-- 获取总数-->
+    <select id="findMatchCount" resultType="java.lang.Integer">
+          select count(1) from t_dx_match  with(nolock) where match_status in ('2','3','4') and  scan_match_status in ('0','2')
+    </select>
+
+    <select id="findpoMatchPageDatas" resultMap="MaMap">
+        SELECT
+        <if test="map.offset != null and map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+        FROM
+        (
+          select * from t_dx_match  with(nolock) where match_status in ('2','3','4') and  scan_match_status in ('0','2')
+        )
+        AS o
+        )A
+        WHERE 1=1
+        <if test="map.offset != null and map.limit != null">
+            and rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <!-- 查找费用单下的发票数据 -->
+    <select id="findInvoicesByCostNos" resultType="com.xforceplus.wapp.modules.cost.entity.RecordInvoiceEntity">
+        select cost_no,
+        invoice_type,
+        invoice_code,
+        invoice_no,
+        tax_amount,
+        invoice_amount,
+        invoice_date,
+        total_amount
+        from t_dx_settlement_invoice where cost_no=#{costNo} and (invoice_type = '' or invoice_type is null)
+    </select>
+
+    <update id="underWay">
+        update t_dx_settlement WITH(ROWLOCK) set push_status = '2',scan_status = '1' where cost_no=#{costNo}
+    </update>
+</mapper>

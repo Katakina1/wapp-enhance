@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.UserTaxnoDao">
+
+	<sql id="condition">
+		<if test="entity.id != null">
+			and id = #{entity.id}
+		</if>
+		<if test="entity.userid != null">
+			and userid = #{entity.userid}
+		</if>
+		<if test="entity.orgid != null">
+			and orgid = #{entity.orgid}
+		</if>
+	</sql>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_user_taxno
+		<where>
+			<include refid="condition"/>
+		</where>
+		order by id asc
+		<if test="entity.offset != null and entity.limit != null">
+			limit #{entity.offset}, #{entity.limit}
+		</if>
+	</select>
+
+	<select id="queryTotal" parameterType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity"  resultType="int">
+		/**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_user_taxno
+		<where>
+			<include refid="condition"/>
+		</where>
+	</select>
+ 
+	<insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity" useGeneratedKeys="true" keyProperty="entity.id">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_user_taxno
+		(
+			`id`,
+			`userid`,
+			`orgid`
+		)
+		values
+		(
+			#{entity.id},
+			#{entity.userid},
+			#{entity.orgid}
+		)
+	</insert>
+	
+	<delete id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_user_taxno where id = #{id}
+	</delete>
+
+	<delete id="deleteByUserId">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_user_taxno where userid = #{userId}
+	</delete>
+
+	<update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity">
+		/**mycat:schema=${schemaLabel}*/ update t_ac_user_taxno
+		<set>
+			<if test="entity.userid != null">`userid` = #{entity.userid}, </if>
+			<if test="entity.orgid != null">`orgid` = #{entity.orgid}, </if>
+		</set>
+		where id = #{entity.id}
+	</update>
+</mapper>

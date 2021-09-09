@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.signin.dao.SweepCodeDao">
+<select id="queryTotal" resultType="Integer"></select>
+
+    <select id="getIncoiceData" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        gf_tax_no gfTaxNo,
+        xf_tax_no xfTaxNo,
+        remark ,
+        total_amount totalAmount,
+        gf_name gfName,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        check_code checkCode,
+        uuid
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        where uuid=#{uuid}
+    </select>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="orgname" property="label" />
+    </resultMap>
+    <select id="seachGfType" resultMap="optionMap">
+        /**mycat:schema=${schemaLabel}*/
+        select taxno, orgname from t_ac_org where orgid in (select orgid from t_ac_user_taxno where userid=#{userId})
+    </select>
+
+    <insert id="saveIncoiceData">
+/**mycat:schema=${schemaLabel}*/
+        insert into t_dx_record_invoice WITH(ROWLOCK)(
+            invoice_type,
+            invoice_code,
+            invoice_no,
+            invoice_date,
+            invoice_status,
+            gf_tax_no,
+            gf_name,
+            gf_address_and_phone,
+            gf_bank_and_no,
+            xf_tax_no,
+            xf_name,
+            xf_address_and_phone,
+            xf_bank_and_no,
+            invoice_amount,
+            tax_amount,
+            total_amount,
+            remark,
+            valid,
+            uuid,
+            qs_type,
+            qs_date,
+            qs_status,
+            check_code,
+            create_date,
+            machinecode
+        ) values (
+          #{r.invoiceType},
+          #{r.invoiceCode},
+          #{r.invoiceNo},
+          #{r.invoiceDate},
+          #{r.invoiceStatus},
+          #{r.gfTaxNo},
+          #{r.gfName},
+          #{r.gfAddressAndPhone},
+          #{r.gfBankAndNo},
+          #{r.xfTaxNo},
+          #{r.xfName},
+          #{r.xfAddressAndPhone},
+          #{r.xfBankAndNo},
+          #{r.invoiceAmount},
+          #{r.taxAmount},
+          #{r.totalAmount},
+          #{r.remark},
+          1,
+          concat(#{r.invoiceCode},#{r.invoiceNo}),
+          0,
+         getdate(),
+         1,
+         #{r.checkCode},
+         getdate(),
+         #{r.machinecode}
+        );
+    </insert>
+
+ <!--       <select id="getUserData" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+/**mycat:schema=${schemaLabel}*/
+            SELECT
+            loginname userNum,
+            username userName
+            from t_ac_user
+            where userId=#{userId}
+        </select>-->
+
+    <insert id="saveIncoiceData2">
+        /**mycat:schema=${schemaLabel}*/
+        insert into  t_dx_invoice
+        (
+        xf_name,
+        gf_name,
+        tax_amount,
+        total_amount,
+        xf_tax_no,
+        user_account,
+        user_name,
+        gf_tax_no,
+        invoice_type,
+        invoice_code,
+        invoice_no,
+        invoice_amount,
+        invoice_date,
+        qs_type,
+        qs_status,
+        uuid,
+        notes,
+        check_code,
+        valid,
+        create_date,
+        update_date,
+        qs_date
+        )
+        values
+        (
+          #{r.xfName},
+          #{r.gfName},
+          #{r.taxAmount},
+          #{r.totalAmount},
+          #{r.xfTaxNo},
+          #{r.userNum},
+          #{r.userName},
+          #{r.gfTaxNo},
+          #{r.invoiceType},
+          #{r.invoiceCode},
+          #{r.invoiceNo},
+          #{r.invoiceAmount},
+          #{r.invoiceDate},
+          #{r.qsType},
+          #{r.qsStatus},
+          #{r.uuid},
+          #{r.notes},
+          #{r.checkCode},
+          1,
+          getdate(),
+          getdate(),
+          getdate()
+        );
+
+    </insert>
+
+    <insert id="saveIncoiceData3">
+/**mycat:schema=${schemaLabel}*/
+        insert into t_dx_record_invoice_detail WITH(ROWLOCK)(
+            uuid,
+            invoice_code,
+            invoice_no,
+            goods_name,
+            model,
+            unit,
+            num,
+            unit_price,
+            detail_amount,
+            tax_rate,
+            tax_amount,
+            cph,
+            lx,
+            txrqq,
+            txrqz,
+            detail_no
+        )
+        values
+        (
+          #{r.uuid},
+          #{r.invoiceCode},
+          #{r.invoiceNo},
+          #{r.goodsName},
+          #{r.model},
+          #{r.unit},
+          #{r.num},
+          #{r.unitPrice},
+          #{r.detailAmount},
+          #{r.taxRate},
+          #{r.taxAmount},
+          #{r.cph},
+          #{r.lx},
+          #{r.txrqq},
+          #{r.txrqz},
+          #{r.detailNo}
+        );
+    </insert>
+
+    <update id="updateDataByUuid">
+/**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        qs_status=1,
+        qs_type=0,
+        qs_date=getdate()
+        where uuid=#{uuid}
+    </update>
+
+
+    <!---->
+    <insert id="saveData">
+/**mycat:schema=${schemaLabel}*/
+        INSERT INTO  t_dx_invoice
+        (
+        invoice_type ,
+        invoice_code ,
+        invoice_no ,
+        invoice_date ,
+        gf_tax_no ,
+        gf_name ,
+        xf_name ,
+        invoice_amount ,
+        tax_amount ,
+        total_amount ,
+        xf_tax_no ,
+        check_code ,
+        uuid,
+        qs_status,
+        qs_type,
+        valid,
+        create_date,
+        qs_date
+        )
+        VALUES
+        (
+        #{rq.invoiceType},
+        #{rq.invoiceCode},
+        #{rq.invoiceNo},
+        #{rq.invoiceDate},
+        #{rq.gfTaxNo},
+        #{rq.gfName},
+        #{rq.xfName},
+        #{rq.invoiceAmount},
+        #{rq.taxAmount},
+        #{rq.totalAmount},
+        #{rq.xfTaxNo},
+        #{rq.checkCode},
+        #{rq.uuid},
+        #{rq.qsStatus},
+        #{rq.qsType},
+        1,
+        getdate(),
+        getdate()
+        )
+    </insert>
+    <delete id="deleteById">
+/**mycat:schema=${schemaLabel}*/
+        DELETE
+        from t_dx_invoice
+        WHERE uuid=#{uuid}
+    </delete>
+
+    <delete id="deleteDetailsByuuId">
+/**mycat:schema=${schemaLabel}*/
+        DELETE
+        FROM t_dx_record_invoice_detail
+        where uuid=#{uuid}
+    </delete>
+
+    <delete id="deleteVehicleSale">
+/**mycat:schema=${schemaLabel}*/
+        DELETE * from t_dx_vehicle_sale_invoice where uuid=#{uuid}
+    </delete>
+
+    <delete id="deleteDxInvoice">
+    /**mycat:schema=${schemaLabel}*/
+        DELETE
+        FROM t_dx_record_invoice WITH(ROWLOCK)
+        where uuid=#{uuid}
+    </delete>
+
+    <update id="deleteDataByUuid">
+       /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        qs_status=0
+        where uuid=#{uuid}
+    </update>
+
+    <select id="getImgPath" resultType="String">
+        SELECT image_path FROM t_dx_invoice_img WHERE uuid = #{uuid} limit 1
+    </select>
+
+    <select id="getInvoiceId" resultType="java.lang.Long">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id FROM t_dx_record_invoice WITH(NOLOCK) where uuid=#{uuid}
+    </select>
+
+    <select id="getInvoiceData" resultType="java.lang.Long">
+         /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id FROM t_dx_invoice WITH(NOLOCK) where uuid=#{uuid}
+    </select>
+</mapper>

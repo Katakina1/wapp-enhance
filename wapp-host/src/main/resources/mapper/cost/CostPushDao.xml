@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.cost.dao.CostPushDao">
+    <select id="getMainData" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        select id, vender_id, vender_name, bank_name, bank_account,
+        approver_email staffNo,
+        (select email from t_ac_staff_info where staff_no=t_dx_settlement.approver_email) approverEmail,
+        settlement_amount, walmart_status, cost_no, create_date, remark,
+        belongs_to, service_type, payment_mode, pay_day, contract, has_invoice, urgency, pay_model,
+        eps_no, instance_id, eps_id, old_bind_id, old_total_amount, surplus_amount,loginname loginName
+        from t_dx_settlement WITH(NOLOCK) where valid='1'
+        <if test="costNo != null and costNo != ''">
+            and cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="costNo == null or costNo == ''">
+            and walmart_status='0' and pay_model='0' and instance_id is null
+        </if>
+    </select>
+
+    <select id="getMainInstanceId" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        select id, cost_no, instance_id ,walmart_status
+        from t_dx_settlement WITH(NOLOCK) where valid='1'
+        and walmart_status in ('0','3','4') and pay_model in ('0','3')
+    </select>
+
+    <select id="getInvoiceRate" resultType="com.xforceplus.wapp.modules.cost.entity.InvoiceRateEntity">
+        select a.id, a.invoice_amount, a.tax_rate, a.tax_amount, a.invoice_code,  a.invoice_no,
+        b.invoice_type, b.invoice_date, b.check_code,b.gf_tax_no as jvcode
+	from t_dx_settlement_rate a WITH(NOLOCK) left join t_dx_settlement_invoice b WITH(NOLOCK)
+    on a.cost_no = b.cost_no  and ((LEFT(a.invoice_no,8)  = b.invoice_no and (b.invoice_type = '01' or b.invoice_type = '04'))or(a.invoice_no = b.invoice_no and (b.invoice_type ='' or b.invoice_type is null)))
+        where a.cost_no=#{costNo} and b.valid = '1'
+    </select>
+
+    <update id="saveInstanceId">
+        update t_dx_settlement WITH(ROWLOCK) set instance_id=#{instanceId} where cost_no=#{costNo}
+    </update>
+
+    <update id="saveCostId">
+        update t_dx_settlement_cost set instance_id=#{instanceId}, bpms_id=#{bpmsId}
+        where id=#{id}
+    </update>
+
+    <update id="updateStatus">
+        update t_dx_settlement WITH(ROWLOCK) set
+        walmart_status=#{status} ,
+        <if test="status != 0 and status != 1 and status != 2 and status != 3">
+            scan_status ='1',
+        </if>
+        scan_fail_reason ='',
+        <if test="status != 0 and status != 1 and status != 2 and status != 3">
+            push_status = '1',
+        </if>
+        <if test="status == 4">
+            scan_date=getdate(),
+        </if>
+        walmart_date=getdate()
+        where cost_no=#{costNo}
+    </update>
+
+    <select id="getCostId" resultType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+        select id, bpms_id, cost_amount, cost_dept_id
+        from t_dx_settlement_cost where instance_id=#{instanceId}
+    </select>
+
+    <update id="updateMain" parameterType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        update t_dx_settlement WITH(ROWLOCK) set
+        belongs_to = #{belongsTo},
+        service_type = #{serviceType},
+        payment_mode = #{paymentMode},
+        pay_day = #{payDay},
+        contract = #{contract},
+        has_invoice = #{hasInvoice},
+        urgency = #{urgency},
+        eps_no = #{epsNo},
+        remark = #{remark}
+        where cost_no = #{costNo}
+    </update>
+
+    <update id="updateCost" parameterType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+        update t_dx_settlement_cost set
+        cost_type = #{costType},
+        cost_type_name = #{costTypeName},
+        cost_dept = #{costDept},
+        cost_dept_id = #{costDeptId},
+        cost_time = #{costTime},
+        cost_use = #{costUse},
+        project_code = #{projectCode}
+        where id = #{id}
+    </update>
+
+    <update id="cancelMatch">
+        update t_dx_record_invoice WITH(ROWLOCK) set
+        cost_no='',
+        flow_type=''
+        where cost_no=#{costNo}
+    </update>
+
+    <select id="queryInvoicesByCostNo" resultType="java.lang.String">
+        select concat(invoice_code,invoice_no) from t_dx_invoice WITH(NOLOCK) where cost_no =#{costNo} and invoice_type='01'
+     </select>
+
+    <update id="updateRecord2Confirm" >
+        update t_dx_record_invoice WITH(ROWLOCK) set bpms_pay_status='1',cost_no ='123456789999'  where uuid = #{uuids}
+    </update>
+
+    <update id="updateReback">
+         update t_dx_settlement WITH(ROWLOCK) set walmart_status='2',reject_reason=#{msg} where cost_no=#{costNo}
+    </update>
+
+    <delete id="deleteSettlementInvice">
+        /**修改推送状态*/
+        UPDATE t_dx_settlement_invoice SET valid = '0' where cost_no=#{costNo}
+    </delete>
+
+    <update id="getCostDeptId">
+        update t_dx_record_invoice WITH(ROWLOCK) set
+        cost_dept_id=#{costDeptId}
+        where invoice_code=#{invoiceCode} and invoice_no=#{invoiceNo}
+    </update>
+
+    <!-- 查找费用单下的发票数据 -->
+    <select id="queryInvoicesByCostNos" resultType="com.xforceplus.wapp.modules.cost.entity.RecordInvoiceEntity">
+        select cost_no,
+        invoice_type,
+        invoice_code,
+        invoice_no,
+        tax_amount,
+        invoice_amount,
+        invoice_date,
+        total_amount
+        from t_dx_settlement_invoice where cost_no=#{costNo} and (invoice_type = '' or invoice_type is null)
+    </select>
+
+    <select id="selectPaymentMode" resultType="java.lang.String">
+        select top 1 payment_mode from t_dx_settlement with(nolock) where cost_no=#{costNo}
+    </select>
+
+    <update id="updateAllCostScanDate">
+        update t_dx_settlement with(rowlock) set scantwo_date = getdate() where cost_no in(select s.cost_no from t_dx_settlement s with(nolock) left join t_dx_invoice i with(nolock) on s.cost_no = i.cost_no where s.is_del !='1' and i.scantwo_date is null and i.cost_no = s.cost_no and s.valid = '1' and i.rebateyesorno = '0')
+    </update>
+</mapper>

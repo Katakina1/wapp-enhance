@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.modules.job.dao.AdvanceDao" >
+
+    <!-- 获取数据字典时间 -->
+    <select id="findDict" resultType="com.xforceplus.wapp.modules.job.pojo.vendorMaster.DictPo">
+          SELECT dictname ,dictcode from t_ac_dictdeta
+          where dicttype in (
+          select dicttypeid from t_ac_dicttype where dicttypecode='ADVANCE'
+          )
+  </select>
+
+    <!-- 获取数据字典费用类型 -->
+    <select id="findDpfk" resultType="com.xforceplus.wapp.modules.job.pojo.vendorMaster.DictPo">
+        SELECT dictname ,dictcode from t_ac_dictdeta
+        where dicttype in (
+        select dicttypeid from t_ac_dicttype where dicttypecode='ADVANCE_DPFK'
+        )
+    </select>
+
+    <!-- 插入预付款费用数据 -->
+    <insert id="insertAdvance" parameterType="com.xforceplus.wapp.modules.job.pojo.advance.MainData">
+        insert into t_dx_settlement_match (cost_no,cost_amount,instance_id,service_type,eps_no,vender_id,covered_amount,payment_mode,pay_day,contract,has_invoice,urgency,eps_id)
+        values(
+        #{mainData.BINDID},#{mainData.TOTAL_AMOUNT},#{mainData.BINDID},#{mainData.EPS_TYPE},#{mainData.REQNO},#{mainData.SUPPLIER_ID},${0},#{mainData.PAY_MODE},#{mainData.PAY_DATE},#{mainData.PO_ID},#{mainData.HAS_INVOICE}
+        ,#{mainData.URGENCY_LEVEL},#{mainData.EPS_ID}
+        )
+    </insert>
+
+    <!-- 更新预付款费用数据 -->
+    <update id="updateAdvance">
+        update t_dx_settlement_match set cost_no=#{mainData.BINDID},cost_amount=#{mainData.TOTAL_AMOUNT},service_type=#{mainData.EPS_TYPE},eps_no=#{mainData.REQNO},vender_id=#{mainData.SUPPLIER_ID}
+        where instance_id = #{mainData.BINDID}
+    </update>
+
+    <!-- 查询主表是否有记录 -->
+    <select id="findByBindID" resultType="java.lang.Integer">
+        select count(1) from t_dx_settlement_match where instance_id = #{bindid}
+    </select>
+
+    <!-- 查询子表是否有记录 -->
+    <select id="findDetail" resultType="java.lang.Integer">
+        select count(1) from t_dx_settlement_match_detail where instance_id=#{bindid}
+    </select>
+
+    <!-- 删除明细表数据-->
+    <delete id="deleteDetail">
+        delete from t_dx_settlement_match_detail where instance_id=#{bindid}
+    </delete>
+
+    <insert id="insertDetail" parameterType="com.xforceplus.wapp.modules.job.pojo.advance.DetailData">
+        insert into t_dx_settlement_match_detail (cost_no,cost_type,cost_time,cost_amount,cost_use,
+        covered_amount,instance_id,project_code,cost_dept,bpms_id,cost_dept_id,cost_type_name)
+        values
+        <foreach item="info" collection="list" separator="," >
+            (#{info.BINDID},
+            #{info.TYPE_NAME},
+            #{info.TIME}+'至'+#{info.TIME2},
+            #{info.MONEY},
+            #{info.DESCRIPTION},
+            ${0},
+            #{info.BINDID},
+            #{info.PROJECT_ID},
+            #{info.DEPARTMENT_ID},
+            #{info.ID},
+            #{info.DEPARTMENT_NAME},
+            #{info.TYPE})
+        </foreach>
+    </insert>
+
+    <!-- 从BPMS获取的非预付款数据 -->
+    <select id="findCost" resultType="java.lang.Integer">
+        select count(1) from t_dx_settlement WITH(NOLOCK) where instance_id =#{bindid}
+    </select>
+
+    <!-- 插入BPMS获取的主数据-->
+    <insert id="insertCostMain" >
+        insert into t_dx_settlement WITH(ROWLOCK)
+        (vender_id,vender_name,bank_name,bank_account,
+        settlement_amount,walmart_status,cost_no,create_date,
+        valid,remark,scan_status,belongs_to,service_type,payment_mode,pay_day,contract,has_invoice,urgency,pay_model,eps_no,approver_email,instance_id)
+        values (
+         #{mainData.SUPPLIER_ID},#{mainData.SUPPLIER_NAME},#{mainData.BANK_NAME},#{mainData.BANK_ACCOUNT},#{mainData.TOTAL_AMOUNT},
+         ${1},#{costno},getdate(),${1},#{mainData.REMARK},${0},#{bpms},#{mainData.EPS_TYPE},#{mainData.PAY_MODE},#{mainData.PAY_DATE},
+         #{mainData.PO_ID},#{mainData.HAS_INVOICE},#{mainData.URGENCY_LEVEL},${3},#{mainData.REQNO},#{mainData.REQUSERNO},#{mainData.BINDID}
+        )
+    </insert>
+
+    <!-- 查询数据库是否有发票明细 -->
+    <select id="findInoviceByNo" resultType="java.lang.Integer">
+        select count(1) from t_dx_settlement_rate where invoice_no =#{invoiceNo}
+    </select>
+
+
+    <!-- 插入发票明细数据-->
+    <insert id="insertInvoice" useGeneratedKeys="true" keyProperty="entity.id">
+        insert into t_dx_settlement_rate (cost_no,invoice_no,invoice_amount,tax_rate,tax_amount,invoice_code)
+        values (#{costno},#{entity.INVOICE_ID},#{entity.APPLY_AMOUNT},#{entity.TAX_RATE},#{entity.TAX_AMOUNT},#{entity.INVOICE_CODE})
+    </insert>
+
+    <!-- 插入费用明细数据-->
+    <insert id="insertBpmsDetail">
+        insert into t_dx_settlement_cost (rate_id,cost_type,cost_time,cost_amount,cost_use,cost_dept,project_code,instance_id,cost_dept_id,cost_type_name)
+        values
+        <foreach item="info" collection="list" separator="," >
+            (#{id},
+            #{info.TYPE_NAME},
+            #{info.TIME},
+            #{info.MONEY},
+            #{info.DESCRIPTION},
+            #{info.DEPARTMENT_ID},
+            #{info.PROJECT_ID},
+            #{info.BINDID},
+            #{info.DEPARTMENT_NAME},
+            #{info.TYPE})
+        </foreach>
+    </insert>
+
+    <!-- 查询是否已经有明细数据-->
+    <select id="findCostDetail" resultType="java.lang.Integer">
+        select count(1) from t_dx_settlement_cost where instance_id =#{bindid}
+    </select>
+
+    <!-- 删除费用明细数据-->
+    <delete id="deleteCostDetail" >
+        delete from t_dx_settlement_cost where instance_id =#{bindid}
+    </delete>
+
+    <!-- 插入非预付款发票数据-->
+    <insert id="insertInvoiceMain">
+         insert into t_dx_settlement_invoice (invoice_type,invoice_code,invoice_no,invoice_date,invoice_amount,tax_amount,total_amount,gf_tax_no,
+         gf_name,check_code,cost_no,venderid) values(
+          #{record.invoiceType},#{record.invoiceCode},#{record.invoiceNo},#{record.invoiceDate},#{record.invoiceAmount},#{record.taxAmount},#{record.totalAmount}
+          ,#{record.gfTaxNo},#{record.gfName},#{record.checkCode},#{costno},#{record.vendorid}
+         )
+    </insert>
+
+    <!-- 通过uuid查询抵账表数据是否存在-->
+    <select id="findRecordInvoice" resultType="com.xforceplus.wapp.modules.job.pojo.RecordInvoice">
+        select * from t_dx_record_invoice WITH(NOLOCK) where uuid = #{uuid}
+    </select>
+
+    <!-- 插入底账表数据 -->
+    <insert id="insertRecordInvoice">
+        insert into t_dx_record_invoice WITH(ROWLOCK) (invoice_type,invoice_code,invoice_no,invoice_date,invoice_amount,
+        tax_amount,total_amount,uuid,source_system,create_date,detail_yesorno,venderid) values(#{invoice.invoiceType},#{invoice.invoiceCode},#{invoice.invoiceNo},#{invoice.invoiceDate}
+        ,#{invoice.invoiceAmount},#{invoice.taxAmount},#{invoice.totalAmount},#{invoice.uuid},${'2'},getdate(),${'0'},#{invoice.vendorid})
+    </insert>
+
+    <insert id="insertBindInvoice">
+        insert into t_dx_match_settlement_invoice (invoice_code,invoice_no,cost_no) values (#{invoice.invoiceCode},#{invoice.invoiceNo},#{costno})
+    </insert>
+
+    <insert id="insertUser">
+      INSERT INTO t_ac_user(
+	username,
+	usercode,
+	password,
+	loginname,
+	sex,
+	birthday,
+	email,
+	orgid,
+	phone,
+	cellphone,
+	address,
+	usertype,
+	create_time,
+	create_by,
+	last_modify_time,
+	last_modify_by,
+	status,
+	plainpassword,
+	bank_name,
+	bank_account,
+	invoice_aging_date,
+	depno,
+	extf0,
+	extf1,
+	extf2,
+	extf3,
+	extf4,
+	pwd_modify_time,
+	pwd_wrong_count,
+	lock_time,
+	depname,
+	regionno,
+	postcode,
+	fax,
+	orgtype,
+	bank_code,
+	bususername,
+	busphone,
+	busemail,
+	finusername,
+	finphone,
+	finemail,
+	discount,
+	_mycat_op_time,
+	post_address,
+	post_type,
+	org_level,
+	ten_usercode
+)
+VALUES
+	(
+		#{winId},
+		#{winId},
+		'',
+		#{winId},
+		NULL,
+		NULL,
+		N'123234@qq.com',
+		'143065',
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		N'1',
+		N'123456',
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		N'2',
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		N'2',
+		NULL
+	);
+    </insert>
+
+    <!-- 通过winId查用户表数据是否存在-->
+    <select id="selectUserId" resultType="java.lang.Integer">
+        select userid from t_ac_user where  loginname= #{winId}
+    </select>
+
+
+    <insert id="insertRole">
+    INSERT INTO t_ac_user_role (userid, roleid) VALUES (#{userId}, '19');
+    </insert>
+
+
+    <!-- 通过winId查用户表数据是否存在-->
+    <select id="findByUser" resultType="java.lang.Integer">
+        select count(1) from t_ac_user where  loginname= #{winId}
+    </select>
+
+    <!-- 更新带票付款抵账供应商数据 -->
+    <update id="updateVenderId">
+        update t_dx_record_invoice WITH(ROWLOCK) set venderid=#{venderId}
+        where uuid = #{uuid}
+    </update>
+
+</mapper>

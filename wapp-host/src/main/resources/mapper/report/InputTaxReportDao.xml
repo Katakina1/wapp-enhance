@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.InputTaxReportDao">
+    <select id="getTotalAmount" resultType="Double">
+        /**mycat:schema=${schemaLabel}*/SELECT ifnull(sum(invoice_amount-ifnull(out_invoice_amout,0)), 0) FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND invoice_status='0' AND rzh_yesorno='1' AND out_status in ('0','2')
+        AND gf_tax_no=#{map.gfName}
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and gf_tax_no in (select taxno from t_ac_org where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+    </select>
+
+    <select id="getTotalTax" resultType="Double">
+        /**mycat:schema=${schemaLabel}*/SELECT ifnull(sum(tax_amount-ifnull(out_tax_amount, 0)), 0) FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND invoice_status='0' AND rzh_yesorno='1' AND out_status in ('0','2')
+        AND gf_tax_no=#{map.gfName}
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and gf_tax_no in (select taxno from t_ac_org where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+    </select>
+
+    <select id="getTotalOutTax" resultType="Double">
+        /**mycat:schema=${schemaLabel}*/SELECT ifnull(sum(out_tax_amount), 0) FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND invoice_status='0' AND rzh_yesorno='1' AND out_status in ('1','2')
+        AND gf_tax_no=#{map.gfName}
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and gf_tax_no in (select taxno from t_ac_org where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+    </select>
+
+    <select id="getOutTaxDetail" resultType="com.xforceplus.wapp.modules.report.entity.DailyReportEntity">
+        /**mycat:schema=${schemaLabel}*/SELECT
+        out_reason rzhDate,
+        ifnull(sum(out_tax_amount), 0) tax
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND invoice_status='0' AND rzh_yesorno='1' AND out_status in ('1','2')
+        AND gf_tax_no=#{map.gfName}
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and gf_tax_no in (select taxno from t_ac_org where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+        GROUP BY out_reason
+        ORDER BY out_reason ASC
+    </select>
+</mapper>

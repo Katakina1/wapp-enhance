@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.ExcelClean.dao.ExportExcelCleanDao">
+
+    <!--ftp查询-->
+    <select id="getExportlogByMonth" resultType="java.util.HashMap">
+        select *
+        FROM
+        t_dx_excel_exportlog
+        WHERE
+        <![CDATA[create_date<= dateadd(month,-1,getdate())]]>;
+    </select>
+
+    <!-- 通过主键集合批量删除记录 -->
+
+    <delete id="exportExcelClean">
+            DELETE FROM t_dx_excel_exportlog WHERE <![CDATA[ create_date<= dateadd(month,-1,getdate())]]>;
+            DELETE FROM t_dx_messagecontrol WHERE <![CDATA[  create_date<= dateadd(month,-1,getdate())]]>;
+    </delete>
+    <delete id="delectRobotMessage">
+     DELETE FROM t_dx_robot_message WHERE <![CDATA[ create_date<= dateadd(month,-1,getdate())]]>;
+    </delete>
+
+
+</mapper>

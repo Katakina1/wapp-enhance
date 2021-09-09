@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.UserTokenDao">
+
+	<select id="queryByUserId" resultType="com.xforceplus.wapp.modules.base.entity.UserTokenEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_user_token_customer where user_id = #{userId}
+	</select>
+
+	<select id="queryByToken" resultType="com.xforceplus.wapp.modules.base.entity.UserTokenEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_user_token_customer where token = #{token}
+	</select>
+	 
+	<insert id="saveToken" parameterType="com.xforceplus.wapp.modules.base.entity.UserTokenEntity">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_user_token_customer
+		(
+			user_id,
+			token,
+			expire_time,
+			update_time
+		)
+		values
+		(
+			#{entity.userId},
+			#{entity.token},
+			#{entity.expireTime},
+			#{entity.updateTime}
+		)
+	</insert>
+
+
+
+	<update id="updateToken" parameterType="com.xforceplus.wapp.modules.base.entity.UserTokenEntity">
+		/**mycat:schema=${schemaLabel}*/ update t_ac_user_token_customer
+		<set>
+			<if test="entity.token != null">token = #{entity.token}, </if>
+			<if test="entity.expireTime != null">expire_time = #{entity.expireTime}, </if>
+			<if test="entity.updateTime != null">update_time = #{entity.updateTime}</if>
+		</set>
+		where user_id = #{entity.userId}
+	</update>
+
+</mapper>

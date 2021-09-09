@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.SubmitCheckDao">
+	<select id="queryTotal" resultType="Integer" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		count(1)
+ 		from t_dx_record_invoice t
+ 		where 1=1
+		AND gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		<if test="map.invoiceNo != null and map.invoiceNo != ''">
+			and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+		</if>
+		<if test="map.invoiceType !=null and map.invoiceType != '-1'">
+			and invoice_type = #{map.invoiceType}
+		</if>
+		<if test="map.gfName != null and map.gfName != '-1'and  map.gfName != ''">
+			and gf_tax_no = #{map.gfName}
+		</if>
+		<if test="map.xfName != null and map.xfName != ''">
+			and xf_name like concat('%',concat(#{map.xfName},'%'))
+		</if>
+		<if test="map.gxDate1 != null and map.gxDate1 != ''">
+			<![CDATA[ AND date_format(gx_date,'%Y-%m-%d') >= #{map.gxDate1} ]]>
+		</if>
+		<if test="map.gxDate2 != null and map.gxDate2 != ''">
+			<![CDATA[ AND date_format(gx_date,'%Y-%m-%d') <= #{map.gxDate2} ]]>
+		</if>
+		<if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+			<![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{map.invoiceDate1} ]]>
+		</if>
+		<if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+			<![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{map.invoiceDate2} ]]>
+		</if>
+		and invoice_type IN (1, 3, 14)
+		AND (SELECT c.current_tax_period FROM t_dx_tax_current c WHERE c.taxno=t.gf_tax_no)>=date_format(invoice_date,'%Y%m')
+		and rzh_yesorno=0
+		and invoice_status=0
+		and invoice_amount>0
+		and IF (
+		invoice_date >= '2017-07-01 00:00:00',
+
+		DATE_ADD(invoice_date,INTERVAL 359 DAY) >= getdate(),
+
+		DATE_ADD(invoice_date,INTERVAL 179 DAY) >= getdate()
+		)
+		and tax_amount>=0
+		and auth_status=1
+	</select>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.certification.entity.InvoiceCertificationEntity" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		id 				 ,
+		gx_date 		 gxDate,
+    	invoice_code 	 invoiceCode,
+		invoice_type     invoiceType,
+    	invoice_no 		 invoiceNo,
+    	invoice_date	 invoiceDate,
+    	gf_name 		 gfName,
+    	xf_name 		 xfName,
+		invoice_amount   invoiceAmount,
+    	tax_amount 		 taxAmount,
+		qs_status 		 qsStatus,
+		qs_date 		 qsDate,
+		qs_type 		 qsType
+ 		from t_dx_record_invoice t
+ 		where 1=1
+		AND (SELECT c.current_tax_period FROM t_dx_tax_current c WHERE c.taxno=t.gf_tax_no)>=date_format(invoice_date,'%Y%m')
+		AND gf_tax_no in (SELECT taxno FROM t_ac_org where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		<if test="map.invoiceNo != null and map.invoiceNo != ''">
+			and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+		</if>
+		<if test="map.invoiceType !=null and map.invoiceType != '-1'">
+			and invoice_type = #{map.invoiceType}
+		</if>
+		<if test="map.gfName != null and map.gfName != '-1'and  map.gfName != ''">
+			and gf_tax_no = #{map.gfName}
+		</if>
+		<if test="map.xfName != null and map.xfName != ''">
+			and xf_name like concat('%',concat(#{map.xfName},'%'))
+		</if>
+		<if test="map.gxDate1 != null and map.gxDate1 != ''">
+			<![CDATA[ AND date_format(gx_date,'%Y-%m-%d') >= #{map.gxDate1} ]]>
+		</if>
+		<if test="map.gxDate2 != null and map.gxDate2 != ''">
+			<![CDATA[ AND date_format(gx_date,'%Y-%m-%d') <= #{map.gxDate2} ]]>
+		</if>
+		<if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+			<![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{map.invoiceDate1} ]]>
+		</if>
+		<if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+			<![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{map.invoiceDate2} ]]>
+		</if>
+ 		and rzh_yesorno=0
+		and invoice_status=0
+		and invoice_amount>0
+		and invoice_type in (01,14,03)
+		and IF (
+		invoice_date >= '2017-07-01 00:00:00',
+
+		DATE_ADD(invoice_date,INTERVAL 359 DAY) >= getdate(),
+
+		DATE_ADD(invoice_date,INTERVAL 179 DAY) >= getdate()
+		)
+		and tax_amount>=0
+		and auth_status=1
+		ORDER BY gx_date DESC
+		<if test="map.offset != null and map.limit != null">
+			limit #{map.offset}, #{map.limit}
+		</if>
+	</select>
+
+
+	<update id="submitCheck">
+        /**mycat:schema=${schemaLabel}*/
+		update t_dx_record_invoice WITH(ROWLOCK) set
+		confirm_date=getdate(),
+		rzh_belong_date=#{rzhBelongDate},
+		confirm_user=#{loginName},
+		auth_status=2
+		where ID = #{id}
+	</update>
+
+
+	<update id="cancelCheck">
+		/**mycat:schema=${schemaLabel}*/
+		update t_dx_record_invoice WITH(ROWLOCK) set
+		gx_date = (null),
+		auth_status = 0,
+		gx_type = (null),
+		gx_user_account='',
+		gx_user_name=''
+		where ID = #{id}
+	</update>
+
+</mapper>

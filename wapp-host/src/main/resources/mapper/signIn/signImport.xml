@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.signin.dao.SignImportDao">
+
+    <!-- 根据发票代码 发票号码查询抵账信息 -->
+    <select id="getRecordData" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceDataEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        invoice_date invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        invoice_type invoiceType,
+        gf_tax_no gfTaxNo,
+        gf_name gfName,
+        xf_tax_no xfTaxNo,
+        xf_name xfName,
+        qs_status qsStatus,
+        total_amount totalAmount,
+        check_code checkCode,
+        source_system sourceSystem,
+        lslbz,
+        tax_rate,
+        jvcode,
+        detail_yesorno detailYesorno,
+        venderid,
+        company_code,
+        flow_type flowType,
+        dk_invoiceAmount dkInvoiceAmount,
+deductible_tax,invoice_code,invoice_no
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE uuid=#{uuid}
+    </select>
+
+    <insert id="insertScanInvoice">
+        /**mycat:schema=${schemaLabel}*/
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(*) from t_dx_invoice WITH(NOLOCK) where
+            <if test="item.id==null">
+            uuid = #{item.uuId}
+            </if>
+            <if test="item.id!=null">
+                id=#{item.id}
+            </if>
+             and rebateyesorno = 0;
+        </selectKey>
+        <if test="count==0">
+        INSERT INTO t_dx_invoice WITH(ROWLOCK)
+        (
+        invoice_type ,
+        invoice_code ,
+        invoice_no ,
+        invoice_date ,
+        gf_tax_no ,
+        gf_name ,
+        xf_name ,
+        invoice_amount ,
+        tax_amount ,
+        total_amount ,
+        xf_tax_no ,
+        check_code ,
+        uuid,
+        qs_status,
+        qs_type,
+        valid,
+        create_date,
+        qs_date,
+        user_account,
+        user_name,
+        notes,
+        scan_id,dy_invoice_code,
+            dy_invoice_no,
+            invoice_serial_no,
+            bindyesorno,packyesorno,rebateyesorno,expressnoyesorno,refundyesorno,file_type,venderid,jv_code,company_code,isdel,flow_type,venderid_edit
+        )
+        VALUES
+
+            (
+            #{item.invoiceType},
+            #{item.invoiceCode},
+            #{item.invoiceNo},
+            #{item.invoiceDate},
+            #{item.gfTaxNo},
+            #{item.gfName},
+            #{item.xfName},
+            #{item.invoiceAmount},
+            #{item.taxAmount},
+            #{item.totalAmount},
+            #{item.xfTaxNo},
+            #{item.checkCode},
+            #{item.uuId},
+            #{item.qsStatus},
+            1,
+            1,
+            getdate(),
+            getdate(),
+            #{item.userAccount},
+            #{item.userName},
+            #{item.notes},
+            #{item.scanId},
+            #{item.dyInvoiceCode},#{item.dyInvoiceNo},#{item.localTrmSeqNum},
+            0,0,0,0,0,#{item.fileType},#{item.venderid},#{item.jvCode},#{item.companyCode},0,#{item.flowType},#{item.venderidEdit}
+            )
+        </if>
+        <if test="count > 0">
+            update t_dx_invoice WITH(ROWLOCK)
+            set
+            invoice_type = #{item.invoiceType},
+            invoice_code  =  #{item.invoiceCode},
+            invoice_no  = #{item.invoiceNo},
+            invoice_date = #{item.invoiceDate},
+            gf_tax_no =  #{item.gfTaxNo},
+            gf_name =  #{item.gfName},
+            xf_name =  #{item.xfName},
+            invoice_amount  =  #{item.invoiceAmount},
+            tax_amount =  #{item.taxAmount},
+            total_amount  = #{item.totalAmount},
+            xf_tax_no   = #{item.xfTaxNo},
+            check_code  = #{item.checkCode},
+            uuid  = #{item.uuId},
+            qs_status = #{item.qsStatus},
+            qs_type = 1,
+            valid  =  1,
+            create_date  =  getdate(),
+            qs_date  = getdate(),
+            user_account = #{item.userAccount},
+            user_name = #{item.userName},
+            notes = #{item.notes},
+            scan_id= #{item.scanId},
+            dy_invoice_code = #{item.dyInvoiceCode},
+            dy_invoice_no= #{item.dyInvoiceNo},
+            invoice_serial_no = #{item.localTrmSeqNum},
+            bindyesorno=0,
+            packyesorno=0,
+            rebateyesorno=0,
+            expressnoyesorno=0,
+            refundyesorno=0,
+            file_type=#{item.fileType},
+            venderid=#{item.venderid},
+            jv_code=#{item.jvCode},
+            company_code = #{item.companyCode},
+            flow_type=#{item.flowType},
+            venderid_edit=#{item.venderidEdit}
+            where    <if test="item.id==null">
+            uuid = #{item.uuId}
+        </if>
+            <if test="item.id!=null">
+                id=#{item.id}
+            </if> and rebateyesorno = 0
+        </if>
+
+    </insert>
+
+    <!-- 更新抵账表中的签收状态 导入签收 -->
+    <update id="updateRecordQsStatus">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET qs_date = getdate(),
+        qs_type = '1',
+        qs_status = '1',
+        scanning_seriano=#{item.scanId},
+        invoice_serial_no = #{item.localTrmSeqNum}
+        
+        <if test="item.flowType==5">
+            ,scan_match_status=1
+            ,scan_match_date = getdate()
+        </if>
+        <if test="item.flowType==6">
+           , scan_match_status=1
+            ,scan_match_date = getdate()
+        </if>
+        WHERE uuid = #{item.uuId}
+
+
+    </update>
+    <update id="setDeductible">
+ /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+deductible_tax=#{item.deductibleTax},
+deductible_tax_rate=#{item.deductibleTaxRate}
+where invoice_code = #{item.invoiceCode} AND invoice_no =#{item.invoiceNo}
+
+    </update>
+
+    <update id="updateFlowType">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        deductible_tax=#{item.deductibleTax},
+        flow_type=#{item.flowType}
+        where invoice_code = #{item.invoiceCode} AND invoice_no =#{item.invoiceNo}
+
+    </update>
+
+    <update id="updateCJV">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        company_code=#{item.companyCode},
+        jvcode=#{item.jvcode},
+        venderid=#{item.venderid}
+        where invoice_code = #{item.invoiceCode} AND invoice_no =#{item.invoiceNo}
+
+    </update>
+    <update id="updateScanningSeriano">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        scanning_seriano=#{item.scanningSeriano}
+        where invoice_code = #{item.invoiceCode} AND invoice_no =#{item.invoiceNo}
+
+    </update>
+
+
+
+
+    <!-- 保存图片到图片路径表 -->
+    <insert id="insertInvoiceImg">
+        /**mycat:schema=${schemaLabel}*/
+        insert into t_dx_invoice_img(
+        image_path,
+        uuid,
+        valid,
+        scan_id,
+        create_date,
+        update_date
+        )values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.imagePath},
+            #{item.uuid},
+            '1',
+            #{item.scanId},
+            getdate(),
+            getdate()
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        uuid = VALUES(uuid),
+        valid = VALUES(valid),
+        scan_id = VALUES(scan_id),
+        update_date=getdate()
+    </insert>
+    <insert id="insertInvoiceImgforCustomerOne">
+        /**mycat:schema=${schemaLabel}*/
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(*) from t_dx_invoice_img where scan_id = #{item.scanId} ;
+        </selectKey>
+        <if test="count==0">
+
+            insert into t_dx_invoice_img(
+            image_path,
+            uuid,
+            valid,
+            scan_id,
+            create_date,
+            update_date,
+            seq_no,
+            array_name,
+            is_image,
+            from_customer,
+            user_id,
+            scan_point,
+            billtype_code
+            )values
+                (
+                #{item.imagePath},
+                #{item.uuid},
+                '1',
+                #{item.scanId},
+                getdate(),
+                getdate(),
+                #{item.seqNo},
+                #{item.arrayName},
+                #{item.isImage},
+                '1',
+                #{item.userId},
+                #{item.scanPoint},
+                #{item.billtypeCode}
+                )
+        </if>
+        <if test="count>0">
+            update 
+            	t_dx_invoice_img 
+            set
+            	image_path=#{item.imagePath},
+            	uuid=#{item.uuid},
+            	valid='1',
+            	create_date=getdate(),
+            	update_date=getdate(),
+            	seq_no= #{item.seqNo},
+            	array_name=#{item.arrayName},
+            	is_image= #{item.isImage},
+            	from_customer='1',
+            	user_id= #{item.userId},
+            	scan_point=#{item.scanPoint},
+            	billtype_code=#{item.billtypeCode}
+			where 
+				scan_id = #{item.scanId}
+        </if>
+    </insert>
+    
+    <!-- 保存图片到图片路径表（客户端传过来的） -->
+    <insert id="insertInvoiceImgforCustomer">
+        /**mycat:schema=${schemaLabel}*/
+        if exists  (select 1 from t_dx_invoice_img where scan_id = #{item.scanId})
+        DELETE FROM t_dx_invoice_img WHERE scan_id = #{item.scanId}
+        ELSE
+        insert into t_dx_invoice_img(
+        image_path,
+        uuid,
+        valid,
+        scan_id,
+        create_date,
+        update_date,
+        seq_no,
+        array_name,
+        is_image,
+        from_customer,
+        user_id,
+        scan_point,
+        billtype_code
+        )values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.imagePath},
+            #{item.uuid},
+            '1',
+            #{item.scanId},
+            getdate(),
+            getdate(),
+            #{item.seqNo},
+            #{item.arrayName},
+            #{item.isImage},
+            '1',
+            #{item.userId},
+            #{item.scanPoint},
+            #{item.billtypeCode}
+            )
+        </foreach>
+
+    </insert>
+
+    <select id="getImgPath" resultType="String">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT top 1 image_path FROM t_dx_invoice_img WHERE uuid = #{uuid}
+    </select>
+
+    <!-- 获取当前登录人下绑定的税号 -->
+    <select id="getTaxNoList" resultType="String">
+      /**mycat:schema=${schemaLabel}*/
+        SELECT tao.taxno FROM t_ac_org tao
+         LEFT JOIN t_ac_user_taxno taut ON taut.orgid = tao.orgid
+        WHERE taut.userid = #{userId}
+    </select>
+
+    <!-- 获取当前登录人下绑定的税号 -->
+    <select id="getGfTaxNoList" resultType="String">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT tao.taxno FROM t_ac_org tao
+        WHERE tao.orgType =5 and tao.taxno is not null;
+    </select>
+
+    <!-- 根据uuid查询数据是否在扫描表存在 -->
+    <select id="queryCountScan" resultType="com.xforceplus.wapp.modules.signin.entity.InvoiceScan">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        rebateno
+        from t_dx_invoice WITH(NOLOCK)
+        where uuid = #{uuid}
+    </select>
+    
+    <delete id="deleteInvoiceImg">
+		/**mycat:schema=${schemaLabel}*/ delete from t_dx_invoice_img where uuid = #{uuid}
+	</delete>
+	
+	<select id="queryImgUserid" resultType="java.lang.Long">
+		/**mycat:schema=${schemaLabel}*/
+		SELECT
+			user_id
+		FROM
+			t_dx_invoice_img
+		WHERE
+			uuid = #{uuid} 
+	</select>
+    <!--根据税号去机构表取companyCode-->
+    <select id="getComCode" resultType="String">
+        select company_code from t_ac_org where taxno = #{gfTaxNo} and orgtype = '5'
+    </select>
+    <select id="getOrgCode" resultType="String">
+        select orgcode from t_ac_org where taxno = #{gfTaxNo} and orgtype = '5' ORDER BY orgcode ASC
+    </select>
+
+
+
+    <select id="getVenderId" resultType="String">
+        SELECT
+    tau.usercode
+    FROM
+    t_ac_org tao
+    INNER JOIN t_ac_user tau ON tao.orgid = tau.orgid
+    WHERE
+    tao.orgtype= '8'
+    AND tao.taxno= #{gfTaxNo}
+
+            <if test="billtypeCode==1||billtypeCode==3">
+                and tau.usertype in ('P','PP')
+            </if>
+            <if test="billtypeCode==5||billtypeCode==2||billtypeCode==6">
+                and tau.usertype in ('E','EJ')
+            </if>
+
+
+    </select>
+
+
+
+
+    <select id="getRecordInvoiceEntityById" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *,invoice_serial_no localTrmSeqNum
+
+        from t_dx_invoice WITH(NOLOCK)
+        where id=#{id}
+    </select>
+
+
+    <select id="getNotesByVendorNbr" resultType="java.lang.String">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        input_tax
+        from t_dx_tax_commodity
+        where vendor_nbr=#{venderid} AND
+         notes=#{notes}
+    </select>
+
+
+
+</mapper>

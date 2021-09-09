@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.CertificationQueryDao">
+
+    <resultMap id="resultCollectionMap" type="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        <id column="id" property="id" />
+        <result column="tax_amount" property="taxAmount" />
+        <result column="gf_tax_no" property="gfTaxNo" />
+        <result column="dqskssq" property="dqskssq" />
+        <result column="out_reason" property="outReason" />
+        <result column="xf_bank_and_no" property="xfBankAndNo" />
+        <result column="uuid" property="uuid" />
+        <result column="gx_type" property="gxType" />
+        <result column="send_date" property="sendDate" />
+        <result column="gx_user_name" property="gxUserName" />
+        <result column="auth_status" property="authStatus" />
+        <result column="create_date" property="createDate" />
+        <result column="gf_address_and_phone" property="gfAddressAndPhone" />
+        <result column="rzh_type" property="rzhType" />
+        <result column="txfbz" property="txfbz" />
+        <result column="source_system" property="sourceSystem" />
+        <result column="out_tax_amount" property="outTaxAmount" />
+        <result column="rzh_back_msg" property="rzhBackMsg" />
+        <result column="xf_address_and_phone" property="xfAddressAndPhone" />
+        <result column="rzh_date" property="rzhDate" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="status_update_date" property="statusUpdateDate" />
+        <result column="qs_status" property="qsStatus" />
+        <result column="confirm_date" property="confirmDate" />
+        <result column="invoice_status" property="invoiceStatus" />
+        <result column="rzh_belong_date" property="rzhBelongDate" />
+        <result column="rzh_yesorno" property="rzhYesorno" />
+        <result column="out_date" property="outDate" />
+        <result column="remark" property="remark" />
+        <result column="rzh_belong_date_late" property="rzhBelongDateLate" />
+        <result column="gxfwq" property="gxfwq" />
+        <result column="invoice_amount" property="invoiceAmount" />
+        <result column="invoice_date" property="invoiceDate" />
+        <result column="valid" property="valid" />
+        <result column="xf_name" property="xfName" />
+        <result column="check_code" property="checkCode" />
+        <result column="gf_bank_and_no" property="gfBankAndNo" />
+        <result column="sfdbts" property="sfdbts" />
+        <result column="invoice_type" property="invoiceType" />
+        <result column="gxfwz" property="gxfwz" />
+        <result column="out_invoice_amout" property="outInvoiceAmout" />
+        <result column="last_update_date" property="lastUpdateDate" />
+        <result column="detail_yesorno" property="detailYesorno" />
+        <result column="rzlx" property="rzlx" />
+        <result column="invoice_no" property="invoiceNo" />
+        <result column="gx_user_account" property="gxUserAccount" />
+        <result column="out_status" property="outStatus" />
+        <result column="qs_date" property="qsDate" />
+        <result column="gx_date" property="gxDate" />
+        <result column="invoice_code" property="invoiceCode" />
+        <result column="out_remark" property="outRemark" />
+        <result column="gxjzr" property="gxjzr" />
+        <result column="sfygx" property="sfygx" />
+        <result column="gf_name" property="gfName" />
+        <result column="qs_type" property="qsType" />
+        <result column="xf_tax_no" property="xfTaxNo" />
+        <result column="lslbz" property="lslbz" />
+    </resultMap>
+
+    <!--<sql id="get">-->
+    <!--SELECT tad.dictcode typeCode, tad.dictname typeName-->
+    <!--FROM t_ac_dictdeta tad-->
+    <!--LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype-->
+    <!--WHERE tadt.dicttypecode = #{type} AND tad.dictcode typeCode =#{}-->
+    <!--</sql>-->
+
+    <!-- 数据库中表名为:t_dx_record_invoice的列名,as前是数据库的列明,as后是列的别名用于映射成实体类中的属性,需要注意的是别名必须与resultMap中的column别名一致 -->
+    <sql id="t_dx_record_invoice_Column">
+        tdri.id as id
+        ,truncate(tdri.tax_amount,2) as tax_amount
+        ,tdri.gf_tax_no as gf_tax_no
+        ,tdri.dqskssq as dqskssq
+        ,tdri.out_reason as out_reason
+        ,tdri.xf_bank_and_no as xf_bank_and_no
+        ,tdri.uuid as uuid
+        ,tdri.gx_type as gx_type
+        ,tdri.send_date as send_date
+        ,tdri.gx_user_name as gx_user_name
+        ,tdri.auth_status as auth_status
+        ,tdri.create_date as create_date
+        ,tdri.gf_address_and_phone as gf_address_and_phone
+        ,tdri.rzh_type as rzh_type
+        ,tdri.txfbz as txfbz
+        ,tdri.source_system as source_system
+        ,tdri.out_tax_amount as out_tax_amount
+        ,tdri.rzh_back_msg as rzh_back_msg
+        ,tdri.xf_address_and_phone as xf_address_and_phone
+        ,tdri.rzh_date as rzh_date
+        ,tdri.total_amount as total_amount
+        ,tdri.status_update_date as status_update_date
+        ,tdri.qs_status as qs_status
+        ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'QS_STATUS' AND tad.dictcode =tdri.qs_status) qsStatusName
+        ,tdri.confirm_date as confirm_date
+        ,tdri.invoice_status as invoice_status
+        ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'INV_STATUS' AND tad.dictcode =tdri.invoice_status) invoiceStatusName
+        ,tdri.rzh_belong_date as rzh_belong_date
+        ,tdri.rzh_yesorno as rzh_yesorno
+        ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'INV_CONFIRM' AND tad.dictcode =tdri.rzh_yesorno) rzhYesornoName
+        ,tdri.out_date as out_date
+        ,tdri.remark as remark
+        ,tdri.rzh_belong_date_late as rzh_belong_date_late
+        ,tdri.gxfwq as gxfwq
+        ,truncate(tdri.invoice_amount,2) as invoice_amount
+        ,tdri.invoice_date as invoice_date
+        ,tdri.valid as valid
+        ,tdri.xf_name as xf_name
+        ,tdri.check_code as check_code
+        ,tdri.gf_bank_and_no as gf_bank_and_no
+        ,tdri.sfdbts as sfdbts
+        ,tdri.invoice_type as invoice_type
+         ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'INVOICE_TYPE_TIP' AND tad.dictcode =tdri.invoice_type) invoiceTypeName
+        ,tdri.gxfwz as gxfwz
+        ,tdri.out_invoice_amout as out_invoice_amout
+        ,tdri.last_update_date as last_update_date
+        ,tdri.detail_yesorno as detail_yesorno
+        ,tdri.rzlx as rzlx
+        ,tdri.invoice_no as invoice_no
+        ,tdri.gx_user_account as gx_user_account
+        ,tdri.out_status as out_status
+        ,tdri.qs_date as qs_date
+        ,tdri.gx_date as gx_date
+        ,tdri.invoice_code as invoice_code
+        ,tdri.out_remark as out_remark
+        ,tdri.gxjzr as gxjzr
+        ,tdri.sfygx as sfygx
+        ,tdri.gf_name as gf_name
+        ,tdri.qs_type as qs_type
+         ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'QS_WAY' AND tad.dictcode =tdri.qs_type) qsTypeName
+        ,tdri.xf_tax_no as xf_tax_no
+        ,tdri.lslbz as lslbz
+    </sql>
+
+    <sql id="queryWhere">
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND tdri.gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="xfName != null and xfName != ''">
+            AND tdri.xf_name LIKE '%${xfName}%'
+        </if>
+        <if test="invoiceType != null and invoiceType != ''">
+            AND tdri.invoice_type = #{invoiceType}
+        </if>
+        <if test="invoiceType == null or invoiceType == ''">
+            AND tdri.invoice_type IN ('01','03','14')
+        </if>
+        <if test="invoiceStartDate != null and invoiceStartDate != ''">
+            <![CDATA[ AND date_format(tdri.invoice_date, '%Y-%m-%d') >= #{invoiceStartDate} ]]>
+        </if>
+        <if test="invoiceEndDate != null and invoiceEndDate != ''">
+            <![CDATA[ AND date_format(tdri.invoice_date, '%Y-%m-%d')  <= #{invoiceEndDate} ]]>
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND tdri.invoice_no LIKE '%${invoiceNo}%'
+        </if>
+        <if test="invoiceStatus != null and invoiceStatus != ''">
+            AND tdri.invoice_status = #{invoiceStatus}
+        </if>
+        <if test="rzhYesorno != null and rzhYesorno != ''">
+            AND tdri.rzh_yesorno = #{rzhYesorno}
+        </if>
+        <if test="rzhStartDate != null and rzhStartDate != ''">
+            <![CDATA[ AND date_format(tdri.rzh_date, '%Y-%m-%d') >= #{rzhStartDate} ]]>
+        </if>
+        <if test="rzhEndDate != null and rzhEndDate != ''">
+            <![CDATA[ AND date_format(tdri.rzh_date, '%Y-%m-%d')  <= #{rzhEndDate} ]]>
+        </if>
+        <if test="rzhBelongDate != null and rzhBelongDate != ''">
+            AND tdri.rzh_belong_date = #{rzhBelongDate}
+        </if>
+        <if test="qsStatus != null and qsStatus != ''">
+            AND tdri.qs_status = #{qsStatus}
+        </if>
+        <if test="qsType != null and qsType != ''">
+            AND tdri.qs_type = #{qsType}
+        </if>
+        <if test="authStatus != null and authStatus != ''">
+            AND tdri.auth_status = #{authStatus}
+        </if>
+        <if test="qsStartDate != null and qsStartDate != ''">
+            <![CDATA[ AND date_format(tdri.qs_date, '%Y-%m-%d') >= #{qsStartDate} ]]>
+        </if>
+        <if test="qsEndDate != null and qsEndDate != ''">
+            <![CDATA[ AND date_format(tdri.qs_date, '%Y-%m-%d')  <= #{qsEndDate} ]]>
+        </if>
+    </sql>
+
+    <!-- 获取人员可以查看的数据 -->
+    <sql id="getAuthData">
+        (
+        SELECT tdri.* FROM t_dx_record_invoice tdri WITH(NOLOCK)
+        LEFT JOIN t_ac_org tao WITH(NOLOCK) ON tao.taxno = tdri.gf_tax_no
+        LEFT JOIN t_ac_user_taxno taut WITH(NOLOCK) ON taut.orgid = tao.orgid
+        WHERE taut.userid = #{userId}
+        ) tdri
+    </sql>
+
+    <!-- 获取认证总数 认证处理状态大于0的，4认证成功，5认证失败 -->
+    <select id="getCertificationListCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT COUNT(1)
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.auth_status > 0
+        <include refid="queryWhere"/>
+    </select>
+
+    <!-- 获取认证发票信息集 认证处理状态大于0的，4认证成功，5认证失败 -->
+    <select id="selectCertificationList" resultMap="resultCollectionMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.auth_status > 0
+        <include refid="queryWhere"/>
+        ORDER BY tdri.create_date DESC
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+</mapper>
