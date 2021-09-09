@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.modules.job.dao.PurchaseOrderDao" >
+
+    <!-- 查询采购问题单主表信息  -->
+    <select id="selectOrders" resultType="com.xforceplus.wapp.modules.posuopei.entity.QuestionPaperEntity">
+            select * from t_dx_question_paper where checkstatus='1'
+    </select>
+
+    <!--  查询采购问题单明细信息 -->
+    <select id="selectQuestionDetails" resultType="com.xforceplus.wapp.modules.job.pojo.question.QuestionDetail">
+          select * from t_dx_question_detail where paper_id = #{id}
+    </select>
+
+    <!-- 查找数据字典里的接口配置信息-->
+    <select id="selectParam" resultType="com.xforceplus.wapp.modules.job.pojo.vendorMaster.DictPo">
+        SELECT dictname ,dictcode from t_ac_dictdeta
+          where dicttype in (
+          select dicttypeid from t_ac_dicttype where dicttypecode='BPMS_INTERFACE'
+          )
+    </select>
+
+    <!-- 查询附件 -->
+    <select id="findFilePath" resultType="com.xforceplus.wapp.modules.job.pojo.question.FilePo">
+        select  id,src,remark,file_name    from  t_dx_question_attchment where paper_id=#{id}
+    </select>
+
+    <!-- 更新数据库状态 -->
+    <update id="updateStatus">
+        update t_dx_question_paper set bpms_id=#{processId} ,checkstatus='3' where id=#{id}
+    </update>
+</mapper>

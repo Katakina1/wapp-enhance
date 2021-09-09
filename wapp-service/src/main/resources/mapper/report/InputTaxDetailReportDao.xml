@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.InputTaxDetailReportDao">
+
+    <resultMap id="rateMap" type="com.xforceplus.wapp.modules.report.entity.RateAmountEntity">
+        <result column="rate" property="rate" />
+        <result column="amount" property="amount" />
+        <result column="tax" property="tax" />
+    </resultMap>
+    
+    <select id="getNoneDetailCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/SELECT count(1) FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND invoice_status='0' AND rzh_yesorno='1' AND detail_yesorno='0'
+        AND gf_tax_no=#{map.gfName}
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+    </select>
+    
+    <select id="getRateData" resultMap="rateMap">
+        /**mycat:schema=${schemaLabel}*/SELECT
+        ris.tax_rate rate,
+        ifnull(sum(ris.detail_amount),0) amount,
+        ifnull(sum(ris.tax_amount),0) tax
+        FROM t_dx_record_invoice_statistics ris WITH(NOLOCK)
+        WHERE EXISTS (
+            SELECT 1 FROM t_dx_record_invoice ri WITH(NOLOCK)
+            WHERE valid='1' and ris.invoice_code = ri.invoice_code AND ris.invoice_no = ri.invoice_no
+            AND invoice_type in ('01','03','14') AND invoice_status='0' AND rzh_yesorno='1' AND detail_yesorno='1'
+            AND gf_tax_no=#{map.gfName}
+            <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+                and rzh_belong_date = #{map.rzhBelongDate}
+            </if>
+            and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+        )
+        GROUP BY ris.tax_rate
+        ORDER BY ris.tax_rate desc
+    </select>
+
+</mapper>

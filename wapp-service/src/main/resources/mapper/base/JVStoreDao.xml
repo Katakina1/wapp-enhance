@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.JVStoreDao">
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.JVStoreEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY   jvcode asc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+
+        select r.* from t_ac_store r
+        <where>
+            <if test="entity.jvcode != null and entity.jvcode !='' ">
+                and jvcode = #{entity.jvcode}
+            </if>
+            <if test="entity.storeTax != null and entity.storeTax !=''">
+                and store_tax = #{entity.storeTax}
+            </if>
+        </where>
+
+        <if test="entity.offset != null and entity.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{entity.offset}
+
+        </if>
+
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/
+        select
+        count (*)
+        from t_ac_store r
+        <where>
+            <if test="entity.jvcode != null and entity.jvcode !='' ">
+                and jvcode = #{entity.jvcode}
+            </if>
+            <if test="entity.storeTax != null and entity.storeTax !=''">
+                and store_tax = #{entity.storeTax}
+            </if>
+        </where>
+
+    </select>
+
+    <delete id="delete" parameterType="com.xforceplus.wapp.modules.base.entity.JVStoreEntity">
+        /**mycat:schema=${schemaLabel}*/
+        delete from  t_ac_store
+        where jvcode in
+        <foreach item="jvcode" collection="entity.jvcodes" open="(" separator="," close=")">
+            #{jvcode}
+        </foreach>
+        and store_code in
+        <foreach collection="entity.storeCodes" item="storeCode" open="(" separator="," close=")">
+            #{storeCode}
+        </foreach>
+    </delete>
+
+    <insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.JVStoreEntity">
+      /**mycat:schema=${schemaLabel}*/ insert into t_ac_store
+		(
+			  jvcode,
+  			  store_code,
+  			  store_chinese,
+  			  store_tax,
+  			  jvcode_name,
+  			  taxpayer_code
+
+		)
+		values
+		(
+			  #{entity.jvcode},
+			  #{entity.storeCode},
+			  #{entity.storeChinese},
+			  #{entity.storeTax},
+			  #{entity.jvcodeName},
+			  #{entity.taxpayerCode}
+
+		)
+    </insert>
+
+    <update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.JVStoreEntity">
+        update t_ac_store set
+        store_chinese = #{entity.storeChinese},
+  		store_tax = #{entity.storeTax},
+  		jvcode_name = #{entity.jvcodeName},
+  		taxpayer_code = #{entity.taxpayerCode},
+  		jvcode = #{entity.jvcode},
+  		store_code = #{entity.storeCode}
+  		where
+  		id = #{entity.id}
+    </update>
+
+    <select id="queryjv" resultType="String">
+        select jvcode from t_ac_store;
+    </select>
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.monitearly.dao.AbnormalInvoiceCopDao">
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+    <!-- 自定义底账表结果集映射-->
+    <resultMap id="RecordInvoiceMap" type="com.xforceplus.wapp.modules.monitearly.entity.RecordInvoiceEntity" >
+        <id property="id" column="id"></id>
+        <result property="uuid" column="uuid"/>
+        <result property="statusUpdateDate" column="status_update_date"/>
+        <result property="invoiceType" column="invoice_type"/>
+        <result property="invoiceCode" column="invoice_code"/>
+        <result property="invoiceNo" column="invoice_no"/>
+        <result property="invoiceDate" column="invoice_date"/>
+        <result property="invoiceStatus" column="invoice_status"/>
+        <result property="gfName" column="gf_name"/>
+        <result property="xfName" column="xf_name"/>
+        <result property="taxAmount" column="amount"/>
+        <result property="invoiceAmount" column="invoiceamount"/>
+    </resultMap>
+    <!-- 自定义组织机构结果集映射-->
+    <resultMap id="OrgMap" type="com.xforceplus.wapp.modules.monitearly.entity.OrgEntity">
+        <id property="orgId" column="orgid"></id>
+        <result property="taxNo" column="taxno"/>
+        <result property="taxName" column="taxname"/>
+    </resultMap>
+    <!--多条件查询异常发票 -->
+    <select id="queryAbnormalInvoice"  resultMap="RecordInvoiceMap">
+        /**mycat:schema=${schemaLabel}*/SELECT id,uuid,invoice_type,status_update_date,invoice_code,invoice_no,invoice_date,
+     invoice_status,gf_name,xf_name,FORMAT(invoice_amount,2) AS invoiceamount,FORMAT(tax_amount,2) AS amount from t_dx_record_invoice AS t WITH(NOLOCK)
+      WHERE  invoice_status !=0
+        AND invoice_type IN ('01','03','14')
+      <if test="invoiceStatus !=null and invoiceStatus !='' ">
+          AND invoice_status=#{invoiceStatus}
+      </if>
+      <if test="invoiceNo !=null and invoiceNo !='' ">
+          AND invoice_no LIKE CONCAT('%',#{invoiceNo},'%')
+      </if>
+      <if test="gfTaxNo !='' and gfTaxNo!=null ">
+            AND t.gf_tax_no = #{gfTaxNo}
+      </if>
+      <if test="gfTaxNo =='' or gfTaxNo ==null">
+            AND t.gf_tax_no IN (SELECT taxno from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userId}
+            and o.orgid = t.orgid)
+      </if>
+      <if test="firstDate != null and firstDate != ''">
+            <![CDATA[ AND date_format(status_update_date,'%Y-%m-%d') >= #{firstDate} ]]>
+      </if>
+      <if test="lastDate != null and lastDate != ''">
+            <![CDATA[ AND date_format(status_update_date,'%Y-%m-%d')  <= #{lastDate} ]]>
+      </if>
+        order by status_update_date desc ,invoice_date  desc
+      <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+      </if>
+
+    </select>
+    <!--多条件查询异常发票的数量 -->
+    <select id="queryAbnormalNumber" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/ SELECT count(1) totalCount, ifnull(sum(invoice_amount), 0) totalAmount, ifnull(sum(tax_amount), 0) totalTax
+        from t_dx_record_invoice AS t WITH(NOLOCK)
+        WHERE  invoice_status !=0
+        AND invoice_type IN ('01','03','14')
+        <if test="invoiceStatus !=null and invoiceStatus !='' ">
+            AND invoice_status=#{invoiceStatus}
+        </if>
+        <if test="invoiceNo !=null and invoiceNo !='' ">
+            AND invoice_no LIKE CONCAT('%',#{invoiceNo},'%')
+        </if>
+        <if test="gfTaxNo !='' and gfTaxNo!=null ">
+            AND t.gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="gfTaxNo =='' or gfTaxNo ==null">
+            AND t.gf_tax_no IN (SELECT taxno from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userId}
+            and o.orgid = t.orgid)
+        </if>
+        <if test="firstDate != null and firstDate != ''">
+            <![CDATA[ AND date_format(status_update_date,'%Y-%m-%d') >= #{firstDate} ]]>
+        </if>
+        <if test="lastDate != null and lastDate != ''">
+            <![CDATA[ AND date_format(status_update_date,'%Y-%m-%d')  <= #{lastDate} ]]>
+        </if>
+    </select>
+
+    <!--用于异常发票预警的导出 -->
+    <select id="queryAbnormalInvoicelist"  resultMap="RecordInvoiceMap" parameterType="map">
+        /**mycat:schema=${schemaLabel}*/ SELECT invoice_type,status_update_date,invoice_code,invoice_no,invoice_date,
+        invoice_status,gf_name,xf_name,FORMAT(invoice_amount,2) AS invoiceamount,FORMAT(tax_amount,2) AS amount from t_dx_record_invoice AS t WITH(NOLOCK)
+        WHERE  invoice_status !=0
+        AND invoice_type IN ('01','03','14')
+        <if test="invoiceStatus !=null and invoiceStatus !='' ">
+            AND invoice_status=#{invoiceStatus}
+        </if>
+        <if test="invoiceNo !=null and invoiceNo !='' ">
+            AND invoice_no LIKE CONCAT('%',#{invoiceNo},'%')
+        </if>
+        <if test="gfTaxNo !=null and gfTaxNo !='' ">
+            AND t.gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="gfTaxNo =='' or gfTaxNo ==null">
+            AND t.gf_tax_no IN (SELECT taxno from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userId}
+            and o.orgid = t.orgid)
+        </if>
+        <if test="firstDate != null and firstDate != ''">
+            <![CDATA[ AND date_format(status_update_date,'%Y-%m-%d') >= #{firstDate} ]]>
+        </if>
+        <if test="lastDate != null and lastDate != ''">
+            <![CDATA[ AND date_format(status_update_date,'%Y-%m-%d')  <= #{lastDate} ]]>
+        </if>
+        order by status_update_date desc
+    </select>
+</mapper>
+

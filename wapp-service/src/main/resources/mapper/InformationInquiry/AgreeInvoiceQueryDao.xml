@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.AgreeInvoiceQueryDao">
+
+    <resultMap id="MatchMap" type="com.xforceplus.wapp.modules.posuopei.entity.MatchEntity">
+        <id column="id" property="id"/>
+        <result column="reason_for_cancel" property="reasonForCancel"/>
+        <result column="venderid" property="venderid"/>
+        <result column="claim_amount" property="claimAmount"/>
+        <result column="matchno" property="matchno"/>
+        <result column="po_num" property="poNum"/>
+        <result column="claim_num" property="claimNum"/>
+        <result column="invoice_num" property="invoiceNum"/>
+        <result column="match_status" property="matchingType"/>
+        <result column="settlementamount" property="settlementamount"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="match_remarks" property="matchRemarks"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="match_date" property="matchDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="po_amount" property="poAmount"/>
+        <result column="printcode" property="printcode"/>
+        <result column="match_cover" property="matchCover"/>
+    </resultMap>
+    <!--匹配查询-->
+    <select id="getMatchList" resultMap="MatchMap">
+        <if test="offset != null and limit != null">
+            SELECT
+            TOP (#{limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.id DESC ) AS rownumber, o.*
+            FROM(
+        </if>
+        SELECT * FROM t_dx_match WITH(NOLOCK)
+        WHERE 1=1
+        <if test="venderid !=null and venderid !=''">
+            and venderid like '%'+#{venderid}+'%'
+        </if>
+        AND match_status ='4'
+
+        <if test="matchno !=null and matchno !=''">
+            and matchno =#{matchno}
+        </if>
+        AND id in (
+        SELECT matchid FROM t_dx_match_po_claim_invoice
+        <where>
+            <if test="poCode !=null and poCode !=''">
+                and ( code in (SELECT id FROM t_dx_po_detail WITH(NOLOCK) where pocode=#{poCode})
+                AND code_type='1')
+            </if>
+            <if test="claimNo !=null and claimNo !=''">
+                and (code in (SELECT id FROM t_dx_return_goods WITH(NOLOCK) where return_goods_code=#{claimNo})
+                AND code_type='2')
+            </if>
+            <if test="invoiceNo !=null and invoiceNo !=''">
+                and (code in (SELECT id FROM t_dx_record_invoice WITH(NOLOCK) where invoice_no=#{invoiceNo})
+                AND code_type='0')
+            </if>
+
+        </where>
+        )
+        <if test="matchDateStart !=null and matchDateStart !=''">
+            <![CDATA[ AND convert(varchar(100),match_date,20)  >= #{matchDateStart} ]]>
+        </if>
+        <if test="matchDateEnd !=null and matchDateEnd !=''">
+            <![CDATA[ AND convert(varchar(100),match_date,20)  <= #{matchDateEnd} ]]>
+        </if>
+
+
+        <if test="offset != null and limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{offset}
+        </if>
+
+    </select>
+    <select id="getMatchCount" resultType="Integer">
+
+        SELECT count(* )
+        FROM t_dx_match WITH(NOLOCK)
+        WHERE 1=1
+        <if test="venderid !=null and venderid !=''">
+            and venderid like '%'+#{venderid}+'%'
+        </if>
+        AND match_status ='4'
+        <!--AND host_status in('0','1','10','13')-->
+        <if test="matchno !=null and matchno !=''">
+           and matchno =#{matchno}
+        </if>
+        AND id in (
+        SELECT matchid FROM t_dx_match_po_claim_invoice
+        <where>
+
+            <if test="poCode !=null and poCode !=''">
+                and ( code in (SELECT id FROM t_dx_po_detail WITH(NOLOCK) where pocode=#{poCode})
+                AND code_type='1')
+            </if>
+            <if test="claimNo !=null and claimNo !=''">
+                and (code in (SELECT id FROM t_dx_return_goods WITH(NOLOCK) where return_goods_code=#{claimNo})
+                AND code_type='2')
+            </if>
+            <if test="invoiceNo !=null and invoiceNo !=''">
+                and (code in (SELECT id FROM t_dx_record_invoice WITH(NOLOCK) where invoice_no=#{invoiceNo})
+                AND code_type='0')
+            </if>
+
+        </where>
+        )
+        <if test="matchDateStart !=null and matchDateStart !=''">
+            <![CDATA[ AND convert(varchar(100),match_date,20)  >= #{matchDateStart} ]]>
+        </if>
+        <if test="matchDateEnd !=null and matchDateEnd !=''">
+            <![CDATA[ AND convert(varchar(100),match_date,20)  <= #{matchDateEnd} ]]>
+        </if>
+    </select>
+
+</mapper>

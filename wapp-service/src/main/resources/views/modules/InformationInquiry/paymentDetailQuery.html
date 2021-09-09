@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<style type="text/css">
+    .btn-row2 {
+    }
+
+    td {
+        position: relative;
+    }
+
+    span[name*="invoiceLog"] table tr td {
+        display: inline;
+    }
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-form ref="form" :model="form" :rules="rules" label-width="1.0rem">
+            <el-row>
+
+                <el-col :span="12">
+                    <el-form-item label="供应商号:" prop="venderid">
+                        <el-input class="inline-input" v-model="form.venderid"
+                                  v-bind:readonly="readonly"
+                                  placeholder="请输入供应商号"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="发票号码:" prop="referTo">
+                        <el-input class="inline-input" v-model="form.referTo" :maxlength="referToMaxlength"
+                                  placeholder="请输入发票号码"></el-input>
+                    </el-form-item>
+                </el-col>
+<!--
+                <el-col :span="12">
+                    <el-form-item label="JV号:" prop="jvcode">
+                        <el-input class="inline-input" v-model="form.jvcode" :maxlength="jvCodeMaxlength"
+                                  placeholder="请输入JV号"></el-input>
+                    </el-form-item>
+                </el-col>
+-->
+                <el-col :span="12">
+                    <el-form-item label="JV:">
+                        <el-select id="gf-select" v-model="form.jvcode" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+                            <el-option
+                                    v-for="item in gfs"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="14">
+                    <el-form-item label="付款日期:" id="requireMsg4">
+                        <el-col :span="13">
+                            <el-date-picker type="date" placeholder="选择日期" v-model="form.paymentDate1"
+                                            :clearable="false" :editable="false"
+                                            @blur="blurpickerchange(1)" @focus="focuspickerchange(1)"
+                                            id="datevalue1"
+                                            :picker-options="paymentDateOptions1"
+                                            format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                            @change="paymentDate1Change">
+                            </el-date-picker>
+                        </el-col>
+                        <el-col :span="2">—</el-col>
+                        <el-col :span="13">
+
+                            <el-date-picker type="date" placeholder="选择日期" v-model="form.paymentDate2"
+                                            :clearable="false" :editable="false"
+                                            @blur="blurpickerchange(2)" @focus="focuspickerchange(2)"
+                                            id="datevalue2"
+                                            :picker-options="paymentDateOptions2"
+                                            format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                            @change="paymentDate2Change"></el-date-picker>
+                        </el-col>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12" v-if="isVender===false">
+                    <el-form-item label="凭证类型:" prop="documentType">
+                        <el-input class="inline-input" v-model="form.documentType"
+                                  v-bind:readonly="readonly"
+                                  placeholder="请输入凭证类型"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+
+                <el-col :span="1" :offset="1" class="btn-row2 ">
+                    <el-button class="btnexport" @click="query('form')">查询</el-button>
+                </el-col>
+
+                <el-col :span="1" :offset="1" class="btn-row3 ">
+                    <el-button class="btnexport" @click="clear('form')">清空</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1" class="btn-row4 ">
+                    <el-button id="export_btn" disabled class="btnexport" @click="exportExcel()">导出</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+    <div>
+        <div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"></div>
+    </div>
+    <el-table height="5rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+              v-loading="listLoading"
+              element-loading-text="正在拼命加载中">
+        <el-table-column prop="venderid" v-if="isVender===false" label="供应商号" align="center" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true" v-if="isVender"  label="Invoice/Coop No." align="center" header-align="center" >
+            <el-table-column :show-overflow-tooltip="true" prop="referTo" label="发票&协议号" align="center" header-align="center" >
+            </el-table-column>
+        </el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true" prop="orgName" label="供应商名称" align="center" header-align="center" width="120"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="certificateNo" label="凭证号" align="center" header-align="center" width="120"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" header-align="center" width="100" :formatter="dateFormat"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="documentType" label="凭证类型" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="postingDate" label="过账日期" align="center" header-align="center" :formatter="dateFormat"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="companyCode" label="公司代码" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="costCenter" label="成本中心" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="profitCenter" label="成本中心2" align="center" header-align="center" width="110"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="referTo" label="参照" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="paymentDate" label="清账日期(付款日期)" align="center" header-align="center" width="160" :formatter="dateFormat"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="clearanceVoucher" label="清账凭证号" align="center" header-align="center" width="110"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="subject" label="科目" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="usercode" label="10位供应商号" align="center" header-align="center" width="130"></el-table-column>
+        <el-table-column v-if="isVender===false" prop="showCurrencyAmount" label="金额" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+        <el-table-column v-if="isVender" label="Invoice/Coop Amt." align="center" header-align="center" :formatter="numberFormat">
+            <el-table-column prop="showCurrencyAmount" label="发票&协议金额" align="center" header-align="center" :formatter="numberFormat">
+            </el-table-column>
+        </el-table-column>
+        <el-table-column v-if="isVender" label="Cash Discount" align="center" header-align="center">
+            <el-table-column v-if="isVender" label="现金折扣" align="center" header-align="center">
+                <template scope="scope">
+                    <span>0.00</span>
+                </template>
+            </el-table-column>
+        </el-table-column>
+        <el-table-column v-if="isVender"   label="Report Date" align="center" header-align="center"  :formatter="dateFormat">
+            <el-table-column :show-overflow-tooltip="true"  label="报告日期" align="center" header-align="center" prop="paymentDate"  :formatter="dateFormat">
+
+            </el-table-column>
+        </el-table-column>
+        <el-table-column v-if="isVender"   prop="companyCode" label="Payer" align="center" header-align="center">
+            <el-table-column :show-overflow-tooltip="true"  prop="companyCode" label="付款单位" align="center" header-align="center">
+
+            </el-table-column>
+        </el-table-column>
+        <el-table-column v-if="isVender"  label="Remark" align="center" header-align="center">
+            <el-table-column :show-overflow-tooltip="true" prop="invoiceText" label="备注"  align="center" header-align="center">
+                <template scope="scope">
+                    <span v-if="scope.row.documentType=== 'Z1'" >—— ——</span>
+                    <span v-else-if="scope.row.documentType=== 'Z2'" >—— ——</span>
+                    <span v-else-if="scope.row.documentType=== 'Z8'" >—— ——</span>
+                    <span v-else>{{scope.row.invoiceText}}</span>
+                </template>
+            </el-table-column>
+        </el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="voucherCurrency" label="币种" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" prop="currencyAmount" label="金额2" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true"  prop="currency" label="本地币种" align="center" header-align="center"></el-table-column>
+        <el-table-column v-if="isVender===false" :show-overflow-tooltip="true" class-name="noSpotSpotSpot" prop="invoiceText" label="文本摘要" width="200" align="center" header-align="center">
+            <template scope="scope">
+                <span v-if="scope.row.documentType=== 'Z1'" >—— ——</span>
+                <span v-else-if="scope.row.documentType=== 'Z2'" >—— ——</span>
+                <span v-else-if="scope.row.documentType=== 'Z8'" >—— ——</span>
+                <span v-else>{{scope.row.invoiceText}}</span>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList"
+                       :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>
+
+</div>
+</body>
+<script src="../../js/modules/InformationInquiry/paymentDetailQuery.js"></script>
+</html>

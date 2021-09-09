@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redTicket.dao.PrintCoverDao">
+    <select id="selectRedTicketList" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+            SELECT
+            <if test=" map.limit != null">
+                TOP (#{map.limit})
+            </if>
+            A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+            FROM
+            (
+
+                select
+                distinct  m.id ,
+                m.redticket_data_serial_number  redTicketDataSerialNumber,
+                m.business_type                 businessType,
+                m.red_total_amount              redTotalAmount,
+                m.whether_upload_data           dataStatus,
+                m.whether_upload_rednotice       noticeStatus,
+                m.red_notice_number              redNoticeNumber,
+                m.audit_results                  examineResult,
+                m.audit_remarks                  examineRemarks,
+                m.data_association               dataAssociation,
+                m.rednotice_association           redNoticeAssociation,
+
+                m.qs_status  qsStatus,
+                m.tax_rate taxRate,
+                m.invoice_code invoiceCode,
+                m.invoice_no invoiceNo,
+                m.redticket_creation_time redTicketCreationTime,
+                m.uuid  uuid,
+                m.venderid  venderid,
+                m.invoice_amount invoiceAmount,
+                m.invoice_date invoiceDate,
+                m.tax_amount taxAmount,
+                m.total_amount totalAmount
+
+                from t_dx_red_ticket_matching m WITH(NOLOCK)
+                 <if test='map.businessType == "1"'>
+                        LEFT join t_dx_return_agreement_middle tmm on m.id =  tmm.red_ticket_matching_association
+                        LEFT JOIN t_dx_all_record_invoice_detail r ON r.id =tmm.return_agreement_association
+                    </if>
+
+                    <if test='map.businessType == "2"'>
+                        left join t_dx_return_agreement_middle  tam  on m.id=tam.red_ticket_matching_association
+                        LEFT JOIN  t_dx_protocol  ta on  ta.id = tam.return_agreement_association
+
+                    </if>
+               <where>
+                   and m.redticket_status='0'
+                   and m.whether_upload_rednotice='1'
+                   and  m.invoice_code !=''
+                   and m.invoice_no!= ''
+                   <choose>
+                       <when test=' map.businessType == "1"'>
+                           <if test="map.serviceNo != null and map.serviceNo != ''">
+                               and r.return_goods_code like concat('%',concat(#{map.serviceNo},'%'))
+                           </if>
+                            and r.return_goods_status ='3'
+                       </when>
+                       <when test=' map.businessType == "2"'>
+                           <if test="map.serviceNo != null and map.serviceNo != ''">
+                               and ta.protocol_no like concat('%',concat(#{map.serviceNo},'%'))
+                           </if>
+                            and ta.protocol_status  ='2'
+                       </when>
+
+                   </choose>
+                   <if test="map.userCode != null and map.userCode != ''">
+                       and  m.venderid   like concat('%',concat(#{map.userCode},'%'))
+                   </if>
+                   <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                       <![CDATA[ AND convert(varchar(100),m.redticket_creation_time,23) >= #{map.invoiceDate1} ]]>
+                   </if>
+                   <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                       <![CDATA[ AND convert(varchar(10),m.redticket_creation_time,23)  <= #{map.invoiceDate2} ]]>
+                   </if>
+
+                   <if test="map.businessType != null and map.businessType != ''">
+                       and m.business_type = #{map.businessType}
+                   </if>
+               </where>
+
+            ) AS o
+            ) A
+            WHERE 1=1
+            <if test="map.offset != null ">
+                and   rownumber > #{map.offset}
+            </if>
+
+
+
+        </select>
+
+    <select id="selectRedTicketListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from (
+        select
+        distinct m.id
+        from t_dx_red_ticket_matching m WITH(NOLOCK)
+
+        <if test='map.businessType == "1"'>
+            LEFT join t_dx_return_agreement_middle tmm on m.id =  tmm.red_ticket_matching_association
+            LEFT JOIN t_dx_all_record_invoice_detail r ON r.id =tmm.return_agreement_association
+        </if>
+
+        <if test='map.businessType == "2"'>
+            left join t_dx_return_agreement_middle  tam  on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_protocol  ta on  ta.id = tam.return_agreement_association
+        </if>
+        <where>
+            and m.redticket_status='0'
+            and m.whether_upload_rednotice='1'
+            and m.invoice_code!=''
+            and m.invoice_no!=''
+            <choose>
+                <when test=' map.businessType == "1"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and r.return_goods_code like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                    and r.return_goods_status ='3'
+                </when>
+                <when test=' map.businessType == "2"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and ta.protocol_no like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                    and ta.protocol_status  ='2'
+                </when>
+
+            </choose>
+            <if test="map.userCode != null and map.userCode != ''">
+                and  m.venderid   like concat('%',concat(#{map.userCode},'%'))
+            </if>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.redticket_creation_time,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),m.redticket_creation_time,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+
+            <if test="map.businessType != null and map.businessType != ''">
+                and m.business_type = #{map.businessType}
+            </if>
+        </where>) aa
+
+    </select>
+
+    <select id="getGfNameAndTaxNo" resultType="com.xforceplus.wapp.modules.redTicket.entity.OrgEntity">
+        select orgname,taxno,orgcode
+        from 	t_ac_org WITH(NOLOCK)
+        LEFT JOIN t_ac_user_taxno on t_ac_user_taxno.orgid = t_ac_org.orgid
+        where  orgtype=8 and t_ac_user_taxno.userid =#{userId}
+
+    </select>
+
+    <select id="getRedTicketMatch" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+        select
+        distinct   m.id ,
+        m.redticket_data_serial_number  redTicketDataSerialNumber,
+        m.business_type                 businessType,
+        m.red_total_amount              redTotalAmount,
+        m.whether_upload_data           dataStatus,
+        m.whether_upload_rednotice       noticeStatus,
+        m.red_notice_number              redNoticeNumber,
+        m.audit_results                  examineResult,
+        m.audit_remarks                  examineRemarks,
+        m.data_association               dataAssociation,
+        m.rednotice_association           redNoticeAssociation,
+
+        m.qs_status  qsStatus,
+        m.tax_rate taxRate,
+        m.invoice_code invoiceCode,
+        m.invoice_no invoiceNo,
+        m.redticket_creation_time redTicketCreationTime,
+        m.uuid  uuid,
+        m.venderid  venderid,
+        m.invoice_amount invoiceAmount,
+        m.tax_amount taxAmount,
+        m.invoice_date invoiceDate,
+        m.total_amount totalAmount
+
+        from t_dx_red_ticket_matching m WITH(NOLOCK)
+        where m.id = #{id}
+    </select>
+
+        <select id="getUserName" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+            select username
+            from t_ac_user WITH(NOLOCK)
+            where usercode =#{userCode}
+        </select>
+
+
+</mapper>

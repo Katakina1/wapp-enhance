@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.monitearly.dao.RecordInvoiceDao">
+
+	<resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+		<result column="totalCount" property="totalCount" />
+		<result column="totalAmount" property="totalAmount" />
+		<result column="totalTax" property="totalTax" />
+	</resultMap>
+	<!-- 自定义底账表结果集映射-->
+	<resultMap id="RecordInvoiceMap" type="com.xforceplus.wapp.modules.monitearly.entity.RecordInvoiceEntity" >
+		<id property="id" column="id"></id>
+		<result property="cutApproveDate" column="lastdate"/>
+		<result property="invoiceType" column="invoice_type"/>
+		<result property="invoiceCode" column="invoice_code"/>
+		<result property="invoiceNo" column="invoice_no"/>
+		<result property="invoiceDate" column="invoice_date"/>
+		<result property="gfName" column="gf_name"/>
+		<result property="xfName" column="xf_name"/>
+		<result property="gfTaxNo" column="gf_tax_no"/>
+		<result property="taxAmount" column="amount"/>
+		<result property="invoiceAmount" column="invoiceamount"/>
+	</resultMap>
+	<!-- 自定义组织机构结果集映射-->
+	<resultMap id="OrgMap" type="com.xforceplus.wapp.modules.monitearly.entity.OrgEntity">
+		<id property="orgId" column="orgid"></id>
+		<result property="taxNo" column="taxno"/>
+		<result property="taxName" column="taxname"/>
+	</resultMap>
+    <select id="queryInvoice"  resultMap="RecordInvoiceMap">
+		/**mycat:schema=${schemaLabel}*/SELECT id,invoice_type,gf_tax_no,DATE_ADD(invoice_date,INTERVAL 359 DAY)as lastdate,invoice_code,invoice_no,
+			invoice_date,gf_name,xf_name,FORMAT(invoice_amount,2) AS invoiceamount,FORMAT(tax_amount,2) AS amount FROM t_dx_record_invoice as t WITH(NOLOCK)
+			WHERE   valid=1 AND  rzh_belong_date is null AND t.invoice_amount>0 AND invoice_status = 0 AND t.rzh_yesorno=0 AND t.invoice_type in ("01","03","14")
+			AND confirm_date is null and rzh_date is null AND date_format(invoice_date,'%Y-%m-%d') >='2017-07-01'  AND tax_amount >= 0
+		    <if test="numDate !=null and numDate !=''">
+				 AND now() BETWEEN DATE_add(invoice_date,INTERVAL #{numDate} DAY)
+				 AND DATE_add(invoice_date,INTERVAL 359 DAY)
+			</if>
+		 	<if test="gfTaxNo !='' and gfTaxNo!=null ">
+				 AND t.gf_tax_no = #{gfTaxNo}
+			</if>
+		    <if test="gfTaxNo =='' or gfTaxNo ==null">
+			AND t.gf_tax_no IN (SELECT taxno from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userId}
+			and o.orgid = t.orgid)
+		    </if>
+		     order by invoice_date asc
+		    <if test="offset != null and limit != null ">
+			limit #{offset}, #{limit}
+		    </if>
+		</select>
+	<!-- 获取查询条件的总行数-->
+	<select id="geyQueryInvoiceNum" resultMap="reportStatisticsMap">
+	/**mycat:schema=${schemaLabel}*/SELECT count(1) totalCount, ifnull(sum(invoice_amount), 0) totalAmount, ifnull(sum(tax_amount), 0) totalTax FROM t_dx_record_invoice as t WITH(NOLOCK)
+	WHERE    valid=1 AND  rzh_belong_date is null AND t.invoice_amount>0 AND t.invoice_status = 0 AND t.rzh_yesorno=0 AND t.invoice_type in ("01","03","14")
+	AND confirm_date is null and rzh_date is null AND date_format(invoice_date,'%Y-%m-%d') >='2017-07-01'  AND tax_amount >= 0
+	<if test="numDate !=null and numDate !=''">
+		AND now() BETWEEN DATE_add(invoice_date,INTERVAL #{numDate} DAY)
+		AND DATE_add(invoice_date,INTERVAL 359 DAY)
+	</if>
+	<if test="gfTaxNo !='' and gfTaxNo !=null">
+		AND t.gf_tax_no = #{gfTaxNo}
+	</if>
+	<if test="gfTaxNo =='' or gfTaxNo ==null">
+		AND t.gf_tax_no IN (SELECT taxno from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userId}
+		and o.orgid = t.orgid)
+	</if>
+</select>
+
+	<!-- 获取当前用户的所有的购方名称-->
+    <select id="obtainAllOrgName" resultMap="OrgMap" >
+		/**mycat:schema=${schemaLabel}*/SELECT taxno,taxname from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userid}
+		and o.orgid = t.orgid
+	</select>
+    <!--批量更新认证状态 -->
+	<!--<update id="updateInvoiceList_1" parameterType="java.util.List">
+     <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+		 /**mycat:schema=${item.schemaLabel}*/ UPDATE  t_dx_record_invoice WITH(ROWLOCK)
+         <set >
+			 auth_status=2,
+			 confirm_date= NOW(),
+			 gx_user_account=(SELECT loginname FROM t_ac_user WITH(NOLOCK) WHERE userid=#{item.userid}),
+			 gx_user_name=(SELECT `username` FROM t_ac_user WITH(NOLOCK) WHERE userid=#{item.userid}),
+			 rzh_belong_date=(SELECT current_tax_period FROM t_dx_tax_current WHERE taxno = #{item.orgid})
+		 </set>
+		 WHERE id=#{item.id}
+	 </foreach>
+	</update>-->
+
+	<update id="updateInvoiceList" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			/**mycat:schema=${item.schemaLabel}*/ UPDATE  t_dx_record_invoice WITH(ROWLOCK)
+			<set >
+				auth_status=2,
+				rzh_yesorno=1,
+				rzh_type=1,
+				rzh_date=NOW(),
+				confirm_date=NOW(),
+				gx_user_account=#{item.loginname},
+				gx_user_name=#{item.username},
+				rzh_belong_date=#{item.rzhDate}
+			</set>
+			WHERE id=#{item.id}
+		</foreach>
+	</update>
+
+	<select id="getRzhBDate"  parameterType="java.lang.String" resultType="String">
+
+		/**mycat:schema=${schemaLabel}*/SELECT current_tax_period FROM t_dx_tax_current
+		WHERE taxno = #{ogid}
+
+	</select>
+	<select id="queryInvoiceToExcel"  resultMap="RecordInvoiceMap">
+		/**mycat:schema=${schemaLabel}*/SELECT id,invoice_type,gf_tax_no,DATE_ADD(invoice_date,INTERVAL 359 DAY)as lastdate,invoice_code,invoice_no,
+		invoice_date,gf_name,xf_name,FORMAT(invoice_amount,2) AS invoiceamount,FORMAT(tax_amount,2) AS amount FROM t_dx_record_invoice as t WITH(NOLOCK)
+		WHERE  valid=1 AND  rzh_belong_date is null AND t.invoice_amount>0 AND invoice_status = 0 AND t.rzh_yesorno=0
+		AND confirm_date is null and rzh_date is null AND date_format(invoice_date,'%Y-%m-%d') >='2017-07-01'  AND tax_amount >= 0
+		<if test="numDate !=null and numDate !=''">
+			AND now() BETWEEN DATE_add(invoice_date,INTERVAL #{numDate} DAY)
+			AND DATE_add(invoice_date,INTERVAL 359 DAY)
+		</if>
+		<if test="gfTaxNo !='' and gfTaxNo!=null ">
+			AND t.gf_tax_no = #{gfTaxNo}
+		</if>
+		<if test="gfTaxNo =='' or gfTaxNo ==null">
+			AND t.gf_tax_no IN (SELECT taxno from t_ac_user_taxno as t,t_ac_org as o WITH(NOLOCK) WHERE t.userid=#{userId}
+			and o.orgid = t.orgid)
+		</if>
+		order by invoice_date asc
+	</select>
+</mapper>

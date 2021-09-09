@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.export.dao.ExportDao">
+
+    <insert id="insertLog" parameterType="com.xforceplus.wapp.modules.export.entity.ExportLogEntity" useGeneratedKeys="true" keyProperty="entity.id">
+
+        insert into t_dx_excel_exportlog (user_account,user_name,conditions,service_type) values (
+        #{entity.userAccount},#{entity.userName},#{entity.conditions},#{entity.serviceType}
+        )
+    </insert>
+
+    <!--导出开始 更新开始时间 -->
+    <update id="updateStartDate" >
+  		update t_dx_excel_exportlog
+  			set start_date = getdate()
+ 			where id = #{id}
+    </update>
+
+    <update id="updateSucc" parameterType="java.util.Map" >
+  		update t_dx_excel_exportlog
+  			set export_status = '2',end_date = getdate(),filepath = #{excelFile}
+ 			where id = #{id}
+    </update>
+
+    <update id="updateFail" parameterType="java.util.Map"  >
+  		update t_dx_excel_exportlog
+  			set export_status = '3',end_date =  getdate(),errmsg = #{errmsg}
+  			where id = #{id}
+    </update>
+
+    <insert id="insertMessage" parameterType="java.util.Map">
+        insert t_dx_messagecontrol (create_time,operation_status,title,content,user_account,url) values(
+        getdate(),'0',#{title},#{content},#{userAccount},#{url}
+        )
+    </insert>
+    
+	<select id="getMessageControl" resultType="com.xforceplus.wapp.modules.export.entity.MessageEntity">
+		SELECT
+			create_time as createTime,
+			update_time as updateTime,
+			operation_status as operationStatus,
+			title as title,
+			content as content,
+			attr1 as attr1,
+			attr2 as attr2,
+			user_account as userAccount,
+			url as url,
+			id as id
+		FROM
+			t_dx_messagecontrol 
+		WHERE 1=1
+		 <if test="map.username != null and map.username != ''">
+            and user_account = #{map.username}
+        </if>
+        <if test="map.operationStatus != null and map.operationStatus != ''">
+            and operation_status = #{map.operationStatus}
+        </if>		
+		ORDER BY operation_status ASC, create_time desc
+	</select>
+	
+	<select id="getMessageControlCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(1) 
+		FROM
+			t_dx_messagecontrol 
+		WHERE 1=1
+		 <if test="map.username != null and map.username != ''">
+            and user_account = #{map.username}
+        </if>
+        <if test="map.operationStatus != null and map.operationStatus != ''">
+            and operation_status = #{map.operationStatus}
+        </if>	
+	</select>
+	
+	<select id="getExportLog" resultType="com.xforceplus.wapp.modules.export.entity.ExportLogEntity">
+		SELECT
+			*
+		FROM
+			t_dx_excel_exportlog 
+		WHERE 1=1
+		 <if test="map.downloadId != null and map.downloadId != '0'">
+            and id = #{map.downloadId}
+        </if>
+	</select>
+	
+	<update id="allclickcommit">
+		update t_dx_messagecontrol
+         set operation_status='1'
+         where operation_status='0' and user_account=#{loginname}
+	</update>
+	
+	<update id="clickcommit">
+		update t_dx_messagecontrol
+         set operation_status='1'
+         where id=#{id}
+	</update>
+</mapper>

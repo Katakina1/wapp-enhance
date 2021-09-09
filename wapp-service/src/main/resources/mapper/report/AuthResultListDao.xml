@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.AuthResultListDao">
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        /**mycat:schema=${schemaLabel}*/SELECT
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        xf_tax_no xfTaxNo,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        rzh_date rzhDate
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND rzh_yesorno='1' AND gf_tax_no=#{map.gfName} AND rzh_belong_date=#{map.rzhBelongDate}
+        ORDER BY invoice_date ASC
+        <if test="map.offset != null and map.limit != null">
+            limit #{map.offset}, #{map.limit}
+        </if>
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/SELECT count(1) totalCount, ifnull(sum(invoice_amount), 0) totalAmount, ifnull(sum(tax_amount), 0) totalTax
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND rzh_yesorno='1' AND gf_tax_no=#{map.gfName} AND rzh_belong_date=#{map.rzhBelongDate}
+        ORDER BY invoice_date ASC
+    </select>
+
+    <select id="getList" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        /**mycat:schema=${schemaLabel}*/SELECT
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        xf_tax_no xfTaxNo,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        rzh_date rzhDate
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND rzh_yesorno='1' AND gf_tax_no=#{map.gfName} AND rzh_belong_date=#{map.rzhBelongDate}
+        ORDER BY invoice_date ASC
+    </select>
+
+</mapper>

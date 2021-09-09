@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.transferOut.dao.OrgDao">
+    <resultMap id="orgResultMap" type="com.xforceplus.wapp.modules.transferOut.entity.OrgEntity">
+        <id column="orgid" property="orgid"/>
+        <result column="orgcode" property="orgcode"/>
+        <result column="orgname" property="orgname"/>
+        <result column="taxno" property="taxno"/>
+        <result column="taxname" property="taxname"/>
+        <result column="parentid" property="parentid"/>
+        <result column="orgtype" property="orgtype"/>
+        <result column="linkman" property="linkman"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="email" property="email"/>
+        <result column="postcode" property="postcode"/>
+        <result column="bank" property="bank"/>
+        <result column="account" property="account"/>
+        <result column="isbottom" property="isbottom"/>
+        <result column="orglevel" property="orglevel"/>
+        <result column="orglayer" property="orglayer"/>
+        <result column="company" property="company"/>
+        <result column="remark" property="remark"/>
+        <result column="sortno" property="sortno"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_by" property="createBy"/>
+        <result column="last_modify_time" property="lastModifyTime"/>
+        <result column="last_modify_by" property="lastModifyBy"/>
+        <result column="com_type" property="comType"/>
+        <result column="is_black" property="isBlack"/>
+    </resultMap>
+
+
+    <!-- 获取当前登录用户的购方名称和税号 -->
+    <select id="getGfNameAndTaxNo" resultType="com.xforceplus.wapp.modules.transferOut.entity.OrgEntity">
+       /**mycat:schema=${schemaLabel}*/
+          select orgname,taxno  from 	t_ac_org WITH(NOLOCK)
+          where  orgtype=5
+          group by orgname,taxno
+    </select>
+
+    </mapper>

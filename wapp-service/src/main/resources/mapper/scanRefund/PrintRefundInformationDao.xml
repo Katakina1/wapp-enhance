@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.scanRefund.dao.PrintRefundInformationDao">
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="taxname" property="label" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.scanRefund.entity.EnterPackageNumberEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY rebateNo ASC) AS rownumber, o.*  <!--, id desc-->
+            FROM
+            (
+        </if>
+        select
+
+        convert(varchar(100),rebate_date,23) rebateDate,
+        rebateno rebateNo,
+        id,
+        venderid venderId,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        eps_no epsNo
+        from t_dx_invoice WITH(NOLOCK)
+        where  rebateyesorno = '1' and flow_type !='2'
+        <if test="map.venderId != null and map.venderId != ''">
+            and venderid = #{map.venderId}
+        </if>
+        <if test="map.rebateNo != null and map.rebateNo != ''">
+            and rebateno = #{map.rebateNo}
+        </if>
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and eps_no = #{map.epsNo}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no = #{map.invoiceNo}
+        </if>
+        <if test="map.rebateDate1 != null and map.rebateDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),rebate_date,23) >= #{map.rebateDate1} ]]>
+        </if>
+        <if test="map.rebateDate2 != null and map.rebateDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),rebate_date,23)  <= #{map.rebateDate2} ]]>
+        </if>
+        <if test="map.flowType != null and map.flowType != '' and map.flowType !='-1'">
+            and flow_type = #{map.flowType}
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY rebateno asc<!--, id desc-->
+        </if>
+        <if test="map.offset != null and map.limit != null">
+
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+
+        </if>
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/
+        select count(1) totalCount, ISNULL(sum(invoice_amount),0) totalAmount, ISNULL(sum(tax_amount),0) totalTax
+        from t_dx_invoice WITH(NOLOCK)
+        where  rebateyesorno = '1' and flow_type !='2'
+        <if test="map.venderId != null and map.venderId != ''">
+            and venderid = #{map.venderId}
+        </if>
+        <if test="map.rebateNo != null and map.rebateNo != ''">
+            and rebateno = #{map.rebateNo}
+        </if>
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and eps_no = #{map.epsNo}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no = #{map.invoiceNo}
+        </if>
+        <if test="map.rebateDate1 != null and map.rebateDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),rebate_date,23) >= #{map.rebateDate1} ]]>
+        </if>
+        <if test="map.rebateDate2 != null and map.rebateDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),rebate_date,23)  <= #{map.rebateDate2} ]]>
+        </if>
+        <if test="map.flowType != null and map.flowType != '' and map.flowType !='-1'">
+            and flow_type = #{map.flowType}
+        </if>
+
+    </select>
+
+    <select id="queryRefundList" resultType="com.xforceplus.wapp.modules.scanRefund.entity.EnterPackageNumberEntity">
+        select
+        b.id,
+        b.rebateno rebateNo,
+        b.venderid venderId,
+        b.invoice_no invoiceNo,
+        b.invoice_amount invoiceAmount,
+        b.vendername venderName,
+        b.gf_name gfName,
+        b.xf_name xfName,
+        b.mail_company mailCompany,
+        b.tax_amount taxAmount,
+        b.flow_type flowType,
+        b.refund_reason refundReason,
+        b.eps_no epsNo,
+        b.refund_code refundCode,
+        convert(varchar(100),b.qs_date,23) qsDate,
+        convert(varchar(100),b.rebate_date,23) rebateDate,
+        a.shop_no shopNo,
+        a.applicant_department applicantDepartment,
+        a.applicant_no applicantNo,
+        a.applicant_name applicantName,
+        a.applicant_call applicantCall,
+        a.applicant_subarea applicantSubarea,
+        a.import_date importDate
+        from t_dx_invoice b WITH(NOLOCK)
+        LEFT JOIN t_dx_applicant a WITH(NOLOCK) on b.eps_no = a.eps_no
+        where
+        id = #{id}
+    </select>
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.scanRefund.entity.EnterPackageNumberEntity">
+        select
+        convert(varchar(100),rebate_date,23) rebateDate,
+        rebateno rebateNo,
+        id,
+        venderid venderId,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        convert(varchar(100),invoice_date,23) invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        eps_no epsNo
+        from t_dx_invoice WITH(NOLOCK)
+        where 
+        rebateyesorno = '1' and flow_type !='2'
+
+        <if test="map.venderId != null and map.venderId != ''">
+            and venderid = #{map.venderId}
+        </if>
+        <if test="map.rebateNo != null and map.rebateNo != ''">
+            and rebateno = #{map.rebateNo}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no = #{map.invoiceNo}
+        </if>
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and eps_no = #{map.epsNo}
+        </if>
+        <if test="map.rebateDate1 != null and map.rebateDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),rebate_date,23) >= #{map.rebateDate1} ]]>
+        </if>
+        <if test="map.rebateDate2 != null and map.rebateDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),rebate_date,23)  <= #{map.rebateDate2} ]]>
+        </if>
+        <if test="map.flowType != null and map.flowType != '' and map.flowType !='-1'">
+            and flow_type = #{map.flowType}
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY rebate_date desc
+        </if>
+    </select>
+
+
+    <select id="queryPostType" resultType="com.xforceplus.wapp.modules.scanRefund.entity.EnterPackageNumberEntity">
+    select
+    userid userId,
+    post_type postType
+    from t_ac_user WITH(NOLOCK)
+    where  usercode in(select venderid from t_dx_invoice WITH(NOLOCK) where id = #{id})
+
+</select>
+
+	<select id="queryCostList" resultType="com.xforceplus.wapp.modules.scanRefund.entity.EnterPackageNumberEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY venderId desc,epsNo desc) AS rownumber, o.*  <!--, id desc-->
+            FROM
+            (
+        </if>
+        select
+
+        convert(varchar(100),rebate_date,23) rebateDate,
+        b.rebateno rebateNo,
+        b.id,
+        b.venderid venderId,
+        b.invoice_type invoiceType,
+        b.invoice_code invoiceCode,
+        b.invoice_no invoiceNo,
+        b.invoice_date invoiceDate,
+        b.invoice_amount invoiceAmount,
+        b.tax_amount taxAmount,
+        b.eps_no epsNo,
+        a.shop_no shopNo,
+        a.applicant_department applicantDepartment,
+        a.applicant_no applicantNo,
+        a.applicant_name applicantName,
+        a.applicant_call applicantCall,
+        a.applicant_subarea applicantSubarea,
+        a.import_date importDate
+        from t_dx_invoice b WITH(NOLOCK)
+        LEFT JOIN t_dx_applicant a WITH(NOLOCK) on b.eps_no = a.eps_no
+        where  rebateyesorno = '1' and flow_type='2'
+
+
+
+        <if test="map.venderId != null and map.venderId != ''">
+            and b.venderid = #{map.venderId}
+        </if>
+        <if test="map.rebateNo != null and map.rebateNo != ''">
+            and b.rebateno = #{map.rebateNo}
+        </if>
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and b.eps_no = #{map.epsNo}
+        </if>
+        <if test="map.shopNo == 0">
+            and a.shop_no = N'总部'
+        </if>
+        <if test="map.shopNo == 1">
+            and a.shop_no != N'总部' and a.shop_no is not null
+        </if>
+        <if test="map.shopNo == 2">
+            and a.shop_no is null
+        </if>
+
+        <if test="map.rebateDate1 != null and map.rebateDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),b.rebate_date,23) >= #{map.rebateDate1} ]]>
+        </if>
+        <if test="map.rebateDate2 != null and map.rebateDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),b.rebate_date,23)  <= #{map.rebateDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY b.rebate_date desc<!--, id desc-->
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+
+        </if>
+    </select>
+
+    <select id="queryTotalCostResult" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/
+        select count(1) totalCount, ISNULL(sum(invoice_amount),0) totalAmount, ISNULL(sum(tax_amount),0) totalTax
+        from t_dx_invoice b WITH(NOLOCK)
+        LEFT JOIN t_dx_applicant a WITH(NOLOCK) on b.eps_no = a.eps_no
+        where  b.rebateyesorno = '1' and b.flow_type='2'
+
+        <if test="map.venderId != null and map.venderId != ''">
+            and b.venderid = #{map.venderId}
+        </if>
+        <if test="map.rebateNo != null and map.rebateNo != ''">
+            and b.rebateno = #{map.rebateNo}
+        </if>
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and b.eps_no = #{map.epsNo}
+        </if>
+        <if test="map.shopNo == 0">
+            and a.shop_no = N'总部'
+        </if>
+        <if test="map.shopNo == 1">
+            and a.shop_no != N'总部' and a.shop_no is not null
+        </if>
+        <if test="map.shopNo == 2">
+            and a.shop_no is null
+        </if>
+        <if test="map.rebateDate1 != null and map.rebateDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),b.rebate_date,23) >= #{map.rebateDate1} ]]>
+        </if>
+        <if test="map.rebateDate2 != null and map.rebateDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),b.rebate_date,23)  <= #{map.rebateDate2} ]]>
+        </if>
+
+    </select>
+    
+    <select id="queryListCostAll" resultType="com.xforceplus.wapp.modules.scanRefund.entity.EnterPackageNumberEntity">
+        select
+
+        convert(varchar(100),rebate_date,23) rebateDate,
+        b.rebateno rebateNo,
+        b.id,
+        b.venderid venderId,
+        b.invoice_type invoiceType,
+        b.invoice_code invoiceCode,
+        b.invoice_no invoiceNo,
+        b.invoice_date invoiceDate,
+        b.invoice_amount invoiceAmount,
+        b.tax_amount taxAmount,
+        b.eps_no epsNo,
+        a.shop_no shopNo,
+        a.applicant_department applicantDepartment,
+        a.applicant_no applicantNo,
+        a.applicant_name applicantName,
+        a.applicant_call applicantCall,
+        a.applicant_subarea applicantSubarea,
+        a.import_date importDate
+        from t_dx_invoice b WITH(NOLOCK)
+        LEFT JOIN t_dx_applicant a WITH(NOLOCK) on b.eps_no = a.eps_no
+        where  rebateyesorno = '1' and flow_type='2'
+        <if test="map.venderId != null and map.venderId != ''">
+            and b.venderid = #{map.venderId}
+        </if>
+        <if test="map.rebateNo != null and map.rebateNo != ''">
+            and b.rebateno = #{map.rebateNo}
+        </if>
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and b.eps_no = #{map.epsNo}
+        </if>
+        <if test="map.shopNo == 0">
+            and a.shop_no = N'总部'
+        </if>
+        <if test="map.shopNo == 1">
+            and a.shop_no != N'总部' and a.shop_no is not null
+        </if>
+        <if test="map.shopNo == 2">
+            and a.shop_no is null
+        </if>
+        <if test="map.rebateDate1 != null and map.rebateDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),b.rebate_date,23) >= #{map.rebateDate1} ]]>
+        </if>
+        <if test="map.rebateDate2 != null and map.rebateDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),b.rebate_date,23)  <= #{map.rebateDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY b.rebate_date desc<!--, id desc-->
+        </if>
+    </select>
+</mapper>

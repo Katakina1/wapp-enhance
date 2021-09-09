@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.ReleaseQuestionnaireDao">
+
+    <select id="getAllVender" resultType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        select
+        userid userId
+        from t_ac_user t WITH(NOLOCK)
+        left join t_ac_org o  WITH(NOLOCK) on t.orgid = o.orgid
+        where o.orgtype='8'
+    </select>
+
+    <insert id="saveQuestionnaire" parameterType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity" useGeneratedKeys="true" keyProperty="entity.id">
+        insert into t_dx_questionnaire
+        (
+          questionnaire_title,
+          release_date
+        ) values(
+            #{entity.questionnaireTitle},
+            getdate()
+        )
+    </insert>
+
+    <insert id="saveOption" parameterType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        insert into t_dx_questionnaire_option
+        (
+        topic_id,
+        option_name
+
+        ) values(
+        #{entity.topicId},
+        #{entity.value}
+        )
+    </insert>
+
+    <insert id="saveTopic" parameterType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity" useGeneratedKeys="true" keyProperty="entity.topicId">
+        insert into t_dx_questionnaire_topic
+        (
+        topic_title,
+        questionnaire_id
+
+        ) values(
+        #{entity.value},
+         #{entity.id}
+        )
+    </insert>
+
+    <insert id="addQuestionnaireUserMiddle" >
+        insert into t_dx_questionnaire_user
+        (
+        questionnaire_id,
+        user_id,
+        is_answer
+        ) values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id},
+            #{item.userId},
+            '0'
+            )
+        </foreach>
+    </insert>
+</mapper>

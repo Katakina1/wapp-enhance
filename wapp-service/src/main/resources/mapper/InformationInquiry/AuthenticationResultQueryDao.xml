@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.AuthenticationResultQueryDao">
+
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+
+
+
+    <!-- 数据库中表名为:t_dx_record_invoice的列名,as前是数据库的列明,as后是列的别名用于映射成实体类中的属性,需要注意的是别名必须与resultMap中的column别名一致 -->
+    <sql id="t_dx_record_invoice_Column">
+         id as id
+        ,auth_status as auth_status
+        ,rzh_yesorno as rzhYesorno
+        ,rzh_date as rzhDate
+        ,rzh_belong_date as rzhBelongDate
+        ,invoice_code as invoiceCode
+        ,invoice_no as invoiceNo
+        ,invoice_date as invoiceDate
+        ,invoice_type as invoiceType
+        ,gf_tax_no as gfTaxNo
+        ,gf_name as gfName
+        ,xf_tax_no as xfTaxNo
+        ,xf_name as xfName
+        ,Convert(decimal(18,2),invoice_amount)  as invoiceAmount
+        ,Convert(decimal(18,2),tax_amount) as taxAmount
+        ,invoice_status as invoiceStatus
+        ,jvcode as jvCode
+        ,company_code as companyCode
+        ,venderid
+        ,tax_rate as taxRate
+        ,confirm_user as confirmUser
+        ,flow_type as flowType
+        ,certificate_no as certificateNo
+        ,host_taxRate as hostTaxRate
+        ,create_date as create_date
+        ,qs_date as qsDate
+        ,remark as remark
+        ,rzh_back_msg as rzhBackMsg
+    </sql>
+
+    <sql id="queryWhere">
+        <if test="gfTaxNo != null and gfTaxNo != '' and gfTaxNo != '-1'">
+            and  jvcode = #{gfTaxNo}
+        </if>
+		<if test="flowType != null and flowType != '' and flowType != '-1'">
+            and  flow_type = #{flowType}
+        </if>
+        <if test="xfName != null and xfName != ''">
+            AND xf_name LIKE '%'+ #{xfName} + '%'
+        </if>
+        <if test="invoiceStartDate != null and invoiceStartDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), invoice_date, 23) >= #{invoiceStartDate} ]]>
+        </if>
+        <if test="invoiceEndDate != null and invoiceEndDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), invoice_date, 23)  <= #{invoiceEndDate} ]]>
+        </if>
+        <if test="rzhYesorno != null and rzhYesorno != ''">
+            AND rzh_yesorno = #{rzhYesorno}
+        </if>
+        <if test="rzhType != null and rzhType != ''">
+            AND  rzh_type = #{rzhType}
+        </if>
+        <if test="rzhBelongDate != null and rzhBelongDate != ''">
+            AND rzh_belong_date = #{rzhBelongDate}
+        </if>
+        <if test="companyCode != null and companyCode != ''">
+            AND company_code = #{companyCode}
+        </if>
+    </sql>
+
+    <select id="getCertificationListCount" resultMap="reportStatisticsMap">
+        SELECT count(1) totalCount, ISNULL(sum(invoice_amount), 0) totalAmount, ISNULL(sum(tax_amount), 0) totalTax
+        FROM
+        t_dx_record_invoice WITH(NOLOCK)
+        WHERE auth_status in('4','5')
+        AND invoice_type in('01','08')
+        <include refid="queryWhere"/>
+    </select>
+
+    <select id="selectCertificationList" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        SELECT
+        <if test="limit != null ">
+            TOP (#{limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.rzhDate asc,o.id asc) AS rownumber ,o.*
+        FROM
+        (
+        
+        SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM 
+        t_dx_record_invoice WITH(NOLOCK)
+        WHERE
+        auth_status in('4','5')
+        AND invoice_type in('01','08')
+
+        <include refid="queryWhere"/>
+        
+        ) AS o
+        ) A
+        WHERE
+        1=1
+        <if test="offset != null ">
+            and   rownumber > #{offset} ORDER BY rzhDate asc, id asc
+        </if>
+    </select>
+
+
+
+</mapper>

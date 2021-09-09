@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <title>系统日志</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div id="wh" style="width:100%;"></div>
+    <div>
+        <el-form ref="form" :model="q" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12">
+                    <div class="grid-content bg-purple">
+                        <el-form-item label="购方名称:" >
+                            <el-select v-model="q.gfName" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+                                <el-option
+                                        v-for="item in gfsh"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="发票代码:" class="form-item">
+                            <el-input v-model="q.invoiceCode" placeholder="请输入发票号码" :maxlength="12"></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+
+                <el-col :span="14">
+                    <el-form-item label="扫描日期:" class="form-item" id="requireMsg5">
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker type="date" @blur="blurpickerchange(1)" :picker-options="createStartDateOptions" @focus="focuspickerchange(1)" id="datevalue1" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.createDate1" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="createDate1Change"  ></el-date-picker>
+                            </el-col>
+                            <el-col :span="2">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" @blur="blurpickerchange(2)" :picker-options="createEndDateOptions" @focus="focuspickerchange(2)" id="datevalue2" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.createDate2" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="createDate2Change" ></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+            <el-col :span="12">
+                <div class="form-row">
+                    <el-form-item class="defaultItem hideItem" label="发票类型:" class="form-item">
+                        <el-select v-model="q.invoiceType">
+                            <el-option label="全部" value="-1" selected></el-option>
+                            <el-option label="增值税专用发票" value="01"></el-option>
+                            <el-option label="增值税电子普通发票" value="10"></el-option>
+                            <el-option label="机动车销售统一发票" value="03"></el-option>
+                            <el-option label="增值税普通发票" value="04"></el-option>
+                            <el-option label="增值税普通发票（卷票）" value="11"></el-option>
+                            <el-option label="增值税电子普通发票（通行费）" value="14"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </div>
+            </el-col>
+            <el-col :span="12">
+            <div class="form-row">
+            <el-form-item label="发票号码:" class="form-item">
+            <el-input v-model="q.invoiceNo" placeholder="请输入发票号码" :maxlength="8"></el-input>
+            </el-form-item>
+            </div>
+            </el-col>
+            <el-col :span="14">
+                <el-form-item label="开票日期:" class="form-item" id="requireMsg6">
+                    <el-row>
+                        <el-col :span="13">
+                            <el-date-picker type="date" @blur="blurpickerchange(3)" :picker-options="kpStartDateOptions" @focus="focuspickerchange(3)" id="datevalue3" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.kpDate1" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="kpDate1Change"  ></el-date-picker>
+                        </el-col>
+                        <el-col :span="2">—</el-col>
+                        <el-col :span="13">
+                            <el-date-picker type="date" @blur="blurpickerchange(4)" :picker-options="kpEndDateOptions" @focus="focuspickerchange(4)" id="datevalue4" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.kpDate2" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="kpDate2Change" ></el-date-picker>
+                        </el-col>
+                    </el-row>
+                </el-form-item>
+            </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item class="defaultItem hideItem" label="签收状态:" class="form-item">
+                            <el-select v-model="q.qsStatus">
+                                <el-option label="全部" value="-1" selected></el-option>
+                                <el-option label="已签收" value="1"></el-option>
+                                <el-option label="未签收" value="0"></el-option>
+                            </el-select>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="操作人:" class="form-item">
+                            <el-input v-model="q.userAccount" placeholder="请输入发票号码" :maxlength="12" ></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :span="14">
+                    <el-form-item label="签收日期:" class="form-item" id="requireMsg4">
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker type="date" @blur="blurpickerchange(5)" :picker-options="qsStartDateOptions" @focus="focuspickerchange(5)" id="datevalue1" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.invoiceDate1" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="invoiceDate1Change"  ></el-date-picker>
+                            </el-col>
+                            <el-col :span="2">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" @blur="blurpickerchange(6)" :picker-options="qsEndDateOptions" @focus="focuspickerchange(6)" id="datevalue2" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.invoiceDate2" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="invoiceDate2Change" ></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="query">查询</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                <el-button class="btnexport" @click="toExceil" :disabled="exportCondition">导出</el-button >
+            </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="oneKey" :disabled="exportCondition">一键同步</el-button >
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+
+    <div class="h15"></div>
+    <div>
+        <div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"><span id="totalStatistics"></span></div>
+    </div>
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+              v-loading="listLoading"   @selection-change="changeFun"
+              element-loading-text="正在拼命加载中">
+        <el-table-column :show-overflow-tooltip="true"
+                type="selection"
+                :selectable="checkSelectable"
+                width="55">
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="notes" label="扫描备注"  align="center" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码"  align="left" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center">
+            <template scope="scope">
+                <span>{{ scope.row.invoiceNo }}</span>
+                <el-tooltip class="item" effect="dark" placement="top-start">
+                    <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                    <img v-if="scope.row.invoiceType== '01'"  style="height:0.2rem;" src="../../img/special-invoice.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                    <img v-if="scope.row.invoiceType== '03' "  style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                    <img    v-if="scope.row.invoiceType=== '04' "
+                         style="height:0.2rem;" src="../../img/plain-invoice.png"  />
+                    <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                    <img v-if="scope.row.invoiceType== '10' " style="height:0.2rem;" src="../../img/einvoice.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                    <img    v-if="scope.row.invoiceType=== '11' "
+                         style="height:0.2rem;" src="../../img/roll-invoice.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                    <img v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" src="../../img/general-invoice.png" />
+                </el-tooltip>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="gfTaxNo" label="购方税号" :show-overflow-tooltip="true" align="left" header-align="center" :formatter="checkNullFormat"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="xfTaxNo" label="销方税号" :show-overflow-tooltip="true" align="left" header-align="center" :formatter="checkNullFormat"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" :formatter="formatInvoiceDate"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="金额" align="right" header-align="center" :formatter="invoiceAmountFormatDecimal"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right" header-align="center" :formatter="taxAmountFormatDecimal"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="totalAmount" label="价税合计" align="right" header-align="center" :formatter="totalAmountFormatDecimal"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="qsStatus" label="签收状态"  align="center" header-align="center" :formatter="qsStatusFormatter"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="createDate" label="扫描日期" align="center" :formatter="formatCreateDate"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="signInDate" label="签收日期" align="center" :formatter="formatQsDate"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="userAccount" label="操作员"  align="center" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="id"  label="操作" class-name="noSpotSpotSpot" class-name="noSpotSpotSpot" align="center" >
+            <template scope="scope">
+                <span v-if="scope.row.scanId!=''&& scope.row.scanId!=null && scope.row.scanId!='undefined'">
+                    <a   @click="imgRow(scope.row)">
+                    <span class="column-span" style="color: black">图片</span>
+                    </a>
+                </span>
+                <span v-else>
+                    <a style="color: #c0c4cc;text-decoration: none;cursor:not-allowed;">图片</a>
+                </span>
+                <span v-if="scope.row.qsStatus!='1'" >
+                    <a  @click="modifiedRow(scope.row,scope.row.id,scope.row.scanId, scope.row.invoiceType , scope.row.invoiceNo)">
+                        <span class="column-span" style="color: black">修改</span>
+                    </a>
+                </span>
+                <span v-else>
+                    <a style="color: #c0c4cc;text-decoration: none;cursor:not-allowed;">修改</a>
+                </span>
+                <span>
+                    <a  @click="deleteData(scope.row)">
+                        <span class="column-span" style="color: black">删除</span>
+                    </a>
+                </span>
+            </template>
+        </el-table-column>
+
+
+
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination layout="slot, sizes,prev,pager,next" background
+                       :current-page.sync="currentPage" :page-size="pageSize" :total="total" :page-size="pageSize" :page-sizes="pageList" @size-change="handleSizeChange"
+                       :page-count="pageCount" @current-change="currentChange" style="float:right">
+        </el-pagination>
+        <span style="float: right;margin-top: 0.4%">共{{total}}条记录，第{{currentPage}}页，共{{pageCount}}页</span>
+    </el-col>
+
+   <!-- <table  highlight-row id="jqGrid"></table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="findAll" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>-->
+    <!--<div id="jqGridPager"></div>-->
+
+</div>
+
+<div id="editScan" style="display: none;">
+    <form class="form-horizontal" style="width: 100%">
+        <div class="from-group col-sm-6" style="padding-right: 0.0rem;height: 100%;width: 55%;">
+            <img style="width: 100%;" id="editImg" src="https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=2163090801,2795408916&fm=27&gp=0.jpg"/>
+        </div>
+        <div class="form-group col-sm-5" style="border-left: 0.01rem solid #c0c4cc;padding-left: 0.0rem;margin-left: 0.3rem;height: 4.4rem;float: right;">
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票代码：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" id="" v-model="edit.invoiceCode"  :disabled="true" />
+                </div>
+                <span class="label " >&nbsp;</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票号码：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.invoiceNo"  :disabled="true" />
+                </div>
+                <span class="label " >&nbsp;</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">开票日期：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.invoiceDate" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.invoiceDate}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">购方税号：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.gfTaxNo" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.gfTaxNo}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">销方税号：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.xfTaxNo" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.xfTaxNo}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票金额：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.invoiceAmount"/>
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.invoiceAmount}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票税额：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.taxAmount" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.taxAmount}}</span>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label">价税合计：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.totalAmount" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.totalAmount}}</span>
+            </div>
+            <div class="form-group" id="editCheckCodeDiv" style="display: none">
+                <div class="col-sm-2 control-label">校验码：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.checkCode" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.checkCode}}</span>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="../../js/modules/signin/signininqueryMRXY.js"></script>
+</body>
+</html>

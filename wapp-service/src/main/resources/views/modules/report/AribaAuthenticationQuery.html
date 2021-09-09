@@ -1,0 +1,915 @@
+
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .el-col-6 {
+            width: 20%;
+        }
+
+        .el-input__inner {
+            border-color: #dcdfe6 !important;
+        }
+
+        .checkMsg {
+            transform: translateY(0.02rem);
+        }
+    </style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-form ref="formInline" :model="formInline" :rules="rules" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="JV:" prop="gfTaxNo">
+                        <el-select id="gf-select" v-model="formInline.gfTaxNo" filterable @focus="gfNameFocus" @blur="gfNameBlur" >
+                            <el-option
+                                    v-for="item in gfs"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="销方名称:" prop="xfName">
+                        <el-input v-model="formInline.xfName" placeholder="请输入销方名称" maxlength="30"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="发票类型:">
+                        <!--<el-select v-model="formInline.invoiceTypeList" placeholder="发票类型" @change="getInvoiceType">
+                            <el-option
+                                    v-for="item in invoiceTypeList"
+                                    :key="item.typeCode"
+                                    :label="item.typeName"
+                                    :value="item.typeCode">
+                            </el-option>
+                        </el-select>-->
+
+                            <el-select v-model="formInline.invoiceType">
+                                <el-option label="全部" value="-1" selected></el-option>
+                                <el-option label="增值税专用发票" value="01"></el-option>
+                                <el-option label="增值税普通发票" value="04"></el-option>
+                            </el-select>
+
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="公司代码:" prop="companyCode"  label-width="1.4rem">
+                        <el-input v-model="formInline.companyCode" placeholder="请输入公司代码" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="发票号码:" prop="invoiceNo">
+                        <el-input v-model="formInline.invoiceNo" placeholder="请输入发票号码" maxlength="8"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="税款所属期:">
+                        <el-date-picker type="month" placeholder="选择日期" v-model="formInline.rzhBelongDate" format="yyyyMM"
+                                        @blur="blurpickerchange(5)" @focus="focuspickerchange(5)" id="datevalue5"
+                                        value-format="yyyyMM" @change="dqskssqDateChange"></el-date-picker>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="12">
+                    <el-form-item label="供应商号:" prop="venderid" >
+                        <el-input class="inline-input" v-model="formInline.venderid" :maxlength="6"
+                                  placeholder="请输入供应商号"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="14">
+                    <el-form-item label="扫描日期:" id="requireMsg4">
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker type="date" placeholder="选择日期" v-model="formInline.qsStartDate"
+                                                id="datevalue1"
+                                                @blur="blurpickerchange(1)"
+                                                @focus="focuspickerchange(1)"
+                                                format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                                :picker-options="qsStartDateOptions"
+                                                :clearable="false" :editable="false"></el-date-picker>
+                            </el-col>
+                            <el-col class="line" :span="2" style="margin-top:0.1rem;">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" placeholder="选择日期" v-model="formInline.qsEndDate"
+                                                id="datevalue2"
+                                                @blur="blurpickerchange(2)"
+                                                @focus="focuspickerchange(2)"
+                                                format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                                :picker-options="qsEndDateOptions"
+                                                :clearable="false" :editable="false"></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="业务大类:">
+
+                        <el-select v-model="formInline.flowType">
+                            <el-option label="全部" value="-1" selected></el-option>
+                            <el-option label="资产类" value="0"></el-option>
+                            <el-option label="费用类" value="1"></el-option>
+                        </el-select>
+
+                    </el-form-item>
+                </el-col>
+
+            </el-row>
+            <el-row>
+
+                <template>
+                    <el-col :offset="1" :span="1" >
+                        <el-button class="btnexport" @click="onSubmit('formInline')">查询</el-button>
+                    </el-col>
+                    <el-col :offset="1" :span="1">
+                        <el-button id="export_btn"  class="btnexport" @click="exportData()" :disabled="total == 0">导出</el-button>
+                    </el-col>
+                </template>
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+    <div>
+        <div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"><span id="totalStatistics"></span></div>
+    </div>
+    <div v-show="tableShow">
+        <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                  style="width: 100%; margin-top: 0.2rem"
+                  v-loading="listLoading"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="jvCode" width="100" label="JV" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" width="150" label="发票代码" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" width="150" label="发票号码" align="center" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img v-if="scope.row.invoiceType== '01'" style="height:0.2rem;" src="../../img/special-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img v-if="scope.row.invoiceType== '03' " style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img   v-if="scope.row.invoiceType=== '04' "
+                               style="height:0.2rem;" src="../../img/plain-invoice.png"  />
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img v-if="scope.row.invoiceType== '10' " style="height:0.2rem;" src="../../img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img   v-if="scope.row.invoiceType=== '11' "
+                               style="height:0.2rem;" src="../../img/roll-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" src="../../img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <!--<el-table-column :show-overflow-tooltip="true"  prop="qsDate" width="120" label="扫描日期" align="center"
+                             :formatter="formatQsDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="rzhBelongDate" width="180" label="税款所属期" align="center"
+                             header-align="center" :formatter="formatterNull"></el-table-column>-->
+            <el-table-column :show-overflow-tooltip="true"  prop="venderid" width="200" label="供应商号" :show-overflow-tooltip="true" align="center"
+                             header-align="center" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="vendername" :min-width="180" label="供应商名称" :show-overflow-tooltip="true" align="center"
+                             header-align="center" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="store" :min-width="180" label="Store#" :show-overflow-tooltip="true" align="center"
+                             header-align="center"  :formatter="formatStoreType" ></el-table-column><!--这个store# 暂时空值-->
+            <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" width="100" label="税额" align="right"
+                             header-align="center" :formatter="numberFormat"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxCode" width="100" label="TaxCode" align="center"
+                             header-align="center" ></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxRate" width="180" label="税率" align="right"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="totalAmount" width="100" label="价税合计" align="right"
+                             header-align="center" :formatter="numberFormat"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" width="120" label="开票日期" align="center"
+                             :formatter="formatInvoiceDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="remark" width="180" label="备注" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="serviceType" width="180" label="业务类型" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="glAccount" width="180" label="会计科目" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="dkTaxAmount" width="100" label="可抵扣的固定资产进项税金" align="right"
+                             header-align="center" :formatter="numberFormat"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="cpUserId" width="180" label="传票人ID" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="smoking" width="450" label="购入不动产或入不动产的建筑安装将增加不动产原值是否超过50%-" align="center"
+                             header-align="center"></el-table-column><!--暂时置空-->
+            <el-table-column :show-overflow-tooltip="true"  prop="flowType" width="180" label="大类（指商品类，资产类，费用类）" align="center"
+                             header-align="center" :formatter="formatDaLeiType"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="mccCode" width="180" label="MCC代码" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="gfName" :min-width="180" label="购方名称" :show-overflow-tooltip="true" align="center"
+                             header-align="center" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="gfTaxNo" :min-width="180" label="购方税号" :show-overflow-tooltip="true" align="center"
+                             header-align="center" :formatter="formatterNull"></el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                           :current-page="currentPage"
+                           :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                           layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+                <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+            </el-pagination>
+        </el-col>
+    </div>
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+
+<script type="text/babel">
+    Vue.http.options.emulateJSON = true;
+    Vue.http.options.emulateHTTP = true;
+    var vm = new Vue({
+        el: '#rrapp',
+        i18n,
+        data: {
+            tableShow: true,
+            tableData: [],
+            currentPage: 1,
+            total: 0,
+            totalPage: 1,
+            gfs: [{
+                value: "-1",
+                label: "全部"
+            }],
+            pagerCount: PAGE_PARENT.PAGER_COUNT,
+            pageSize: PAGE_PARENT.PAGE_SIZE,
+            pageList: PAGE_PARENT.PAGE_LIST,
+            listLoading: false,
+            rzhDateHide: true,
+            qsDateHide: true,
+            rzhBelongDateHide: true,
+            qsTypeHide: true,
+            options: [],
+            filterInvoiceTypeList: ['01', '04'],
+            invoiceTypeList: [],
+            rzhYesornoList: [],
+            invoiceStatusList: [],
+            qsStatusList: [],
+            authStatusList: [],
+            qsTypeList: [],
+            formInline: {
+                gfName: '',
+                gfTaxNo:'-1',
+                companyCode:'',
+                xfName: '',
+                invoiceNo: '',
+                invoiceType: '-1',
+                flowType: '-1',
+                invoiceStatus: '',
+                rzhYesorno: '1',
+                rzhType:'',
+                qsStatus: '',
+                qsType: '',
+                authStatus: '',
+                venderid:'',
+                qsStartDate: new Date().getFullYear() + "-" + format2(new Date().getMonth()+1 ) + "-01",
+                qsEndDate: new Date().getFullYear()+"-"+format2(new Date().getMonth()+1)+"-"+format2(new Date().getDate()),
+               rzhBelongDate:''
+            },
+            rules: {},
+            invoiceStartDateOptions: {},
+            invoiceEndDateOptions: {},
+            rzhStartDateOptions: {},
+            rzhEndDateOptions: {},
+            qsStartDateOptions: {},
+            qsEndDateOptions: {},
+            exportParam: {}
+        },watch: {
+            'formInline.venderid': {
+                handler: function (val, oldValue) {
+                    var _this = this;
+                    var reg = /^[0-9]*$/;
+                    if (!(reg.test(val) || val == null)) {
+                        Vue.nextTick(function () {
+                            _this.formInline.venderid = oldValue;
+                        })
+                    }
+                },
+                deep: true
+            },
+            'formInline.companyCode': {
+                handler: function (val, oldValue) {
+                    var _this = this;
+                    var reg = /^[A-Za-z0-9]*$/;
+                    if (!(reg.test(val) || val == null)) {
+                        Vue.nextTick(function () {
+                            _this.formInline.companyCode = oldValue;
+                        })
+                    }
+                },
+                deep: true
+            }
+        },
+        mounted: function () {
+            this.invoiceStartDateOptions = {
+                disabledDate: (time) => {
+                    return time.getTime() >= Date.now();
+                }
+            };
+            this.invoiceEndDateOptions = {
+                disabledDate: (time) => {
+                    return time.getTime() >= Date.now();
+                }
+            };
+
+            this.rzhStartDateOptions = {
+                disabledDate: (time) => {
+                    return time.getTime() >= Date.now();
+                }
+            };
+            this.rzhEndDateOptions = {
+                disabledDate: (time) => {
+                    return time.getTime() >= Date.now();
+                }
+            };
+
+            this.qsStartDateOptions = {
+                disabledDate: (time) => {
+                    //setMonth()函数可以设置月份
+                    const currentTime = new Date(this.formatDate(this.formInline.qsEndDate));
+                    return time.getTime() >= currentTime;
+                }
+            };
+            this.qsEndDateOptions = {
+                disabledDate: (time) => {
+                    return time.getTime() >= Date.now();
+                }
+            };
+            this.querySearchGf();
+            $("#gf-select").attr("maxlength", "50");
+            this.getGfName();
+            //发票类型
+            this.getInvoiceType('INV_TYPE', this.invoiceTypeList);
+            //发票状态
+            this.getInvoiceType('INV_STATUS', this.invoiceStatusList);
+            //认证状态
+            this.getInvoiceType('INV_CONFIRM', this.rzhYesornoList);
+            //签收状态
+            this.getInvoiceType('QS_STATUS', this.qsStatusList);
+            //签收方式
+            this.getInvoiceType('QS_WAY', this.qsTypeList);
+            //认证处理状态
+            this.getInvoiceType('HANDLE_AUTH_STATUS', this.authStatusList);
+
+            this.rules = {
+                invoiceNo: [
+                    {
+                        validator: (rule, value, callback) => {
+                            setTimeout(() => {
+                                let reg = /^[0-9]\d*$/;
+                                if ((value != null && value != '') && (
+                                        value.length > 8 || new RegExp(reg).test(value) == false)) {
+                                    callback(new Error('发票号码为数字且不能超过8位'));
+                                } else {
+                                    callback();
+                                }
+                            }, 200);
+                        }, trigger: 'blur'
+                    }
+                ],
+                xfName: [
+                    {
+                        validator: (rule, value, callback) => {
+                            setTimeout(() => {
+                                if (value.length > 30) {
+                                    callback(new Error('销方名称不能超过30位'));
+                                } else {
+                                    callback();
+                                }
+                            }, 200);
+                        }, trigger: 'blur'
+                    }
+                ],
+            }
+        },
+        methods: {
+            gfNameFocus: function (event) {
+                $(".el-select input").removeAttr('readonly');
+            },
+            gfNameBlur: function (event) {
+                $(".el-select input").attr('readonly','readonly');
+            },
+            focuspickerchange: function (val) {
+                if (val == 1) {
+                    $('#datevalue1').siblings('span.el-input__suffix').css('background', '#ffaa00');
+                    $('#datevalue1').siblings('span.el-input__prefix').children('i').css('color', '#333333');
+                } else if (val == 2) {
+                    $('#datevalue2').siblings('span.el-input__suffix').css('background', '#ffaa00');
+                    $('#datevalue2').siblings('span.el-input__prefix').children('i').css('color', '#333333');
+                } else if (val == 3) {
+                    $('#datevalue3').siblings('span.el-input__suffix').css('background', '#ffaa00');
+                    $('#datevalue3').siblings('span.el-input__prefix').children('i').css('color', '#333333');
+                } else if (val == 4) {
+                    $('#datevalue4').siblings('span.el-input__suffix').css('background', '#ffaa00');
+                    $('#datevalue4').siblings('span.el-input__prefix').children('i').css('color', '#333333');
+                } else if (val == 5) {
+                    $('#datevalue5').siblings('span.el-input__suffix').css('background', '#ffaa00');
+                    $('#datevalue5').siblings('span.el-input__prefix').children('i').css('color', '#333333');
+                } else if (val == 6) {
+                    $('#datevalue6').siblings('span.el-input__suffix').css('background', '#ffaa00');
+                    $('#datevalue6').siblings('span.el-input__prefix').children('i').css('color', '#333333');
+                }
+            },
+            dqskssqDateChange: function(val) {
+                var currentTime =new Date().getFullYear().toString()+format2(new Date().getMonth()+1);
+                if(val > currentTime){
+                    vm.formInline.rzhBelongDate=currentTime;
+                }else {
+                    vm.formInline.rzhBelongDate = val;
+                }
+            },
+            blurpickerchange: function (val) {
+                if (val == 1) {
+                    $('#datevalue1').siblings('span.el-input__suffix').css('background', 'white');
+                    $('#datevalue1').siblings('span.el-input__prefix').children('i').css('color', '#ffaa00');
+                } else if (val == 2) {
+                    $('#datevalue2').siblings('span.el-input__suffix').css('background', 'white');
+                    $('#datevalue2').siblings('span.el-input__prefix').children('i').css('color', '#ffaa00');
+                } else if (val == 3) {
+                    $('#datevalue3').siblings('span.el-input__suffix').css('background', 'white');
+                    $('#datevalue3').siblings('span.el-input__prefix').children('i').css('color', '#ffaa00');
+                } else if (val == 4) {
+                    $('#datevalue4').siblings('span.el-input__suffix').css('background', 'white');
+                    $('#datevalue4').siblings('span.el-input__prefix').children('i').css('color', '#ffaa00');
+                } else if (val == 5) {
+                    $('#datevalue5').siblings('span.el-input__suffix').css('background', 'white');
+                    $('#datevalue5').siblings('span.el-input__prefix').children('i').css('color', '#ffaa00');
+                } else if (val == 6) {
+                    $('#datevalue6').siblings('span.el-input__suffix').css('background', 'white');
+                    $('#datevalue6').siblings('span.el-input__prefix').children('i').css('color', '#ffaa00');
+                }
+            },
+            currentChange: function (val) {
+                if (this.total > 0) {
+                    this.findAll(val);
+                }
+            },
+            handleSizeChange: function (val) {
+                this.pageSize = val;
+                if (this.total > 0) {
+
+                    this.findAll(1);
+                }
+            },
+            findAll: function (currentPage) {
+                this.listLoading = true;
+                if (!isNaN(currentPage)) {
+                    this.currentPage = currentPage;
+                }
+                var params_ = {
+                    page: this.currentPage,
+                    limit: this.pageSize,
+                    sidx: '',
+                    order: 'desc',
+                    //rzhType:this.formInline.rzhType,
+                    gfTaxNo: this.formInline.gfTaxNo,
+                    //invoiceNo: this.trimStr(this.formInline.invoiceNo),
+                     xfName: this.trimStr(this.formInline.xfName),
+                     invoiceType: this.formInline.invoiceType,
+                    flowType: this.formInline.flowType,
+                    //invoiceStatus: this.formInline.invoiceStatus,
+                    //rzhYesorno: this.formInline.rzhYesorno,
+                    //companyCode: this.formInline.companyCode,
+                    invoiceNo: this.formInline.invoiceNo,
+                    venderid: this.formInline.venderid,
+                    //qsStatus: this.formInline.qsStatus,
+                    //qsType: this.formInline.qsType,
+                    //authStatus: this.formInline.authStatus,
+                    /*invoiceStartDate: this.formInline.invoiceStartDate === '' ? '' : this.formatDate(this.formInline.invoiceStartDate),
+                    invoiceEndDate: this.formInline.invoiceEndDate === '' ? '' : this.formatDate(this.formInline.invoiceEndDate),*/
+                    //rzhStartDate: this.formInline.rzhStartDate === '' ? '' : this.formatDate(this.formInline.rzhStartDate),
+                   // rzhEndDate: this.formInline.rzhEndDate === '' ? '' : this.formatDate(this.formInline.rzhEndDate),
+                    qsStartDate: this.formInline.qsStartDate === '' ? '' : this.formatDate(this.formInline.qsStartDate),
+                    qsEndDate: this.formInline.qsEndDate === '' ? '' : this.formatDate(this.formInline.qsEndDate),
+                   rzhBelongDate: this.formInline.rzhBelongDate === '' ? '' : this.formInline.rzhBelongDate
+                };
+
+                if(this.formInline.venderid.length >6){
+                    return '';
+                }
+                this.exportParam = params_;
+                var flag = false;
+                var hh;
+                this.$http.post(baseURL + "modules/authenticationQuery/aribaList?" + $.param(params_),
+                    {}, {
+                        'headers': {
+                            "token": token
+                        }
+                    }).then(function (response) {
+                    flag = true;
+                    if (response.data.code != 0 && response.data.code != 401) {
+                        alert(response.data.msg);
+                        this.listLoading = false;
+                        return;
+                    }
+                    var xhr = response.data;
+                    $('#totalStatistics').html("合计数量: "+xhr.page.totalCount+"条, 合计金额: "+formatMoney(xhr.totalAmount)+"元, 合计税额: "+formatMoney(xhr.totalTax)+"元");
+                    this.total = response.data.page.totalCount;
+                    this.totalPage = response.data.page.totalPage;
+                    this.tableData = [];
+                    for (const key in response.data.page.list) {
+                        this.$set(this.tableData, key, response.data.page.list[key]);
+                    }
+                    this.listLoading = false;
+                    if(this.tableData.length>0){
+                        $("#export_btn").removeAttr("disabled").removeClass("is-disabled");
+                    }
+                }, (err) => {
+                    this.listLoading = false;
+                    if (err.status == 408) {
+                        alert(err.statusText);
+                    }
+                }).catch(function (response) {
+                    alert(response.data.msg);
+                    this.listLoading = false;
+                });
+                var intervelId = setInterval(function () {
+                    if (flag) {
+                        hh = $(document).height();
+                        $("body", parent.document).find("#myiframe").css('height', hh + 'px');
+                        clearInterval(intervelId);
+                        return;
+                    }
+                }, 50);
+            },
+            querySearchGf: function () {
+                $.get(baseURL + 'report/invoiceProcessingStatusReport/searchGf',function(r){
+                    var gfs = [];
+                    gfs.push({
+                        value: "-1",
+                        label: "全部"
+                    });
+                    for(var i=0;i<r.optionList.length;i++){
+                        var gf = {};
+                        gf.value = r.optionList[i].value;
+                        gf.label = r.optionList[i].value+"("+r.optionList[i].label+")";
+                        gfs.push(gf);
+                    }
+                    vm.gfs = gfs;
+                });
+            },
+            formatXL: function (a,b,val) {
+                if(val==null){
+                    return '';
+                }
+                if(val.length!= 0){
+                    var arr = val.substring(0,val.length-5);
+                    return arr+'%';
+                }
+                return '';
+            },
+            gfOrgCode:function(val){
+                currentQueryParam = {
+                    'taxno': val
+                };
+                $.ajax({
+                    url: baseURL + 'gfOrg/list/query',
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(currentQueryParam),
+                    success: function (r) {
+                        if (r.code==0){
+                            vm.gf = r.list;
+                        }
+                    }
+                });
+            },
+            getGfName: function () {
+                this.$http.post(baseURL + sysUrl.collectionTaxName,
+                    {}, {
+                        'headers': {
+                            "token": token
+                        }
+                    }).then(function (response) {
+                    response.data.splice(0, 0, {orgName: "全部", orgTaxNo: ''});
+                    for (const i in response.data) {
+                        this.$set(this.options, i, response.data[i]);
+                    }
+                }).catch(function (response) {
+
+                });
+            },
+            getInvoiceType: function (type, bindVal) {
+                this.$http.post(baseURL + sysUrl.getParamMap,
+                    {type: type}, {
+                        'headers': {
+                            "token": token
+                        }
+                    }).then(function (response) {
+                    response.data.splice(0, 0, {typeName: "全部", typeCode: '-1'});
+                    for (const i in response.data) {
+                        this.$set(bindVal, i, response.data[i]);
+                    }
+                    if (type == 'INV_TYPE') {
+                        this.invoiceTypeList = this.invoiceTypeList.filter(function (item) {
+                            const myTypeCode = item.typeCode;
+                            return myTypeCode == '-1' || myTypeCode == '01' || myTypeCode == '04';
+                        });
+                    }
+                }).catch(function (response) {
+                });
+            },
+            formatDate: function (time) {
+                const date = new Date(time.toString().replace(/-/g, "/"));
+                const seperator1 = "-";
+                const seperator2 = ":";
+                var month = date.getMonth() + 1;
+                let strDate = date.getDate();
+                if (month >= 1 && month <= 9) {
+                    month = "0" + month;
+                }
+                if (strDate >= 0 && strDate <= 9) {
+                    strDate = "0" + strDate;
+                }
+                return date.getFullYear() + seperator1 + month + seperator1 + strDate;
+            }, formatCreateDate: function (row, column) {
+                if (row.createDate != null) {
+                    return this.formatDate(row.createDate);
+                } else {
+                    return '';
+                }
+            },
+            formatRzhBelongDate(time) {
+                const date = new Date(time.toString().replace(/-/g, "/"));
+                var month = date.getMonth() + 1;
+                let strDate = date.getDate();
+                if (month >= 1 && month <= 9) {
+                    month = "0" + month;
+                }
+                if (strDate >= 0 && strDate <= 9) {
+                    strDate = "0" + strDate;
+                }
+                return date.getFullYear() + month;
+            },
+            formatAuthStatus: function (row) {
+                if (row.authStatus === '1') {
+                    return '已勾选';
+                } else if (row.authStatus === '2') {
+                    return '已确认';
+                } else if (row.authStatus === '3') {
+                    return '已发送认证';
+                } else if (row.authStatus === '4') {
+                    return '认证成功';
+                } else if (row.authStatus === '5') {
+                    return '认证失败';
+                } else {
+                    return "一 一";
+                }
+            },
+            formatYesOrNo: function (row) {
+                if (row.rzhYesorno === '1') {
+                    return '已认证';
+                } else if (row.rzhYesorno === '0') {
+                    return '未认证';
+                } else {
+                    return "一 一";
+                }
+            },
+            formatRzhDate: function (row) {
+                if (row.rzhDate != null) {
+                    return this.formatDate(row.rzhDate);
+                } else {
+                    return "一 一";
+                }
+            },
+            formatBelongDate: function (row) {
+                if (row.rzhBelongDate != null) {
+                    return this.formatDate(row.rzhBelongDate);
+                } else {
+                    return "一 一";
+                }
+            },
+            formatInvoiceDate: function (row) {
+                if (row.invoiceDate != null) {
+                    return this.formatDate(row.invoiceDate);
+                } else {
+                    return "一 一";
+                }
+            },
+            formatInvoiceStatus: function (row) {
+                const invoiceStatus = row.invoiceStatus;
+                //'发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常',
+                if (invoiceStatus === '0') {
+                    return '正常';
+                } else if (invoiceStatus === '4') {
+                    return '异常';
+                } else if (invoiceStatus === '1') {
+                    return '失控';
+                } else if (invoiceStatus === '2') {
+                    return '作废';
+                } else if (invoiceStatus === '3') {
+                    return '红冲';
+                } else {
+                    return "一 一";
+                }
+            },
+            formatQs: function (row) {
+                if (row.qsStatus === '1') {
+                    return '已签收';
+                } else {
+                    return '未签收';
+                }
+            },
+            formatQsDate: function (row) {
+                if (row.qsDate != null) {
+                    return this.formatDate(row.qsDate);
+                } else {
+                    return "一 一";
+                }
+            },
+            formatQsType: function (row) {
+                const qsType = row.qsType;
+                //（0-扫码签收 1-扫描仪签收 2-app签收 3-导入签收 4-手工签收5-pdf上传签收
+                if (qsType === '0') {
+                    return '扫码签收';
+                } else if (qsType === '1') {
+                    return '扫描仪签收'
+                } else if (qsType === '2') {
+                    return 'app签收';
+                } else if (qsType === '3') {
+                    return '导入签收';
+                } else if (qsType === '4') {
+                    return '手工签收';
+                } else if (qsType === '5') {
+                    return 'pdf上传签收';
+                } else {
+                    return "一 一";
+                }
+            },
+            rzhYesornoChange(val) {
+                //已认证
+                if (val == '1') {
+                    this.rzhDateHide = false;
+                    this.rzhBelongDateHide = false;
+                } else {
+                    this.rzhDateHide = true;
+                    this.rzhBelongDateHide = true;
+                }
+            },
+            qsStatusChange(val) {
+                //已签收
+                if (val == '1') {
+                    this.qsTypeHide = false;
+                    this.qsDateHide = false;
+                } else {
+                    this.qsTypeHide = true;
+                    this.qsDateHide = true;
+                }
+            },
+            exportData() {
+                $("#export_btn").attr("disabled","true").addClass("is-disabled");
+                const param = this.exportParam;
+                // document.getElementById("ifile").src = baseURL + 'export/authenticationQuery' + '?' + $.param(param);
+                $.ajax({
+                    url:baseURL + 'excel/apply',
+                    type:"POST",
+                    data:{'serviceType':60,'condition':JSON.stringify(param)},
+                    success:function (r) {
+                        flag = true;
+                        if(r.code==0){
+                            alert(r.data);
+                            // $('#totalStatistics').html("合计数量: "+vm.total+"条, 合计金额: "+
+                            //     formatMoney(r.page.summationTotalAmount)+"元, 合计税额: "+formatMoney(r.page.summationTaxAmount)+"元");
+                        }
+
+                    }
+                });
+            },
+            onSubmit(formName) {
+                /*formInline: {
+                    gfName: '',
+                        xfName: '',
+                        invoiceNo: '',
+                        invoiceType: '',
+                        invoiceStatus: '',
+                        rzhYesorno: '',
+                        qsStatus: '',
+                        qsType: '',
+                        invoiceStartDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+                        invoiceEndDate: new Date(),
+                        rzhStartDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+                        rzhEndDate: new Date(),
+                        qsStartDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+                        qsEndDate: new Date(),
+                        rzhBelongDate: new Date()
+                },*/
+                $(".checkMsg").remove();
+                var checkKPDate = true;
+                var checkRZDate = true;
+                var checkQSDate = true;
+
+                var qsStartDate = new Date(this.formInline.qsStartDate);
+                var qsEndDate = new Date(this.formInline.qsEndDate);
+                /*var qsrzStartDate = new Date(this.formInline.rzhStartDate);
+                var qsrzEndDate = new Date(this.formInline.rzhEndDate);
+                var qsqsStartDate = new Date(this.formInline.qsStartDate);
+                var qsqsEndDate = new Date(this.formInline.qsEndDate);*/
+
+                qsStartDate.setMonth(qsStartDate.getMonth() + 12);
+                if ((qsEndDate.getTime() + 1000 * 60 * 60 * 24) > qsStartDate.getTime()) {
+                    $("#requireMsg4 .el-form-item__content div.el-date-editor:first-child").append('<div class="checkMsg">日期选择跨度不可超过1年</div>');
+                    checkKPDate = false;
+                } else if (qsEndDate.getTime() < new Date(this.formInline.invoiceStartDate)) {
+                    $("#requireMsg4 .el-form-item__content div.el-date-editor:first-child").append('<div class="checkMsg">结束时间不可小于开始时间</div>');
+                    checkKPDate = false;
+                }
+               /* qsrzStartDate.setMonth(qsrzStartDate.getMonth() + 12);
+                if ((qsrzEndDate.getTime() + 1000 * 60 * 60 * 24) > qsrzStartDate.getTime()) {
+                    $("#requireMsg5 .el-form-item__content div.el-date-editor:first-child").append('<div class="checkMsg">日期选择跨度不可超过1年</div>');
+                    checkRZDate = false;
+                } else if (qsrzEndDate.getTime() < new Date(this.formInline.rzhStartDate)) {
+                    $("#requireMsg5 .el-form-item__content div.el-date-editor:first-child").append('<div class="checkMsg">结束时间不可小于开始时间</div>');
+                    checkRZDate = false;
+                }
+                qsqsStartDate.setMonth(qsqsStartDate.getMonth() + 12);
+                if ((qsqsEndDate.getTime+(1000 * 60 * 60 * 24) > qsqsStartDate.getTime())) {
+                    $("#requireMsg6 .el-form-item__content div.el-date-editor:first-child").append('<div class="checkMsg">日期选择跨度不可超过1年</div>');
+                    checkQSDate = false;
+                } else if (qsqsEndDate.getTime() < new Date(this.formInline.qsStartDate)) {
+                    $("#requireMsg6 .el-form-item__content div.el-date-editor:first-child").append('<div class="checkMsg">结束时间不可小于开始时间</div>');
+                    checkQSDate = false;
+                }*/
+                if (!(checkKPDate/* && checkRZDate && checkQSDate*/)) {
+                    return;
+                }
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.tableShow = true;
+                        this.findAll(1);
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            numberChange(val) {
+                var reg = /[^\d]/g;
+                this.formInline.invoiceNo = val.replace(reg, '');
+            },
+            numberOnKey(event) {
+                this.numberChange(event.target._value);
+            },
+            /**
+             * 行号
+             */
+            mainIndex: function (index) {
+                return index + (this.currentPage - 1) * this.pageSize + 1;
+            },
+             formatDaLeiType:function(row) {
+                var flowType = row.flowType;
+                      //指商品类，资产类，费用类
+                if('0'== flowType) {
+                    return '资产类';
+                } else  if('1' == flowType ) {
+                    return '费用类';
+                }
+            },
+            rateFormat: function(row, column, cellValue){
+                if(cellValue==null){
+                    return "";
+                }
+                return String(cellValue)+"%";
+            },
+            formatStoreType:function(row) {
+                var flowType = row.flowType;
+                //指商品类，资产类，费用类
+                if('2' == flowType ) {
+                    return row.costDeptId;
+                }else{
+                    return row.store;
+                }
+            }
+        }
+    });
+
+    function formatMoney(value){
+        return Vue.prototype.numberFormat2(null,null,value);
+    }
+
+    function format2(value){
+        if(value<10){
+            return "0"+value;
+        }else{
+            return value;
+        }
+    }
+
+
+</script>
+</html>

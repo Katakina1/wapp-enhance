@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+	<title>智能认证</title>
+	<link rel="stylesheet" href="../../libs/customer/index.css">
+</head>
+<style type="text/css">
+
+
+	[v-cloak] {
+		display: none;
+	}
+
+	.hideItem {
+		display: none !important;
+	}
+
+	.qsItem {
+	}
+	.default{
+		
+	}
+	.el-dialog__footer{
+		height: 0.9rem !important;
+	}
+	.el-input--suffix .el-input__inner{
+		padding-right: 0.4rem;
+	}
+
+
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+	<div>
+		<el-form ref="form" :model="form"   label-width="1.0rem">
+			<el-row>
+				<el-col :span="12">
+					<el-form-item label="JV:">
+						<el-select id="gf-select" v-model="form.gfTaxNo" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+							<el-option
+									v-for="item in gfs"
+									:key="item.value"
+									:label="item.label"
+									:value="item.value">
+							</el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>
+				<!--<el-col :span="12">
+					<el-form-item label="购方名称:" id="requireMsg1" class="form-item" :rules="[{ required: true, message: ''}]" style="position: relative">
+						<el-select v-model="form.gfTaxNo" filterable placeholder="请选择购方名称" id="gfSelect" @focus="gfNameFocus" @blur="gfNameBlur">
+							<el-option
+									v-for="gf in form.gfNames"
+									:key="gf.taxNo"
+									:label="gf.name"
+									:value="gf.taxNo">
+							</el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>-->
+				<!--<el-col :span="12">-->
+					<!--<el-form-item label="税额上限:" id="requireMsg2" class="form-item" :rules="[{ required: true, message: ''}]">-->
+						<!--<el-input v-model="form.maxTax" placeholder="请输入税额上限">-->
+						<!--</el-input>-->
+					<!--</el-form-item>-->
+				<!--</el-col>-->
+				<el-col :span="12">
+					<el-form-item label="税额上限:"  class="form-item" >
+						<el-input v-model="form.maxTax" placeholder="请输入税额上限">
+						</el-input>
+					</el-form-item>
+				</el-col>
+
+
+				<!--<el-col :span="12">
+					<el-form-item label="容差值:" id="requireMsg3" class="form-item"  :rules="[{ required: true, message: ''}]">
+						<el-input v-model="form.floatTax" placeholder="请输入容差值"></el-input>
+					</el-form-item>
+				</el-col>-->
+				<el-col :span="12">
+					<el-form-item label="容差值:"  class="form-item"  >
+						<el-input v-model="form.floatTax" placeholder="请输入容差值"></el-input>
+					</el-form-item>
+				</el-col>
+
+				<el-col :span="14">
+					<el-form-item label="开票日期:" class="form-item" id="requireMsg4" style="position: relative">
+						<el-row>
+						<el-col :span="13">
+							<el-date-picker type="date" :clearable="false" :disabled="false" placeholder="选择日期" id="datevalue1"
+											@blur="blurpickerchange(1)"
+											@focus="focuspickerchange(1)"
+											:picker-options="invoiceStartDateOptions"  :editable="false"
+											v-model="form.invoiceDate1" default-value="" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="invoiceDate1Change"></el-date-picker>
+						</el-col>
+						<el-col class="line" :span="2">—</el-col>
+						<el-col :span="13">
+							<el-date-picker type="date" :clearable="false" :disabled="false" placeholder="选择日期" id="datevalue2"
+											@blur="blurpickerchange(2)"
+											@focus="focuspickerchange(2)"
+											:picker-options="invoiceEndDateOptions"    :editable="false"
+											v-model="form.invoiceDate2"  format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="invoiceDate2Change"></el-date-picker>
+						</el-col>
+						</el-row>
+					</el-form-item>
+
+				</el-col>
+
+			</el-row>
+
+			<div class="form-row">
+				<el-row>
+			<!--	<el-col :span="12">
+					<el-form-item label=" 发票类型:" class="form-item">
+						<el-select v-model="form.invoiceType">
+							<el-option label="全部" value="-1" selected></el-option>
+							<el-option label="增值税专用发票" value="01"></el-option>
+							<el-option label="增值税普通发票" value="04"></el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>-->
+				
+				<el-col :span="12">
+					<el-form-item label="销方名称:">
+						<el-input class="inline-input" v-model="form.xfName" :maxlength="30"
+								  placeholder="请输入销方名称"></el-input>
+					</el-form-item>
+				</el-col>
+				<el-col :span="12">
+					<el-form-item label="供应商号:">
+						<el-input class="inline-input" v-model="form.venderid" :maxlength="6"
+								  placeholder="请输入供应商号"></el-input>
+					</el-form-item>
+				</el-col>
+					<el-col :span="6">
+						<el-form-item label="公司代码:" prop="companyCode" >
+							<el-input class="inline-input" v-model="form.companyCode" placeholder="请输入公司代码"></el-input>
+						</el-form-item>
+					</el-col>
+
+
+				<el-col :span="12" >
+					<el-form-item label="优先筛选方式:" class="labelLong form-item" label-width="1.2rem">
+						<el-select v-model="form.priorityFiltrate">
+							<el-option label="时间较早" value="-1" selected></el-option>
+							<el-option label="时间较晚" value="1"></el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>
+				</el-row>
+			</div>
+
+			<div class="form-row">
+				<el-row>
+
+					<el-col :span="1" :offset="1" class="floatright" >
+						<el-button class="btnexport" @click="check">智能认证</el-button>
+					</el-col>
+
+					<el-col :span="1" :offset="1" class="floatright">
+						<el-button class="btnexport"  @click="resetQuery">重置</el-button>
+					</el-col>
+				</el-row>
+			</div>
+
+			<!--<div class="form-row">
+				<el-col :span="12">
+					<el-form-item label="签收方式:" class="qsItem hideItem">
+						<el-select v-model="form.qsType">
+							<el-option label="全部" value="-1" selected></el-option>
+							<el-option label="扫码签收" value="0"></el-option>
+							<el-option label="扫描仪签收" value="1"></el-option>
+							<el-option label="app签收" value="2"></el-option>
+							<el-option label="导入签收" value="3"></el-option>
+							<el-option label="手工签收" value="4"></el-option>
+							<el-option label="pdf上传签收" value="5"></el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>
+
+				<el-col :span="14">
+				<el-form-item label="签收日期:" class="qsItem hideItem" id="requireMsg5">
+					<el-row>
+						<el-col :span="13">
+							<el-date-picker type="date" placeholder="选择日期" v-model="form.qsDate1"   :editable="false" id="datevalue3"
+										@blur="blurpickerchange(3)"
+										@focus="focuspickerchange(3)"
+										:picker-options="qsStartDateOptions"  :clearable="false" :disabled="false"
+										format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="qsDate1Change"></el-date-picker>
+						</el-col>
+						<el-col class="line" :span="2">—</el-col>
+						<el-col :span="13">
+							<el-date-picker type="date" placeholder="选择日期" v-model="form.qsDate2"   :editable="false" id="datevalue4"
+										@blur="blurpickerchange(4)"
+										@focus="focuspickerchange(4)"
+										:picker-options="qsEndDateOptions"  :clearable="false"  :disabled="false"
+										format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="qsDate2Change"></el-date-picker>
+						</el-col>
+					</el-row>
+				</el-form-item>
+				</el-col>
+				<el-col :span="12">
+				<div style="margin-left: 0.15rem;" class="qsItem hideItem">
+					<el-button class="btnexport"  @click="resetQuery">重置</el-button>
+					<el-button class="btnexport"  @click="check">智能勾选</el-button>
+				</div>
+				</el-col>
+			</div>-->
+
+
+		</el-form>
+		<div style="clear: both"></div>
+	</div>
+	<!--<table id="jqGrid"></table>-->
+	<hr>
+	<el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+			  v-loading="listLoading"
+			  element-loading-text="正在拼命加载中">
+		<el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码"  align="left" header-align="center"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center">
+			<template scope="scope">
+				<span>{{ scope.row.invoiceNo }}</span>
+				<el-tooltip class="item" effect="dark" placement="top-start">
+					<div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+					<img  v-if="scope.row.invoiceType== '01'"  style="height:0.2rem;" src="../../img/special-invoice.png" />
+					<div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+					<img  v-if="scope.row.invoiceType== '03' "  style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+					<div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+					<img style="height:0.2rem;" v-if="scope.row.invoiceType== '04' " src="img/plain-invoice.png"/>
+					<div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+					<img  v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" src="../../img/general-invoice.png" />
+				</el-tooltip>
+			</template>
+		</el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" :formatter="formatInvoiceDate" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="jvcode" label="JV" align="left" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="companyCode" label="公司代码" align="left" header-align="center" ></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="gfName" label="购方名称" align="left" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="xfName" label="销方名称" align="left" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="金额" align="right" header-align="center" :formatter="invoiceAmountFormatDecimal"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right" header-align="center" :formatter="taxAmountFormatDecimal" ></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="totalAmount" label="价税合计" align="right" header-align="center" :formatter="taxAmountFormatDecimal"  ></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="venderid" label="供应商号" align="right" header-align="center"  ></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="certificateNo" label="凭证号" align="right" header-align="center"  ></el-table-column>
+
+	</el-table>
+
+	
+	<el-dialog :visible.sync="submitWin" :close-on-click-modal="false" :before-close="closeWin" width="30%" >
+		<div style="text-align: center;font-size: 0.2rem;font-weight: 800;">提示信息</div>
+		<div style="line-height: 0.18rem;font-size: 0.18rem;text-align: center;">
+			<div style="margin-top: 0.4rem;">认证发票数量:{{invoiceCount}}张，不含税金额合计：{{invoiceAmount}}元，</div>
+			<div style="margin-top: 0.2rem;">发票税额合计{{taxAmount}}元，是否确定认证？</div>
+		</div>
+	<span slot="footer" class="dialog-footer" >
+            <el-button class="btnexport"@click="submitForm" style="margin-right: 15%">确 定</el-button>
+            <el-button class="btncancel" @click="closeWin()" style="float:left;margin-left: 15%">取消</el-button>
+        </span>
+	</el-dialog>
+</div>
+
+
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script src="../../js/modules/certification/intelligentizeCheck.js"></script>
+</body>
+</html>

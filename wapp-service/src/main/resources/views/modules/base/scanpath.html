@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>扫描点管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="../../libs/vue.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<style type="text/css">
+    .input-class {
+        -webkit-appearance: none;
+        background-color: #fff;
+        background-image: none;
+        border: 0.01rem solid #dcdfe6;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        color: #606266;
+        display: inline-block;
+        font-size: inherit;
+        height: 0.4rem;
+        line-height: 0.4rem;
+        outline: 0;
+        padding: 0 0.15rem;
+        -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+        transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+    }
+
+    button span{
+        font-size: 0.14rem !important;
+    }
+    .el-dialog__header{
+        background: #333333;
+        color: white;
+    }
+    .el-dialog__header span,.el-dialog__header i{
+        color: white !important;
+    }
+    .el-col-16 {
+        width: 50%;
+    }
+    .el-col-5{
+        width: 10%;
+    }
+
+    .el-form-item__label{width:1.6rem !important;}
+    .el-form-item__content{margin-left:1.6rem !important;}
+    .el-form-item__error{width:2.02rem !important;}
+</style>
+
+<body>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-row style="font-size:0.18rem;color: #FFFFFF;background-color: #666666">
+            <el-col :span="18" style="height: 0.6rem;font-size: 0.18rem;border-radius: 0; border: 0 solid #666666;">
+                <div class="grid-content bg-purple" style=" padding: 0.2rem;">
+                    <span style="text-align: left; ">扫描点列表</span>
+                </div>
+            </el-col>
+        </el-row>
+        <el-row style="padding-top: 0.05rem">
+            
+            <el-col :span="24" class="colNew">
+                <div class="bg-purple" v-show="menuGridShow" style="padding-top: 0.15rem">
+                    <div>
+                    <el-form  ref="queryForm" :model="queryForm" label-width="1.4rem">
+                        <el-row>
+
+                            <el-col :span="15">
+                            <el-form-item label="扫描点名称:" label-width="1.4rem" class="form-item" prop="scanPath" >
+                                <el-input maxlength="40" v-model.trim="queryForm.scanPath"  placeholder="请输入扫描点名称"></el-input>
+                            </el-form-item>
+                            </el-col>
+                            <!--<el-col :span="15">-->
+                                <!--<el-form-item label="备份扫描点:" prop="id">-->
+                                    <!--<el-input maxlength="40" v-model.trim="queryForm.invoicRemark" placeholder="请输入备份扫描点"></el-input>-->
+                                <!--</el-form-item>-->
+                            <!--</el-col>-->
+                            <el-col :span="4" :offset="1">
+                                <el-button class="btnexport" @click="query">查询</el-button>
+                            </el-col>
+                            <el-col :span="4" :offset="1">
+                                <a class="btn btnexport" @click="addOrUpdata(true)">新增</a>
+                            </el-col>
+                            <el-col :span="4" :offset="1">
+                                <a class="btn btnexport " @click="deleteOrg">删除</a>
+                            </el-col>
+
+                            <!--<el-col :span="4" :offset="1">
+                                <el-button  class="btnexport" @click="resetForm('queryForm')">重置</el-button>
+                            </el-col>-->
+                        </el-row>
+                        <el-row>
+
+                        </el-row>
+
+                    </el-form>
+
+                    <hr style=" margin-top: 0; margin-bottom: 0.1rem;!important;">
+
+
+                    <el-table height="4rem" ref="scanpathTable" :data="scanpathData" border fit @selection-change="changeFun"
+                              tooltip-effect="light" highlight-current-row
+                              v-loading="scanpathLoading" element-loading-text="正在拼命加载中"
+                              style="width: 100%;">
+
+                        <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  type="index" :index="scanpathIndex" label="序号" width="60"
+                                         align="center"></el-table-column>
+                        <!--<el-table-column :show-overflow-tooltip="true"  property="id" label="扫描点编码" min-width="180"-->
+                                         <!--header-align="center"></el-table-column>-->
+                        <el-table-column :show-overflow-tooltip="true"  property="scanPath" label="扫描点名称" min-width="180"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  :formatter="formatterField" property="invoiceRemark" label="备注" min-width="200"
+                                         header-align="center"></el-table-column>
+                        <!--<el-table-column :show-overflow-tooltip="true"   property="profit" label="是否经营" min-width="200"  :formatter="formatProfit"-->
+                                         <!--header-align="center"></el-table-column> -->
+                                         <!---->
+                        <!--<el-table-column :show-overflow-tooltip="true"   property="pushErp" label="是否推送ERP" min-width="200"  :formatter="formatPushErp"-->
+                                         <!--header-align="center"></el-table-column>                 -->
+                                         
+                        <el-table-column :show-overflow-tooltip="true"  property="scanpathid" label="操作" class-name="noSpotSpotSpot"  align="center" class-name="noSpotSpotSpot" >
+                            <template slot-scope="scope">
+                                <el-button @click="openAddOrUpdateWin(scope.row)" type="text" size="small">修改
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+
+                        <el-col class="toolbar" style="padding:0.1rem;">
+                        <el-pagination small layout="slot, sizes, prev, pager, next" background
+                                       :current-page.sync="currentPage" :page-size="pageSize" :page-sizes="pageList"
+                                       :total="total" @current-change="currentChange" @size-change="sizeChange" style="float:right">
+                            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+                        </el-pagination>
+                    </el-col>
+                    </div>
+                </div>
+            </el-col>
+        </el-row>
+    </div>
+
+    <el-dialog :title="addOrUpdateForm.title" :visible.sync="addOrUpdateWin" :before-close="addOrUpdataWinClose" :close-on-click-modal="false" @close="clearValidate('addOrUpdateForm')">
+        <el-form ref="addOrUpdateForm" :model="addOrUpdateForm" label-width="1.45rem">
+            <el-row>
+               
+                <!--<el-col :span="8">-->
+                <!--<el-form-item label="扫描点编码:" prop="id">-->
+                    <!--<input maxlength="40"  v-model.trim="addOrUpdateForm.id" class="input-class" readonly="readonly">-->
+                <!--</el-form-item>-->
+                <!--</el-col>-->
+              
+                <el-col :span="8">
+                <el-form-item label="扫描点名称:" label-width="1.3rem" prop="scanPath"
+                              :rules="[{ required: true, message: '扫描点名称不能为空'}]">
+                    <input maxlength="40"  v-model.trim="addOrUpdateForm.scanPath" class="input-class" style="width: 2.02rem;!important;">
+                </el-form-item>
+                </el-col>
+            </el-row>
+            <!--<el-row>-->
+
+                <!--<el-col :span="8">-->
+                  <!--<el-form-item label="是否经营:" label-width="1.3rem" prop="profit">-->
+                    <!--<el-select v-model="addOrUpdateForm.profit" style="width: 2.02rem;!important;">-->
+                        <!--<el-option v-for="item in items"-->
+                                   <!--:key="item.value"-->
+                                   <!--:label="item.text"-->
+                                   <!--:value="item.value"></el-option>-->
+                    <!--</el-select>-->
+                <!--</el-form-item>-->
+                 <!---->
+                  <!--</el-col>-->
+            <!--</el-row>-->
+            <!--<el-row>-->
+                  <!---->
+                  <!--<el-col :span="8">-->
+                  <!--<el-form-item label="是否推送ERP:" label-width="1.3rem" prop="pushErp">-->
+                    <!--<el-select v-model="addOrUpdateForm.pushErp" style="width: 2.02rem;!important;">-->
+                        <!--<el-option v-for="item in items"-->
+                                   <!--:key="item.value"-->
+                                   <!--:label="item.text"-->
+                                   <!--:value="item.value"></el-option>-->
+                    <!--</el-select>-->
+                <!--</el-form-item>-->
+                 <!---->
+                <!--</el-col>-->
+                 <!---->
+            <!--</el-row>-->
+
+            <div class="form-row" style="width: 100%">
+                <el-form-item label="备注:" label-width="1.3rem" prop="invoiceRemark" style="width:100%;">
+                    <el-input type="textarea" :autosize="{ minRows: 3}" maxlength="200"
+                              v-model="addOrUpdateForm.invoiceRemark"></el-input>
+                </el-form-item>
+            </div>
+
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+            <el-button class="btnexport" @click="submitForm">确 定</el-button>
+            <el-button class="btnexport" @click="addOrUpdateReset()">重 置</el-button>
+        </span>
+    </el-dialog>
+
+</div>
+
+<script src="../../js/modules/base/scanpath.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,327 @@
+
+/*!
+ * 沃尔玛结算平台(二期) - customer.css
+ */
+.customer-login-page {
+    position: fixed;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    background-image: url(../img/welcome.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    -moz-background-size: 100% 100%;
+    -webkit-background-size: 100% 100%;
+    -o-background-size: 100% 100%;
+}
+
+/*login input*/
+#loginForm .form-control:focus {
+    border-color: #d2d6de !important;
+}
+
+/*end*/
+.customer-logo-text {
+    font-family: PingFangSC-Semibold;
+    font-size: 0.24rem;
+    color: #FFFFFF;
+    letter-spacing: -0.0058rem;
+}
+
+.customer-qrcode-text {
+    font-family: PingFangSC-Regular;
+    font-size: 0.18rem;
+    color: #FFFFFF;
+    letter-spacing: -0.0043rem;
+}
+
+.customer-login-box {
+    width: 5.4rem;
+}
+
+/*@media (max-width: 7.68rem) {
+    .customer-login-box {
+        width: 100%;
+        margin-top: 0.2rem;
+    }
+}*/
+
+.customer-login-box-body {
+    background: #fff;
+    padding: 0.2rem;
+    border-top: 0;
+    color: #666;
+}
+
+.customer-login-box-msg {
+    margin: 0;
+    text-align: center;
+    font-family: PingFangSC-Semibold;
+    font-size: 0.2rem;
+    color: #333333;
+    letter-spacing: -0.0048rem;
+}
+
+.customer-login-input-group {
+    height: 0.5rem;
+    width: 100%;
+    margin-bottom: 0.1rem;
+}
+
+.customer-login-input-group-addon {
+    background-color: #fff;
+    border-width: 0.01rem;
+    width: 0.5rem;
+    padding: 0;
+}
+
+.customer-login-form-control-input {
+    border-width: 0.01rem !important;
+    height: 0.5rem;
+    font-size: 0.16rem;
+}
+
+.customer-login-icon-loginname {
+    background: url('../img/user.png') no-repeat center center;
+    display: inline-block;
+    width: 0.26rem;
+    height: 0.36rem;
+    line-height: 0.32rem;
+    font-size: 0.01rem;
+    /*position: absolute;
+    top: 50%;
+    margin-top: -0.16rem;
+    margin-left: -0.12rem;*/
+}
+
+.customer-login-icon-password {
+    background: url('../img/password.png') no-repeat center center;
+    display: inline-block;
+    width: 0.26rem;
+    height: 0.36rem;
+    line-height: 0.32rem;
+    font-size: 0.01rem;
+    /*position: absolute;
+    top: 50%;
+    margin-top: -0.16rem;
+
+    margin-left: -0.12rem;*/
+}
+
+.customer-login-icon-captcha {
+    background: url('../img/captcha.png') no-repeat center center;
+    display: inline-block;
+    width: 0.26rem;
+    height: 0.36rem;
+    line-height: 0.32rem;
+    font-size: 0.01rem;
+    /*position: absolute;
+    top: 50%;
+    margin-top: -0.16rem;
+
+    margin-left: -0.12rem;*/
+}
+
+.customer-login-button {
+    height: 0.5rem;
+    width: 100%;
+    font-family: PingFangHK-Semibold;
+    font-weight: bold;
+    font-size: 0.18rem;
+    letter-spacing: -0.0043rem;
+    background: #ffaa00;
+    box-shadow: 0 0 0.04rem 0 #ffaa00;
+    color: #333333;
+}
+
+.customer-login-button:hover {
+    background: #ffc44f;
+    box-shadow: 0 0 0.04rem 0 #ffaa00;
+}
+
+.el-table th {
+    background: #FFD98B !important;
+    font-size: 0.18rem;
+    font-family: PingFangHK-Semibold;
+}
+
+.queryBtn, .queryBtn:focus {
+    border: 0.01rem solid #FFAA00;
+    border-radius: 0.02rem;
+    font-family: PingFangSC-Regular;
+    font-size: 0.16rem;
+    letter-spacing: -0.0039000000000000003rem;
+    width: 0.8rem;
+    height: 0.3rem;
+    padding: 0.07rem 0.15rem;
+    color: #FFAA00;
+}
+
+.queryBtn:hover {
+    background: #FFAA00;
+    border: 0.01rem solid #FFAA00;
+    color: #333333;
+}
+
+.queryBtn:active {
+    background: #FFAA00;
+    border-radius: 0.02rem;
+}
+
+.el-form-item {
+    margin-bottom: 0.2rem;
+}
+
+.column-span {
+    font-family: PingFangHK-Regular;
+    color: #FFAA00;
+    letter-spacing: -0.0039000000000000003rem;
+}
+
+/*start*/
+.skin-blue .sidebar-menu > li:hover > a, .skin-blue .sidebar-menu > li > a, .skin-blue .sidebar-menu > li.active > a {
+    background-color: transparent;
+    color: #333333;
+    text-align: center;
+    font-size: 0.2rem;
+    border-left: none;
+}
+
+.skin-blue .main-sidebar {
+    background-color: white;
+}
+
+.main-sidebar li {
+    color: #333333;
+    list-style: none;
+}
+
+.skin-blue .treeview-menu > li.active > a {
+    color: #333333;
+    background-color: #ffc653;
+}
+
+.sidebar-menu .treeview-menu > li > a {
+    height: 0.48rem;
+    line-height: 0.48rem;
+    text-align: center;
+    padding: 0;
+    margin: 0 auto;
+    font-size: 0.18rem;
+}
+
+.sidebar-menu .treeview-menu .menu-open li a {
+    font-size: 0.17rem;
+}
+
+.skin-blue .treeview-menu > li > a:hover {
+    color: #333333;
+    font-weight: 500;
+    background-color: #ffe8ba;
+}
+
+.skin-blue .sidebar-menu > li > .treeview-menu {
+    margin: 0 auto;
+    background: white;
+}
+
+.skin-blue .treeview-menu > li > a {
+    color: #333333;
+}
+
+.fa.pull-right {
+    margin: 0;
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+}
+
+.skin-blue .treeview-menu > li > a span {
+    display: inline-block;
+    position: relative;
+    width: 1.2rem;
+    text-align: justify;
+    text-align-last: justify;
+    word-break: break-all;
+    word-spacing: 0.28rem;
+}
+
+.sidebar-menu > li:first-child > a {
+    background-color: #ffc653;
+}
+
+.sidebar-menu > li > a > span {
+    display: inline-block;
+    width: 1.2rem;
+    text-align: justify;
+    text-align-last: justify;
+    word-break: break-all;
+    word-spacing: 0.28rem;
+}
+
+.sidebar-menu > li > a:first-child {
+    padding: 0.12rem 0 0.12rem 0;
+}
+
+.sidebar-menu .treeview-menu {
+    padding: 0 0 0 0;
+    padding-left: 0 !important;
+}
+
+.sidebar-menu > li.active i {
+    transform: rotate(90deg);
+}
+
+.sidebar-menu > li.active ul > li {
+    background-color: #f7f7f7;
+}
+
+.sidebar-menu > li.active > a {
+    background-color: #ffc653 !important;
+}
+
+.sidebar-menu > li.active > ul > li.active > a {
+    background-color: #ffe8ba;
+}
+
+.editRowSpan {
+    margin-left: 0.1rem;
+    cursor: pointer;
+    font-family: PingFangSC-Regular;
+    font-size: 0.16rem;
+    color: #333333;
+    letter-spacing: -0.0039000000000000003rem;
+}
+
+.el-pagination > span:first-child {
+    margin: 0 0.1rem 0 0;
+    font-weight: 400;
+    color: #606266;
+}
+/*dialog*/
+
+.el-dialog__body {
+    padding: 0.2rem;
+    color: #606266;
+    line-height: 0.24rem;
+    font-size: 0.14rem;
+}
+
+.el-loading-spinner {
+    top: 0.3rem !important;
+}
+
+.w-e-text table td, .w-e-text table th {
+    border-bottom: 1px solid #ccc !important;
+    border-right: 1px solid #ccc !important;
+    padding: 3px 5px !important;
+}
+
+#shell table td, #shell table th {
+    border: 1px solid #ccc !important;
+    padding: 3px 5px !important;
+}
+#shell table{
+    border-color: #cfcfcf !important;
+    border-collapse: collapse;
+}

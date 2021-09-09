@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redTicket.dao.RedTicketMatchDao">
+
+    <resultMap id="redTicketMatchMap" type="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="red_total_amount" property="redTotalAmount"/>
+        <result column="whether_upload_data" property="dataStatus"/>
+        <result column="whether_upload_rednotice" property="noticeStatus"/>
+        <result column="audit_results" property="examineResult"/>
+        <result column="audit_remarks" property="examineRemarks"/>
+        <result column="redticket_status" property="redTicketStatus"/>
+        <result column="red_notice_number" property="redNoticeNumber"/>
+        <result column="business_type" property="businessType"/>
+        <result column="redticket_creation_time" property="redTicketCreationTime"/>
+        <result column="redticket_founder" property="redTicketFounder"/>
+        <result column="data_association" property="dataAssociation"/>
+        <result column="rednotice_association" property="redNoticeAssociation"/>
+        <result column="invoiceAmount" property="invoice_amount"/>
+        <result column="taxAmount" property="tax_amount"/>
+        <result column="taxRate" property="tax_rate"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="qsStatus" property="qs_status"/>
+        <result column="redticket_data_serial_number" property="redTicketDataSerialNumber"/>
+    </resultMap>
+
+    <insert id="insertRedTicketMatch" parameterType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch" useGeneratedKeys="true" keyProperty="map.id">
+    insert into t_dx_red_ticket_matching
+    (
+    red_total_amount,
+    whether_upload_data,
+    whether_upload_rednotice,
+    audit_results,
+    redticket_data_serial_number,
+    business_type,
+    redticket_status,
+    redticket_creation_time,
+    redticket_founder,
+    scan_match_status,
+    venderid,
+    whether_open_redticket,
+    gf_tax_no,
+    tax_rate,
+    jvcode,
+    company_code
+    ) values(
+    #{map.redTotalAmount},
+    2,
+    2,
+    1,
+    #{map.redTicketDataSerialNumber},
+    #{map.businessType},
+    0,
+    #{map.redTicketCreationTime},
+    #{map.redTicketFounder},
+    0,
+    #{map.venderid},
+    2,
+    #{map.gfTaxNo},
+    #{map.taxRate},
+    #{map.jvcode},
+    #{map.companyCode}
+    )
+    </insert>
+    
+    <select id="querymaxredTicketNumber" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+        select MAX(redticket_data_serial_number) redTicketDataSerialNumber
+        from t_dx_red_ticket_matching WITH(NOLOCK)
+    </select>
+
+    <select id="queryredTicketMatch" resultMap="redTicketMatchMap">
+        select
+        invoice_code,invoice_no,red_total_amount,
+        whether_upload_data,whether_upload_rednotice
+        audit_results,audit_remark,redticket_status,
+        red_notice_number,business_type,redticket_creation_time,
+        redticket_founder,data_association,rednotice_association,
+        invoiceAmount,taxAmount,taxRate,total_amount,qsStatus,
+        redticket_data_serial_number
+        from t_dx_red_ticket_matching WITH(NOLOCK)
+        where redticket_data_serial_number=#{redTicketNumber}
+    </select>
+</mapper>

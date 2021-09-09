@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.BatchSystemMatchQueryDao">
+
+    <resultMap id="gfoptionMap" type="com.xforceplus.wapp.modules.report.entity.GfOptionEntity">
+        <result column="taxno" property="value" />
+        <result column="taxname" property="label"/>
+        <result column="orgcode" property="orgode"/>
+    </resultMap>
+
+    <!--查询发票匹配处理状态报告信息-->
+    <select id="matchlists" resultType="com.xforceplus.wapp.modules.report.entity.BatchSystemMatchQueryEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        jv  jv,--购方名称
+        vender   vender,--供应商编码
+        inv_total   invTotal,--发票金额
+        code   code,--状态
+        inv   inv,--发票号
+        yy   yy,--年
+        mm   mm,--月
+        dd   dd,--日
+        yy1   yy1,
+        mm1   mm1,
+        dd1   dd1,
+        tax_rate   taxRate,--发票税率
+        create_date   createDate,--导入时间
+        matchno matchNo,
+        tax_type taxType,
+        tax_total taxAmount
+        from t_dx_return_screen WITH(NOLOCK)
+        WHERE
+        id IN (
+        SELECT
+        MAX (id)
+        FROM
+        t_dx_return_screen
+        WHERE
+        code = '0'
+        <if test="map.gfName != null and map.gfName != ''and map.gfName != '-1'">
+            and jv like concat('%',concat(#{map.gfName},'%'))
+        </if>
+        <if test="map.batchId != null and map.batchId != ''">
+            and matchno=#{map.batchId}
+        </if>
+        <if test="map.venderId != null and map.venderId != ''">
+            and vender=#{map.venderId}
+        </if>
+        <if test="map.invNo != null and map.invNo != ''">
+            and inv=#{map.invNo}
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND convert(varchar(10),create_date,23)  <= #{map.invoiceDate2} ]]>
+        </if>
+        GROUP BY
+        matchno,
+        inv
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+
+    <!--查询发票匹配处理状态报告信息条数-->
+    <select id="matchlistCounts" resultType="Integer">
+        select count(1)
+        from t_dx_return_screen WITH(NOLOCK)
+        WHERE
+        id IN (
+        SELECT
+        MAX (id)
+        FROM
+        t_dx_return_screen
+        WHERE
+        code = '0'
+        <if test="map.gfName != null and map.gfName != ''and map.gfName != '-1'">
+            and jv like concat('%',concat(#{map.gfName},'%'))
+        </if>
+        <if test="map.batchId != null and map.batchId != ''">
+            and matchno=#{map.batchId}
+        </if>
+        <if test="map.venderId != null and map.venderId != ''">
+            and vender=#{map.venderId}
+        </if>
+        <if test="map.invNo != null and map.invNo != ''">
+            and inv=#{map.invNo}
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND convert(varchar(10),create_date,23)  <= #{map.invoiceDate2} ]]>
+        </if>
+        GROUP BY
+        matchno,
+        inv
+        )
+    </select>
+
+
+
+
+
+    <select id="matchlistAll" resultType="com.xforceplus.wapp.modules.report.entity.BatchSystemMatchQueryEntity">
+        select
+        id,
+        jv  jv,--购方名称
+        vender   vender,--供应商编码
+        inv_total   invTotal,--发票金额
+        code   code,--状态
+        inv   inv,--发票号
+        yy   yy,--年
+        mm   mm,--月
+        dd   dd,--日
+        yy1   yy1,
+        mm1   mm1,
+        dd1   dd1,
+        tax_rate   taxRate,--发票税率
+        create_date   createDate,--导入时间
+        matchno matchNo,
+        tax_type taxType,
+        tax_total taxAmount
+        from t_dx_return_screen WITH(NOLOCK)
+        WHERE
+        id IN (
+        SELECT
+        MAX (id)
+        FROM
+        t_dx_return_screen
+        WHERE
+        code = '0'
+        <if test="map.gfName != null and map.gfName != ''and map.gfName != '-1'">
+            and jv like concat('%',concat(#{map.gfName},'%'))
+        </if>
+        <if test="map.batchId != null and map.batchId != ''">
+            and matchno=#{map.batchId}
+        </if>
+        <if test="map.venderId != null and map.venderId != ''">
+            and vender=#{map.venderId}
+        </if>
+        <if test="map.invNo != null and map.invNo != ''">
+            and inv=#{map.invNo}
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND convert(varchar(10),create_date,23)  <= #{map.invoiceDate2} ]]>
+        </if>
+        GROUP BY
+        matchno,
+        inv
+        )
+    </select>
+
+
+
+    <!--查询发票匹配处理状态报告信息-->
+    <!--<select id="matchlists" resultType="com.xforceplus.wapp.modules.report.entity.BatchSystemMatchQueryEntity">-->
+        <!--SELECT-->
+        <!--<if test=" map.limit != null">-->
+            <!--TOP (#{map.limit})-->
+        <!--</if>-->
+        <!--A.*-->
+        <!--FROM-->
+        <!--(-->
+        <!--SELECT-->
+        <!--row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*-->
+        <!--FROM-->
+        <!--(-->
+        <!--select-->
+        <!--m.id,-->
+        <!--m.venderid         venderId,-->
+        <!--m.settlementamount settlementAmount,-->
+        <!--m.po_amount        poAmount,-->
+        <!--m.claim_amount     claimAmount,-->
+        <!--m.match_date       matchDate,-->
+        <!--m.gf_name          gfName,-->
+        <!--m.po_num           poNum,-->
+        <!--m.claim_num        claimNum,-->
+        <!--m.invoice_num      invoiceNum,-->
+        <!--m.invoice_amount   invoiceAmount,-->
+        <!--m.host_status      hostStatus,-->
+        <!--u.orgname          orgName,-->
+        <!--u.extf0            jvCode,-->
+        <!--u.company_code     companyCode-->
+        <!--from t_dx_match m WITH(NOLOCK)-->
+        <!--left join t_ac_org u WITH(NOLOCK) on m.venderid=u.orgcode-->
+        <!--<where>-->
+            <!--<if test="map.gfName != null and map.gfName != ''">-->
+                <!--and m.gf_taxno like concat('%',concat(#{map.gfName},'%'))-->
+            <!--</if>-->
+            <!--<if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">-->
+                <!--<![CDATA[ AND convert(varchar(100),m.match_date,23) >= #{map.invoiceDate1} ]]>-->
+            <!--</if>-->
+            <!--<if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">-->
+                <!--<![CDATA[ AND convert(varchar(10),m.match_date,23)  <= #{map.invoiceDate2} ]]>-->
+            <!--</if>-->
+            <!--<if test="map.hostStatus != null and map.hostStatus != ''">-->
+                <!--and m.scan_match_status like #{map.scanMatchStatus}-->
+            <!--</if>-->
+            <!--<if test="map.companyCode != null and map.companyCode != ''">-->
+                <!--and u.company_code like concat('%',concat(#{map.companyCode},'%'))-->
+            <!--</if>-->
+        <!--</where>-->
+        <!--) AS o-->
+        <!--) A-->
+        <!--WHERE 1=1-->
+        <!--<if test="map.offset != null ">-->
+            <!--and   rownumber > #{map.offset}-->
+        <!--</if>-->
+    <!--</select>-->
+
+    <!--&lt;!&ndash;查询发票匹配处理状态报告信息条数&ndash;&gt;-->
+    <!--<select id="matchlistCounts" resultType="Integer">-->
+        <!--select count(1)-->
+        <!--from t_dx_match m WITH(NOLOCK)-->
+        <!--left join t_ac_user u WITH(NOLOCK) on m.venderid=u.usercode-->
+        <!--<where>-->
+            <!--<if test="map.gfName != null and map.gfName != ''">-->
+                <!--and m.gf_taxno like concat('%',concat(#{map.gfName},'%'))-->
+            <!--</if>-->
+            <!--<if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">-->
+                <!--<![CDATA[ AND convert(varchar(100),m.match_date,23) >= #{map.invoiceDate1} ]]>-->
+            <!--</if>-->
+            <!--<if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">-->
+                <!--<![CDATA[ AND convert(varchar(10),m.match_date,23)  <= #{map.invoiceDate2} ]]>-->
+            <!--</if>-->
+            <!--<if test="map.hostStatus != null and map.hostStatus != ''">-->
+                <!--and m.host_status like #{map.hostStatus}-->
+            <!--</if>-->
+            <!--<if test="map.companyCode != null and map.companyCode != ''">-->
+                <!--and u.company_code like concat('%',concat(#{map.companyCode},'%'))-->
+            <!--</if>-->
+        <!--</where>-->
+    <!--</select>-->
+
+    <select id="searchGf" resultMap="gfoptionMap">
+        select taxno,orgname taxname,orgcode from t_ac_org WITH(NOLOCK) where orgtype=5
+</select>
+
+</mapper>

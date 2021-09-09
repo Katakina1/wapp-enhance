@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.modules.job.dao.ConfirmDao" >
+    <!--查询机构表里税号-->
+  <select id="getTaxno" resultType="com.xforceplus.wapp.modules.job.entity.TAcOrg"  >
+   select g.taxno,g.link_name from t_ac_org g WITH(NOLOCK) where g.orgtype='5'
+  </select>
+    <!--查询属期表里是否有该税号-->
+    <select id="qryTaxCurrent" resultType="java.lang.Integer"  >
+        select count(*) from t_dx_tax_current g where g.taxno=#{taxno}
+    </select>
+    <!--插入属期表-->
+    <insert id="insertCurrent"  >
+       INSERT INTO t_dx_tax_current
+            (
+             taxno,
+             taxname,
+             current_tax_period,
+             select_start_date,
+             select_end_date,
+             operation_end_date,
+             old_tax_no,
+             declare_period,
+             credit_rating,
+             create_time)
+		VALUES (
+		        #{taxCurrent.curTaxno},
+		        #{taxCurrent.compName},
+		        #{taxCurrent.incomeMoth},
+		        #{taxCurrent.selectStartDate},
+		        #{taxCurrent.selectEndDate},
+		        #{taxCurrent.incomeEndDate},
+		         #{taxCurrent.oldTaxno},
+		        #{taxCurrent.appPeriod},
+		        #{taxCurrent.compLevel},
+		        getdate())
+    </insert>
+    <!--更新属期表-->
+    <update id="updateCurrent"  >
+        update t_dx_tax_current SET
+        taxname= #{taxCurrent.compName},
+        current_tax_period=#{taxCurrent.incomeMoth},
+        select_start_date=#{taxCurrent.selectStartDate},
+        select_end_date=#{taxCurrent.selectEndDate},
+        operation_end_date=#{taxCurrent.incomeEndDate},
+        old_tax_no= #{taxCurrent.oldTaxno},
+        declare_period=#{taxCurrent.appPeriod},
+        credit_rating=#{taxCurrent.compLevel},
+        update_time=getdate() where taxno=#{taxCurrent.curTaxno}
+    </update>
+    <!--查询申请认证批次号-->
+    <select id="getBatchNo" resultType="java.lang.String"  >
+        select g.batch_no from t_dx_apply_record g where g.result_status='N' group by batch_no
+    </select>
+    <!--认证结果返回，更新底账表-->
+    <update id="updateRecord"  >
+        update t_dx_record_invoice WITH(ROWLOCK) SET
+        rzh_yesorno= #{result.legalizeState},
+        rzh_date=#{rzhDate},
+        auth_status=#{result.authState},
+        rzh_type=#{result.legalizeType},
+        rzh_belong_date=#{result.legalizeBelongDate},
+        rzlx= #{result.rzlx},
+        rzh_back_msg=#{result.failureReason},
+        sfygx='1'
+       where uuid=#{uuid}
+    </update>
+    <!--认证结果返回，更新底账表-->
+    <update id="updateApply"  >
+        update t_dx_apply_record SET
+        result_status='Y'
+        where uuid=#{uuid}
+    </update>
+    <!--插入日志表-->
+    <insert id="saveLog"  >
+        INSERT INTO t_dx_http_log WITH(ROWLOCK)
+        ( type,
+        req_date,
+        req_text,
+        res_date,
+        res_text,
+        status,
+        taxno)
+        VALUES (
+        #{tDxHttpLog.type},
+        #{tDxHttpLog.reqDate},
+        #{tDxHttpLog.reqText},
+        #{tDxHttpLog.resDate},
+        #{tDxHttpLog.resText},
+        #{tDxHttpLog.status},
+        #{tDxHttpLog.taxno})
+    </insert>
+    <select id="getApplyInvoiceByCount" resultType="java.lang.Integer"  >
+        select count(*) from  t_dx_record_invoice WITH(NOLOCK) where auth_status='2'
+    </select>
+    <!--查询要申请认证的发票-->
+    <select id="getApplyInvoice" resultType="com.xforceplus.wapp.modules.job.entity.TDxRecordInvoice"  >
+        select top(200) invoice_code,invoice_no,new_gf_taxno,rzh_belong_date from  t_dx_record_invoice WITH(NOLOCK) where auth_status='2'
+    </select>
+    <!--插入日志表-->
+    <insert id="insertApplyRecord"  >
+        INSERT INTO t_dx_apply_record
+        ( batch_no,
+        invoice_code,
+        invoice_no,
+        result_status,
+        create_date,
+        uuid)
+        VALUES (
+        #{batchNo},
+        #{tDxApplyRecord.invoiceCode},
+        #{tDxApplyRecord.invoiceNo},
+        'N',
+        getdate(),
+        #{tDxApplyRecord.uuid}
+        )
+    </insert>
+    <!--申请认证成功，更新底账表-->
+    <update id="updateInvoiceRecord"  >
+        update t_dx_record_invoice WITH(ROWLOCK) SET
+        auth_status='3',send_date=getdate()
+        where uuid=#{tDxApplyRecord.uuid}
+    </update>
+
+    <!--查询分库数量-->
+    <select id="getLink" resultType="com.xforceplus.wapp.modules.job.entity.TAcOrg"  >
+        select g.link_name from t_ac_org g WITH(NOLOCK) group by g.link_name
+    </select>
+</mapper>

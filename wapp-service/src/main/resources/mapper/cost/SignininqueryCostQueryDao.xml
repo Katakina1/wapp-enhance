@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.cost.dao.SignininqueryCostQueryDao">
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        select * from (
+        SELECT
+        t.id,
+        t.vender_id,
+        t.vender_name,
+        t.bank_name,
+        t.bank_account,
+        t.staff_email approverEmail,
+        t.reject_reason,
+        t.settlement_amount,
+        t.walmart_status,
+        t.cost_no,
+        t.eps_no,
+        t.create_date,
+        t.remark,
+        t.scan_status,
+        t.is_del,
+        t.instance_id instanceId,
+        t.scantwo_date  scanDate,
+        t.walmart_date,
+        t.belongs_to,
+        t.pay_model,
+        t.push_status,
+        ROW_NUMBER () OVER (ORDER BY t.create_date) AS rownum
+        FROM
+        t_dx_settlement t WITH(NOLOCK)
+        WHERE
+        t.valid = '1' AND t.is_del = '0'
+        AND EXISTS (select 1 from t_dx_invoice t2 WITH(NOLOCK) where t.cost_no = t2.cost_no)
+        <if test="costNo != null and costNo != ''">
+            and t.cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="pushStatus != null and pushStatus != '' and pushStatus != '-1'">
+            and t.push_status  = #{pushStatus}
+        </if>
+        <if test="payModel != null and payModel != '' and payModel != '-1'">
+            and t.pay_model  = #{payModel}
+        </if>
+        <if test="epsNo != null and epsNo != ''">
+            and t.eps_no like '%'+#{epsNo}+'%'
+        </if>
+        <if test="scanStatus != null and scanStatus != '' and scanStatus != '-1'">
+            and t.scan_status=#{scanStatus}
+        </if>
+        <if test="venderId != null and venderId != '' and venderId != '-1'">
+            and t.vender_id=#{venderId}
+        </if>
+        <if test="createDate1 != null and createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),t.scantwo_date,23) >= #{createDate1} ]]>
+        </if>
+        <if test="createDate2 != null and createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),t.scantwo_date,23)  <= #{createDate2} ]]>
+        </if>
+
+        ) a where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryAllList" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        SELECT
+        t.id,
+        t.vender_id,
+        t.vender_name,
+        t.bank_name,
+        t.bank_account,
+        t.staff_email approverEmail,
+        t.reject_reason,
+        t.settlement_amount,
+        t.walmart_status,
+        t.cost_no,
+        t.eps_no,
+        t.create_date,
+        t.remark,
+        t.scan_status,
+        t.is_del,
+        t.scantwo_date  scanDate,
+        t.win_id,
+        t.walmart_date,
+        t.pay_model,
+        t.push_status,
+        ROW_NUMBER () OVER (ORDER BY t.create_date) AS rownum
+        FROM
+        t_dx_settlement t WITH(NOLOCK)
+        WHERE
+        t.valid = '1'
+        AND EXISTS (select 1 from t_dx_invoice t2 WITH(NOLOCK) where t.cost_no = t2.cost_no)
+        <if test="costNo != null and costNo != ''">
+            and t.cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="pushStatus != null and pushStatus != '' and pushStatus != '-1'">
+            and t.push_status  = #{pushStatus}
+        </if>
+        <if test="payModel != null and payModel != '' and payModel != '-1'">
+            and t.pay_model  = #{payModel}
+        </if>
+        <if test="epsNo != null and epsNo != ''">
+            and t.eps_no like '%'+#{epsNo}+'%'
+        </if>
+        <if test="scanStatus != null and scanStatus != '' and scanStatus != '-1'">
+            and t.scan_status=#{scanStatus}
+        </if>
+        <if test="venderId != null and venderId != '' and venderId != '-1'">
+            and t.vender_id=#{venderId}
+        </if>
+        <if test="invoiceDate1 != null and invoiceDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),t.scantwo_date,23) >= #{invoiceDate1} ]]>
+        </if>
+        <if test="invoiceDate2 != null and invoiceDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),t.scantwo_date,23)  <= #{invoiceDate2} ]]>
+        </if>
+    </select>
+
+
+
+    <select id="queryCount" resultType="int">
+        select count(1)
+        FROM
+        t_dx_settlement t WITH(NOLOCK)
+        WHERE
+        t.valid = '1'
+        AND t.is_del = '0'
+        AND EXISTS (select 1 from t_dx_invoice t2 WITH(NOLOCK) where t.cost_no = t2.cost_no)
+        <if test="costNo != null and costNo != ''">
+            and t.cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="epsNo != null and epsNo != ''">
+            and t.eps_no like '%'+#{epsNo}+'%'
+        </if>
+        <if test="scanStatus != null and scanStatus != '' and scanStatus != '-1'">
+            and t.scan_status=#{scanStatus}
+        </if>
+        <if test="pushStatus != null and pushStatus != '' and pushStatus != '-1'">
+            and t.push_status  = #{pushStatus}
+        </if>
+        <if test="payModel != null and payModel != '' and payModel != '-1'">
+            and t.pay_model  = #{payModel}
+        </if>
+        <if test="venderId != null and venderId != '' and venderId != '-1'">
+            and t.vender_id=#{venderId}
+        </if>
+        <if test="createDate1 != null and createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),t.scantwo_date,23) >= #{createDate1} ]]>
+        </if>
+        <if test="createDate2 != null and createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),t.scantwo_date,23)  <= #{createDate2} ]]>
+        </if>
+    </select>
+
+    <select id="getInvoice" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        SELECT
+
+
+
+		RIGHT(t.scan_id,17) scanRightId,
+		SUBSTRING(t.scan_id,0,CHARINDEX('_', t.scan_id)) scanSubId,
+        t.id,
+        t.invoice_code invoiceCode,
+        t.invoice_no invoiceNo,
+        t.dy_invoice_code dyInvoiceCode,
+        t.dy_invoice_no dyInvoiceNo,
+        t.invoice_date invoiceDate,
+        t.invoice_type invoiceType,
+        t.qs_type qsType,
+        t.gf_name gfName,
+        t.xf_name xfName,
+        t.gf_tax_no gfTaxNo,
+        t.xf_tax_no xfTaxNo,
+        t.user_account,
+        t.invoice_amount invoiceAmount,
+        t.tax_amount taxAmount,
+        t.qs_date signInDate,
+        t.qs_status qsStatus,
+        t.notes notes,t.scan_id scanId,
+        t.invoice_serial_no localTrmSeqNum,
+        t.vendername,t.rebateyesorno, t.check_code,t.total_amount,t.create_date, t.venderid,t.jv_code,t.company_code,
+        t.file_type,tdri.rzh_date,tdri.rzh_yesorno,t.flow_type,t.isdel,
+        tdri.scan_match_status scanMatchStatus,
+        tdri.scan_fail_reason scanFailReason,
+        t.venderid_edit venderidEdit,t.is_exist_stamper isExistStamper,t.no_exist_stamper_notes noExistStamperNotes,t.cost_no costNo
+        from t_dx_invoice t WITH(NOLOCK)
+        left join t_dx_record_invoice tdri WITH(NOLOCK) on tdri.uuid=t.uuid
+        where
+        t.valid = 1 and
+        t.rebateyesorno = 0 and
+        t.qs_type=1 and
+        t.flow_type = '2' and
+        t.cost_no=#{costNo}
+
+        ORDER BY scanRightId asc
+    </select>
+
+    <select id="getRate" resultType="com.xforceplus.wapp.modules.cost.entity.RateEntity">
+        select id, invoice_amount, tax_rate, tax_amount from t_dx_settlement_rate
+        where cost_no=#{costNo} and invoice_code=#{invoiceCode} and invoice_no like #{invoiceNo}+'%'
+    </select>
+
+    <select id="getCost" resultType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+        select id,
+        cost_type, cost_type_name,
+        cost_time, cost_amount, cost_use,
+        cost_dept, cost_dept_id, project_code,
+        instance_id oldBindId, bpms_id,
+        (select (cost_amount-covered_amount) from t_dx_settlement_match_detail where t_dx_settlement_cost.bpms_id=t_dx_settlement_match_detail.bpms_id) surplusAmount
+        from t_dx_settlement_cost
+        where rate_id=#{rateId}
+    </select>
+
+    <select id="getFile" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementFileEntity">
+        select id, file_name, file_type, file_path
+        from t_dx_settlement_file where cost_no=#{costNo}
+    </select>
+
+    <select id="getStatusOptions" resultType="com.xforceplus.wapp.modules.cost.entity.SelectionOptionEntity">
+        select dictcode optionKey,
+        dictname optionName
+        from t_ac_dictdeta where dicttype=(select dicttypeid from t_ac_dicttype where dicttypecode='COST_STATUS')
+    </select>
+
+    <delete id="deleteInvice">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_invoice WITH(ROWLOCK) SET  isdel=1,cost_no='',del_date = GETDATE(),eps_no = #{epsNo},refund_reason= #{refundReason}, refund_code=#{refundCode},belongs_to =#{belongsTo},rebateyesorno = 0 where cost_no=#{costNo}
+    </delete>
+
+    <delete id="deleteInvices">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK) SET is_del=1   , del_date=GETDATE() ,scan_match_status='0',scan_match_date='',cost_no=''  where cost_no=#{costNo}
+    </delete>
+
+
+    <delete id="deleteMsgById">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_settlement WITH(ROWLOCK) SET scan_status=0  , del_date=GETDATE(),walmart_status = '7', reject_reason = #{refundReason},is_del = '1',push_status ='1' where cost_no=#{costNo}
+    </delete>
+
+    <delete id="deleteMsgByIds">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_settlement_invoice WITH(ROWLOCK) SET valid = '0' where cost_no=#{costNo}
+    </delete>
+
+
+    <!-- 查询预付单据的费用信息 -->
+    <select id="searchDetail" resultType="com.xforceplus.wapp.modules.cost.entity.MatchRebackEntity">
+       select t.cost_amount,t.match_detail_id,t1.invoice_code,t1.invoice_no,t1.invoice_amount from t_dx_settlement_cost t left join t_dx_settlement_rate t1 on t.rate_id=t1.id where t1.cost_no=#{costNo}
+    </select>
+
+    <!-- 查询预付明细现有金额 -->
+    <select id="searchMatchDetailAmount" resultType="java.lang.String">
+        select covered_amount from t_dx_settlement_match_detail where id =#{matchDetailId}
+    </select>
+
+    <!-- 更新恢复被冲销金额 -->
+    <update id="updateAmountById">
+        update t_dx_settlement_match_detail set covered_amount=#{bd} where id=#{id}
+    </update>
+
+
+    <!-- 清除底账表中的费用号 -->
+    <update id="updateAmountByUuid">
+        update t_dx_record_invoice WITH(ROWLOCK) set cost_no = '',covered_amount = covered_amount - ${invoiceAmount} where uuid=#{uuid}
+    </update>
+    <!-- 通过eps单号获取主信息上已冲销的金额 -->
+    <select id="findMatch" resultType="java.lang.String">
+        select covered_amount from t_dx_settlement_match where eps_no=#{epsNo}
+    </select>
+    <!-- 通过eps单号更新金额 -->
+    <update id="updateMatchAmount">
+        update t_dx_settlement_match set covered_amount=#{totalAmount} where eps_no=#{epsNo}
+    </update>
+    <!--通过costNo查询对比-->
+    <select id="getInvoices" resultType="com.xforceplus.wapp.modules.cost.entity.ContrastEntity">
+        SELECT
+        t.id,
+        RIGHT(t.scan_id,17) scanRightId,
+        t.invoice_code invoiceCode,
+        t.invoice_no invoiceNo,
+        t.invoice_date invoiceDate,
+        t.invoice_type invoiceType,
+        t.invoice_amount invoiceAmount,
+        t.tax_amount taxAmount,
+        t.total_amount totalAmount,
+        t.venderid   venderid,
+        tdri.invoice_code invoiceCodeX,
+        tdri.invoice_no invoiceNoX,
+        tdri.invoice_date invoiceDateX,
+        tdri.invoice_type invoiceTypeX,
+        tdri.invoice_amount invoiceAmountX,
+        tdri.tax_amount taxAmountX,
+        tdri.total_amount totalAmountX,
+        tdri.venderid   venderidX
+        from t_dx_invoice t WITH(NOLOCK)
+        left join t_dx_settlement_invoice tdri WITH(NOLOCK) on t.invoice_code=tdri.invoice_code and t.invoice_no=tdri.invoice_no and t.cost_no = tdri.cost_no
+        where
+        tdri.valid = 1 and
+        t.valid = 1 and
+        t.rebateyesorno = 0 and
+        t.qs_type=1 and
+        t.flow_type = '2' and
+        t.cost_no=#{costNo}
+
+        ORDER BY scanRightId asc
+    </select>
+
+    <select id="queryLists" resultType="com.xforceplus.wapp.modules.cost.entity.SettlementEntity">
+        select * from (
+        SELECT
+        t.id,
+        t.vender_id,
+        t.vender_name,
+        t.bank_name,
+        t.bank_account,
+        t.staff_email approverEmail,
+        t.reject_reason,
+        t.settlement_amount,
+        t.walmart_status,
+        t.cost_no,
+        t.eps_no,
+        t.create_date,
+        t.remark,
+        t.scan_status,
+        t.is_del,
+        t.instance_id instanceId,
+        t.scantwo_date  scanDate,
+        t.walmart_date,
+        t.belongs_to,
+        t.pay_model,
+        ROW_NUMBER () OVER (ORDER BY t.create_date) AS rownum
+        FROM
+        t_dx_settlement t WITH(NOLOCK)
+        WHERE
+        t.valid = '1' AND t.is_del = '0'
+        <if test="costNo != null and costNo != ''">
+            and t.cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="payModel != null and payModel != '' and payModel != '-1'">
+            and t.pay_model  = #{payModel}
+        </if>
+        <if test="epsNo != null and epsNo != ''">
+            and t.eps_no like '%'+#{epsNo}+'%'
+        </if>
+        <if test="scanStatus != null and scanStatus != '' and scanStatus != '-1'">
+            and t.scan_status=#{scanStatus}
+        </if>
+        <if test="venderId != null and venderId != '' and venderId != '-1'">
+            and t.vender_id=#{venderId}
+        </if>
+        <if test="createDate1 != null and createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),t.create_date,23) >= #{createDate1} ]]>
+        </if>
+        <if test="createDate2 != null and createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),t.create_date,23)  <= #{createDate2} ]]>
+        </if>
+
+        ) a where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryCounts" resultType="int">
+        select count(1)
+        FROM
+        t_dx_settlement t WITH(NOLOCK)
+        WHERE
+        t.valid = '1'
+        AND t.is_del = '0'
+        <if test="costNo != null and costNo != ''">
+            and t.cost_no like '%'+#{costNo}+'%'
+        </if>
+        <if test="epsNo != null and epsNo != ''">
+            and t.eps_no like '%'+#{epsNo}+'%'
+        </if>
+        <if test="scanStatus != null and scanStatus != '' and scanStatus != '-1'">
+            and t.scan_status=#{scanStatus}
+        </if>
+        <if test="payModel != null and payModel != '' and payModel != '-1'">
+            and t.pay_model  = #{payModel}
+        </if>
+        <if test="venderId != null and venderId != '' and venderId != '-1'">
+            and t.vender_id=#{venderId}
+        </if>
+        <if test="createDate1 != null and createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),t.create_date,23) >= #{createDate1} ]]>
+        </if>
+        <if test="createDate2 != null and createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),t.create_date,23)  <= #{createDate2} ]]>
+        </if>
+    </select>
+
+    <update id="underWay">
+        update t_dx_settlement WITH(ROWLOCK) set push_status = '0' where cost_no=#{costNo}
+    </update>
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.posuopei.dao.SubmitOutstandingReportDao">
+
+
+
+    <insert id="insertSubmitOutstandingReport" parameterType="com.xforceplus.wapp.modules.posuopei.entity.SubmitOutstandingReportEntity">
+        insert into t_dx_submit_qutstanding_report
+        (
+        datet,
+        input_user,
+        jv,
+        vendor_no,
+        inv_no,
+        invoice_cost,
+        wm_cost,
+        batch_id,
+        po_no,
+        trans,
+        rece,
+        errcode,
+        errdesc,
+        errstatus,
+        invoice_date
+
+        )values(
+        getdate(),
+        #{entity.inputUser},
+        #{entity.jv},
+        #{entity.vendorNo},
+        #{entity.invNo},
+        #{entity.invoiceCost},
+        #{entity.wmCost},
+        #{entity.batchId},
+        #{entity.poNo},
+        #{entity.trans},
+        #{entity.rece},
+        #{entity.errcode},
+        #{entity.errdesc},
+        #{entity.errstatus},
+        #{entity.invoiceDate}
+        )
+    </insert>
+
+</mapper>

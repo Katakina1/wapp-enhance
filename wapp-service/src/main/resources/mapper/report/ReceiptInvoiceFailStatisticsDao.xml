@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.ReceiptInvoiceFailStatisticsDao">
+
+
+    <!--数据库表表明对应实体类的属性-->
+    <sql id="t_dx_invoice_Column">
+        tdi.id id,
+        DATE_FORMAT(tdi.qs_date,'%Y-%m-%d') qsDate,
+        tdi.invoice_code invoiceCode,
+        tdi.invoice_no invoiceNo,
+        DATE_FORMAT(tdi.invoice_date,'%Y-%m-%d') invoiceDate,
+        tdi.gf_tax_no gfTaxNo,
+        tdi.gf_name gfName,
+        tdi.xf_tax_no xfTaxNo,
+        tdi.invoice_amount invoiceAmount,
+        tdi.tax_amount taxAmount,
+        tdi.invoice_type invoiceType
+    </sql>
+
+
+    <!--签收失败报表数据-->
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        /**mycat:schema=${schemaLabel}*/ SELECT
+        <include refid="t_dx_invoice_Column"/>
+        from t_dx_invoice tdi WITH(NOLOCK)
+        WHERE tdi.valid='1' AND tdi.qs_status='0'
+        and user_account in (SELECT loginname from t_ac_user WITH(NOLOCK) where userid in (
+            select distinct userid from t_ac_user_taxno where orgid in (
+              select orgid from t_ac_org WITH(NOLOCK) where company=(
+                    select company from t_ac_org WITH(NOLOCK) where orgid=(
+                      select orgid from t_ac_user WITH(NOLOCK) where userid=#{map.userId}
+                    )
+                )
+            )
+        ))
+        <if test="map.gfName !=null and map.gfName!=''">
+            AND tdi.gf_tax_no =#{map.gfName}
+        </if>
+        <if test="map.xfName !=null and map.xfName!=''">
+            AND tdi.xf_name LIKE '%${map.xfName}%'
+        </if>
+        <if test="map.invoiceNo !=null and map.invoiceNo!=''">
+            AND tdi.invoice_no  LIKE '%${map.invoiceNo}%'
+        </if>
+        <if test="map.qsStartDate !=null and map.qsStartDate!=''">
+            <![CDATA[ AND date_format(tdi.qs_date, '%Y-%m-%d') >=#{map.qsStartDate}  ]]>
+        </if>
+        <if test="map.qsEndDate !=null and map.qsEndDate!=''">
+            <![CDATA[ AND date_format(tdi.qs_date, '%Y-%m-%d')<=#{map.qsEndDate}]]>
+        </if>
+        <if test="map.qsStatus !=null and map.qsStatus!=''">
+            AND tdi.qs_status =#{map.qsStatus}
+        </if>
+        <if test="map.qsType !=null and map.qsType!=''">
+            AND tdi.qs_type =#{map.qsType}
+        </if>
+
+        ORDER BY tdi.create_date desc,tdi.id desc
+        <if test="map.offset !=null and map.limit!=null">
+            limit #{map.offset}, #{map.limit}
+        </if>
+    </select>
+
+    <!--签收失败报表数据count-->
+    <select id="queryTotal" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/ SELECT
+        count(1)
+        from t_dx_invoice tdi WITH(NOLOCK)
+        WHERE tdi.valid='1'AND tdi.qs_status='0'
+        and user_account in (SELECT loginname from t_ac_user WITH(NOLOCK) where userid in (
+            select distinct userid from t_ac_user_taxno where orgid in (
+                select orgid from t_ac_org WITH(NOLOCK) where company=(
+                    select company from t_ac_org WITH(NOLOCK) where orgid=(
+                      select orgid from t_ac_user WITH(NOLOCK) where userid=#{map.userId}
+                    )
+                )
+            )
+        ))
+        <if test="map.gfName !=null and map.gfName!=''">
+            AND tdi.gf_tax_no =#{map.gfName}
+        </if>
+        <if test="map.xfName !=null and map.xfName!=''">
+            AND tdi.xf_name LIKE '%${map.xfName}%'
+        </if>
+        <if test="map.invoiceNo !=null and map.invoiceNo!=''">
+            AND tdi.invoice_no LIKE '%${map.invoiceNo}%'
+        </if>
+
+        <if test="map.qsStartDate !=null and map.qsStartDate!=''">
+            <![CDATA[ AND date_format(tdi.qs_date, '%Y-%m-%d') >=#{map.qsStartDate}  ]]>
+        </if>
+        <if test="map.qsEndDate !=null and map.qsEndDate!=''">
+            <![CDATA[ AND date_format(tdi.qs_date, '%Y-%m-%d')<=#{map.qsEndDate}]]>
+        </if>
+
+    </select>
+
+
+    <!--合计iqGrid金额，税额-->
+    <select id="queryTotalResult" resultType="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        /**mycat:schema=${schemaLabel}*/ SELECT
+        count(1) totalCount,
+        sum(tdi.invoice_amount) totalAmount,
+        sum(tdi.tax_amount) totalTax
+        from t_dx_invoice tdi WITH(NOLOCK)
+        WHERE tdi.valid='1' AND tdi.qs_status='0'
+        and user_account in (SELECT loginname from t_ac_user WITH(NOLOCK) where userid in (
+            select distinct userid from t_ac_user_taxno where orgid in (
+                select orgid from t_ac_org WITH(NOLOCK) where company=(
+                    select company from t_ac_org WITH(NOLOCK) where orgid=(
+                      select orgid from t_ac_user WITH(NOLOCK) where userid=#{condition.userId}
+                    )
+                )
+            )
+        ))
+        <if test="condition.gfName !=null and condition.gfName!=''">
+            AND tdi.gf_tax_no =#{condition.gfName}
+        </if>
+        <if test="condition.xfName !=null and condition.xfName!=''">
+            AND tdi.xf_name LIKE '%${condition.xfName}%'
+        </if>
+        <if test="condition.invoiceNo !=null and condition.invoiceNo!=''">
+            AND tdi.invoice_no LIKE '%${condition.invoiceNo}%'
+        </if>
+
+
+        <if test="condition.qsStartDate !=null and condition.qsStartDate!=''">
+            <![CDATA[ AND date_format(tdi.qs_date, '%Y-%m-%d') >=#{condition.qsStartDate}  ]]>
+        </if>
+        <if test="condition.qsEndDate !=null and condition.qsEndDate!=''">
+            <![CDATA[ AND date_format(tdi.qs_date, '%Y-%m-%d')<=#{condition.qsEndDate}]]>
+        </if>
+        <if test="condition.qsStatus !=null and condition.qsStatus!=''">
+            AND tdi.qs_status =#{condition.qsStatus}
+        </if>
+        <if test="condition.qsType !=null and condition.qsType!=''">
+            AND tdi.qs_type =#{condition.qsType}
+        </if>
+    </select>
+
+
+    <select id="searchGf" resultType="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+       /**mycat:schema=${schemaLabel}*/  SELECT
+        taxno  value,
+        orgname label
+        FROM t_ac_org WITH(NOLOCK)
+        WHERE  orgid IN
+        (SELECT orgid FROM t_ac_user_taxno WHERE userid=#{userId})
+    </select>
+
+    <select id="searchXf" resultType="String">
+      /**mycat:schema=${schemaLabel}*/   select DISTINCT xf_name from t_dx_invoice WITH(NOLOCK) where xf_name like  '%${condition.queryString}%'
+        and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{condition.userId}))
+    </select>
+</mapper>

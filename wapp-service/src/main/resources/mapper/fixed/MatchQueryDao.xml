@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.fixed.dao.MatchQueryDao">
+
+    <resultMap id="invoiceResultMaps" type="com.xforceplus.wapp.modules.posuopei.entity.DetailEntity">
+        <id column="id" property="id"/>
+        <result column="uuid" property="uuid"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="detail_no" property="detailNo"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="model" property="model"/>
+        <result column="unit" property="unit"/>
+        <result column="num" property="num"/>
+        <result column="unit_price" property="unitPrice"/>
+        <result column="detail_amount" property="detailAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="cph" property="cph"/>
+        <result column="lx" property="lx"/>
+        <result column="txrqq" property="txrqq"/>
+        <result column="txrqz" property="txrqz"/>
+        <result column="goods_num" property="goodsNum"/>
+    </resultMap>
+
+    <select id="querylist" resultType="com.xforceplus.wapp.modules.fixed.entity.MatchQueryEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY o.venderid desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        tdfam.id,
+        tdfam.gf_name,
+        tdfam.match_status,
+        tdfam.scan_match_status,
+        tdfam.vender_name,
+        tdfam.venderid,
+        tdfam.invoice_amount,
+        tdfam.invoice_count,
+        tdfam.order_amount,
+        tdfam.order_count,
+        tdfam.match_date,
+        tdfam.check_date,
+        tdfam.check_status,
+        tdfam.settlement_method,
+        tdfam.check_fail_reason
+        from
+        t_dx_fixed_assets_match tdfam WITH(NOLOCK)
+        <where>
+            <if test="map.venderid != null and map.venderid != ''">
+                tdfam.venderid like concat('%',concat(#{map.venderid},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and exists (
+                select 1 from
+                (select * from t_dx_fixed_assets_link tdfal where tdfal.doc_type='2' and tdfal.match_id=tdfam.id) x
+                join t_dx_record_invoice tdi on x.doc_id=tdi.id
+                where tdi.invoice_no like '%'+#{map.invoiceNo}+'%'
+                )
+            </if>
+            <if test="map.orderNo != null and map.orderNo != ''">
+                and exists (
+                select 1 from
+                (select * from t_dx_fixed_assets_link tdfal where tdfal.doc_type='1' and tdfal.match_id=tdfam.id) x
+                join t_dx_fixed_assets_order tdfo on x.doc_id=tdfo.id
+                where tdfo.order_no like '%'+#{map.orderNo}+'%'
+                )
+            </if>
+            <if test="map.matchDateStart != null and map.matchDateStart != ''">
+                <![CDATA[ AND convert(varchar(10),tdfam.match_date,23) >= #{map.matchDateStart} ]]>
+            </if>
+            <if test="map.matchDateEnd != null and map.matchDateEnd != ''">
+                <![CDATA[ AND convert(varchar(10),tdfam.match_date,23)  <= #{map.matchDateEnd} ]]>
+            </if>
+        </where>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber > #{map.offset}
+        </if>
+    </select>
+    <!--查询总数-->
+    <select id="queryTotal" resultType="Integer">
+
+        select
+        count(*)
+        from
+        t_dx_fixed_assets_match tdfam WITH(NOLOCK)
+        <where>
+            <if test="map.venderid != null and map.venderid != ''">
+                tdfam.venderid like concat('%',concat(#{map.venderid},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and exists (
+                select 1 from
+                (select * from t_dx_fixed_assets_link tdfal where tdfal.doc_type='2' and tdfal.match_id=tdfam.id) x
+                join t_dx_record_invoice tdi on x.doc_id=tdi.id
+                where tdi.invoice_no like '%'+#{map.invoiceNo}+'%'
+                )
+            </if>
+            <if test="map.orderNo != null and map.orderNo != ''">
+                and exists (
+                select 1 from
+                (select * from t_dx_fixed_assets_link tdfal where tdfal.doc_type='1' and tdfal.match_id=tdfam.id) x
+                join t_dx_fixed_assets_order tdfo on x.doc_id=tdfo.id
+                where tdfo.order_no like '%'+#{map.orderNo}+'%'
+                )
+            </if>
+            <if test="map.matchDateStart != null and map.matchDateStart != ''">
+                <![CDATA[ AND convert(varchar(10),tdfam.match_date,23) >= #{map.matchDateStart} ]]>
+            </if>
+            <if test="map.matchDateEnd != null and map.matchDateEnd != ''">
+                <![CDATA[ AND convert(varchar(10),tdfam.match_date,23)  <= #{map.matchDateEnd} ]]>
+            </if>
+        </where>
+
+
+    </select>
+    <!--查询明细图片-->
+    <select id="queryDetail" resultType="String">
+        select
+        scan_id
+        from
+        t_dx_invoice WITH(NOLOCK)
+        where
+        uuid = #{uuid}
+    </select>
+
+    <select id="queryOrderid" resultType="Long" parameterType="com.xforceplus.wapp.modules.fixed.entity.MatchQueryEntity">
+        select doc_id from t_dx_fixed_assets_link WITH(NOLOCK)  where match_id = #{entity.id} and doc_type = '1'
+    </select>
+    <select id="queryInvoiceNo" resultType="java.lang.String" parameterType="com.xforceplus.wapp.modules.fixed.entity.MatchQueryEntity">
+        select
+        tdi.uuid
+        from
+        t_dx_fixed_assets_link tdfal WITH(NOLOCK)
+        join
+        t_dx_record_invoice tdi
+        on
+        tdfal.doc_id=tdi.id
+        where
+        tdfal.doc_type='2'
+        AND
+        tdfal.match_id = ${entity.id}
+
+    </select>
+
+
+    <update id="cancelMatchStatus" parameterType="com.xforceplus.wapp.modules.fixed.entity.MatchQueryEntity">
+        update
+        t_dx_fixed_assets_match
+        set
+        match_status = '1'
+        where
+        id = #{entity.id}
+    </update>
+
+    <!-- 删除匹配-->
+    <delete id="delMatch" parameterType="com.xforceplus.wapp.modules.fixed.entity.MatchQueryEntity">
+        DELETE FROM t_dx_fixed_assets_match where
+        id = #{entity.id}
+    </delete>
+
+    <update id="cancelOrderStatus">
+        <if test="orderidList != null">
+            update
+            t_dx_fixed_assets_order
+            set
+            match_status = '0'
+            where
+            id IN
+            <foreach collection="orderidList" item="orderid" index="index" open="(" close=")" separator=",">
+                #{orderid}
+            </foreach>
+
+        </if>
+    </update>
+
+    <update id="cancelInvoiceStatus">
+        <if test="uuidList != null">
+        update
+        t_dx_record_invoice
+        set
+        flow_type = '' ,
+        fixed_matching='0'
+        where
+        uuid IN
+            <foreach collection="uuidList" item="uuid" index="index" open="(" close=")" separator=",">
+                #{uuid}
+            </foreach>
+        </if>
+    </update>
+    <!--发票数据-->
+    <select id="getDetailInvoice" resultType="com.xforceplus.wapp.modules.cost.entity.RecordInvoiceEntity">
+        select b.id, b.invoice_code, b.invoice_no, b.invoice_type, b.invoice_date, b.invoice_amount, b.tax_amount,
+        b.total_amount, b.gf_tax_no, b.gf_name, b.check_code, b.venderid, b.vendername venderName, b.tax_rate
+        from t_dx_fixed_assets_link a WITH(NOLOCK)  join t_dx_record_invoice b on a.doc_id=b.id
+        where a.doc_type='2' and  a.match_id=#{matchId}
+    </select>
+    <select id="exportDetailInvoice" resultType="com.xforceplus.wapp.modules.einvoice.entity.RecordInvoiceDetail">
+
+
+        select
+        tdrid.*
+        from
+        t_dx_record_invoice_detail tdrid WITH ( NOLOCK )
+        left JOIN t_dx_record_invoice tdri WITH ( NOLOCK ) on tdrid.uuid=tdri.uuid and tdri.fixed_matching='1'
+        left JOIN t_dx_fixed_assets_link tdfal WITH ( NOLOCK ) on tdri.id=tdfal.doc_id and tdfal.doc_type='2'
+        left JOIN t_dx_fixed_assets_match tdfam WITH ( NOLOCK ) on tdfam.id=tdfal.match_id
+        <where>
+            <if test="map.venderid != null and map.venderid != ''">
+                tdfam.venderid like concat('%',concat(#{map.venderid},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and exists (
+                select 1 from
+                (select * from t_dx_fixed_assets_link tdfal where tdfal.doc_type='2' and tdfal.match_id=tdfam.id) x
+                join t_dx_record_invoice tdi on x.doc_id=tdi.id
+                where tdi.invoice_no like '%'+#{map.invoiceNo}+'%'
+                )
+            </if>
+            <if test="map.orderNo != null and map.orderNo != ''">
+                and exists (
+                select 1 from
+                (select * from t_dx_fixed_assets_link tdfal where tdfal.doc_type='1' and tdfal.match_id=tdfam.id) x
+                join t_dx_fixed_assets_order tdfo on x.doc_id=tdfo.id
+                where tdfo.order_no like '%'+#{map.orderNo}+'%'
+                )
+            </if>
+            <if test="map.matchDateStart != null and map.matchDateStart != ''">
+                <![CDATA[ AND convert(varchar(10),tdfam.match_date,23) >= #{map.matchDateStart} ]]>
+            </if>
+            <if test="map.matchDateEnd != null and map.matchDateEnd != ''">
+                <![CDATA[ AND convert(varchar(10),tdfam.match_date,23)  <= #{map.matchDateEnd} ]]>
+            </if>
+        </where>
+    </select>
+    <!--订单数据-->
+    <select id="getDetailOrder" resultType="com.xforceplus.wapp.modules.fixed.entity.OrderEntity">
+        select b.id, b.venderid, b.jvcode, b.order_no, b.order_detail_no, b.order_date, b.amount ,b.shamount
+        from t_dx_fixed_assets_link a WITH(NOLOCK)  join t_dx_fixed_assets_order b on a.doc_id=b.id
+        where a.doc_type='1' and  a.match_id=#{matchId}
+    </select>
+
+<!--明细-->
+    <select id="getDetailInfo" resultType="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        /**mycat:schema=${schemaLabel}*/
+        select
+        a.*,
+        a.fixed_matching matchStatus,
+        a.fixed_matching_date fixedMatchDate,
+        b.user_name qsBy
+        FROM t_dx_record_invoice a WITH(NOLOCK)
+        LEFT JOIN t_dx_invoice b ON a.uuid=b.uuid
+        WHERE a.id=#{id}
+    </select>
+
+    <select id="getOutInfo" resultType="com.xforceplus.wapp.modules.posuopei.entity.InvoicesEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        out_date outDate,
+        out_by outBy,
+        out_reason outReason,
+        out_invoice_amout outInvoiceAmout,
+        out_tax_amount outTaxAmount
+        from t_dx_record_invoice_out WITH(NOLOCK)
+        where uuid=#{uuid} and is_cancel='0'
+        order by out_date asc
+    </select>
+
+    <select id="getVehicleDetail" resultType="com.xforceplus.wapp.modules.posuopei.entity.DetailVehicleEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM t_dx_vehicle_sale_invoice WITH(NOLOCK)
+        WHERE uuid IN (SELECT uuid FROM t_dx_record_invoice WHERE id=#{id})
+    </select>
+
+
+    <select id="getFileImage" resultType="com.xforceplus.wapp.modules.fixed.entity.FileEntity">
+        select
+        id       ,
+        path    filePath ,
+       	match_id  matchId,
+        file_Name    fileName
+        from
+        t_dx_fixed_assets_file WITH(NOLOCK)
+        where  id = #{id}
+    </select>
+
+
+    <select id="getFileInfo" resultType="com.xforceplus.wapp.modules.fixed.entity.FileEntity">
+        select
+	  tfile.id,
+	  tfile.file_name as fileName,
+	  tfile.path as filePath
+ 		 from t_dx_fixed_assets_file tfile  WITH(NOLOCK) where tfile.id=#{id}
+    </select>
+
+    <select id="getInvoiceDetail" resultMap="invoiceResultMaps">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT uuid FROM t_dx_record_invoice where id=#{id})
+    </select>
+
+    <!--查询文件  -->
+    <select id="queryFileName" resultType="com.xforceplus.wapp.modules.fixed.entity.FileEntity">
+   /**mycat:schema=${schemaLabel}*/
+  select
+	  tfile.id,
+	  tfile.file_name as fileName,
+	  tfile.path as filePath
+  from t_dx_fixed_assets_file tfile WITH(NOLOCK)  where tfile.match_id=#{map.id}
+  </select>
+</mapper>

@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.modules.job.dao.TDxRecordInvoiceDao" >
+    <sql id="sql_fields_added">
+		d.invoice_code,
+		d.invoice_no,
+		d.invoice_type,
+		d.invoice_date,
+		d.invoice_status,
+		d.gf_tax_no,
+		d.invoice_amount,
+		d.tax_amount,
+	    d.xf_tax_no,
+		d.xf_name,
+		d.gf_name,
+		d.invoice_amount,
+		d.tax_amount,
+		d.total_amount,
+		d.remark,
+		d.rzh_yesorno,
+		d.confirm_date,
+		d.dqskssq,
+		d.gxjzr,
+		d.gxfwq,
+		d.gxfwz,
+		d.rzh_type,
+		d.rzh_belong_date,
+		d.sfygx,
+		d.sfdbts,
+		d.rzlx,
+		d.check_code
+	</sql>
+    <!-- 插入底账表  -->
+    <insert id="insertRecordInvoice" parameterType="com.xforceplus.wapp.modules.job.entity.TDxRecordInvoice">
+            insert into t_dx_record_invoice WITH(ROWLOCK) (
+            invoice_type,
+            invoice_code,
+            invoice_no,
+            invoice_date,
+            invoice_status,
+           invoice_amount,
+            tax_amount,
+             total_amount,
+             gf_tax_no,
+            gf_name,
+            gf_address_and_phone,
+            gf_bank_and_no,
+            xf_tax_no,
+            xf_name,
+            xf_address_and_phone,
+            xf_bank_and_no,
+            remark,
+            rzh_date,
+            rzh_type,
+            rzh_yesorno,
+            dqskssq,
+            gxjzr,
+            gxfwq,
+            gxfwz,
+            sfygx,
+            rzh_belong_date,
+            sfdbts,
+            rzlx,
+            create_date,
+            uuid,
+            detail_yesorno,
+            source_system,
+            valid,
+            out_status,
+            new_gf_taxno,
+            company_code,
+            jvcode,
+            qs_status
+            <if test="#{recordInvoices.qsDate}!=null">
+                ,qs_date
+            </if>
+            <if test="#{recordInvoices.qsType}!=null">
+                ,qs_type
+            </if>
+             <if test="#{recordInvoices.authStatus}!=null">
+            ,auth_status
+            </if>
+            <if test='recordInvoices.invoiceStatus!="0"'>
+                ,status_update_date
+            </if>
+            <if test="#{recordInvoices.taxRate}!=null">
+            ,tax_rate
+            </if>
+            )values(
+            #{recordInvoices.invoiceType},
+            #{recordInvoices.invoiceCode},
+            #{recordInvoices.invoiceNo},
+            #{recordInvoices.invoiceDate},
+            #{recordInvoices.invoiceStatus},
+            #{recordInvoices.invoiceAmount},
+            #{recordInvoices.taxAmount},
+            #{recordInvoices.totalAmount},
+             #{recordInvoices.gfTaxNo},
+            #{recordInvoices.gfName},
+            #{recordInvoices.gfAddressAndPhone},
+            #{recordInvoices.gfBankAndNo},
+            #{recordInvoices.xfTaxNo},
+            #{recordInvoices.xfName},
+            #{recordInvoices.xfAddressAndPhone},
+            #{recordInvoices.xfBankAndNo},
+            #{recordInvoices.remark},
+         #{recordInvoices.rzhDate},
+          #{recordInvoices.rzhType},
+          #{recordInvoices.rzhYesorno},
+           #{recordInvoices.dqskssq},
+           #{recordInvoices.gxjzr},
+            #{recordInvoices.gxfwq},
+            #{recordInvoices.gxfwz},
+            #{recordInvoices.sfygx},
+            #{recordInvoices.rzhBelongDate},
+              #{recordInvoices.sfdbts},
+            #{recordInvoices.rzlx},
+            GETDATE(),
+            #{recordInvoices.uuid},
+            ${'1'},
+             ${'0'},
+            ${'1'},
+            ${'0'},
+            #{newTaxno},
+            #{recordInvoices.companyCode},
+            #{recordInvoices.jvcode},
+            #{recordInvoices.qsStatus}
+            <if test="#{recordInvoices.qsDate}!=null">
+                ,#{recordInvoices.qsDate}
+            </if>
+            <if test="#{recordInvoices.qsType}!=null">
+                ,#{recordInvoices.qsType}
+            </if>
+             <if test="#{recordInvoices.authStatus}!=null">
+                 ,#{recordInvoices.authStatus}
+             </if>
+            <if test='recordInvoices.invoiceStatus!="0"'>
+                ,getdate()
+            </if>
+            <if test="#{recordInvoices.taxRate}!=null">
+            ,#{recordInvoices.taxRate}
+            </if>
+            )
+</insert>
+    <!-- 插入发票日志关联表   -->
+    <insert id="insertInvoiceLog" parameterType="com.xforceplus.wapp.modules.job.entity.TDxInvoiceLog">
+         insert into t_dx_invoice_log WITH(ROWLOCK) (
+              invoice_code,
+              invoice_no,
+              log_id
+         )
+         values(
+              #{tDxInvoiceLog.invoiceCode},
+              #{tDxInvoiceLog.invoiceNo},
+              #{tDxInvoiceLog.logId}
+         )
+    </insert>
+    <!--  发票状态更新  -->
+    <update id="updateInvoiceByState" parameterType="com.xforceplus.wapp.modules.job.pojo.State" >
+        update t_dx_record_invoice WITH(ROWLOCK) set invoice_status =#{state.invoiceStatus}
+          <if test='state.invoiceStatus!="0"'>
+              ,status_update_date=getdate()
+          </if>
+          <if test="#{state.legalizeState!=null}">
+              ,rzh_yesorno=#{state.legalizeState} ,sfygx=#{state.legalizeState}
+          </if>
+          <if test="#{state.authStatus!=null}">
+            ,auth_status=#{state.authStatus}
+          </if>
+           <if test="#{state.legalizeDate!=null}">
+               ,rzh_date=#{state.legalizeDate ,jdbcType=TIMESTAMP}
+           </if>
+           <if test="#{state.legalizeBelongDate!=null}">
+               ,rzh_belong_date=#{state.legalizeBelongDate}
+           </if>
+            <if test="#{state.legalizeType!=null}">
+                ,rzh_type=#{state.legalizeType}
+            </if>
+
+          where invoice_code =#{state.invoiceCode} and invoice_no = #{state.invoiceNo}
+    </update>
+
+    <!-- 插入获取勾选发票  -->
+    <insert id="insertBySelect" parameterType="com.xforceplus.wapp.modules.job.pojo.InvoiceSelectInfo">
+         insert into t_dx_record_invoice WITH(ROWLOCK) (
+            invoice_type,
+            invoice_code,
+            invoice_no,
+            invoice_date,
+            invoice_status,
+           invoice_amount,
+            tax_amount,
+             gf_tax_no,
+            gf_name,
+            xf_tax_no,
+            xf_name,
+            gxjzr,
+            gxfwq,
+            gxfwz,
+            sfygx,
+            rzh_belong_date,
+            sfdbts,
+            rzlx,
+            create_date,
+            uuid,
+            detail_yesorno,
+            source_system,
+            valid,
+            out_status,
+            rzh_yesorno,
+            dqskssq,
+            rzh_type,
+            rzh_date,
+            company_code,
+            jvcode,
+            qs_status
+            <if test="#{invoiceSelectInfo.qsDate}!=null">
+                ,qs_date
+            </if>
+            <if test="#{invoiceSelectInfo.qsType}!=null">
+                ,qs_type
+            </if>
+             <if test="#{invoiceSelectInfo.authStatus}!=null">
+            ,auth_status
+             </if>
+             <if test='invoiceSelectInfo.invoiceStatus!="0"'>
+            ,status_update_date
+              </if>
+            )values(
+            #{invoiceSelectInfo.invoiceType},
+            #{invoiceSelectInfo.invoiceCode},
+            #{invoiceSelectInfo.invoiceNo},
+            #{invoiceSelectInfo.invoiceDate},
+            #{invoiceSelectInfo.invoiceStatus},
+            #{invoiceSelectInfo.invoiceAmount},
+            #{invoiceSelectInfo.taxAmount},
+             #{invoiceSelectInfo.buyerTaxNo},
+            #{invoiceSelectInfo.buyerName},
+            #{invoiceSelectInfo.salerTaxNo},
+            #{invoiceSelectInfo.salerName},
+           #{invoiceSelectInfo.legalizeEndDate},
+            #{invoiceSelectInfo.legalizeInvoiceDateBegin},
+            #{invoiceSelectInfo.legalizeInvoiceDateEnd},
+            #{invoiceSelectInfo.legalizeState},
+            #{invoiceSelectInfo.legalizeBlongDate},
+              #{invoiceSelectInfo.sfdbts},
+            #{invoiceSelectInfo.rzlx},
+            getdate(),
+            #{invoiceSelectInfo.uuid},
+            ${'0'},
+            ${'0'},
+            ${'1'},
+            ${'0'},
+            #{invoiceSelectInfo.legalizeState},
+            #{invoiceSelectInfo.currentTaxPeriod},
+            #{invoiceSelectInfo.legalizeType},
+            #{invoiceSelectInfo.legalizeDate ,jdbcType=TIMESTAMP},
+            #{companyCode},
+            #{jvcode},
+            #{invoiceSelectInfo.qsStatus}
+            <if test="#{invoiceSelectInfo.qsDate}!=null">
+                ,#{invoiceSelectInfo.qsDate}
+            </if>
+            <if test="#{invoiceSelectInfo.qsType}!=null">
+                ,#{invoiceSelectInfo.qsType}
+            </if>
+            <if test="#{invoiceSelectInfo.authStatus}!=null">
+            ,#{invoiceSelectInfo.authStatus}
+            </if>
+            <if test='invoiceSelectInfo.invoiceStatus!="0"'>
+                ,getdate()
+            </if>
+            )
+    </insert>
+
+    <!--  通过发票代码和发票号码查询发票   -->
+    <select id="findCountInvoiceByCodeAndNo" parameterType="java.lang.String" resultType="java.lang.Integer">
+      select count(*)  from t_dx_record_invoice WITH(NOLOCK) where invoice_code=#{invoice_code} and invoice_no = #{invoice_no}
+    </select>
+
+    <!--  通过发票代码和发票号码查询发票   -->
+    <select id="findInvoiceByCodeAndNo" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.job.entity.TDxRecordInvoice">
+      select *  from t_dx_record_invoice WITH(NOLOCK) where invoice_code=#{invoice_code} and invoice_no = #{invoice_no}
+    </select>
+
+
+
+    <!-- 更新发票获取接口接收的数据 -->
+    <update id="updateInvoiceByCodeAndNo" parameterType="com.xforceplus.wapp.modules.job.entity.TDxRecordInvoice">
+        update t_dx_record_invoice WITH(ROWLOCK) set
+             gf_tax_no = #{invoiceInfo.gfTaxNo},
+            gf_name=#{invoiceInfo.gfName},
+            gf_address_and_phone = #{invoiceInfo.gfAddressAndPhone},
+            gf_bank_and_no =#{invoiceInfo.gfBankAndNo},
+            xf_tax_no = #{invoiceInfo.xfTaxNo},
+            xf_name =#{invoiceInfo.xfName},
+            xf_address_and_phone = #{invoiceInfo.xfAddressAndPhone},
+            xf_bank_and_no = #{invoiceInfo.xfBankAndNo},
+            remark = #{invoiceInfo.remark},
+            new_gf_taxno = #{invoiceInfo.newGfTaxno},
+            jvcode = #{invoiceInfo.jvcode},
+            company_code = #{invoiceInfo.companyCode},
+            last_update_date=getdate()
+        <if test='invoiceInfo.sourceSystem!="2"'>
+            ,invoice_amount = #{invoiceInfo.invoiceAmount}
+            ,tax_amount = #{invoiceInfo.taxAmount}
+            ,total_amount = #{invoiceInfo.totalAmount}
+            ,source_system=#{invoiceInfo.sourceSystem}
+        </if>
+        <if test="#{invoiceInfo.invoiceStatus}!=null">
+            , invoice_status = #{invoiceInfo.invoiceStatus},status_update_date= #{invoiceInfo.statusUpdateDate}
+        </if>
+        <if test="#{invoiceInfo.rzhYesorno}!=null">
+            , rzh_yesorno = #{invoiceInfo.rzhYesorno}, rzh_belong_date=#{invoiceInfo.rzhBelongDate},rzh_type=#{invoiceInfo.rzhType},auth_status=#{invoiceInfo.authStatus},rzlx=#{invoiceInfo.rzlx},sfygx='1',rzh_date=#{invoiceInfo.rzhDate ,jdbcType=TIMESTAMP}
+        </if>
+        <if test="#{invoiceInfo.taxRate}!=null">
+            ,tax_rate=#{invoiceInfo.taxRate}
+        </if>
+            where invoice_code = #{invoiceInfo.invoiceCode} and invoice_no = #{invoiceInfo.invoiceNo}
+
+    </update>
+
+    <!-- 发票获取，去更新签收表数据   -->
+    <update id="updateSignData" parameterType="com.xforceplus.wapp.modules.job.entity.TDxRecordInvoice">
+        update t_dx_invoice WITH(ROWLOCK) set qs_date = getdate() ,qs_status = ${'1'},  gf_tax_no = #{invoiceInfo.gfTaxNo},
+            gf_name=#{invoiceInfo.gfName},xf_tax_no = #{invoiceInfo.xfTaxNo},
+            xf_name =#{invoiceInfo.xfName},notes = '签收成功' where
+        invoice_code = #{invoiceInfo.invoiceCode} and invoice_no = #{invoiceInfo.invoiceNo} and qs_status = '0'
+    </update>
+
+    <!-- 查询扫描签收表   -->
+    <select id="selectSign" parameterType="java.lang.String" resultType="com.xforceplus.wapp.modules.job.entity.InvoiceScanEntity">
+        select invoice_code invoiceCode,invoice_no invoiceNo,qs_type qsType,qs_status qsStatus ,qs_date qsDate from t_dx_invoice WITH(NOLOCK) where invoice_code=#{code} and invoice_no=#{no}
+    </select>
+
+    <!-- 获取底账表中该税号下最后的开票日期 -->
+    <select id="selectLastInvoiceDate" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT top(1) convert(varchar(8),req_date,112)+REPLACE(convert(varchar(8),req_date,114), ':', '') FROM t_dx_http_log WITH(NOLOCK) where taxno=#{taxno}  and type = #{type} order by req_date desc
+	</select>
+
+    <!-- 获取底账表中该税号下最后的开票日期 全票面 -->
+    <select id="selectLastInvoiceDateQPM" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT top(1) convert(varchar(8),create_date,112)+REPLACE(convert(varchar(8),create_date,114), ':', '') FROM t_dx_record_invoice WITH(NOLOCK) where gf_tax_no=#{taxno}  and invoice_type = #{type} and detail_yesorno='1' order by create_date desc
+	</select>
+
+
+    <update id="updateInvoice"  >
+      update t_dx_record_invoice WITH(ROWLOCK) set invoice_no = #{invoiceInfo.invoiceNo},last_update_date=getdate()
+      <if test="#{invoiceInfo.invoiceStatus}!=null">
+      , invoice_status = #{invoiceInfo.invoiceStatus},status_update_date= #{invoiceInfo.statusUpdateDate}
+      </if>
+      <if test="#{invoiceInfo.rzhYesorno}!=null">
+      , rzh_yesorno = #{invoiceInfo.rzhYesorno}, rzh_belong_date=#{invoiceInfo.rzhBelongDate},rzh_type=#{invoiceInfo.rzhType},auth_status=#{invoiceInfo.authStatus},rzlx=#{invoiceInfo.rzlx},sfygx='1',rzh_date=#{invoiceInfo.rzhDate ,jdbcType=TIMESTAMP}
+      </if>
+        <if test="#{invoiceInfo.taxRate}!=null">
+            ,tax_rate=#{invoiceInfo.taxRate}
+        </if>
+
+
+
+      where invoice_code = #{invoiceInfo.invoiceCode} and invoice_no = #{invoiceInfo.invoiceNo}
+    </update>
+
+    <select id="getGfNameByTaxno" resultType="java.lang.String">
+        select top(1) taxname from t_ac_org WITH(NOLOCK) where taxno = #{taxno}
+    </select>
+    
+    <select id="findCompanyAndJv" resultType="com.xforceplus.wapp.modules.job.entity.TAcOrg">
+        select top(1) company_code,orgcode from t_ac_org WITH(NOLOCK) where taxno=#{taxno} and orgtype='5'
+    </select>
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.index.dao.IndexMainVendorDao">
+    <select id="getNoticeAllCount" resultType="int">
+        select count(1) from t_dx_announcement_user_middle where userid=#{userid}
+    </select>
+
+    <select id="getNoticeAll">
+        select *
+        from t_dx_announcement_user_middle a join t_dx_announcement b
+        on a.announcementid=b.id where a.userid=#{userid}
+    </select>
+
+    <select id="getNoticeReadCount" resultType="int">
+        select count(1) from t_dx_announcement_user_middle where userid=#{userid} and have_read='1'
+    </select>
+
+    <select id="getNoticeRead">
+        select *
+        from t_dx_announcement_user_middle a join t_dx_announcement b
+        on a.announcementid=b.id where a.userid=#{userid} and a.have_read='1'
+    </select>
+
+    <select id="getMatchSuccessCount" resultType="int">
+        select count(1) from t_dx_match WITH(NOLOCK) where venderid=#{usercode} and match_status in ('2','3','4')
+        and CONVERT(varchar(10), match_date, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getMatchFailedCount" resultType="int">
+        select count(1) from t_dx_match WITH(NOLOCK) where venderid=#{usercode} and match_status ='5'
+        and CONVERT(varchar(10), match_date, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getRefundCount" resultType="int">
+        select count(1) from t_dx_invoice WITH(NOLOCK) where rebateyesorno='1' and venderid=#{usercode}
+        and CONVERT(varchar(10), rebate_date, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getCostCount" resultType="int">
+        select count(1) from t_dx_settlement WITH(NOLOCK) where vender_id=#{usercode} and pay_model='2'
+        and CONVERT(varchar(10), create_date, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getRedCount" resultType="int">
+        select count(1) from t_dx_red_ticket_matching where audit_results='2' and venderid=#{usercode}
+        and CONVERT(varchar(10), redticket_creation_time, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getAgreeRedCount" resultType="int">
+        select count(1) from t_dx_red_ticket_matching where whether_open_redticket='1' and venderid=#{usercode}
+        and CONVERT(varchar(10), redticket_creation_time, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getDisagreeRedCount" resultType="int">
+        select count(1) from t_dx_red_ticket_matching where audit_results='3' and venderid=#{usercode}
+        and CONVERT(varchar(10), redticket_creation_time, 23)=CONVERT(varchar(10), GETDATE(), 23)
+    </select>
+
+    <select id="getAbnormalCount" resultType="int">
+        select count(1) from t_dx_record_invoice  WITH(NOLOCK) where invoice_status in ('2','4') and auth_status='4'
+        and xf_tax_no=(select taxno from t_ac_org WITH(NOLOCK) where orgid=(select orgid from t_ac_user WITH(NOLOCK) where usercode=#{usercode}))
+    </select>
+
+    <select id="getAbnormal" resultType="com.xforceplus.wapp.modules.index.entity.IndexInvoiceCollectionModel">
+        select invoice_code, invoice_no, invoice_type, invoice_date, gf_name, xf_name, invoice_amount,
+        tax_amount, total_amount
+        from t_dx_record_invoice WITH(NOLOCK) where invoice_status in ('2','4') and auth_status='4'
+        and xf_tax_no=(select taxno from t_ac_org WITH(NOLOCK) where orgid=(select orgid from t_ac_user WITH(NOLOCK) where usercode=#{usercode}))
+    </select>
+
+    <select id="getReceiptInfo" resultType="com.xforceplus.wapp.modules.cost.entity.SelectionOptionEntity">
+        select dictcode optionKey,
+        dictname optionName
+        from t_ac_dictdeta where dicttype=(select dicttypeid from t_ac_dicttype where dicttypecode='INDEX_RECEIPT_INFO')
+    </select>
+</mapper>

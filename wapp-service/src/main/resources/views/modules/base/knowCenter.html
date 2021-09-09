@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <title>知识中心(购方)</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <link rel="stylesheet" type="text/css" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css">
+    <link rel="stylesheet" type="text/css" href="../../css/customer.css">
+
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+        .el-form-item__error{
+            transform: translateY(-7px);
+        }
+        .el-input__suffix {
+            height: 0.38rem;
+         }
+    </style>
+
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-form  ref="queryForm" class="demo-form-inline" label-width="1.0rem" @submit.native.prevent>
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="供应商类型:">
+                        <el-select v-model="queryForm.venderType">
+                            <el-option label="全部" value="-1" selected></el-option>
+                            <el-option label="商品" value="0"></el-option>
+                            <el-option label="费用" value="1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="文件名称:"  >
+                        <el-input class="inline-input" v-model="queryForm.fileName" :maxlength="150"
+                                  placeholder="请输入文件名称"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="文件类型:"  >
+                        <el-input class="inline-input" v-model="queryForm.fileExtension" :maxlength="20"
+                                  placeholder="请输入文件类型"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="14">
+                    <el-form-item label="上传时间:" prop="createDate" id="requireMsg2">
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker @blur="blurpickerchange(1)" @focus="focuspickerchange(1)" type="date" id="datevalue1"
+                                                placeholder="选择日期" v-model="queryForm.createStartDate"
+                                                :picker-options="createDateOptions"
+                                                :clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>
+                            </el-col>
+                            <el-col class="line" :span="2">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" placeholder="选择日期" v-model="queryForm.createEndDate" id="datevalue2"
+                                                @blur="blurpickerchange(2)" @focus="focuspickerchange(2)"
+                                                :picker-options="createEndDateOptions"
+                                                :clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="4.5" :offset="1">
+                    <el-button class="btnexport" @click="query">查询</el-button>
+                </el-col>
+                <el-col :span="4.5" :offset="1">
+                    <el-button class="btnexport" @click="uploadWinShow">上传</el-button >
+                </el-col>
+                <el-col :span="4.5" :offset="1">
+                    <el-button class="btnexport" @click="exportData()" :disabled="total == 0">导出</el-button>
+                </el-col>
+                <el-col :span="4.5" :offset="1">
+                    <el-button class="btnexport" @click="deleteFile"  v-loading.fullscreen.lock="fullscreenLoading"  element-loading-text="删除中">批量删除</el-button >
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <div style="margin-bottom: 0.05rem;margin-top: 0.05rem;width:100%; height:0.03rem; border-top:0.01rem solid #DEDEDE; clear:both;"></div>
+        <div style="clear: both">
+            <el-table height="4rem"  border fit :data="costData" highlight-current-row style="width: 100%;"
+                       v-loading="listLoading"
+                       element-loading-text="正在拼命加载中"
+                      @selection-change="changeSelect">
+                <el-table-column :show-overflow-tooltip="true"  type="selection" width="50" align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="costIndex" label="序号" align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="venderType" label="供应商类型" :min-width="100" align="center" header-align="center">
+                    <template scope="scope">
+                        <span v-if="scope.row.venderType=== null" >—— ——</span>
+                        <span v-if="scope.row.venderType=== ''" >—— ——</span>
+                        <span v-if="scope.row.venderType=== '0'" >商品</span>
+                        <span v-if="scope.row.venderType=== '1'" >费用</span>
+                    </template>
+                </el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="fileExtension" label="文件类型" :min-width="80" align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="fileName" label="文件名称" :min-width="200" align="center" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="fileSize" label="文件大小" :min-width="80" align="center" header-align="center">
+                    <template scope="scope">
+                        <span v-if="scope.row.fileSize=== null" >—— ——</span>
+                        <span v-else-if="scope.row.fileSize=== ''" >—— ——</span>
+                        <span v-else>{{scope.row.fileSize}}k</span>
+                    </template>
+                </el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  prop="uploadDate"   label="上传时间" align="center" :formatter="formatUploadDate" ></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  label="操作" class-name="noSpotSpotSpot" width="100" align="center">
+                    <template slot-scope="scope">
+                        <el-button @click="download(scope.row)" type="text">下载</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <el-col class="toolbar" style="padding:0.1rem;">
+                <el-pagination background @current-change="currentChange" @size-change="handleSizeChange" :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                               layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+                    <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+                </el-pagination>
+            </el-col>
+        </div>
+
+
+    <el-dialog title="文件上传" :visible.sync="uploadWin" :before-close="uploadWinClose" :close-on-click-modal="false">
+        <div style="width: 100%;">
+
+            <el-form ref="uploadForm" :model="uploadForm"  label-width="1.0rem">
+                <el-form-item label="供应商类型:">
+                    <el-select v-model="uploadForm.venderType">
+                        <el-option label="全部" value="-1" selected></el-option>
+                        <el-option label="商品" value="0"></el-option>
+                        <el-option label="费用" value="1"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-upload
+                        class="upload-demo"
+                        ref="upload"
+                        action=""
+                        :limit="1"
+                        :http-request="handlePost"
+                        :before-upload="beforeAvatarUpload"
+                        :file-list="fileList"
+                        :auto-upload="false">
+                    <el-button slot="trigger" size="small" class="btnexport">选取文件</el-button>
+                    <el-button style="margin-left: 10px;" size="small" class="btnexport" @click="submitUpload">上传</el-button>
+                    <div slot="tip" class="el-upload__tip">文件大小不超过150MB</div>
+                </el-upload>
+            </el-form>
+        </div>
+    </el-dialog>
+</div>
+
+<script type="text/javascript" charset="utf-8" src="../../libs/vue.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../libs/vue-resource@1.5.1.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../libs/vue-i18n.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../libs/jquery.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../libs/index.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/common.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/global.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../libs/babel-browser.min.js"></script>
+<script src="../../js/autoRem.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/weburi.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/i18n.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/loading.js"></script>
+<script type="text/babel" src="../../js/customer/vuecommon.js"></script>
+<script src="../../js/modules/base/knowCenter.js"></script>
+</body>
+</html>

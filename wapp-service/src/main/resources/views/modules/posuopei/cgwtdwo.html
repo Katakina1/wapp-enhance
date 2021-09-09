@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <title>采购问题单审批（沃）</title>
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+
+        [v-cloak] {
+            display: none;
+        }
+        .hideItem {
+            display: none;
+        }
+
+        .showItem {
+            display: block;
+        }
+
+
+    </style>
+</head>
+<body>
+<iframe id="downloadFileId" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div id="appForm">
+        <el-form  :model="forms" class="demo-form-inline" label-width="1.1rem">
+            <el-row>
+                <el-col :span="12" class="num" style="height: 0.5rem;">
+                    <el-form-item label="供应商号:" prop="usercode">
+                        <el-input ref="usercode"  v-bind:readonly="readonly" v-model="forms.usercode" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12.5" class="num" style="height: 0.5rem;">
+                    <el-form-item label="问题单流水号:" prop="problemStream">
+                        <el-input ref="problemStream" v-model="forms.problemStream" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12.5" class="num" style="height: 0.5rem;">
+                    <el-form-item label="发票号:" prop="invoiceNo">
+                        <el-input ref="invoiceNo" v-model="forms.invoiceNo" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="审核状态">
+                        <el-select v-model="forms.checkStatus">
+                            <el-option label="全部" value="-1" selected></el-option>
+                            <el-option label="未审核" value="0"></el-option>
+                            <el-option label="审核中" value="1"></el-option>
+                            <el-option label="审核不通过" value="2"></el-option>
+                            <el-option label="审核完成" value="3"></el-option>
+                            <el-option label="采购审批中" value="4"></el-option>
+                            <el-option label="采购已同意" value="5"></el-option>
+                            <el-option label="采购不同意" value="6"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <!--<el-col :span="12" style="height: 0.5rem;">-->
+                    <!--<el-form-item label="供应商名称:" prop="username">-->
+                        <!--<el-input ref="username"  v-bind:readonly="readonly" v-model="forms.username"></el-input>-->
+                    <!--</el-form-item>-->
+                <!--</el-col>-->
+                <el-col :span="14">
+                    <el-form-item label="申请日期:" class="form-item" >
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker  type="date" :editable="false"   id="datevalue1" @blur="blurpickerchange(1)" @focus="focuspickerchange(1)" @change="questionDateStartChanges" :clearable="false" placeholder="选择日期" v-model="forms.questionDateStart" format="yyyy-MM-dd" value-format="yyyy-MM-dd" :picker-options="startDateOptions" ></el-date-picker>
+                            </el-col>
+                            <el-col :span="2">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" :editable="false"  id="datevalue2" @blur="blurpickerchange(2)" @focus="focuspickerchange(2)" :clearable="false" @change="questionDateEndChanges" placeholder="选择日期" v-model="forms.questionDateEnd" format="yyyy-MM-dd" value-format="yyyy-MM-dd" :picker-options="endDateOptions"></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="query">查询</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+
+    <el-table height="4rem" border fit :data="questionPaperData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+              v-loading="listLoading"
+              element-loading-text="正在拼命加载中">
+
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号"  align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="partition" label="分区" :min-width="200" align="center" :show-overflow-tooltip="true" >
+            <template scope="scope">
+                <span v-if="scope.row.partition=== null" >—— ——</span>
+                <span v-if="scope.row.partition=== '1001'" >SC超市</span>
+                <span v-if="scope.row.partition=== '1002'" >SAMS商店</span>
+                <span v-if="scope.row.partition=== '1003'" >99自用品</span>
+                <span v-if="scope.row.partition=== '1004'" >财务部</span>
+                <span v-if="scope.row.partition=== '1005'" >Store店</span>
+                <span v-if="scope.row.partition=== '2007'" >其他</span>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  :show-overflow-tooltip="true"  prop="problemStream" label="采购单流水号" :min-width="200" align="center" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="purchaser" label="采购人姓名" :min-width="200" align="center" header-align="center"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  prop="jvcode" label="购方代码" align="right"  :min-width="160" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="city" label="城市" align="right" :min-width="160" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="usercode" label="供应商编号" align="right" :min-width="200" header-align="center"  ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="username" label="供应商名称" align="right" :min-width="200" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="telephone" label="采购人联系电话" align="right" :min-width="200" header-align="center"  ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="department" label="部门" align="right" :min-width="200" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  :show-overflow-tooltip="true"  prop="storeNbr" label="店号" align="center" :min-width="200" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="center" :min-width="160" header-align="center" ></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center"  :min-width="160" header-align="center" :formatter="formatCreateTime"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  prop="totalAmount" label="金额" align="right" :min-width="200" header-align="center" :formatter="moneyFormat"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="questionType" label="问题类型" align="left" :min-width="200" header-align="center" >
+
+            <template scope="scope">
+                <span v-if="scope.row.questionType=== null" >—— ——</span>
+                <span v-if="scope.row.questionType=== '2001'" >索赔单价差异</span>
+                <span v-if="scope.row.questionType=== '2002'" >订单单价差异</span>
+                <span v-if="scope.row.questionType=== '2003'" >订单折扣差异</span>
+                <span v-if="scope.row.questionType=== '2004'" >收退货数量问题</span>
+                <span v-if="scope.row.questionType=== '2005'" >协议或年佣差异</span>
+                <span v-if="scope.row.questionType=== '2006'" >供应商对审计金额有异议</span>
+                <span v-if="scope.row.questionType=== '2007'" >其他</span>
+                <span v-if="scope.row.questionType=== '2008'" >索赔单价差异（财务）</span>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="problemCause" label="问题原因" align="left" :min-width="200" header-align="center" >
+            <template scope="scope">
+                <span v-if="scope.row.problemCause=== null" >—— ——</span>
+                <span v-if="scope.row.problemCause=== '100101'" >采购确认</span>
+                <span v-if="scope.row.problemCause=== '100102'" >协议</span>
+                <span v-if="scope.row.problemCause=== '100201'" >订单单价差异</span>
+                <span v-if="scope.row.problemCause=== '100301'" >订单折扣差异</span>
+                <span v-if="scope.row.problemCause=== '100401'" >收货数量</span>
+                <span v-if="scope.row.problemCause=== '100402'" >退货数量</span>
+                <span v-if="scope.row.problemCause=== '100701'" >无索赔供应商</span>
+
+                <span v-if="scope.row.problemCause=== '100702'" >索赔冲账差异</span>
+                <span v-if="scope.row.problemCause=== '100703'" >索赔自行退货</span>
+                <span v-if="scope.row.problemCause=== '100704'" >索赔不应定案</span>
+                <span v-if="scope.row.problemCause=== '100705'" >下错税率</span>
+                <span v-if="scope.row.problemCause=== '100706'" >身份变更</span>
+                <span v-if="scope.row.problemCause=== '100707'" >下错对象</span>
+                <span v-if="scope.row.problemCause=== '100708'" >涉税问题单</span>
+                <span v-if="scope.row.problemCause=== '100709'" >逻辑关系</span>
+                <span v-if="scope.row.problemCause=== '100801'" >财务确认</span>
+                <span v-if="scope.row.problemCause=== '100501'" >模板1</span>
+                <span v-if="scope.row.problemCause=== '100502'" >模板2</span>
+                <span v-if="scope.row.problemCause=== '100503'" >模板3</span>
+                <span v-if="scope.row.problemCause=== '100504'" >模板4</span>
+                <span v-if="scope.row.problemCause=== '100505'" >其他</span>
+
+                <span v-if="scope.row.problemCause=== '100601'" >模板1</span>
+                <span v-if="scope.row.problemCause=== '100602'" >模板2</span>
+
+
+
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="description" label="问题描述" align="left" :min-width="200" header-align="center" v-bind:show-overflow-tooltip="true"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="checkstatus" label="审核状态" align="left" :min-width="200" header-align="center" >
+            <template scope="scope">
+                <span v-if="scope.row.checkstatus=== null" >—— ——</span>
+                <span v-if="scope.row.checkstatus=== ''" >—— ——</span>
+                <span v-if="scope.row.checkstatus=== '0'" >未审核</span>
+                <span v-if="scope.row.checkstatus=== '1'" >审核中</span>
+                <span v-if="scope.row.checkstatus=== '2'" >审核不通过</span>
+                <span v-if="scope.row.checkstatus=== '3'" >审核完成</span>
+                <span v-if="scope.row.checkstatus=== '4'" >采购审批中</span>
+                <span v-if="scope.row.checkstatus=== '5'" >采购已同意</span>
+                <span v-if="scope.row.checkstatus=== '6'" >采购不同意</span>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="checkDate" label="审核日期" align="center"  :min-width="160" header-align="center" :formatter="formatCheckTime"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="rejectDate" label="驳回日期" align="center"  :min-width="160" header-align="center" :formatter="formatRejectTime"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="unPassReason" label="审核不通过原因" align="left" :min-width="200" header-align="center" >
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="replyDate" label="批复日期" align="center"  :min-width="160" header-align="center" :formatter="formatReplyTime"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="id" width="240" label="操作" class-name="noSpotSpotSpot" align="center" >
+            <template scope="scope">
+
+                <a  @click="resultDetail(scope.row)"><span class="column-span" style="color: black">明细</span></a>
+                <a  @click="viewFile(scope.row)"><span class="column-span" style="color: black" >查看附件</span></a>
+                <a v-if="scope.row.checkstatus=='0'" @click="check(scope.row)" ><span class="column-span" style="color: black">审核</span></a>
+                <a v-if="scope.row.checkstatus=='1'" @click="checkQr(scope.row)" ><span class="column-span" style="color: black">确认</span></a>
+                <a v-if="scope.row.checkstatus=='3'" @click="updateStatus(scope.row)" ><span class="column-span" style="color: black">结束</span></a>
+                <a v-if="scope.row.checkstatus=='4'" @click="updateStatus(scope.row)" ><span class="column-span" style="color: black">结束</span></a>
+                <a v-if="scope.row.checkstatus=='1'" @click="chexiao(scope.row)" ><span class="column-span" style="color: black">撤销</span></a>
+                <a v-if="scope.row.checkstatus=='2'" @click="chexiao(scope.row)" ><span class="column-span" style="color: black">撤销</span></a>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination layout="slot, sizes,prev,pager,next" background
+                       :current-page.sync="currentPage" :page-size="pageSize" :total="total" :page-size="pageSize" :page-sizes="pageList" @size-change="handleSizeChange"
+                       :page-count="totalPage" @current-change="currentChange" style="float:right">
+        </el-pagination>
+        <span style="float: right;margin-top: 0.4%">共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+    </el-col>
+
+    <el-dialog width="90%" :visible.sync="questionPaper" :before-close="questionPaperCancel"
+               title="采购问题单明细" :close-on-click-modal="false" class="titleDetail">
+        <div class="claim hideItem">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;font-weight: bolder;line-height: 0.15rem">索赔单价差异明细表(不含税金额)</div>
+                <div style="clear: both"></div>
+            </div>
+            <div>
+                <el-table  border fit :data="claimChangeData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                          v-loading="listLoading1"    max-height="400"
+                          element-loading-text="正在拼命加载中">
+                    <!--<el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection"  align="center" label="选择" prop='id' @selection-change="changeFun1"></el-table-column>-->
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="poCode" label="订单号" :show-overflow-tooltip="true"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="claimno" label="索赔号"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="goodsNo" label="商品号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="systemAmount" label="系统单价(A)" align="right" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="vendorAmount" label="供应商单价(B)" align="right" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="number" label="数量(C)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="difference" label="金额差额(A-B)*C" align="center" :formatter="numberFormat"></el-table-column>
+                </el-table>
+
+            </div>
+        </div>
+
+        <div class="po hideItem">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;font-weight: bolder;line-height: 0.15rem">订单单价差异明细表(不含税金额)</div>
+                <div style="clear: both"></div>
+            </div>
+            <div>
+                <el-table height="4rem" border fit :data="poChangeData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                          v-loading="listLoading2"    max-height="400"
+                          element-loading-text="正在拼命加载中">
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="poCode" label="订单号" :show-overflow-tooltip="true"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="goodsNo" label="商品号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="systemAmount" label="系统单价(A)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="vendorAmount" label="供应商单价(B)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="number" label="数量(C)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="difference" label="金额差额(B-A)*C" align="center" ></el-table-column>
+
+                </el-table>
+            </div>
+        </div>
+
+        <div class="count hideItem">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;font-weight: bolder;line-height: 0.15rem">数量差异明细表(按门店号分开填写)</div>
+                <div style="clear: both"></div>
+            </div>
+
+            <div>
+                <el-table height="4rem" border fit :data="countChangeData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                          v-loading="listLoading3"    max-height="400"
+                          element-loading-text="正在拼命加载中">
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="poCode" label="订单号" :show-overflow-tooltip="true"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="claimno" label="索赔号" :show-overflow-tooltip="true"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="receiptid" label="收货号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="goodsNo" label="商品号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="systemAmount" label="系统单价(A)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="vendorNumber" label="供应商送/退货数量(B)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="systemNumber" label="系统送/退货数量(C)" align="right" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="numberDifference" label="数量差异(B-C)" align="right" header-align="center"></el-table-column>
+
+                    <el-table-column :show-overflow-tooltip="true"  prop="amountDifference" label="金额差异(B-C)*A" align="center" ></el-table-column>
+
+                </el-table>
+            </div>
+        </div>
+
+        <div class="poDiscount hideItem">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;font-weight: bolder;line-height: 0.15rem">订单折扣差异</div>
+                <div style="clear: both"></div>
+            </div>
+            <div>
+                <el-table height="4rem" border fit :data="poDiscountData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                          v-loading="listLoading4"    max-height="400"
+                          element-loading-text="正在拼命加载中">
+                    <!--<el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection"  align="center" label="选择" prop='id' @selection-change="changeFun1"></el-table-column>-->
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="poCode" label="订单号" :show-overflow-tooltip="true"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="goodsNo" label="商品号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="difference" label="金额差额" align="right" header-align="center" :formatter="numberFormat"></el-table-column>
+
+                </el-table>
+            </div>
+
+        </div>
+
+
+
+        <div class="other hideItem">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;font-weight: bolder;line-height: 0.15rem">其他</div>
+                <div style="clear: both"></div>
+            </div>
+
+            <div>
+                <el-table height="4rem" border fit :data="otherData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                          v-loading="listLoading5"    max-height="400"
+                          element-loading-text="正在拼命加载中">
+                    <!--<el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection"  align="center" label="选择" prop='id' @selection-change="changeFun1"></el-table-column>-->
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="poCode" label="订单号" :show-overflow-tooltip="true"  align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="claimno" label="索赔号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="goodsNo" label="商品号" align="left" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="difference" label="金额差额" align="right" header-align="center" :formatter="numberFormat"></el-table-column>
+
+                </el-table>
+            </div>
+
+        </div>
+
+    </el-dialog>
+
+    <el-dialog width="90%" :visible.sync="questionPaperFile" :before-close="questionPaperFileCancel"
+               title="采购问题单附件列表" :close-on-click-modal="false" class="titleDetail">
+        <el-table border fit :data="questionPaperFileList" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+            <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="fileName" label="文件名称" align="left" header-align="center"></el-table-column>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center" >
+                <template scope="scope">
+                    <a  @click="downloadFile(scope.row)"><span class="column-span" style="color: black">下载</span></a>
+                    <!--<a  @click="deleteFile(questionPaperFile,scope.row)"><span class="column-span" style="color: black">删除</span></a>-->
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+    <el-dialog width="40%" :visible.sync="checkUnPass" :before-close="checkUnPassCancel"
+               title="审批不通过原因填写" :close-on-click-modal="false" class="titleDetail">
+      <el-form :model="forms" class="demo-form-inline" label-width="1.1rem">
+          <el-row>
+              <el-col>
+                  <el-form-item label="审批不通过原因">
+                      <el-input type="textarea" v-model="forms.reason"></el-input>
+                  </el-form-item>
+              </el-col>
+          </el-row>
+          <el-row>
+              <el-col :span="1" :offset="1">
+                  <el-button class="btnexport" @click="unPass">提交</el-button>
+              </el-col>
+          </el-row>
+      </el-form>
+
+
+
+    </el-dialog>
+
+</div>
+
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script src="../../js/modules/posuopei/cgwtdwo.js"></script>
+</html>

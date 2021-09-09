@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.collect.dao.InvoiceCollectionDao">
+
+    <resultMap id="resultCollectionMap" type="com.xforceplus.wapp.modules.collect.entity.CollectListStatistic">
+        <id column="id" property="id" />
+        <result column="gf_tax_no" property="gfTaxNo" />
+        <result column="create_date" property="createDate"/>
+        <result column="gf_name" property="gfName" />
+        <result column="collectCount" property="collectCount" />
+        <result column="sumTotalAmount" property="sumTotalAmount" />
+        <result column="sumTaxAmount" property="sumTaxAmount" />
+    </resultMap>
+
+    <!-- 获取人员可以查看的数据 -->
+    <sql id="getAuthData">
+        (
+        SELECT tdri.* FROM t_dx_record_invoice tdri WITH(NOLOCK)
+
+        ) a
+    </sql>
+
+    <!-- 获得发票采集列表数据的总行数 -->
+    <select id="getInvoiceCollectionCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT COUNT(1) FROM (
+        <include refid="selectInvoiceCollectionSql"/>
+        ) t
+    </select>
+
+    <sql id="selectInvoiceCollectionSql">
+        SELECT
+        temp.create_date create_date,
+        temp.gf_tax_no,
+        temp.collectCount,
+        temp.sumTotalAmount,
+        temp.sumTaxAmount,
+        temp.gf_name gf_name
+        FROM
+        (
+        SELECT
+        create_date,
+        gf_tax_no,
+        gf_name,
+        COUNT(1) collectCount,
+        CONVERT (decimal(38,2),SUM(invoice_amount)) sumTotalAmount,
+        CONVERT (decimal(38,2),SUM(tax_amount)) sumTaxAmount
+        FROM
+        (
+        SELECT
+        id,
+        convert(varchar(100),a.create_date,23) create_date,
+        gf_tax_no,
+        gf_name,
+        invoice_amount,
+        tax_amount
+        FROM
+        <include refid="getAuthData"/>
+        WHERE source_system = '0'
+        <if test="gfName != null and gfName != ''">
+            AND gf_name = #{gfName}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23)  <= #{createEndDate} ]]>
+        </if>
+        ) asi
+        GROUP BY  create_date,gf_tax_no,gf_name
+        ) temp
+
+    </sql>
+
+    <!-- 获得发票采集列表数据集 -->
+    <select id="selectInvoiceCollection" resultMap="resultCollectionMap">
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from(
+        select row_number() over(order by o.create_date,o.gf_tax_no ,o.gf_name) as rownumber,o.*
+        from(
+        </if>
+        <include refid="selectInvoiceCollectionSql"/>
+        <if test="offset != null and limit != null">
+        ) as o
+        ) a
+        where rownumber>#{offset};
+        </if>
+
+
+    </select>
+
+    <!-- 获取当前登录用户的购方税号和名称 -->
+    <select id="getGfNameByUserId" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+         SELECT
+         orgname orgName,
+         taxno orgTaxNo
+         FROM
+          t_ac_org WITH(NOLOCK)
+        where orgtype=5
+        group by orgname,taxno
+    </select>
+
+    <!-- 根据税号查询发票信息 flag不为空 则查询税号下的异常票，为空则查询所有 -->
+    <select id="getInvoiceInfo" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from
+        (select row_number() over(order by openInvoiceDate) as rownumber,o.*
+        from(
+        </if>
+        SELECT
+        id,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        convert(varchar(100),invoice_date,20) openInvoiceDate,
+        gf_name gfName,
+        xf_name xfName,
+        CONVERT (decimal(38,2),invoice_amount) invoiceAmount,
+        CONVERT (decimal(38,2),tax_amount) taxAmount,
+        status_update_date statusUpdateDate,
+        invoice_status invoiceStatus,
+        (SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE
+        tadt.dicttypecode = 'INV_STATUS' AND tad.dictcode = invoice_status) invoiceStatusName
+        FROM t_dx_record_invoice
+        WHERE source_system = '0'
+        AND gf_tax_no = #{gfTaxNo}
+        AND convert(varchar(100),create_date,23)=convert(varchar(100),#{createDate},23)
+        <if test="flag!=null and flag!=''">
+            AND invoice_status > 0
+        </if>
+        <if test="offset != null and limit != null">
+        )as o
+        ) a
+        where rownumber>#{offset};
+        </if>
+
+    </select>
+
+    <!-- 根据税号查询发票信息 flag不为空 则查询税号下的异常票，为空则查询所有 -->
+    <select id="getInvoiceInfoCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        COUNT(1)
+        FROM t_dx_record_invoice
+        WHERE source_system = '0'
+        AND gf_tax_no = #{gfTaxNo}
+        AND convert(varchar(100),create_date,23)=convert(varchar(100),#{createDate},23)
+        <if test="flag!=null and flag!=''">
+            AND invoice_status > 0
+        </if>
+    </select>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        CONVERT (decimal(38,2),sum(sumTotalAmount)) summationTotalAmount,
+        CONVERT (decimal(38,2),sum(sumTaxAmount)) summationTaxAmount
+        FROM (
+        <include refid="selectInvoiceCollectionSql"/>
+        ) a
+    </select>
+</mapper>

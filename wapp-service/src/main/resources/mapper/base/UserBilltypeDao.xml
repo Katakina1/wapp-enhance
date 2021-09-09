@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.UserBilltypeDao">
+
+	<sql id="condition">
+		<if test="entity.id != null">
+			and id = #{entity.id}
+		</if>
+		<if test="entity.userid != null">
+			and userid = #{entity.userid}
+		</if>
+		<if test="entity.billtypeid != null">
+			and orgid = #{entity.billtypeid}
+		</if>
+	</sql>
+
+
+	<select id="queryTotal" parameterType="com.xforceplus.wapp.modules.base.entity.UserBilltypeEntity"  resultType="int">
+		/**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_user_billtype
+		<where>
+			<include refid="condition"/>
+		</where>
+	</select>
+ 
+	<insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.UserBilltypeEntity" useGeneratedKeys="true" keyProperty="entity.id">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_user_billtype
+		(
+			`id`,
+			`userid`,
+			`billtypeid`
+		)
+		values
+		(
+			#{entity.id},
+			#{entity.userid},
+			#{entity.billtypeid}
+		)
+	</insert>
+	
+	<delete id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_user_billtype where id = #{id}
+	</delete>
+
+	<delete id="deleteByUserId">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_user_billtype where userid = #{userId}
+	</delete>
+
+	<!--  一个用户只能有一个默认业务类型 -->
+   <update id="updateSome" parameterType="com.xforceplus.wapp.modules.base.entity.UserBilltypeEntity">
+		/**mycat:schema=${schemaLabel}*/ 
+		update t_ac_user_billtype   set  isdefault = ''
+        where userid = 
+ 		 (select a.userid from (select userid from t_ac_user_billtype where id = #{entity.id} ) a) 
+ 		 and id != #{entity.id} 
+	</update>
+	
+	<update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.UserBilltypeEntity">
+		/**mycat:schema=${schemaLabel}*/ 
+		update t_ac_user_billtype
+		<set>
+			<if test="entity.userid != null">`userid` = #{entity.userid}, </if>
+			<if test="entity.billtypeid != null">`billtypeid` = #{entity.billtypeid}, </if>
+			<if test="entity.isdefault != null">`isdefault` = #{entity.isdefault}, </if>
+		</set>
+		where id = #{entity.id}
+	</update>
+	
+	<select id="queryListBill" resultType="com.xforceplus.wapp.modules.base.entity.UserBilltypeEntity">
+        /**mycat:schema=${schemaLabel}*/ 
+        SELECT t.* from t_ac_billtype  t  join t_ac_user_billtype ta on t.billtypeid = ta.billtypeid
+
+         <if test="entity.userid !=null">
+            AND ta.userid = #{entity.userid}
+         </if>
+       
+        <!--  数据过滤  -->
+        order by t.orgid asc
+        <if test="entity.offset != null and entity.limit != null">
+            limit #{entity.offset}, #{entity.limit}
+        </if>
+    </select>
+    
+    
+    <select id="queryListBillCount" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ 
+        SELECT count(*) from t_ac_billtype  t  join t_ac_user_billtype ta on t.billtypeid = ta.billtypeid
+
+         <if test="entity.ids != null">
+            AND ta.billtypeid in
+            <foreach item="item" collection="entity.ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+       
+    </select>
+    
+    
+     <select id="getOrgDetailBill" resultType="com.xforceplus.wapp.modules.base.entity.BillTypeEntity">
+        /**mycat:schema=${schemaLabel}*/ select b.* ,
+        t.id AS userBilltypeId,
+        t.isdefault isdefault
+        FROM t_ac_user_billtype t
+        LEFT JOIN t_ac_billtype b ON b.billtypeid=t.billtypeid
+        WHERE t.userid=#{entity.userid}
+       <!--  and FIND_IN_SET(b.orgid,#{entity.subOrgIdStr}) -->
+        <if test="entity.billtypename != null and entity.billtypename.trim() != ''">
+            and b.`billtypename` like concat('%',#{entity.billtypename},'%')
+        </if>
+        <if test="entity.billtypecode != null and entity.billtypecode.trim() != ''">
+            and b.`billtypecode` like concat('%',#{entity.billtypecode},'%')
+        </if>
+        <if test="entity.offset != null and entity.limit != null">
+            limit #{entity.offset}, #{entity.limit}
+        </if>
+    </select>
+    
+     <select id="getOrgDetailCountBill" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*)
+        FROM t_ac_user_billtype t
+        LEFT JOIN t_ac_billtype b ON b.billtypeid=t.billtypeid
+        WHERE t.userid=#{entity.userid}
+       <!-- and FIND_IN_SET(b.orgid,#{entity.subOrgIdStr}) -->
+         <if test="entity.billtypename != null and entity.billtypename.trim() != ''">
+            and b.`billtypename` like concat('%',#{entity.billtypename},'%')
+        </if>
+        <if test="entity.billtypecode != null and entity.billtypecode.trim() != ''">
+            and b.`billtypecode` like concat('%',#{entity.billtypecode},'%')
+        </if>
+    </select>
+    
+    
+     <select id="getNotAddListBill" resultType="com.xforceplus.wapp.modules.base.entity.BillTypeEntity">
+        /**mycat:schema=${schemaLabel}*/ select * from (SELECT o.company  company , t.* from t_ac_billtype  t join t_ac_org o WITH(NOLOCK) on  t.orgid = o.orgid) t 
+         where 1=1 and t.company = #{userBilltypeEntity.company}
+        <!-- AND t.orgid IN
+        <foreach item="item" collection="orgChildArr" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        -->
+        <if test="null != billtypeidArr ">
+            AND t.billtypeid not IN
+            <foreach item="itemm" collection="billtypeidArr" open="(" separator="," close=")">
+                #{itemm}
+            </foreach>
+        </if> 
+        <if test="userBilltypeEntity.billtypename !=null and userBilltypeEntity.billtypename.trim() !=''">
+            AND t.billtypename like concat('%',#{userBilltypeEntity.billtypename},'%')
+        </if>
+        <if test="userBilltypeEntity.billtypecode !=null and userBilltypeEntity.billtypecode.trim() !=''">
+            AND t.billtypecode like concat('%',#{userBilltypeEntity.billtypecode},'%')
+        </if>
+        <if test="userBilltypeEntity.offset != null and userBilltypeEntity.limit != null">
+            limit #{userBilltypeEntity.offset}, #{userBilltypeEntity.limit}
+        </if>
+    </select>
+    
+    <select id="getNotAddListTotalBill" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from (SELECT o.company  company , t.* from t_ac_billtype  t join t_ac_org o WITH(NOLOCK) on  t.orgid = o.orgid) t 
+         where 1=1 and t.company = #{userBilltypeEntity.company}
+       
+         <!-- AND t.orgid IN
+        <foreach item="item" collection="orgChildArr" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+         -->
+        <if test="null != billtypeidArr">
+            AND t.billtypeid not IN
+            <foreach item="itemm" collection="billtypeidArr" open="(" separator="," close=")">
+                #{itemm}
+            </foreach>
+        </if>
+         
+        <if test="userBilltypeEntity.billtypename !=null and userBilltypeEntity.billtypename.trim() !=''">
+            AND t.billtypename like concat('%',#{userBilltypeEntity.billtypename},'%')
+        </if>
+        <if test="userBilltypeEntity.billtypecode !=null and userBilltypeEntity.billtypecode.trim() !=''">
+            AND t.billtypecode like concat('%',#{userBilltypeEntity.billtypecode},'%')
+        </if>
+    </select>
+</mapper>

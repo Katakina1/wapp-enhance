@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>业务类型管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="../../libs/vue.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<style type="text/css">
+    .form-row {
+        width: 98%;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .table > thead > tr > th.active {
+        background-color: #FFD98B;
+    }
+
+</style>
+<style>
+    .ui-th-column .ui-th-ltr {
+        min-width: 30px;
+    }
+
+    hr {
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+
+    .input-class {
+        -webkit-appearance: none;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #dcdfe6;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        color: #606266;
+        display: inline-block;
+        font-size: inherit;
+        height: 40px;
+        line-height: 40px;
+        outline: 0;
+        padding: 0 15px;
+        -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+        transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+        width: 100%;
+    }
+
+    .input-class:focus {
+        border: 1px solid #ffc653;
+    }
+
+    .colNew {
+        padding: 0.1rem;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        border-bottom: none;
+    }
+
+    button span {
+        font-size: 14px !important;
+    }
+    .el-dialog__header{
+        background: #333333;
+        color: white;
+    }
+    .el-dialog__header span,.el-dialog__header i{
+        color: white !important;
+    }
+    .el-col-16{
+        width: 50%;
+    }
+</style>
+
+<body>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-row style="font-size:18px;color: #FFFFFF;background-color: #666666">
+            <!--<el-col :span="6" style="height: 60px;font-size: 18px;border-radius: 0; border: 0 solid #666666;">-->
+                <!--<div class="grid-content bg-purple" style=" padding: 20px;">-->
+                    <!--<span style="text-align: left; ">机构树</span>-->
+                <!--</div>-->
+            <!--</el-col>-->
+            <el-col :span="18" style="height: 60px;font-size: 18px;border-radius: 0; border: 0 solid #666666;">
+                <div class="grid-content bg-purple" style=" padding: 20px;">
+                    <span style="text-align: left; ">业务类型列表</span>
+                </div>
+            </el-col>
+        </el-row>
+        <el-row style="padding-top: 5px">
+            <!--<el-col :span="6" class="colNew">-->
+                <!--<div class="grid-content bg-purple" style="margin: 0 auto;width: 90%">-->
+                    <!--<ul id="orgTree" class="ztree"></ul>-->
+                <!--</div>-->
+            <!--</el-col>-->
+            <el-col :span="24" class="colNew">
+                <div class="bg-purple" v-show="menuGridShow">
+                    <el-form  ref="queryForm" :model="queryForm" label-width="100px">
+                        <el-row>
+                            <el-col :span="15">
+                            <el-form-item label="业务类型名称:" prop="billtypename" >
+                                <el-input maxlength="40" v-model.trim="queryForm.billtypename" placeholder="请输入业务类型名称"></el-input>
+                            </el-form-item>
+                            </el-col>
+                            <el-col :span="15">
+                                <el-form-item label="业务类型编码:" prop="billtypecode">
+                                    <el-input maxlength="40" v-model.trim="queryForm.billtypecode" placeholder="请输入业务类型编码"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="4" :offset="1">
+                                <el-button class="btnexport" @click="query">查询</el-button>
+                            </el-col>
+                            <el-col :span="4" :offset="1">
+                                <a class="btn btnexport" @click="addOrUpdata(true)">新增</a>
+                            </el-col>
+                            <el-col :span="4" :offset="1">
+                                <a class="btn btnexport " @click="deleteOrg">删除</a>
+                            </el-col>
+
+                            <!--<el-col :span="4" :offset="1">
+                                <el-button  class="btnexport" @click="resetForm('queryForm')">重置</el-button>
+                            </el-col>-->
+                        </el-row>
+                        <el-row>
+
+                        </el-row>
+
+                    </el-form>
+
+                    <hr style=" margin-top: 0; margin-bottom: 10px;!important;">
+
+
+                    <el-table height="4rem" ref="billtypeTable" :data="billtypeData" border fit @selection-change="changeFun"
+                              tooltip-effect="light" highlight-current-row
+                              v-loading="billtypeLoading" element-loading-text="正在拼命加载中"
+                              style="width: 100%;">
+
+                        <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  type="index" :index="billtypeIndex" label="序号" width="60"
+                                         align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="billtypecode" label="业务类型编码" :show-overflow-tooltip="true" min-width="130"
+                                         align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="billtypename" label="业务类型名称" :show-overflow-tooltip="true" min-width="180"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  :formatter="formatterField" property="billtypedesc" label="业务类型描述" :show-overflow-tooltip="true" min-width="200"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="billtypeid" label="操作" class-name="noSpotSpotSpot" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-button @click="openAddOrUpdateWin(scope.row)" type="text" size="small">修改
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-col class="toolbar" style="padding:10px;">
+                        <el-pagination small layout="slot, sizes, prev, pager, next" background
+                                       :current-page.sync="currentPage" :page-size="pageSize" :page-sizes="pageList"
+                                       :total="total" @current-change="currentChange" @size-change="sizeChange" style="float:right">
+                            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+                        </el-pagination>
+                    </el-col>
+                </div>
+            </el-col>
+        </el-row>
+    </div>
+
+    <el-dialog :title="addOrUpdateForm.title" :visible.sync="addOrUpdateWin" :before-close="addOrUpdataWinClose" :close-on-click-modal="false"
+               @close="clearValidate('addOrUpdateForm')">
+        <el-form ref="addOrUpdateForm" :model="addOrUpdateForm" label-width="105px">
+            <el-row>
+                <el-col :span="16">
+                <el-form-item label="业务类型名称:" prop="billtypename"
+                              :rules="[{ required: true, message: '业务类型名称不能为空'}]">
+                    <input maxlength="40"  v-model.trim="addOrUpdateForm.billtypename" class="input-class">
+                </el-form-item>
+                </el-col>
+                <el-col :span="16">
+                <el-form-item label="业务类型编码:" prop="billtypecode" :rules="[{ required: true, message: '业务类型编码不能为空'}]">
+                    <input maxlength="40"  v-model.trim="addOrUpdateForm.billtypecode" class="input-class">
+                </el-form-item>
+                </el-col>
+            </el-row>
+
+            <div class="form-row" style="width: 100%">
+                <el-form-item label="业务类型描述:" prop="billtypedesc" style="width:100%;">
+                    <el-input type="textarea" :autosize="{ minRows: 3}" maxlength="200"
+                              v-model="addOrUpdateForm.billtypedesc"></el-input>
+                </el-form-item>
+            </div>
+
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+            <el-button class="btnexport" @click="submitForm">确 定</el-button>
+            <el-button class="btnexport" @click="addOrUpdateReset()">重 置</el-button>
+        </span>
+    </el-dialog>
+
+</div>
+
+<script src="../../js/modules/base/billtype.js"></script>
+
+</body>
+</html>

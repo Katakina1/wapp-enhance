@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.collect.dao.AbnormalInvoiceCollectionDao">
+
+    <resultMap id="resultCollectionMap" type="com.xforceplus.wapp.modules.collect.entity.CollectListStatistic">
+        <id column="id" property="id" />
+        <result column="gf_tax_no" property="gfTaxNo" />
+        <result column="create_date" property="createDate" />
+        <result column="gf_name" property="gfName" />
+        <result column="collectCount" property="collectCount" />
+        <result column="sumTotalAmount" property="sumTotalAmount" />
+        <result column="sumTaxAmount" property="sumTaxAmount" />
+    </resultMap>
+
+    <!-- 获取人员可以查看的数据 -->
+    <sql id="getAuthData">
+        (
+         SELECT tdri.* FROM t_dx_record_invoice tdri WITH(NOLOCK)
+        ) a
+    </sql>
+
+    <sql id="selectAbnormalCollectionSql">
+        SELECT
+        temp.create_date,
+        temp.gf_tax_no,
+        temp.collectCount,
+        temp.sumTotalAmount,
+        temp.sumTaxAmount,
+        temp.gf_name gf_name
+        FROM
+        (
+        SELECT
+        create_date,
+        gf_tax_no,
+        gf_name,
+        COUNT(1) collectCount,
+        CONVERT (decimal(38,2),SUM(invoice_amount)) sumTotalAmount,
+        CONVERT (decimal(38,2),SUM(tax_amount)) sumTaxAmount
+        FROM
+        (
+        SELECT
+        id,
+        convert(varchar(100),a.create_date,23) create_date,
+        gf_tax_no,
+        gf_name,
+        invoice_amount,
+        tax_amount
+        FROM
+        <include refid="getAuthData"/>
+        WHERE source_system = '0' AND invoice_status != '0'
+        <if test="gfName != null and gfName != ''">
+            AND gf_name = #{gfName}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),create_date,23)  <= #{createEndDate} ]]>
+        </if>
+        ) asi
+        GROUP BY create_date,gf_tax_no,gf_name
+        ) temp
+    </sql>
+
+    <!-- 获得异常发票采集数据的总行数 -->
+    <select id="getAbnormalInvoiceCollectionCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT COUNT(1) FROM (
+        <include refid="selectAbnormalCollectionSql"/>
+        ) t
+    </select>
+
+    <!-- 获得异常发票采集数据集 -->
+    <select id="selectAbnormalInvoiceCollection" resultMap="resultCollectionMap">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from
+        (select row_number() over(order by o.create_date,o.gf_tax_no,o.gf_name) as rownumber,o.*
+        from(
+        </if>
+            <include refid="selectAbnormalCollectionSql"/>
+        <if test="offset != null and limit != null">
+        ) as o
+        ) a
+        where rownumber>#{offset};
+        </if>
+        <!--<include refid="selectAbnormalCollectionSql"/>-->
+        <!--ORDER BY create_date DESC-->
+        <!--<if test="offset != null and limit != null">-->
+            <!--limit #{offset}, #{limit}-->
+        <!--</if>-->
+    </select>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getAbnormalSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        CONVERT (decimal(38,2),sum(sumTotalAmount)) summationTotalAmount,
+        CONVERT (decimal(38,2),sum(sumTaxAmount)) summationTaxAmount
+        FROM (
+        <include refid="selectAbnormalCollectionSql"/>
+        ) a
+    </select>
+</mapper>

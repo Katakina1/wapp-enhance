@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.QuestionnaireWoDao">
+
+    <resultMap id="queryQuestionnaireMap" type="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        <id property="id" column="id"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="questionnaireTitle" column="questionnaire_title"/>
+        <result property="releaseDate" column="release_date" javaType="java.util.Date" jdbcType="DATE"/>
+        <collection property="topics" ofType="com.xforceplus.wapp.modules.base.entity.QuestionnaireTopicEntity">
+            <id property="id" column="topicid"/>
+            <result property="topicTitle" column="topic_title"/>
+            <result property="topicOp" column="topicOp"/>
+            <collection property="options" ofType="com.xforceplus.wapp.modules.base.entity.QuestionnaireOptionEntity">
+                <id property="id" column="tdqoid"/>
+                <result property="optionName" column="option_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getQuestionnaireCount" resultType="Integer">
+        select count(*)
+        from t_dx_questionnaire WITH(NOLOCK)  where 1=1
+        <if test="questionnaireTitle != null and questionnaireTitle !='' ">
+            AND questionnaire_title  like '%'+ #{questionnaireTitle}+'%'
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),release_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),release_date,23)  <= #{createEndDate} ]]>
+        </if>
+    </select>
+
+    <select id="questionnaireList" resultType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from
+        (select row_number() over(order by o.release_date desc) as rownumber,o.*
+        from(
+        </if>
+        SELECT
+         *
+        from t_dx_questionnaire WITH(NOLOCK)
+        WHERE 1=1
+        <if test="questionnaireTitle != null and questionnaireTitle !='' ">
+            AND questionnaire_title  like '%'+ #{questionnaireTitle}+'%'
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),release_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),release_date,23)  <= #{createEndDate} ]]>
+        </if>
+
+        <if test="offset != null and limit != null">
+        )as o
+        )a
+        where rownumber>#{offset};
+        </if>
+
+    </select>
+
+    <select id="getVenderCount" resultType="Integer">
+
+        SELECT COUNT(*)
+        FROM t_dx_questionnaire_user t WITH(NOLOCK)
+        left join t_ac_user u  WITH(NOLOCK) on u.userid=t.user_id
+        WHERE  t.questionnaire_id=#{questionnaireId}
+        <if test="venderId != null and venderId !='' ">
+            AND u.usercode  like '%'+ #{venderId}+'%'
+        </if>
+        <if test="venderName != null and venderName !='' ">
+            AND u.username  like '%'+ #{venderName}+'%'
+        </if>
+    </select>
+    <select id="venderList" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        select * from (
+            SELECT
+            t.id,
+            u.usercode,
+            u.username,
+            t.user_id userid,
+            t.is_answer,
+            ROW_NUMBER() OVER(Order by t.is_answer  desc) AS rownum
+            FROM t_dx_questionnaire_user t WITH(NOLOCK)
+        left join t_ac_user u  WITH(NOLOCK) on u.userid=t.user_id
+            WHERE  t.questionnaire_id=#{questionnaireId}
+            <if test="venderId != null and venderId !='' ">
+                AND u.usercode  like '%'+ #{venderId}+'%'
+            </if>
+            <if test="venderName != null and venderName !='' ">
+                AND u.username  like '%'+ #{venderName}+'%'
+            </if>
+        ) a
+        <if test="offset != null and limit != null">
+            where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+        </if>
+    </select>
+
+    <select id="queryQuestionnaire" resultMap="queryQuestionnaireMap">
+        select
+        tdq.*,
+        topic.id topicid,
+        topic.topic_title,
+        tdqo.id tdqoid,
+        tdqo.option_name,
+        tda.option_id topicOp
+        from t_dx_questionnaire tdq WITH(NOLOCK)
+        left join t_dx_questionnaire_topic topic  WITH(NOLOCK) on tdq.id = topic.questionnaire_id
+        left join t_dx_questionnaire_option tdqo  WITH(NOLOCK) on topic.id = tdqo.topic_id
+       	left join t_dx_questionnaire_answer tda WITH(NOLOCK)  on tda.topic_id = topic.id
+        where
+        topic.questionnaire_id = #{entity.id} and tda.user_id=#{entity.userId}
+    </select>
+</mapper>

@@ -1,0 +1,46 @@
+spring:
+    datasource:
+        driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+        url: jdbc:sqlserver://10.100.20.5:1433;DatabaseName=testdb01
+        username: testuser01
+        password: aGSsdsJFWd_w_1
+        initial-size: 10
+        max-active: 100
+        min-idle: 10
+        max-wait: 60000
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        validation-query: SELECT 1 FROM DUAL
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
+        stat-view-servlet:
+            enabled: true
+            url-pattern: /druid/*
+            #login-username: admin
+            #login-password: admin
+        filter:
+            stat:
+                log-slow-sql: true
+                slow-sql-millis: 1000
+                merge-sql: true
+            wall:
+                config:
+                    multi-statement-allow: true
+
+#OCR配置
+ocr:
+    url: http://103.235.245.141:10086/common/ocrservice
+    appId: FPBX
+    version: v1.1
+    enterpriseCode: JXFP
+    appKey: 6DT9KRhw0d7dPkW3v86hNgyB7GBa4Rui
+    appSce: a9vvsPNQtLIHTNHtJBUnF0HdFFN5N4lI
+
+#账号中心AccountCent配置
+AccountCent:
+    url: http://103.237.6.99:40002/infoControl/jxuser/
+    isService: false   #是否使用账号中心 true 使用 false 不使用
+

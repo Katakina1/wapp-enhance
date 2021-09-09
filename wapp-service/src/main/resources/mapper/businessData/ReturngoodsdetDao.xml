@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.businessData.dao.ReturngoodsdetDao">
+
+    <resultMap id="returnGoodsDetMap" type="com.xforceplus.wapp.modules.businessData.entity.ReturngoodsdetEntity">
+        <id column="id" property="id"/>
+        <result column="return_goods_code" property="returnGoodsCode"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_model" property="goodsModel"/>
+        <result column="goods_price" property="goodsPrice"/>
+        <result column="goods_unit" property="goodsUnit"/>
+        <result column="goods_number" property="goodsNumber"/>
+        <result column="goods_amount" property="goodsAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="store_nbr" property="storeNbr"/>
+        <result column="item_nbr" property="itemNbr"/>
+        <result column="upc_nbr" property="upcNbr"/>
+        <result column="dept_nbr" property="deptNbr"/>
+        <result column="final_date" property="finalDate"/>
+        <result column="vendor_stock_id" property="vendorStockId"/>
+        <result column="vnpk_qty" property="vnpkQty"/>
+        <result column="gategory_nbr" property="gategoryNbr"/>
+        <result column="vndr_nbr" property="vndrNbr"/>
+        <result column="vnpk_cost" property="vnpkCost"/>
+    </resultMap>
+
+    <select id="getReturnGoodsDetList" resultMap="returnGoodsDetMap" >
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id,return_goods_code,goods_name,
+        goods_model,goods_price,
+        goods_unit,goods_number,
+        goods_amount,tax_amount,
+        tax_rate,store_nbr,item_nbr,
+        upc_nbr,dept_nbr,final_date,
+        vendor_stock_id,vnpk_qty,
+        gategory_nbr,vndr_nbr,vnpk_cost
+
+        from t_dx_return_goods_detail d WITH(NOLOCK)
+        <where>
+            <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+                 and d.return_goods_code = #{map.returnGoodsCode}
+            </if>
+            <if test="map.userCode != null and map.userCode != ''">
+                and d.vndr_nbr = #{map.userCode}
+            </if>
+        </where>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="returnGoodsDetQueryCount" resultType="Integer">
+        SELECT count(1) FROM t_dx_return_goods_detail d WITH(NOLOCK)
+        <where>
+            <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+               and d.return_goods_code = #{map.returnGoodsCode}
+            </if>
+        </where>
+    </select>
+</mapper>

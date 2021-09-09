@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redInvoiceManager.dao.UploadScarletLetterDao">
+
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+    </resultMap>
+
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        <if test="map.offset != null and map.limit != null">
+        SELECT
+        TOP (#{map.limit}) A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY makeoutDate desc, id desc) AS rownumber, o.*
+        FROM
+        (
+        </if>
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        a.red_letter_status redLetterStatus,
+        CONVERT(varchar(7),a.makeout_date,120) makeoutDate
+        from t_dx_makeout_redInvoice a WITH(NOLOCK)
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+        ,t_dx_redInvoice_detail b
+        </if>
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY makeoutDate desc, id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        a.red_letter_status redLetterStatus,
+        b.red_letter_notice redLetterNotice,
+        LEFT(a.makeout_date, 4)+'-'+RIGHT(a.makeout_date,2) makeoutDate
+
+        from t_dx_makeout_redInvoice a left join t_dx_redInvoice_detail b on a.serial_number = b.serial_number
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="queryListAllExport" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        a.red_letter_status redLetterStatus,
+        b.red_letter_notice redLetterNotice,
+        LEFT(a.makeout_date, 4)+'-'+RIGHT(a.makeout_date,2) makeoutDate
+
+        from t_dx_makeout_redInvoice a left join t_dx_redInvoice_detail b on a.serial_number = b.serial_number
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+    </select>
+
+    <select id="queryListByStore" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY makeoutDate desc, id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        IIF(1>a.tax_rate,a.tax_rate * 100,a.tax_rate) taxRate,
+        CONVERT(varchar(7),a.makeout_date,120) makeoutDate
+        from t_dx_makeout_redInvoice a WITH(NOLOCK)
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.store in (
+       <!-- select extf1 from t_ac_org WITH(NOLOCK) where orgid in(select usercode from t_ac_user WITH(NOLOCK) where userid = #{map.userID})-->
+        select usercode from t_ac_user WITH(NOLOCK) where userid = #{map.userID}
+        )
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="queryListByStoreAll" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        CONVERT(varchar(7),a.makeout_date,120) makeoutDate
+        from t_dx_makeout_redInvoice a WITH(NOLOCK)
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.store in (
+        <!--select extf1 from t_ac_org WITH(NOLOCK) where orgid in(select orgid from t_ac_user WITH(NOLOCK) where userid = #{map.userID})-->
+        select usercode from t_ac_user WITH(NOLOCK) where userid = #{map.userID}
+        )
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+    </select>
+
+    <select id="getTypeById" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+
+        select
+        taxno taxNo,
+        orgtype orgType
+        from t_ac_org WITH(NOLOCK)
+        where
+        orgid in (
+        select orgid from t_ac_user WITH(NOLOCK) where userid = #{map.userID}
+        )
+
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+
+        select count(1) totalCount
+        from t_dx_makeout_redInvoice a WITH(NOLOCK)
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+        ,t_dx_redInvoice_detail b
+        </if>
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+    </select>
+
+    <select id="queryTotalResultByStore" resultMap="reportStatisticsMap">
+
+        select count(1) totalCount
+        from t_dx_makeout_redInvoice a WITH(NOLOCK)
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where  a.store in (
+        <!--select extf1 from t_ac_org WITH(NOLOCK) where orgid in(select orgid from t_ac_user WITH(NOLOCK) where userid = #{map.userID})-->
+        select usercode from t_ac_user WITH(NOLOCK) where userid = #{map.userID}
+        )
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+    </select>
+
+    <update id="updateStatus">
+        UPDATE t_dx_makeout_redInvoice SET red_letter_status = '1'
+        WHERE serial_number = #{serialNumber}
+    </update>
+    <update id="updateStatus1">
+        UPDATE t_dx_redInvoice_detail SET rednotice_association = #{redNoticeAssociation}
+        WHERE red_letter_notice = #{redLetterNotice}
+    </update>
+
+    <!--<update id="updateStatus">-->
+        <!--UPDATE t_dx_makeout_redInvoice SET whether_upload_rednotice = '1',audit_results = '2',red_notice_number=#{redNoticeNumber},rednotice_association=#{redNoticeAssociation}-->
+        <!--WHERE id = #{id}-->
+    <!--</update>-->
+
+    <!--<insert id="saveFilePathRed">-->
+        <!--insert into t_dx_file_table(file_path,file_type,file_Name) values(#{filePath},#{fileType},#{fileName})select @@identity-->
+    <!--</insert>-->
+    <insert id="saveFilePathRed" useGeneratedKeys="true" keyProperty="fileEntity.id" parameterType="com.xforceplus.wapp.modules.redTicket.entity.FileEntity">
+        insert into t_dx_file_table(file_path,file_type,file_Name) values(#{fileEntity.filePath},#{fileEntity.fileType},#{fileEntity.fileName})
+    </insert>
+
+    <insert id="saveRedDetail">
+        insert into t_dx_redInvoice_detail(red_letter_notice , serial_number) values(#{redLetterNotice},#{serialNumber})
+    </insert>
+
+    <!--保存路径，和文件类型-->
+    <insert id="saveFilePath">
+        INSERT INTO t_dx_file_table (file_path, file_type, file_number,local_file_name,file_name) VALUES (#{filePath}, #{fileType}, #{fileNumber},#{localFileName},#{fileName})
+
+    </insert>
+
+
+    <select id="getfileName" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY localFileName desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id,
+        file_path filePath,
+        file_Name fileName,
+        file_type fileType,
+        local_file_name localFileName,
+        SUBSTRING(local_file_name,14,16) redLetterNotice
+        from t_dx_file_table WITH(NOLOCK)
+        where LEFT(local_file_name,12) = #{map.serialNumber}
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY local_file_name desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+
+    </select>
+
+    <select id="getfileName1" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        select
+        id,
+        file_path filePath,
+        file_Name fileName,
+        file_type fileType,
+        local_file_name localFileName,
+        from t_dx_file_table WITH(NOLOCK)
+        where id = #{id}
+    </select>
+
+    <select id="getfileNameCount" resultMap="reportStatisticsMap">
+        select count(1) totalCount
+        from t_dx_file_table WITH(NOLOCK)
+        where LEFT(local_file_name,12) = #{map.serialNumber}
+    </select>
+    <select id="getfileCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_dx_file_table WITH(NOLOCK)
+        where LEFT(local_file_name,29) = #{localFileName}
+    </select>
+
+    <delete id="delete">
+        delete from t_dx_file_table where local_file_name = #{localFileName}
+    </delete>
+    <delete id="delete1">
+        delete from t_dx_redInvoice_detail where red_letter_notice = #{redLetterNotice}
+    </delete>
+    <!--删除全部后改变状态-->
+    <update id="updateStatus2">
+        UPDATE t_dx_makeout_redInvoice SET red_letter_status = '0'
+        WHERE serial_number = #{serialNumber}
+    </update>
+    <select id="getfileCount1" resultType="java.lang.Integer">
+        select count(1)
+        from t_dx_file_table WITH(NOLOCK)
+        where LEFT(local_file_name,12) = #{serialNumber}
+    </select>
+
+    <select id="getRedNoticeNumber" resultType="java.lang.String">
+        select red_notice_number
+        from t_dx_red_ticket_matching WITH(NOLOCK)
+        where redticket_data_serial_number = #{serialNumber}
+    </select>
+</mapper>

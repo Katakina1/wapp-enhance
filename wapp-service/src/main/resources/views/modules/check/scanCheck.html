@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>系统日志</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../libs/customer/index.js"></script>
+    <style>
+        .el-col-12{
+            width: 50%;
+        }
+        body .demo-class .layui-layer-btn .layui-layer-btn0{
+            border-color: #dedede !important;
+            background-color: #fff !important;
+            color: #333 !important;
+            margin-right: 0.6rem !important;
+        }
+        body .demo-class .layui-layer-btn .layui-layer-btn1{
+            border-color: #ffc653 !important;
+            background-color: #fff !important;
+            color: #ffc653 !important;
+            margin-left: 0.6rem !important;
+        }
+        body .demo-class2 .layui-layer-btn{
+            padding-right: 1.0rem !important;
+        }
+        body .demo-class2 .layui-layer-title{
+            background-color: #333
+
+        }
+        body .demo-class2 .layui-layer-title{
+            background-color: #333
+
+        }
+
+        body .demo-class2 .layui-layer-setwin a{
+            background: url(../../img/close.png) no-repeat;
+        }
+        .btn{
+            padding: 0.0rem 0.12rem;
+        }
+
+    </style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<object ID="Scanner" CLASSID="CLSID:AAF04A6A-B8A1-4494-A303-5F33D7F8226E" width="0" height="0"></object>
+
+<!--<form action="http://localhost:8666/dxhy-jxpt/rest/invoice/sign/uploadImg" enctype="multipart/form-data" method="post">-->
+    <!--<table>-->
+        <!--<tr>-->
+            <!--<td>发票代码:</td>-->
+            <!--<td><input type="text" name="code" value="1100173320"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>发票号码:</td>-->
+            <!--<td><input type="text" name="invCode" value="05938435"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td>购房税号:</td>-->
+            <!--<td><input type="text" name="gfTaxNO" value=""></td>-->
+        <!--</tr><tr>-->
+        <!--<td>scanId:</td>-->
+        <!--<td><input type="text" name="scanId" value="20180228161354757511787909805413"></td>-->
+    <!--</tr>-->
+
+        <!--<tr>-->
+            <!--<td>请选择文件:</td>-->
+            <!--<td><input type="file" name="file"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td><input type="submit" value="上传"></td>-->
+        <!--</tr>-->
+    <!--</table>-->
+<!--</form>-->
+<div id="rrapp" v-cloak style="margin-left: 0.15rem;margin-right: 0.15rem">
+    <div>
+        <el-form ref="form" :model="q" label-width="1.0rem">
+            <el-row>
+                <el-col :span="6">
+                    <div class="grid-content bg-purple">
+                        <el-form-item label="" class="form-item">
+                            <el-button class="btnexport" style="margin-left: 0.15rem" @click="startScan" >开始扫描</el-button>
+                            <el-button class="btnexport"  @click="restScanner" style="margin-left: 0.15rem">重置扫描仪</el-button>
+                            <div style="font-size: 0.12rem;position: absolute;white-space: nowrap;line-height: 0.3rem;">请使用管理员权限打开32位IE11浏览器</div>
+                        </el-form-item>
+                    </div>
+                </el-col>
+
+                <!--<el-col :span="12">-->
+                    <!--<div class="form-row">-->
+                        <!--<el-form-item label="扫描详情:" class="form-item">-->
+                            <!--<el-input v-model="q.scanDetails" placeholder="请输入内容" placeholder="扫描详情(扫描张数,签收成功张数,签收失败张数)"></el-input>-->
+                        <!--</el-form-item>-->
+                    <!--</div>-->
+                <!--</el-col>-->
+                <!--<el-col :span="6" >-->
+                    <!--<div class="grid-content bg-purple">-->
+                        <!--<div class="form-row">-->
+                            <!--<el-button class="btnexport" style="margin-left: 0.15rem" @click="startScan" >开始扫描</el-button>-->
+                            <!--<el-button class="btnexport"  @click="restScanner" style="margin-left: 0.15rem">重置扫描仪</el-button>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div style="font-size: 0.12rem;position: absolute;white-space: nowrap">请使用管理员权限打开32位IE11浏览器</div>-->
+                <!--</el-col>-->
+            </el-row>
+        </el-form>
+    </div>
+    <table id="jqGrid"></table>
+    <div id="jqGridPager"></div>
+
+</div>
+
+<div id="editScan" style="display: none;">
+    <form class="form-horizontal" style="width: 100%">
+        <div class="from-group col-sm-6" style="padding-right: 0.0rem;height: 100%;width: 55%;">
+            <img style="width: 100%;" id="editImg" src="https://ss1.bdstatic.com/70cFuXSh_Q1YnxGkpoWK1HF6hhy/it/u=2163090801,2795408916&fm=27&gp=0.jpg"/>
+        </div>
+        <div class="form-group col-sm-5" style="border-left: 0.01rem solid #c0c4cc;padding-left: 0.0rem;margin-left: 0.3rem;height: 4.4rem;float: right;">
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票代码：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" id="" v-model="edit.invoiceCode" />
+                </div>
+                <span class="label " >&nbsp;</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票号码：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.invoiceNo"/>
+                </div>
+                <span class="label " >&nbsp;</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">开票日期：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.invoiceDate" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.invoiceDate}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">购方税号：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.gfTaxNo" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.gfTaxNo}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">销方税号：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.xfTaxNo" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.xfTaxNo}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票金额：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.invoiceAmount"/>
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.invoiceAmount}}</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">发票税额：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.taxAmount" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.taxAmount}}</span>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label">价税合计：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.totalAmount" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.totalAmount}}</span>
+            </div>
+            <div class="form-group" id="editCheckCodeDiv" style="display: none">
+                <div class="col-sm-2 control-label">校验码：</div>
+                <div class="col-sm-5" style="padding-left: 0.0rem;padding-right: 0.0rem">
+                    <input type="text" class="form-control" v-model="edit.checkCode" />
+                </div>
+                <span class="label " style="color: #606266">{{recordInvoice.checkCode}}</span>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+<script src="../../js/modules/signin/scanner.js"></script>
+
+
+<script type="text/javascript" for="Scanner" event="ScanCompleted(result)">
+    var rtnData = $.parseJSON(result);
+    if(rtnData.rtnCode < 0 || rtnData.rtnData.length <= 0){
+        alert(rtnData.rtnMsg);
+    }else{
+        var invoiceType =vm.q.invoiceType;
+        var data = {"invoices":"", "invoiceType":""};
+        data.invoices = JSON.stringify(rtnData.rtnData);
+        data.invoiceType =invoiceType;
+        sign(data);
+    }
+</script>
+</body>
+</html>

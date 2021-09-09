@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.KnowCenterDao">
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.KnowledgeFileEntity">
+        <if test="offset != null and limit != null">
+            SELECT
+            TOP (#{limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY file_id desc) AS rownum, o.*
+            FROM
+            (
+        </if>
+        select file_id, file_size,file_name,file_extension,upload_date,vender_type,file_path
+        from t_common_knowledge_file where 1=1
+        <if test="venderType != null and venderType != '' and venderType != '-1'">
+            and vender_type = #{venderType}
+        </if>
+        <if test="fileName != null and fileName != ''">
+            and file_name like concat('%',concat(#{fileName},'%'))
+        </if>
+        <if test="fileExtension != null and fileExtension != ''">
+            and file_extension like concat('%',concat(#{fileExtension},'%'))
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  <= #{createEndDate} ]]>
+        </if>
+        <if test="offset != null and limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownum >#{offset}
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1)
+        from t_common_knowledge_file where 1=1
+        <if test="venderType != null and venderType != '' and venderType != '-1'">
+            and vender_type = #{venderType}
+        </if>
+        <if test="fileName != null and fileName != ''">
+            and file_name like concat('%',concat(#{fileName},'%'))
+        </if>
+        <if test="fileExtension != null and fileExtension != ''">
+            and file_extension like concat('%',concat(#{fileExtension},'%'))
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  <= #{createEndDate} ]]>
+        </if>
+    </select>
+
+    <insert id="saveKnowFile" parameterType="com.xforceplus.wapp.modules.base.entity.KnowledgeFileEntity">
+        insert into t_common_knowledge_file
+        (
+        file_name,
+        file_size,
+        file_extension,
+        <if test="venderType != null and venderType != '' and venderType != '-1'">
+        vender_type,
+        </if>
+        file_path,
+        upload_date
+        )
+        values
+        (
+        #{fileName},
+        #{fileSize},
+        #{fileExtension},
+        <if test="venderType != null and venderType != '' and venderType != '-1'">
+          #{venderType},
+        </if>
+        #{filePath},
+        getdate()
+        )
+    </insert>
+
+    <delete id="deleteOne">
+        DELETE
+        FROM
+        t_common_knowledge_file
+        WHERE
+        file_id = #{id}
+    </delete>
+</mapper>

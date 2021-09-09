@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.PaymentInvoiceUploadDao">
+
+
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id,
+        jvcode ,
+        supplier_association supplierAssociation,
+        case_type caseType,
+        remark,
+        exchange_no exchangeNo,
+        return_goods_code returnGoodsCode,
+        convert(varchar(100),return_goods_date,23) returnGoodsDate,
+        return_cost_amount returnCostAmount,
+        payment_invoice_no paymentInvoiceNo,
+        purchase_invoice_no purchaseInvoiceNo,
+        IIF(1>tax_rate,convert(VARCHAR(20),tax_rate * 100)+'%',convert(VARCHAR(20),tax_rate)+'%') taxRate,
+        tax_amount taxAmount,
+        convert(varchar(100),deduction_date,23) deductionDate,
+        convert(varchar(100),send_date,23) sendDate,
+        convert(varchar(100),mail_date,23) mailData,
+        express_no expressNo,
+        express_name expressName
+        from t_dx_all_record_invoice_detail
+        where 1=1
+        <if test="map.supplierAssociation != null and map.supplierAssociation != ''">
+            and supplier_association = #{map.supplierAssociation}
+        </if>
+        <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+            and return_goods_code = #{map.returnGoodsCode}
+        </if>
+        <if test="map.jkinvoiceNo != null and map.jkinvoiceNo != ''">
+            and payment_invoice_no = #{map.jkinvoiceNo}
+        </if>
+        <if test="map.kkinvoiceNo != null and map.kkinvoiceNo != ''">
+            and purchase_invoice_no = #{map.kkinvoiceNo}
+        </if>
+        <if test="map.exchangeNo != null and map.exchangeNo != ''">
+            and exchange_no = #{map.exchangeNo}
+        </if>
+        <if test="map.remark != null and map.remark != '' and map.remark != '-1'">
+            and remark = #{map.remark}
+        </if>
+        <if test="map.returnGoodsDate1 != null and map.returnGoodsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23) >= #{map.returnGoodsDate1} ]]>
+        </if>
+        <if test="map.returnGoodsDate2 != null and map.returnGoodsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23)  <= #{map.returnGoodsDate2} ]]>
+        </if>
+        <if test="map.returnGoodsDate3 != null and map.returnGoodsDate3 != ''">
+            <![CDATA[ AND convert(varchar(100),send_date,23) >= #{map.returnGoodsDate3} ]]>
+        </if>
+        <if test="map.returnGoodsDate4 != null and map.returnGoodsDate4 != ''">
+            <![CDATA[ AND convert(varchar(100),send_date,23)  <= #{map.returnGoodsDate4} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+
+        select count(1) totalCount
+        from t_dx_all_record_invoice_detail
+        where 1=1
+        <if test="map.supplierAssociation != null and map.supplierAssociation != ''">
+            and supplier_association = #{map.supplierAssociation}
+        </if>
+        <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+            and return_goods_code = #{map.returnGoodsCode}
+        </if>
+        <if test="map.jkinvoiceNo != null and map.jkinvoiceNo != ''">
+            and payment_invoice_no = #{map.jkinvoiceNo}
+        </if>
+        <if test="map.kkinvoiceNo != null and map.kkinvoiceNo != ''">
+            and purchase_invoice_no = #{map.kkinvoiceNo}
+        </if>
+        <if test="map.exchangeNo != null and map.exchangeNo != ''">
+            and exchange_no = #{map.exchangeNo}
+        </if>
+        <if test="map.remark != null and map.remark != '' and map.remark != '-1'">
+            and remark = #{map.remark}
+        </if>
+        <if test="map.returnGoodsDate1 != null and map.returnGoodsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23) >= #{map.returnGoodsDate1} ]]>
+        </if>
+        <if test="map.returnGoodsDate2 != null and map.returnGoodsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23)  <= #{map.returnGoodsDate2} ]]>
+        </if>
+        <if test="map.returnGoodsDate3 != null and map.returnGoodsDate3 != ''">
+            <![CDATA[ AND convert(varchar(100),send_date,23) >= #{map.returnGoodsDate3} ]]>
+        </if>
+        <if test="map.returnGoodsDate4 != null and map.returnGoodsDate4 != ''">
+            <![CDATA[ AND convert(varchar(100),send_date,23)  <= #{map.returnGoodsDate4} ]]>
+        </if>
+    </select>
+
+
+
+    <insert id="saveInvoice" parameterType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        INSERT INTO t_dx_all_record_invoice_detail (
+        jvcode,
+        supplier_association,
+        case_type,
+        remark,
+        exchange_no,
+        return_goods_code,
+        return_goods_date,
+        return_cost_amount,
+        payment_invoice_no,
+        deduction_date,
+        purchase_invoice_no,
+        tax_rate,
+        tax_amount,
+        send_date,
+        mail_date,
+        express_no,
+        express_name,
+        create_by_name
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+        #{item.jvcode},
+        #{item.supplierAssociation},
+        #{item.caseType},
+        #{item.remark},
+        #{item.exchangeNo},
+        #{item.returnGoodsCode},
+        #{item.returnGoodsDate},
+        #{item.returnCostAmount},
+        #{item.paymentInvoiceNo},
+        #{item.deductionDate},
+        #{item.purchaseInvoiceNo},
+        #{item.taxRate},
+        #{item.taxAmount},
+        #{item.sendDate},
+        #{item.mailData},
+        #{item.expressNo},
+        #{item.expressName},
+        #{item.createByName}
+        )
+        </foreach>
+        <!--(
+        #{entity.jvcode},
+        #{entity.supplierAssociation},
+        #{entity.caseType},
+        #{entity.remark},
+        #{entity.exchangeNo},
+        #{entity.returnGoodsCode},
+        #{entity.returnGoodsDate},
+        #{entity.returnCostAmount},
+        #{entity.paymentInvoiceNo},
+        #{entity.deductionDate},
+        #{entity.purchaseInvoiceNo},
+        #{entity.taxRate},
+        #{entity.taxAmount},
+        #{entity.sendDate},
+        #{entity.mailData},
+        #{entity.expressNo},
+        #{entity.expressName},
+        #{entity.createByName}
+        )-->
+
+    </insert>
+
+    <insert id="saveInvoiceFail" parameterType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        INSERT INTO t_dx_all_record_invoice_detail_failed (
+        jvcode,
+        supplier_association,
+        case_type,
+        remark,
+        exchange_no,
+        return_goods_code,
+        return_goods_date,
+        return_cost_amount,
+        payment_invoice_no,
+        deduction_date,
+        purchase_invoice_no,
+        tax_rate,
+        tax_amount,
+        send_date,
+        mail_date,
+        express_no,
+        express_name,
+        fail_reason,
+        upload_date,
+        create_by_name
+        ) VALUES (
+        #{entity.jvcode},
+        #{entity.supplierAssociation},
+        #{entity.caseType},
+        #{entity.remark},
+        #{entity.exchangeNo},
+        #{entity.returnGoodsCode},
+        #{entity.returnGoodsDate},
+        #{entity.returnCostAmount},
+        #{entity.paymentInvoiceNo},
+        #{entity.deductionDate},
+        #{entity.purchaseInvoiceNo},
+        #{entity.taxRate},
+        #{entity.taxAmount},
+        #{entity.sendDate},
+        #{entity.mailData},
+        #{entity.expressNo},
+        #{entity.expressName},
+        #{entity.failReason},
+        GETDATE(),
+        #{entity.createByName}
+
+        )
+    </insert>
+
+
+    <update id="inputreturnGoodsCode" parameterType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        update t_dx_all_record_invoice_detail
+        <set>
+            deduction_date = #{entity.deductionDate},
+            mail_date = #{entity.mailData},
+            express_no = #{entity.expressNo},
+            express_name = #{entity.expressName}
+        </set>
+        where supplier_association = #{entity.supplierAssociation}
+        and return_goods_code = #{entity.returnGoodsCode}
+
+    </update>
+
+    <select id="queryreturnGoodsCode" resultType="java.lang.Integer">
+        select count(1)
+        from t_dx_all_record_invoice_detail
+        where supplier_association = #{supplierAssociation}
+        and return_goods_code = #{returnGoodsCode}
+        and payment_invoice_no=#{paymentInvoiceNo}
+        and purchase_invoice_no=#{purchaseInvoiceNo}
+    </select>
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        select
+        id,
+        jvcode ,
+        supplier_association supplierAssociation,
+        case_type caseType,
+        remark,
+        exchange_no exchangeNo,
+        return_goods_code returnGoodsCode,
+        convert(varchar(100),return_goods_date,23) returnGoodsDate,
+        return_cost_amount returnCostAmount,
+        payment_invoice_no paymentInvoiceNo,
+        purchase_invoice_no purchaseInvoiceNo,
+        tax_rate taxRate,
+        tax_amount taxAmount,
+        convert(varchar(100),deduction_date,23) deductionDate,
+        convert(varchar(100),send_date,23) sendDate,
+        convert(varchar(100),mail_date,23) mailData,
+        express_no expressNo,
+        express_name expressName
+
+        from t_dx_all_record_invoice_detail
+        where 1=1
+        <if test="map.supplierAssociation != null and map.supplierAssociation != ''">
+            and supplier_association = #{map.supplierAssociation}
+        </if>
+        <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+            and return_goods_code = #{map.returnGoodsCode}
+        </if>
+        <if test="map.exchangeNo != null and map.exchangeNo != ''">
+            and exchange_no = #{map.exchangeNo}
+        </if>
+        <if test="map.remark != null and map.remark != '' and map.remark != '-1'">
+            and remark = #{map.remark}
+        </if>
+        <if test="map.returnGoodsDate1 != null and map.returnGoodsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23) >= #{map.returnGoodsDate1} ]]>
+        </if>
+        <if test="map.returnGoodsDate2 != null and map.returnGoodsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23)  <= #{map.returnGoodsDate2} ]]>
+        </if>
+        <if test="map.returnGoodsDate3 != null and map.returnGoodsDate3 != ''">
+            <![CDATA[ AND convert(varchar(100),send_date,23) >= #{map.returnGoodsDate3} ]]>
+        </if>
+        <if test="map.returnGoodsDate4 != null and map.returnGoodsDate4 != ''">
+            <![CDATA[ AND convert(varchar(100),send_date,23)  <= #{map.returnGoodsDate4} ]]>
+        </if>
+        ORDER BY id desc
+    </select>
+
+    <select id="queryListAllFail" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        select
+        id,
+        jvcode ,
+        supplier_association supplierAssociation,
+        case_type caseType,
+        remark,
+        exchange_no exchangeNo,
+        return_goods_code returnGoodsCode,
+        return_goods_date returnGoodsDate,
+        return_cost_amount returnCostAmount,
+        payment_invoice_no paymentInvoiceNo,
+        purchase_invoice_no purchaseInvoiceNo,
+        tax_rate taxRate,
+        tax_amount taxAmount,
+        deduction_date deductionDate,
+        send_date sendDate,
+        mail_date mailData,
+        express_no expressNo,
+        express_name expressName,
+        fail_reason failReason,
+        CONVERT(varchar(100), upload_date, 20) uploadDate
+        from t_dx_all_record_invoice_detail_failed
+        where
+        create_by_name = #{map.loginName}
+        and upload_date >
+        (select convert(varchar(20),dateadd(MONTH,-1,getdate()),120) )
+        ORDER BY uploadDate DESC
+
+    </select>
+
+    <select id="selectIsExists" resultType="java.lang.Integer">
+        select  count(1) from t_dx_all_record_invoice_detail
+        where supplier_association=#{supplierAssociation}
+        and return_goods_code=#{returnGoodsCode}
+        and return_goods_date=#{returnGoodsDate}
+        and return_cost_amount=#{returnCostAmount}
+        and payment_invoice_no=#{paymentInvoiceNo}
+        and purchase_invoice_no=#{purchaseInvoiceNo}
+    </select>
+
+    <delete id="delete">
+        delete from t_dx_all_record_invoice_detail_failed
+         where
+        create_by_name = #{loginName}
+
+    </delete>
+
+    <delete id="deletefail">
+        delete from t_dx_all_record_invoice_detail
+        where
+        id = #{id}
+
+    </delete>
+</mapper>

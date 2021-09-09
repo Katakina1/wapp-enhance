@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.UserRoleDao">
+
+    <sql id="condition">
+        <if test="entity.userid != null">
+            AND userid = #{entity.userid}
+        </if>
+        <if test="entity.userroleid != null">
+            AND userroleid = #{entity.userroleid}
+        </if>
+        <if test="entity.roleid != null">
+            AND roleid = #{entity.roleid}
+        </if>
+        <if test="entity.ids != null">
+            AND roleid in
+            <foreach item="item" collection="entity.ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.UserRoleEntity">
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.userroleid asc) AS rownumber, o.*
+            FROM(
+        </if>
+        select * from t_ac_user_role
+        <where>
+            <include refid="condition"/>
+        </where>
+        <if test="entity.offset == null and entity.limit == null">
+        order by userroleid asc
+        </if>
+        <if test="entity.offset != null and entity.limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{entity.offset}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_user_role
+        <where>
+            <include refid="condition"/>
+        </where>
+    </select>
+
+    <insert id="save">
+        /**mycat:schema=${schemaLabel}*/ insert into t_ac_user_role
+        (
+        roleid,
+        userid
+        )
+        values
+        <foreach collection="entity.ids" item="item" index="index" separator=",">
+            (
+            #{entity.roleid},
+            #{item}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="saveRoleUser">
+        /**mycat:schema=${schemaLabel}*/ insert into t_ac_user_role
+        (
+        roleid,
+        userid
+        )
+        values
+        <foreach collection="entity.ids" item="item" index="index" separator=",">
+            (
+            #{entity.roleid},
+            #{item}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="delete">
+        /**mycat:schema=${schemaLabel}*/ delete from t_ac_user_role
+        <where>
+            <if test="entity.userid != null">
+                AND userid = #{entity.userid}
+            </if>
+            <if test="entity.roleid != null">
+                AND roleid = #{entity.roleid}
+            </if>
+            <if test="entity.ids != null">
+                AND userid in
+                <foreach item="item" collection="entity.ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+
+    <select id="queryRoleIdList" resultType="long">
+		/**mycat:schema=${schemaLabel}*/ select roleid from t_ac_user_role where userid = #{userId}
+	</select>
+</mapper>

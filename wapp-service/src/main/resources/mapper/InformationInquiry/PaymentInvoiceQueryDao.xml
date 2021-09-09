@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.PaymentInvoiceQueryDao">
+
+
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY returnGoodsDate desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id,
+        jvcode,
+        supplier_association supplierAssociation,
+        case_type caseType,
+        remark,
+        exchange_no exchangeNo,
+        return_goods_code returnGoodsCode,
+        convert(varchar(100),return_goods_date,23) returnGoodsDate,
+        return_cost_amount returnCostAmount,
+        payment_invoice_no paymentInvoiceNo,
+        purchase_invoice_no purchaseInvoiceNo,
+        IIF(1>tax_rate,convert(VARCHAR(20),tax_rate * 100)+'%',convert(VARCHAR(20),tax_rate)+'%') taxRate,
+        tax_amount taxAmount,
+        convert(varchar(100),deduction_date,23) deductionDate,
+        convert(varchar(100),send_date,23) sendDate,
+        convert(varchar(100),mail_date,23) mailData,
+        express_no expressNo,
+        express_name expressName
+        from t_dx_all_record_invoice_detail
+        where supplier_association = #{map.userCode}
+        <if test="map.returnGoodsDate1 != null and map.returnGoodsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23) >= #{map.returnGoodsDate1} ]]>
+        </if>
+        <if test="map.returnGoodsDate2 != null and map.returnGoodsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23)  <= #{map.returnGoodsDate2} ]]>
+        </if>
+        <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+            and return_goods_code = #{map.returnGoodsCode}
+        </if>
+        <if test="map.jkinvoiceNo != null and map.jkinvoiceNo != ''">
+            and payment_invoice_no = #{map.jkinvoiceNo}
+        </if>
+        <if test="map.kkinvoiceNo != null and map.kkinvoiceNo != ''">
+            and purchase_invoice_no = #{map.kkinvoiceNo}
+        </if>
+        <if test="map.exchangeNo != null and map.exchangeNo != ''">
+            and exchange_no = #{map.exchangeNo}
+        </if>
+        <if test="map.remark != null and map.remark != '' and map.remark != '-1'">
+            and remark = #{map.remark}
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY returnGoodsDate desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+
+        select count(1) totalCount
+        from t_dx_all_record_invoice_detail
+        where supplier_association = #{map.userCode}
+        <if test="map.returnGoodsDate1 != null and map.returnGoodsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23) >= #{map.returnGoodsDate1} ]]>
+        </if>
+        <if test="map.returnGoodsDate2 != null and map.returnGoodsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23)  <= #{map.returnGoodsDate2} ]]>
+        </if>
+        <if test="map.returnGoodsCode != null and map.returnGoodsCode != ''">
+            and return_goods_code = #{map.returnGoodsCode}
+        </if>
+        <if test="map.jkinvoiceNo != null and map.jkinvoiceNo != ''">
+            and payment_invoice_no = #{map.jkinvoiceNo}
+        </if>
+        <if test="map.kkinvoiceNo != null and map.kkinvoiceNo != ''">
+            and purchase_invoice_no = #{map.kkinvoiceNo}
+        </if>
+        <if test="map.exchangeNo != null and map.exchangeNo != ''">
+            and exchange_no = #{map.exchangeNo}
+        </if>
+        <if test="map.remark != null and map.remark != '' and map.remark != '-1'">
+            and remark = #{map.remark}
+        </if>
+    </select>
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.PaymentInvoiceUploadEntity">
+        select
+        id,
+        jvcode,
+        supplier_association supplierAssociation,
+        case_type caseType,
+        remark,
+        exchange_no exchangeNo,
+        return_goods_code returnGoodsCode,
+        convert(varchar(100),return_goods_date,23) returnGoodsDate,
+        return_cost_amount returnCostAmount,
+        payment_invoice_no paymentInvoiceNo,
+        purchase_invoice_no purchaseInvoiceNo,
+        tax_rate taxRate,
+        tax_amount taxAmount,
+        convert(varchar(100),deduction_date,23) deductionDate,
+        convert(varchar(100),send_date,23) sendDate,
+        convert(varchar(100),mail_date,23) mailData,
+        express_no expressNo,
+        express_name expressName
+        from t_dx_all_record_invoice_detail
+        where supplier_association = #{map.userCode}
+        <if test="map.returnGoodsDate1 != null and map.returnGoodsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23) >= #{map.returnGoodsDate1} ]]>
+        </if>
+        <if test="map.returnGoodsDate2 != null and map.returnGoodsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),return_goods_date,23)  <= #{map.returnGoodsDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY returnGoodsDate desc
+        </if>
+    </select>
+
+</mapper>

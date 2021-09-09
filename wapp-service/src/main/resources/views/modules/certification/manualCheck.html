@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+	<meta charset="UTF-8">
+	<title>手动勾选</title>
+	<link rel="stylesheet" href="../../libs/customer/index.css">
+	<style type="text/css">
+
+
+
+		[v-cloak] {
+			display: none;
+		}
+
+		.hideItem {
+			display: none !important;
+		}
+		
+		.qsItem {
+		}
+		
+	</style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+	<div id="appForm">
+		<el-form  :model="form" class="demo-form-inline" label-width="1.0rem">
+			<el-row>
+				<el-col :span="12">
+					<div class="grid-content bg-purple">
+				<el-form-item label="购方名称:">
+					<el-select v-model="form.gfTaxNo" filterable id="gfSelect" @focus="gfNameFocus" @blur="gfNameBlur">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option
+								v-for="gf in form.gfNames"
+								:key="gf.taxNo"
+								:label="gf.name"
+								:value="gf.taxNo">
+						</el-option>
+					</el-select>
+				</el-form-item>
+					</div>
+				</el-col>
+				<el-col :span="12">
+				<el-form-item label="销方名称:">
+					<el-input class="inline-input" v-model="form.xfName" :maxlength="30"
+							  placeholder="请输入销方名称"></el-input>
+				</el-form-item>
+				</el-col>
+				<el-col :span="12">
+				<el-form-item label="发票类型:" class="form-item">
+					<el-select v-model="form.invoiceType">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option label="增值税专用发票" value="01"></el-option>
+						<el-option label="机动车销售统一发票" value="03"></el-option>
+						<el-option label="增值税电子普通发票（通行费）" value="14"></el-option>
+					</el-select>
+				</el-form-item>
+				</el-col>
+				<el-col :span="14">
+				<el-form-item label="开票日期:" id="requireMsg4">
+					<el-col :span="13">
+						<el-date-picker type="date" placeholder="选择日期" v-model="form.invoiceDate1"
+										@blur="blurpickerchange(1)"
+										@focus="focuspickerchange(1)"
+										:picker-options="limitDate"  :editable="false"
+										:clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>
+					</el-col>
+					<el-col class="line" :span="2">—</el-col>
+					<el-col :span="13">
+						<el-date-picker type="date" placeholder="选择日期" v-model="form.invoiceDate2"
+										@blur="blurpickerchange(2)"
+										@focus="focuspickerchange(2)"
+										:picker-options="limitDate"    :editable="false"
+										:clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>
+					</el-col>
+				</el-form-item>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="12">
+				<el-form-item  label="签收状态:" class="form-item">
+					<el-select v-model="form.qsStatus" @change="qsChange">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option label="未签收" value="0"></el-option>
+						<el-option label="已签收" value="1"></el-option>
+					</el-select>
+				</el-form-item>
+				</el-col>
+				<el-col :span="12">
+				<el-form-item label="发票号码:" class="form-item">
+					<el-input v-model="form.invoiceNo"  placeholder="请输入发票号码" maxlength="8" onkeyup="verificationInvoiceNoValue(this);" onchange="verificationInvoiceNoValue(this);"></el-input>
+				</el-form-item>
+				</el-col>
+				<el-col :span="12">
+					<el-form-item class="qsItem hideItem" label="签收方式:" >
+					<el-select v-model="form.qsType">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option label="扫码签收" value="0"></el-option>
+						<el-option label="扫描仪签收" value="1"></el-option>
+						<el-option label="app签收" value="2"></el-option>
+						<el-option label="导入签收" value="3"></el-option>
+						<el-option label="手工签收" value="4"></el-option>
+						<el-option label="pdf上传签收" value="5"></el-option>
+					</el-select>
+				</el-form-item>
+				</el-col>
+				<el-col :span="1" :offset="1" class="defaultShow">
+					<el-button class="btnexport" @click="query">查询</el-button>
+				</el-col>
+				<el-col :span="1" :offset="1" class="defaultShow">
+					<el-button class="btnexport" @click="check">手动勾选</el-button>
+				</el-col>
+			</el-row>
+			<el-row class="qsItem hideItem">
+				<el-col :span="14">
+					<el-form-item  label="签收日期:" id="requireMsg5">
+						<el-row>
+							<el-col :span="13">
+								<el-date-picker type="date" placeholder="选择日期" v-model="form.qsDate1"  :editable="false" id="datevalue3"
+												@blur="blurpickerchange(3)"
+												@focus="focuspickerchange(3)"
+												:picker-options="limitDate"  :clearable="false" :disabled="false"
+												format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="qsDate1Change"></el-date-picker>
+							</el-col>
+							<el-col class="line" :span="2">—</el-col>
+							<el-col :span="13">
+								<el-date-picker type="date" placeholder="选择日期" v-model="form.qsDate2"  :editable="false" id="datevalue4"
+												@blur="blurpickerchange(4)"
+												@focus="focuspickerchange(4)"
+												:picker-options="limitDate"   :clearable="false"   :disabled="false"
+												format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="qsDate2Change"></el-date-picker>
+							</el-col>
+						</el-row>
+					</el-form-item>
+				</el-col>
+				<el-col :span="1" :offset="1">
+					<el-button class="btnexport" @click="query">查询</el-button>
+				</el-col>
+				<el-col :span="1" :offset="1">
+					<el-button class="btnexport" @click="check">手动勾选</el-button>
+				</el-col>
+			</el-row>
+		</el-form>
+	</div>
+	<hr>
+	<div>
+		<div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"><span id="totalStatistics"></span></div>
+	</div>
+	<el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+			  v-loading="listLoading"   @selection-change="changeFun"
+			  element-loading-text="正在拼命加载中">
+
+		<el-table-column :show-overflow-tooltip="true"  type="selection" width="55" align="center" class="selection" prop='id' @selection-change="changeFun"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码"  align="left" header-align="center"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center">
+			<template scope="scope">
+				<span>{{ scope.row.invoiceNo }}</span>
+				<el-tooltip class="item" effect="dark" placement="top-start">
+					<div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+					<img  v-if="scope.row.invoiceType== '01'"  style="height:0.2rem;" src="../../img/special-invoice.png" />
+					<div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+					<img  v-if="scope.row.invoiceType== '03' "  style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+					<div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+					<img  v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" src="../../img/general-invoice.png" />
+				</el-tooltip>
+			</template>
+		</el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" :formatter="formatInvoiceDate"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="gfName" label="购方名称" align="left" header-align="center" show-overflow-tooltip :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="xfName" label="销方名称" align="left" header-align="center" show-overflow-tooltip :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="金额" align="right" header-align="center" :formatter="invoiceAmountFormatDecimal"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right" header-align="center" :formatter="taxAmountFormatDecimal"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="qsStatus" label="签收状态" align="left" header-align="center"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="qsDate" label="签收日期" align="center" :formatter="formatQsDate"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="qsType" label="签收方式" align="left" header-align="center" :formatter="formatQsType"></el-table-column>
+	</el-table>
+	<el-col class="toolbar" style="padding:0.1rem;">
+		<el-pagination layout="slot, sizes,prev,pager,next" background
+					   :current-page.sync="currentPage" :page-size="pageSize" :total="total" :page-size="pageSize" :page-sizes="pageList" @size-change="handleSizeChange"
+					   :page-count="pageCount" @current-change="currentChange" style="float:right">
+		</el-pagination>
+		<span style="float: right;margin-top: 0.4%">共{{total}}条记录，第{{currentPage}}页，共{{pageCount}}页</span>
+	</el-col>
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script src="../../js/modules/certification/manualCheck.js"></script>
+</html>

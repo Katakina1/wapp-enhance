@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="../../libs/customer/index.css">
+	<style type="text/css">
+		[v-cloak] {
+			display: none;
+		}
+		#appForm > form > div.el-form-item:first-child input {
+			padding-right: 0.4rem !important;
+		}
+	</style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+	<div id="appForm">
+
+		<el-form  :model="form" class="demo-form-inline" label-width="1.0rem">
+			<el-row>
+			<!--	<el-col :span="12">
+					<el-form-item label="JV:">
+						<el-select id="gf-select" v-model="form.gfTaxNo" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+							<el-option
+									v-for="item in gfs"
+									:key="item.value"
+									:label="item.label"
+									:value="item.value">
+							</el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>-->
+			<el-col :span="12">
+			<el-form-item label="企业名称:">
+				<el-select v-model="form.gfTaxNo" id="gfSelect" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+					<el-option label="全部" value="-1" selected></el-option>
+					<el-option
+							v-for="gf in form.gfNames"
+							:key="gf.taxNo"
+							:label="gf.name"
+							:value="gf.taxNo">
+					</el-option>
+				</el-select>
+			</el-form-item>
+			</el-col>
+			<el-col :span="12">
+			<el-form-item  label="信用等级:" class="form-item">
+				<el-select v-model="form.creditRating">
+					<el-option label="全部" value="-1" selected></el-option>
+					<el-option label="A" value="A"></el-option>
+					<el-option label="B" value="B"></el-option>
+					<el-option label="C" value="C"></el-option>
+					<el-option label="D" value="D"></el-option>
+				</el-select>
+			</el-form-item>
+			</el-col>
+			<el-col :span="12">
+			<el-form-item  label="申报周期:" class="form-item">
+				<el-select v-model="form.declarePeriod">
+					<el-option label="全部" value="-1" selected></el-option>
+					<el-option label="月报" value="1"></el-option>
+					<el-option label="季报" value="3"></el-option>
+				</el-select>
+			</el-form-item>
+			</el-col>
+				<!--<el-col :span="6">
+					<el-form-item label="公司代码:" prop="companyCode" label-width="1.4rem">
+						<el-input v-model="form.companyCode" placeholder="请输入公司代码" maxlength="8"></el-input>
+					</el-form-item>
+				</el-col>-->
+			<el-col :span="1" :offset="1">
+				<el-button class="btnexport" @click="query">查询</el-button>
+			</el-col>
+			<el-col :span="1" :offset="1">
+				<el-button class="btnexport exportExcel" @click="exportExcel" disabled>导出</el-button>
+			</el-col>
+			</el-row>
+		</el-form>
+	</div>
+	<hr>
+
+	<el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+			  v-loading="listLoading"
+			  element-loading-text="正在拼命加载中">
+		<el-table-column :show-overflow-tooltip="true"  type="index" width="100" :index="enterpriseTaxIndex" label="序号" align="center"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="taxNo" label="当前税号" align="left" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="oldTaxNo" label="旧税号" align="left" header-align="center" :formatter="formatOldTaxNo" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="taxName" label="企业名称" align="left" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="currentTaxPeriod" label="当前税款所属期" align="center" :formatter="formatCurrentTaxPeriodDate"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="selectStartDate" label="勾选开始日期" align="center" :formatter="formatSelectStartDateDate"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="selectEndDate" label="勾选结束日期" align="center" :formatter="formatSelectEndDateDate"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="operationEndDate" label="所属期结束日期" align="center":formatter="formatOperationEndDateDate"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="creditRating" label="信用等级" align="center" :formatter="formatCreditRating"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="declarePeriod" label="申报周期" align="center">
+			<template scope="scope">
+				<span v-if="scope.row.declarePeriod=== null" >—— ——</span>
+				<span v-if="scope.row.declarePeriod=== ''" >—— ——</span>
+				<span v-if="scope.row.declarePeriod== 1" >月报</span>
+				<span v-if="scope.row.declarePeriod== 3" >季报</span>
+			</template>
+		</el-table-column>
+		<!--<el-table-column :show-overflow-tooltip="true"  prop="jvcode" label="JV" align="left" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column :show-overflow-tooltip="true"  prop="companyCode" label="公司代码" align="left" header-align="center"  :show-overflow-tooltip="true"></el-table-column>-->
+	</el-table>
+	<el-col class="toolbar" style="padding:0.1rem;">
+		<el-pagination layout="slot, sizes,prev,pager,next" background
+					   :current-page.sync="currentPage" :page-size="pageSize" :total="total" :page-size="pageSize" :page-sizes="pageList" @size-change="handleSizeChange"
+					   :page-count="pageCount" @current-change="currentChange" style="float:right">
+		</el-pagination>
+		<span style="float: right;margin-top: 0.4%">共{{total}}条记录，第{{currentPage}}页，共{{pageCount}}页</span>
+	</el-col>
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script src="../../js/modules/certification/enterpriseTaxInformation.js"></script>
+
+</html>

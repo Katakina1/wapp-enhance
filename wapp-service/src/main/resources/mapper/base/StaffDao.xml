@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.StaffDao">
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.Staff">
+        select * from (
+        select id, staff_no, winID, staff_name, email, cost_center, cost_center_name,gf_tax_no,
+        ROW_NUMBER() OVER(Order by id) AS rownum
+        from t_ac_staff_info where 1=1
+        <if test="staffNo != null and staffNo != ''">
+            and staff_no like '%'+#{staffNo}+'%'
+        </if>
+        <if test="email !=null and email !=''">
+            and email  like '%'+#{email}+'%'
+        </if>
+        ) a where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1)
+        from t_ac_staff_info where 1=1
+        <if test="staffNo != null and staffNo != ''">
+            and staff_no like '%'+#{staffNo}+'%'
+        </if>
+        <if test="email !=null and email !=''">
+            and email  like '%'+#{email}+'%'
+        </if>
+    </select>
+
+    <update id="updateStaff" parameterType="com.xforceplus.wapp.modules.base.entity.Staff">
+        update t_ac_staff_info set
+        winID=#{winID},
+        staff_name=#{staffName},
+        cost_center=#{costCenter},
+        cost_center_name=#{costCenterName},
+        gf_tax_no = #{gfTaxNo}
+        where  staff_no=#{staffNo}
+    </update>
+
+    <delete id="deleteStaff">
+        delete from t_ac_staff_info where id=#{id}
+    </delete>
+
+    <insert id="insertStaff" parameterType="com.xforceplus.wapp.modules.base.entity.Staff">
+        insert into t_ac_staff_info
+        (staff_no, winID, staff_name, email, cost_center, cost_center_name,gf_tax_no)
+        values
+        (#{staffNo}, #{winID}, #{staffName}, #{email}, #{costCenter}, #{costCenterName},#{gfTaxNo})
+    </insert>
+
+
+
+    <select id="queryList1" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        select * from (
+        select a.id userid, b.usercode, b.username,
+        ROW_NUMBER() OVER(Order by b.userid) AS rownum
+        from t_ac_staff_vendor a left join t_ac_user b WITH(NOLOCK) on a.vendor_no=b.usercode where a.staff=#{staff}
+        <if test="usercode != null and usercode != ''">
+            and b.usercode like '%'+#{usercode}+'%'
+        </if>
+        <if test="username !=null and username !=''">
+            and b.username like '%'+#{username}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryCount1" resultType="int">
+        select count(1)
+        from t_ac_staff_vendor a left join t_ac_user b WITH(NOLOCK) on a.vendor_no=b.usercode where a.staff=#{staff}
+        <if test="usercode != null and usercode != ''">
+            and b.usercode like '%'+#{usercode}+'%'
+        </if>
+        <if test="username !=null and username !=''">
+            and b.username like '%'+#{username}+'%'
+        </if>
+    </select>
+
+    <select id="queryList2" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        select * from (
+        select b.userid, b.usercode, b.username,
+        ROW_NUMBER() OVER(Order by b.userid) AS rownum
+        from t_ac_user b WITH(NOLOCK) join t_ac_org d WITH(NOLOCK) on b.orgid=d.orgid
+        where d.orgtype='8' and
+        not exists (select 1 from t_ac_staff_vendor a where b.usercode=a.vendor_no and a.staff=#{staff})
+        <if test="usercode != null and usercode != ''">
+            and b.usercode like '%'+#{usercode}+'%'
+        </if>
+        <if test="username !=null and username !=''">
+            and b.username like '%'+#{username}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryCount2" resultType="int">
+        select count(1)
+        from t_ac_user b WITH(NOLOCK) join t_ac_org d WITH(NOLOCK) on b.orgid=d.orgid
+        where d.orgtype='8' and
+        not exists (select 1 from t_ac_staff_vendor a where b.usercode=a.vendor_no and a.staff=#{staff})
+        <if test="usercode != null and usercode != ''">
+            and b.usercode like '%'+#{usercode}+'%'
+        </if>
+        <if test="username !=null and username !=''">
+            and b.username like '%'+#{username}+'%'
+        </if>
+    </select>
+
+    <delete id="deleteVendor">
+        delete from t_ac_staff_vendor where id in
+        <foreach collection="array" open="(" separator="," close=")" item="item">
+            #{item}
+        </foreach>
+    </delete>
+
+    <insert id="addVendor">
+        insert into t_ac_staff_vendor (staff, vendor_no) values
+        <foreach collection="vendors" separator="," item="item">
+            (#{staff}, #{item})
+        </foreach>
+    </insert>
+
+    <insert id="insertStaffAndVender" >
+        insert into t_ac_staff_vendor (staff,vendor_no) values
+        <foreach item="item" collection="vendor" index="index" separator="," >
+            (#{staffNo},
+            #{item}
+            )
+        </foreach>
+    </insert>
+    <!-- 通过邮件和员工号查询数据库是否已存在-->
+    <select id="findStaff" resultType="java.lang.Integer">
+        select count(1) from t_ac_staff_info where staff_no = #{staffNo} or email = #{email}
+    </select>
+    <!-- 通过供应商号，查询供应商号是否存在-->
+    <select id="findVendor" resultType="java.lang.Integer">
+        select count(1) from t_ac_user WITH(NOLOCK) where usercode in
+        <foreach collection="vendors" index="index" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <!-- 单个供应商号 ，查看是否存在-->
+    <select id="findVendorBySingle" resultType="java.lang.Integer">
+        select count(1) from t_ac_user WITH(NOLOCK) where usercode = #{vendors}
+    </select>
+
+    <delete id="deleteStaffAndVendor">
+        delete from t_ac_staff_vendor where staff = #{staffNo}
+    </delete>
+    
+    <delete id="deleteStaffByNo">
+        delete from t_ac_staff_info where staff_no=#{staffNo}
+    </delete>
+
+    <!-- 通过jv获取orgid  批量-->
+    <select id="findOrgIdsByJv" resultType="java.lang.Integer">
+        select orgid from t_ac_org WITH(NOLOCK) where orgtype='5' and  orgcode in
+        <foreach collection="jv" index="index" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <!-- 通过jv单个获取orgid   -->
+    <select id="findOrgIdSingle" resultType="java.lang.Integer">
+        select orgid from t_ac_org WITH(NOLOCK) where orgtype='5' and  orgcode =#{jvs}
+    </select>
+
+    <!-- 插入关联表-->
+    <insert id="insertJv" >
+        insert into t_ac_staff_org (staff,orgid) values
+        <foreach collection="staff.orgids" index="index" item="item"
+                  separator="," >
+            (#{staff.staffNo},
+            #{item}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 删除jv信息表-->
+    <delete id="deleteJvByNo">
+        delete from t_ac_staff_org where  staff = #{staffNo}
+    </delete>
+
+    <!--  查询员工目前绑定的关系-->
+    <select id="queryJv" resultType="com.xforceplus.wapp.modules.base.entity.JvEntity">
+        select * from (
+        select b.orgid orgid, b.orgcode jv, b.orgname orgname,
+        ROW_NUMBER() OVER(Order by b.orgid) AS rownum
+        from  t_ac_org b WITH(NOLOCK) where orgtype='5'
+        <if test="jv != null and jv != ''">
+            and b.orgcode like '%'+#{jv}+'%'
+        </if>
+        <if test="orgname !=null and orgname !=''">
+            and b.orgname like '%'+#{orgname}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+
+    <!--  查询员工目前绑定的关系-->
+    <select id="queryJvCount" resultType="java.lang.Integer">
+        select count(1) from  t_ac_org b WITH(NOLOCK) where orgtype='5'
+        <if test="jv != null and jv != ''">
+            and b.orgcode like '%'+#{jv}+'%'
+        </if>
+        <if test="orgname !=null and orgname !=''">
+            and b.orgname like '%'+#{orgname}+'%'
+        </if>
+    </select>
+
+    <select id="queryNotAddJv" resultType="com.xforceplus.wapp.modules.base.entity.JvEntity">
+        select * from (
+        select b.orgid orgid, b.orgcode jv, b.orgname orgname,
+        ROW_NUMBER() OVER(Order by b.orgid) AS rownum
+        from t_ac_org b WITH(NOLOCK) where b.orgtype='5' and  not exists (select 1 from t_ac_staff_org a where b.orgid=a.orgid and a.staff=#{staff})
+        <if test="jv != null and jv != ''">
+            and b.orgcode like '%'+#{jv}+'%'
+        </if>
+        <if test="orgname !=null and orgname !=''">
+            and b.orgname like '%'+#{orgname}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryNotAddJvCount" resultType="java.lang.Integer">
+        select count(1) from (
+        select b.orgid orgid, b.orgcode jv, b.orgname orgname,
+        ROW_NUMBER() OVER(Order by b.orgid) AS rownum
+        from t_ac_org b WITH(NOLOCK) where b.orgtype='5' and  not exists (select 1 from t_ac_staff_org a where b.orgid=a.orgid and a.staff=#{staff})
+        <if test="jv != null and jv != ''">
+            and b.orgcode like '%'+#{jv}+'%'
+        </if>
+        <if test="orgname !=null and orgname !=''">
+            and b.orgname like '%'+#{orgname}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <insert id="addJvs">
+        insert into t_ac_staff_org (staff, orgid) values
+        <foreach collection="jvs" separator="," item="item">
+            (#{staff}, #{item})
+        </foreach>
+    </insert>
+
+    <delete id="deleteJv">
+        delete from t_ac_staff_org where orgid in
+        <foreach collection="ids" separator="," item="item" open="(" close=")">
+        #{item}
+        </foreach>
+    </delete>
+
+
+    <!--  查询jv对应的成本中心-->
+    <select id="queryCost" resultType="com.xforceplus.wapp.modules.base.entity.CostEntity">
+        select * from (
+        select id,orgid,cost_center costcode, cost_center_name costname,
+        ROW_NUMBER() OVER(Order by orgid) AS rownum
+        from t_ac_org_dev  where orgid=#{orgid}
+        <if test="costcode != null and costcode != ''">
+            and cost_center like '%'+#{costcode}+'%'
+        </if>
+        <if test="costname !=null and costname !=''">
+            and cost_center_name like '%'+#{costname}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+
+    <!--  查询jv对应的成本中心-->
+    <select id="queryCostCount" resultType="java.lang.Integer">
+        select count(1) from (
+        select id,orgid,cost_center costcode, cost_center_name costname,
+        ROW_NUMBER() OVER(Order by orgid) AS rownum
+        from t_ac_org_dev  where orgid=#{orgid}
+        <if test="costcode != null and costcode != ''">
+            and cost_center like '%'+#{costcode}+'%'
+        </if>
+        <if test="costname !=null and costname !=''">
+            and cost_center_name like '%'+#{costname}+'%'
+        </if>
+        ) k where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <insert id="insertCost" parameterType="com.xforceplus.wapp.modules.base.entity.CostEntity">
+        insert into t_ac_org_dev (orgid,cost_center,cost_center_name) values(#{cost.orgid},#{cost.costcode},#{cost.costname})
+    </insert>
+
+    <delete id="deleteCost">
+        delete from t_ac_org_dev where id in
+        <foreach collection="ids" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <!--通过jv,成本中心号查询是否重复-->
+    <select id="jvRepetition" resultType="java.lang.Integer">
+        select count(1) from   t_ac_org_dev where
+            orgid = #{orgid} AND cost_center = #{arr}
+    </select>
+
+    <!-- 批量插入orgid和成本中心 -->
+    <insert id="insertOrgIdAndCosts">
+        insert into t_ac_org_dev (orgid,cost_center,cost_center_name) values
+        <foreach collection="arr" separator="," item="item">
+        (#{orgid}, #{item},#{item})
+         </foreach>
+    </insert>
+</mapper>

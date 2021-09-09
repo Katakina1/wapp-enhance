@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.analysis.dao.MaterialInvoiceSubmitDetailDao">
+
+    
+
+	<!--  <resultMap id="resultMap" type="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        <id column="id" property="id" />
+        <result column="venderid" property="venderId" />
+        <result column="vendername" property="venderName" />
+        <result column="invoiceDate" property="invoiceNo" />
+        <result column="taxRate" property="taxRate" />
+        <result column="taxAmount" property="taxAmount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="invoiceType" property="invoiceType" />
+        <result column="gfName" property="gfName" />
+        <result column="matchDate" property="matchDate" />
+        <result column="scanMatchDate" property="scanMatchDate" />
+    </resultMap>-->
+    
+    <sql id="queryMaterialSql">
+        SELECT
+        r.id,
+        r.venderid,
+        u.username vendername,
+        r.invoice_no,
+        r.invoice_date,
+        r.tax_rate,
+        r.tax_amount,
+        r.total_amount,
+        r.invoice_type,
+        r.gf_name,
+        r.match_date,
+        v.create_date scanMatchDate
+        FROM t_dx_record_invoice r WITH(NOLOCK)
+        left join t_dx_invoice v WITH(NOLOCK) on r.uuid=v.uuid
+        left join t_ac_user u WITH(NOLOCK) on r.venderid=u.usercode
+        WHERE
+        v.rebateyesorno ='0'
+        <if test="venderId != null and venderId != ''">
+            AND r.venderid = #{venderId}
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND r.invoice_no = #{invoiceNo}
+        </if>
+        <choose><!-- choice=1 数据发票提交统计，查找匹配时间字段，2是实物发票处理统计，查找扫描匹配时间字段 -->
+        	<when test="choice == 1">
+        		<if test="createStartDate != null and createStartDate != ''">
+            	<![CDATA[ AND convert(varchar(100),r.match_date,23) >= #{createStartDate} ]]>
+        		</if>
+        		<if test="createEndDate != null and createEndDate != ''">
+            	<![CDATA[ AND convert(varchar(100),r.match_date,23)  <= #{createEndDate} ]]>
+        		</if>
+        	
+        	</when>
+        	
+        	<when test="choice == 2">
+        		<if test="createStartDate != null and createStartDate != ''">
+            	<![CDATA[ AND convert(varchar(100),v.create_date,20) >= #{createStartDate} ]]>
+        		</if>
+        		<if test="createEndDate != null and createEndDate != ''">
+            	<![CDATA[ AND convert(varchar(100),v.create_date,20)  <= #{createEndDate} ]]>
+        		</if>
+        		</when>
+        </choose>
+        
+    </sql>
+    
+     <select id="queryCount" resultType="Integer">
+        SELECT COUNT(1) FROM (
+        <include refid="queryMaterialSql"/>
+        ) t
+    </select>
+
+    <!-- 查询实物发票提交明细 -->
+    <select id="queryMaterial" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from(
+        select row_number() over(order by invoice_date desc,id desc) as rownumber,o.*
+        from(
+        </if>
+        <include refid="queryMaterialSql"/>
+        <if test="offset != null and limit != null">
+        ) as o
+        ) a
+        where rownumber>#{offset};
+        </if>
+    </select>
+</mapper>

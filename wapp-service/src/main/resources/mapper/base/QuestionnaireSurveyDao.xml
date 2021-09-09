@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.QuestionnaireSurveyDao">
+    
+    <resultMap id="queryQuestionnaireMap" type="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        <id property="id" column="id"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="questionnaireTitle" column="questionnaire_title"/>
+        <result property="releaseDate" column="release_date" javaType="java.util.Date" jdbcType="DATE"/>
+        <collection property="topics" ofType="com.xforceplus.wapp.modules.base.entity.QuestionnaireTopicEntity">
+            <id property="id" column="topicid"/>
+            <result property="topicTitle" column="topic_title"/>
+            <collection property="options" ofType="com.xforceplus.wapp.modules.base.entity.QuestionnaireOptionEntity">
+                <id property="id" column="tdqoid"/>
+                <result property="optionName" column="option_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="query" resultType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY   id asc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        SELECT
+        tdq.id id,
+        tdq.questionnaire_title,
+        tdq.release_date
+        FROM
+        t_dx_questionnaire tdq WITH(NOLOCK)
+        LEFT JOIN
+        t_dx_questionnaire_user tdqu WITH(NOLOCK)
+        ON
+        tdq.id = tdqu.questionnaire_id
+        WHERE
+        tdqu.user_id = #{entity.userId}
+        AND
+        tdqu.is_answer = 0
+        <if test="entity.questionnaireTitle != null and entity.questionnaireTitle != ''">
+            AND tdq.questionnaire_title LIKE '%'+#{entity.questionnaireTitle}+'%'
+        </if>
+
+        <if test="entity.offset != null and entity.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{entity.offset}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="Integer">
+        SELECT
+        count (*)
+        FROM
+        t_dx_questionnaire tdq WITH(NOLOCK)
+        LEFT JOIN
+        t_dx_questionnaire_user tdqu WITH(NOLOCK)
+        ON
+        tdq.id = tdqu.questionnaire_id
+        WHERE
+        tdqu.user_id = #{entity.userId}
+        AND
+        tdqu.is_answer = 0
+        <if test="entity.questionnaireTitle != null and entity.questionnaireTitle != ''">
+            AND tdq.questionnaire_title LIKE '%'+#{entity.questionnaireTitle}+'%'
+        </if>
+    </select>
+
+    <select id="queryQuestionnaire" resultMap="queryQuestionnaireMap">
+        <if test="entity.id != null and entity.id != ''">
+            select
+            tdq.*,
+            topic.id topicid,
+            topic.topic_title,
+            tdqo.id tdqoid,
+            tdqo.option_name
+            from
+            t_dx_questionnaire tdq WITH(NOLOCK)
+            left join
+            t_dx_questionnaire_topic topic WITH(NOLOCK)
+            on
+            tdq.id = topic.questionnaire_id
+            left join
+            t_dx_questionnaire_option tdqo WITH(NOLOCK)
+            on
+            topic.id = tdqo.topic_id
+            where
+            topic.questionnaire_id = #{entity.id}
+        </if>
+    </select>
+    
+    <insert id="saveUserQuestionnaireOp" parameterType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        <foreach collection="entity.topics" item="topic">
+        insert into
+        t_dx_questionnaire_answer
+        (user_id,
+        questionnaire_id,
+        topic_id,
+        option_id)
+        values
+        (
+        #{entity.userId},
+        #{entity.id},
+        #{topic.id},
+        #{topic.topicOp}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="recordIsAnswer" parameterType="com.xforceplus.wapp.modules.base.entity.QuestionnaireEntity">
+        update
+        t_dx_questionnaire_user
+        set
+        is_answer = 1
+        where
+        user_id = #{entity.userId}
+        and
+        questionnaire_id = #{entity.id}
+    </update>
+
+</mapper>
