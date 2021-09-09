@@ -9,6 +9,7 @@ package com.xforceplus.wapp;
 
 public class WappApplication {
     public static void main(String[] args) {
+        String data="";
 
     }
 }
