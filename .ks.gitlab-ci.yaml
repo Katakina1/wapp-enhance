@@ -1,1 +1,1 @@
-include 'http://gitlab4.0.xforceplus.com/common/gitlabci4/raw/devops-gitlabci/ci/.gitlab-ci.yml'
+include: 'http://gitlab4.0.xforceplus.com/common/gitlabci4/raw/devops-gitlabci/ci/.gitlab-ci.yml'
