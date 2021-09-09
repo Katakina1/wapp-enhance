@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.cost.dao.CostTypeDao">
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+        select * from (
+        select id, vender_id,cost_type_name,cost_type,is_contract,
+        ROW_NUMBER() OVER(Order by id desc) AS rownum
+        from t_dx_cost_type where 1=1
+        <if test="venderId != null and venderId != ''">
+            and vender_id = #{venderId}
+        </if>
+        <if test="costType != null and costType != ''">
+            and cost_type = #{costType}
+        </if>
+        <if test="costTypeName != null and costTypeName != ''">
+            and cost_type_name like '%'+#{costTypeName}+'%'
+        </if>
+
+        ) a where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1)
+        from t_dx_cost_type where 1=1
+        <if test="venderId != null and venderId != ''">
+            and vender_id = #{venderId}
+        </if>
+        <if test="costType != null and costType != ''">
+            and cost_type = #{costType}
+        </if>
+        <if test="costTypeName != null and costTypeName != ''">
+            and cost_type_name like '%'+#{costTypeName}+'%'
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+        insert into t_dx_cost_type
+        (
+        vender_id,
+        cost_type,
+        cost_type_name,
+        is_contract
+        )
+        values
+        (
+        #{entity.venderId},
+        #{entity.costType},
+        #{entity.costTypeName},
+        #{entity.isContract}
+
+        )
+    </insert>
+
+    <update id="update" parameterType="com.xforceplus.wapp.modules.cost.entity.CostEntity">
+         update t_dx_cost_type
+        <set>
+            vender_id = #{entity.venderId},
+            cost_type = #{entity.costType},
+            cost_type_name = #{entity.costTypeName},
+            is_contract= #{entity.isContract}
+        </set>
+        where id = #{entity.id}
+    </update>
+
+    <delete id="delete">
+       delete from t_dx_cost_type where id = #{id}
+    </delete>
+
+    <delete id="deleteByCostAndVenderId">
+        delete from t_dx_cost_type where vender_id = #{venderId} and cost_type =#{costType}
+    </delete>
+
+    <select id="queryCostType" resultType="int" >
+        select count(*) from t_dx_cost_type
+        where cost_type=#{entity.costType}
+        and vender_id = #{entity.venderId}
+        <if test="entity.id != null">and id !=  #{entity.id} </if>
+    </select>
+
+    <select id="queryCostTypeAndVenderId" resultType="int" >
+        select count(*) from t_dx_cost_type
+        where cost_type=#{entity.costType}
+        and vender_id =  #{entity.venderId}
+    </select>
+</mapper>

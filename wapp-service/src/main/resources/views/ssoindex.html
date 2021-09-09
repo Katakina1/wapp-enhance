@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>沃尔玛供应链平台</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="icon" href="favicon.ico" mce_href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" mce_href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/AdminLTE.min.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="css/all-skins.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/customer.css">
+    <script>
+        (function () {
+            var hostHref = parent.location.href;
+            if(hostHref.indexOf("int")!=-1){
+                parent.location.href ="http://rl.wal-mart.com";
+            }else if(hostHref.indexOf("ext")!=-1){
+                parent.location.href ="https://pfedprod.wal-mart.com/idp/startSSO.ping?PartnerSpId=CNWAPP&ACSIdx=2";
+            }else if(hostHref.indexOf("https://cnwapp.wal-mart.com")!=-1){
+                parent.location.href ="https://pfedprod.wal-mart.com/idp/startSSO.ping?PartnerSpId=CNWAPP&ACSIdx=2";
+            }else{
+                parent.location.href = baseURL + 'login.html';
+            }
+        })();
+    </script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../libs/customer/html5shiv.min.js"></script>
+    <script src="../../libs/customer/respond.min.js"></script>
+    <script src="../../libs/customer/bluebird.js"></script>
+    <![endif]-->
+    <script>
+        //用于自动计算rem的基准值
+        (function(doc, win) {
+           win.addEventListener("resize", reFont(doc));
+           doc.addEventListener("DOMContentLoaded", reFont(doc));
+        })(document, window);
+
+        function reFont(doc){
+           var clientW = doc.documentElement.clientWidth || doc.body.clientWidth;
+           if(!clientW) {
+               return;
+           }
+           doc.getElementsByTagName("html")[0].style.fontSize = 20 * (clientW / 375) + "px";
+        }
+    </script>
+</head>
+<iframe id="ssoFram" style="display:none"></iframe>
+<body class="hold-transition">
+<header class="navbar navbar-inverse navbar-fixed-top" id="top">
+
+</header>
+</body>
+</html>
+<script src="libs/jquery.min.js"></script>
+<script src="plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="libs/vue.min.js"></script>
+<script src="libs/bootstrap.min.js"></script>
+<script src="libs/app.js"></script>
+<script src="js/common.js"></script>

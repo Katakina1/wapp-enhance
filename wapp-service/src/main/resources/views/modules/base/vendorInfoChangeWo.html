@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+        .el-form-item__error{
+            transform: translateY(0.02rem);
+        }
+    </style>
+
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-form  ref="queryForm" class="demo-form-inline" label-width="1.0rem" @submit.native.prevent>
+            <el-row>
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="供应商号:" class="form-item" prop="venderId">
+                            <el-input  maxlength="6"
+                                         v-model="queryForm.venderId" onkeyup="verificationQueryVender(this);"  placeholder="请输入供应商号"></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :span="4.5" :offset="1">
+                    <el-button class="btnexport" @click="query">查询</el-button>
+                </el-col>
+                <el-col :span="4.5" :offset="1">
+                      <el-button class="btnexport" @click="auditAgree" :disabled="total == 0">审核通过</el-button >
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <div style="margin-bottom: 0.05rem;margin-top: 0.05rem;width:100%; height:0.03rem; border-top:0.01rem solid #DEDEDE; clear:both;"></div>
+        <div style="clear: both">
+            <el-table height="4rem"  border fit :data="costData" highlight-current-row style="width: 100%;"
+                       v-loading="listLoading" @selection-change="changeFun"
+                       element-loading-text="正在拼命加载中">
+                <el-table-column :show-overflow-tooltip="true"  type="selection"  class="selection" prop='id'
+                                 @selection-change="changeFun"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  type="index"  :index="costIndex" label="序号" align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="usercode" label="供应商号"  align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="username" label="供应商名称"  align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="bankAccount" label="银行账号" align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="bankName" label="开户行名称" align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="newUserName" label="新供应商名称" align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="newBankAccount" label="新银行账号" align="center" header-align="center"></el-table-column>
+                <el-table-column :show-overflow-tooltip="true"  property="newBankName" label="新开户行名称" align="center" header-align="center"></el-table-column>
+            </el-table>
+
+            <el-col class="toolbar" style="padding:0.1rem;">
+                <el-pagination background @current-change="currentChange" @size-change="handleSizeChange" :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                               layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+                    <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+                </el-pagination>
+            </el-col>
+        </div>
+
+</div>
+
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script src="../../js/modules/base/vendorInfoChangeWo.js"></script>
+</body>
+</html>

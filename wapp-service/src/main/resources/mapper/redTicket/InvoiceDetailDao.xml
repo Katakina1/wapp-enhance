@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redTicket.dao.InvoiceDetailDao">
+
+    <resultMap id="invoiceDetMap" type="com.xforceplus.wapp.modules.redTicket.entity.InvoiceDetail">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="unit_price" property="unitPrice"/>
+        <result column="detail_amount" property="detailAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="red_rush_number" property="redRushNumber"/>
+        <result column="red_rush_amount" property="redRushAmount"/>
+        <result column="red_rush_price" property="redRushPrice"/>
+        <result column="redticket_data_serial_number" property="redTicketDataSerialNumber"/>
+    </resultMap>
+
+    <select id="getInvoiceDetaillist" resultMap="invoiceDetMap">
+    <if test="map.offset != null and map.limit != null">
+    SELECT
+    TOP (#{map.limit}) A.*
+    FROM
+    (
+    SELECT
+    row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+    FROM
+    (
+    </if>
+    select
+    id,invoice_code,invoice_no,goods_name,model,
+    unit,num,unit_price,detail_amount,tax_rate,
+    tax_amount,red_rush_number,red_rush_amount,
+    red_rush_price,redticket_data_serial_number,uuid
+
+    from t_dx_record_invoice_detail WITH(NOLOCK)
+    where redticket_data_serial_number IS NULL
+        <if test="map.invoiceCode != null and map.invoiceCode != ''">
+            and invoice_code = #{map.invoiceCode}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no = #{map.invoiceNo}
+        </if>
+        <if test="map.goodsName != null and map.goodsName != ''">
+            and goods_name like concat('%',concat(#{map.goodsName},'%'))
+        </if>
+        <if test="map.model != null and map.model != ''">
+            and model like concat('%',concat(#{map.model},'%'))
+        </if>
+        <if test="map.taxRate != null and map.taxRate != ''">
+            and tax_rate like concat('%',concat(#{map.taxRate},'%'))
+        </if>
+    <if test="map.offset != null and map.limit != null">
+    )
+    AS o
+    )A
+    WHERE
+    rownumber >#{map.offset}
+    </if>
+    </select>
+
+    <select id="invoiceDetailsCount" resultType="Integer">
+        SELECT count(1) FROM t_dx_record_invoice_detail WITH(NOLOCK)
+        where redticket_data_serial_number IS NULL
+        <if test="map.invoiceCode != null and map.invoiceCode != ''">
+            and invoice_code = #{map.invoiceCode}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no = #{map.invoiceNo}
+        </if>
+        <if test="map.goodsName != null and map.goodsName != ''">
+            and goods_name like concat('%',concat(#{map.goodsName},'%'))
+        </if>
+        <if test="map.model != null and map.model != ''">
+            and model like concat('%',concat(#{map.model},'%'))
+        </if>
+        <if test="map.goodsName != null and map.taxRate != ''">
+            and tax_rate like concat('%',concat(#{map.taxRate},'%'))
+        </if>
+    </select>
+
+    <update id="redRushInvoiceDetails">
+    UPDATE t_dx_record_invoice_detail WITH(ROWLOCK)
+    SET
+    red_rush_price=#{map.redRushPrice},
+    red_rush_amount=#{map.redRushAmount},
+    red_rush_number=#{map.redRushNumber},
+    redticket_data_serial_number=#{redTicketNumber}
+    <where>
+        <if test="map.uuid != null and map.uuid != ''">
+            and uuid=#{map.uuid}
+        </if>
+        <if test="map.goodsName != null and map.goodsName != ''">
+            and goods_name=#{map.goodsName}
+        </if>
+        <if test="map.model != null and map.model != ''">
+            and model=#{map.model}
+        </if>
+        <if test="map.taxRate != null and map.taxRate != ''">
+            and tax_rate=#{map.taxRate}
+        </if>
+    </where>
+    </update>
+
+    <update id="updateInvoiceDetails">
+        UPDATE t_dx_record_invoice_detail WITH(ROWLOCK)
+        SET
+        red_rush_price=null ,
+        red_rush_amount=null ,
+        red_rush_number=null ,
+        redticket_data_serial_number=null
+        <where>
+            <if test="map.uuid != null and map.uuid != ''">
+                and uuid =#{map.uuid}=
+            </if>
+            <if test="map.goodsName != null and map.goodsName != ''">
+                and goods_name=#{map.goodsName}
+            </if>
+            <if test="map.model != null and map.model != ''">
+                and model=#{map.model}
+            </if>
+            <if test="map.goodsName != null and map.taxRate != ''">
+                and tax_rate=#{map.taxRate}
+            </if>
+        </where>
+    </update>
+
+
+</mapper>

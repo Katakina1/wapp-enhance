@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.MakeInvoiceSearchDao">
+    
+    <sql id="querySql">
+        SELECT
+        o.orgcode,
+        o.orgname,
+        o.taxno,
+        o.address,
+        o.phone,
+        o.bank,
+        o.account,
+        o.remark,
+        r.orgcode storeNumber
+        FROM t_ac_org o WITH(NOLOCK)
+        LEFT JOIN ( SELECT parentid,orgcode FROM t_ac_org WITH(NOLOCK) WHERE orgtype = '7'
+        ) r ON o.orgid=r.parentid
+        <where>
+            and o.orgtype='5'
+            and o.taxno!='0'
+        <if test="orgName != null and orgName != ''">
+            and o.orgname like '%'+#{orgName}+'%'
+        </if>
+        <if test="orgcode != null and orgcode != ''and orgcode!='-1'">
+            and o.orgcode =#{orgcode}
+        </if>
+        <if test="extf1 != null and extf1 != ''">
+            and r.orgcode =#{extf1}
+        </if>
+        </where>
+    </sql>
+    
+     <select id="count" resultType="Integer">
+        SELECT COUNT(1) FROM (
+        <include refid="querySql"/>
+        ) t
+    </select>
+
+    <!-- 供应商提交发票统计 -->
+    <select id="queryResult" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.SupplierInformationSearchEntity">
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from(
+        select row_number() over(order by orgname) as rownumber,o.*
+        from(
+        </if>
+        SELECT
+        o.orgcode,
+        o.orgname,
+        o.taxno,
+        o.address,
+        o.phone,
+        o.bank,
+        o.account,
+        o.remark,
+        r.orgcode storeNumber
+        FROM t_ac_org o WITH(NOLOCK)
+        LEFT JOIN ( SELECT parentid,orgcode FROM t_ac_org WITH(NOLOCK) WHERE orgtype = '7'
+        ) r ON o.orgid=r.parentid
+        <where>
+            and o.orgtype='5'
+            and o.taxno!='0'
+            <if test="orgName != null and orgName != ''">
+                and o.orgname like '%'+#{orgName}+'%'
+            </if>
+            <if test="orgcode != null and orgcode != ''and orgcode!='-1'">
+                and o.orgcode =#{orgcode}
+            </if>
+            <if test="extf1 != null and extf1 != ''">
+                and r.orgcode =#{extf1}
+            </if>
+        </where>
+        <if test="offset == null or limit == null">
+            order by o.orgname
+        </if>
+        <if test="offset != null and limit != null">
+        ) as o
+        ) a
+        where rownumber>#{offset};
+        </if>
+
+    </select>
+</mapper>

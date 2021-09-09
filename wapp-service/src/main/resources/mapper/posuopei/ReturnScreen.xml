@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.posuopei.dao.ReturnScreenDao">
+
+    <resultMap id="returnScreenMap" type="com.xforceplus.wapp.modules.posuopei.entity.HostReturnScreenEntity">
+        <id column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="message" property="message"/>
+        <result column="screen_name" property="screen_name"/>
+        <result column="create_date" property="createDate"/>
+        <result column="jv" property="data.jv"/>
+        <result column="vender" property="data.vender"/>
+        <result column="inv" property="data.inv"/>
+        <result column="yy" property="data.YY"/>
+        <result column="mm" property="data.MM"/>
+        <result column="dd" property="data.DD"/>
+        <result column="yy1" property="data.YY1"/>
+        <result column="mm1" property="data.MM1"/>
+        <result column="dd1" property="data.DD1"/>
+        <result column="tax_total" property="data.taxTotal"/>
+        <result column="inv_due" property="data.invDue"/>
+        <result column="tax_rate" property="data.taxRate"/>
+        <result column="tax_type" property="data.taxType"/>
+        <result column="tax_typez" property="data.taxTypeZ"/>
+        <result column="inv_total" property="data.invTotal"/>
+        <result column="po_nbr" property="data.poNbr"/>
+        <result column="pay_code" property="data.payCode"/>
+        <result column="transac_tion" property="data.transaction"/>
+        <result column="receiver" property="data.receiver"/>
+        <result column="inv_pre_tax_amt" property="data.invPreTaxAmt"/>
+        <result column="if_cut" property="data.ifCut"/>
+        <result column="error" property="data.error"/>
+        <result column="if_fapr" property="data.ifFapr"/>
+        <result column="cover" property="data.cover"/>
+    </resultMap>
+
+    <insert id="insertReturnScreen" parameterType="com.xforceplus.wapp.modules.posuopei.entity.HostReturnScreenEntity">
+        insert into t_dx_return_screen WITH(ROWLOCK)
+        (
+        code,
+        message,
+        screen_name,
+        jv,
+        vender,
+        inv,
+        yy,
+        mm,
+        dd,
+        yy1,
+        mm1,
+        dd1,
+        tax_total,
+        inv_due,
+        tax_rate,
+        tax_type,
+        tax_typez,
+        inv_total,
+        po_nbr,
+        pay_code,
+        transac_tion,
+        receiver,
+        inv_pre_tax_amt,
+        if_cut,
+        error,
+        if_fapr,
+        cover,
+        create_date,
+        matchno
+        )values(
+        #{entity.code},
+        #{entity.message},
+        #{entity.screen_name},
+        #{entity.data.jv},
+        #{entity.data.vender},
+        #{entity.data.inv},
+        #{entity.data.YY},
+        #{entity.data.MM},
+        #{entity.data.DD},
+        #{entity.data.YY1},
+        #{entity.data.MM1},
+        #{entity.data.DD1},
+        #{entity.data.taxTotal},
+        #{entity.data.invDue},
+        #{entity.data.taxRate},
+        #{entity.data.taxType},
+        #{entity.data.taxTypeZ},
+        #{entity.data.invTotal},
+        #{entity.data.poNbr},
+        #{entity.data.payCode},
+        #{entity.data.transaction},
+        #{entity.data.receiver},
+        #{entity.data.invPreTaxAmt},
+        #{entity.data.ifCut},
+        #{entity.data.error},
+        #{entity.data.ifFapr},
+        #{entity.data.cover},
+        getdate(),
+        #{entity.matchNo}
+        )
+    </insert>
+
+    <select id="getReturnScreenList" resultMap="returnScreenMap">
+        SELECT * FROM t_dx_return_screen WITH(NOLOCK)
+        WHERE 1=1
+        <if test="code !=null and code !=''">
+            AND code=#{code}
+        </if>
+        <if test="screenName !=null and screenName !=''">
+            AND screen_name=#{screenName}
+        </if>
+        <if test="createDateStart !=null and createDateStart !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),create_date,20) ,0,11) >= #{createDateStart} ]]>
+        </if>
+        <if test="createDateEnd !=null and createDateEnd !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),create_date,20),0,11)  <= #{createDateEnd} ]]>
+        </if>
+    </select>
+
+    <select id="getReturnScreenCount" resultType="Integer">
+        SELECT count(*) FROM t_dx_return_screen WITH(NOLOCK)
+        WHERE 1=1
+        <if test="code !=null and code !=''">
+            AND code=#{code}
+        </if>
+        <if test="screenName !=null and screenName !=''">
+            AND screen_name=#{screenName}
+        </if>
+        <if test="createDateStart !=null and createDateStart !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),create_date,20) ,0,11) >= #{createDateStart} ]]>
+        </if>
+        <if test="createDateEnd !=null and createDateEnd !=''">
+            <![CDATA[ AND SUBSTRING( convert(varchar(100),create_date,20),0,11)  <= #{createDateEnd} ]]>
+        </if>
+    </select>
+</mapper>

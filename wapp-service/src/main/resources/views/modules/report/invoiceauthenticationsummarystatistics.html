@@ -1,0 +1,151 @@
+
+<!--认证发票汇总报表页面-->
+<!DOCTYPE html>
+<html xmlns:el-col="http://www.w3.org/1999/xhtml" lang="ZH">
+<head>
+    <title>认证发票汇总报表</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+
+
+        [v-cloak] {
+            display: none;
+        }
+
+
+
+    </style>
+    <!-- 引入组件库 -->
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <script src="../../libs/customer/highcharts.js"></script>
+    <script src="../../libs/customer/exporting.js"></script>
+    <script src="../../libs/customer/highcharts-zh_CN.js"></script>
+
+</head>
+
+
+<style type="text/css">
+    .gridItem {
+        display: none;
+    }
+    .el-table .cell {
+        white-space: nowrap !important;
+    }
+    .defaultItem{}
+    .hideItem{
+        display: none;
+    }
+    .bg-color {
+        background-color: #FFAA00;
+        color: #333333 !important;
+    }
+
+    .el-form-item__label:before {
+        content: '' !important;
+        margin-right: 0 !important;
+    }
+
+    .el-icon-date {
+        font-size: 0.2rem;
+    }
+
+    .el-input__prefix {
+        right: 0;
+        border: 0.01rem solid;
+        padding-left: 0.07rem;
+        padding-right: 0.06rem;
+    }
+
+    .ui-jqgrid tr.jqgrow td {
+        text-overflow: ellipsis;
+        font-size: 0.16rem;
+    }
+
+    .el-form-item.is-success .el-input__inner {
+        border-color: #dcdfe6;
+    }
+    <!--@media screen and (max-width: 11.8rem) {-->
+        <!--.el-input__prefix{-->
+            <!--right: 0;-->
+            <!--border:none;-->
+            <!--padding-left: 0;-->
+            <!--padding-right: 0.02rem;-->
+        <!--}-->
+    <!--}-->
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+
+    <!--查询form-->
+    <div>
+        <el-form ref="form" :model="form" :rules="rules" label-width="1.0rem">
+            <el-row>
+
+                <el-col :span="12">
+                    <el-form-item label="认证年份:" prop="dqskssq">
+                        <el-date-picker id="datevalue1" :clearable="false" :editable="false"
+                                        @blur="blurpickerchange(1)" @focus="focuspickerchange(1)" type="year"
+                                        placeholder="选择年份" v-model.trim="form.dqskssq" format="yyyy"
+                                        :picker-options="dqskssq"
+                                        value-format="yyyy" @change="dqskssqYearChange"></el-date-picker>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="query('form')">查询</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1" class="defaultItem hideItem">
+                    <el-button id="btn" class="btn btnexport" disabled="disabled">导出</el-button>
+                    <el-button id="btnExport" class="btn btnexport" @click="exportExcel">导出</el-button>
+                </el-col>
+            </el-row>
+
+        </el-form>
+
+    </div>
+
+    <hr>
+    <div id="tableGraph">
+        <div  style="float:left">
+            <a id="showTableId" class="btn btnexport" @click="showTable">表格</a>
+        </div>
+        <div  style="float: left;margin-left: 0.15rem">
+            <a id="showGraphId" class="btn btnexport bg-color" @click="showGraph">图表</a>
+        </div>
+        <div style="clear: both"></div>
+    </div>
+
+    <div id="exportData" class="form-group gridItem">
+        <div align="left" style="float:left;font-size:0.18rem;margin-top: 0.09rem"><span id="totalStatistics"></span></div>
+        <div align="right" class="form-group" style="visibility: hidden">
+            <el-button id="btn" class="btn btnexport" disabled="disabled">导出</el-button>
+            <el-button id="btnExport" class="btn btnexport" @click="exportExcel">导出</el-button>
+        </div>
+    </div>
+
+    <div id="grid" class="gridItem">
+        <table id="jqGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+
+    <div id="jqGraph">
+        <div>
+            <div class="form-group" style="float:left">
+                <a id="showAmountGraphId" class="btn btnexport bg-color" @click="showAmountGraph">金额税额图</a>
+            </div>
+            <div class="form-group" style="float:left;margin-left: 0.15rem">
+                <a id="showCountGraphId" class="btn btnexport" @click="showCountGraph">发票数量图</a>
+            </div>
+            <div style="clear: both"></div>
+        </div>
+        <div id="amountGraph" style="width:100%;"></div>
+        <div id="countGraph" class="gridItem"></div>
+    </div>
+</div>
+
+
+<script src="../../js/modules/report/invoiceauthenticationsummarystatistics.js"></script>
+
+</body>
+</html>

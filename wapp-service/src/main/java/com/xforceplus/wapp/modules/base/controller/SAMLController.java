@@ -1,0 +1,92 @@
+/**  
+ * @Title:  SAMLResponseHandler.java   
+ * @Package com.xforceplus.wapp.modules.base.controller
+ * @Description:    TODO
+ * @author: jiaohongyang     
+ * @date:   2019年1月15日 下午5:15:15   
+ */  
+package com.xforceplus.wapp.modules.base.controller;
+
+
+import com.xforceplus.wapp.common.utils.Base64;
+import com.xforceplus.wapp.common.utils.JsonUtil;
+import com.xforceplus.wapp.common.utils.R;
+import com.xforceplus.wapp.modules.base.entity.UserEntity;
+import com.xforceplus.wapp.modules.base.service.BaseUserService;
+import com.xforceplus.wapp.modules.base.service.SamlService;
+import com.xforceplus.wapp.modules.base.service.UserTokenService;
+import org.codehaus.plexus.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.util.Date;
+
+/**
+ * @ClassName:  SAMLResponseHandler   
+ * @Description:TODO
+ * @author: jiaohongyang
+ * @date:   2019年1月15日 下午5:15:15   
+ *   
+ */
+@RestController
+@RequestMapping("/toSSO")
+public class SAMLController {
+	@Autowired
+	private  UserTokenService userTokenService;
+	@Autowired
+	private  BaseUserService baseUserService;
+	@Value("${mycat.default_schema_label}")
+    private String mycatDefaultSchemaLabel;
+	@Value("${token.expire_time}")
+    private int expire;
+
+	
+	@Autowired
+	private SamlService samlService;
+
+
+	@RequestMapping("/toLogin")
+	public String toLogin(String name,String pwd) {
+		String userJson = "";
+	//	String username = samlService.getUserID(token);
+		if(StringUtils.isBlank(pwd)) {
+			return "no";
+		} else {
+			UserEntity user = baseUserService.queryByUserName(mycatDefaultSchemaLabel,name);
+			if(user != null) {
+				try {
+					//当前时间
+					Date now = new Date();
+					//过期时间
+					Date expireTime = new Date(now.getTime() + expire * 1000);
+					long time = expireTime.getTime();
+					user.setExpireTime(String.valueOf(time));
+					userJson = JsonUtil.toJson(user);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				if(!user.getPassword().equals(pwd)){
+					return "no";
+				}
+				return Base64.encode(userJson.getBytes());
+			}else {
+				R.error(1,"用户名为空");
+				return "no";
+			}
+		}
+	}
+
+	@RequestMapping(value = "/ssoLogin", method = RequestMethod.POST)
+    public R sooLogin() {
+    	return R.ok().put("ssoLogin", samlService.generateRequestURL());
+    }
+	public static void main(String[] args) throws Exception {
+		String re = "PHNhbWxwOlJlc3BvbnNlIFZlcnNpb249IjIuMCIgSUQ9IkNsRl9uVXlaWDVEMjRPaVNUTld4b2VtX2tmYSIgSXNzdWVJbnN0YW50PSIyMDE3LTA5LTEzVDAyOjI2OjE0LjA0MloiIHhtbG5zOnNhbWxwPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6cHJvdG9jb2wiPjxzYW1sOklzc3VlciB4bWxuczpzYW1sPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YXNzZXJ0aW9uIj5QRi1DRVJUQk9YPC9zYW1sOklzc3Vlcj48c2FtbHA6U3RhdHVzPjxzYW1scDpTdGF0dXNDb2RlIFZhbHVlPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6c3RhdHVzOlN1Y2Nlc3MiLz48L3NhbWxwOlN0YXR1cz48c2FtbDpBc3NlcnRpb24gSUQ9InM3LWo4TFJpUzVTam85ZC41eXhxT0Y4aXg3QSIgSXNzdWVJbnN0YW50PSIyMDE3LTA5LTEzVDAyOjI2OjE2LjAxOFoiIFZlcnNpb249IjIuMCIgeG1sbnM6c2FtbD0idXJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6Mi4wOmFzc2VydGlvbiI+PHNhbWw6SXNzdWVyPlBGLUNFUlRCT1g8L3NhbWw6SXNzdWVyPjxkczpTaWduYXR1cmUgeG1sbnM6ZHM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyMiPgo8ZHM6U2lnbmVkSW5mbz4KPGRzOkNhbm9uaWNhbGl6YXRpb25NZXRob2QgQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzEwL3htbC1leGMtYzE0biMiLz4KPGRzOlNpZ25hdHVyZU1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMDQveG1sZHNpZy1tb3JlI3JzYS1zaGEyNTYiLz4KPGRzOlJlZmVyZW5jZSBVUkk9IiNzNy1qOExSaVM1U2pvOWQuNXl4cU9GOGl4N0EiPgo8ZHM6VHJhbnNmb3Jtcz4KPGRzOlRyYW5zZm9ybSBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyNlbnZlbG9wZWQtc2lnbmF0dXJlIi8+CjxkczpUcmFuc2Zvcm0gQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzEwL3htbC1leGMtYzE0biMiLz4KPC9kczpUcmFuc2Zvcm1zPgo8ZHM6RGlnZXN0TWV0aG9kIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8wNC94bWxlbmMjc2hhMjU2Ii8+CjxkczpEaWdlc3RWYWx1ZT5NL0lHL2pyRmFTdldtSThPbDVqRTNSU2FkNThCbFpDYkw3RzRPcFczWEo0PTwvZHM6RGlnZXN0VmFsdWU+CjwvZHM6UmVmZXJlbmNlPgo8L2RzOlNpZ25lZEluZm8+CjxkczpTaWduYXR1cmVWYWx1ZT4KRW95ZHVHZDR5T3JiT3JCRUtraHFYSW14SXFPRUtacCtlbEtDTjR3Q2dNVDVseFVYOGpoc0tHeHNmeUJTRG9pbFdaYzkxUHE0c0hVVQpRMXJ3OW5hanV2NmZyQ25qV21QYnphaVlNbkxuTTQxRXZKNUJNWmZ1MHNZSVlQcjdOZHRCVVlWVVd1U3ptNFBueURablpubGMwWms2CjZhdFpPTnZOTG0zS3lNRzFoeEJYcEhqbndPVUFnT3A4VnBNUHFJVXVmbGQ2NkhhSk1kWlBFS0wrYWw0cEJHZ2FpQTJVYmRrb0I1M2cKOHFUNSsyajZkNTJhcWxFWnR3ejM2TjVyVW1HTW1EMWRhaC8vZks1R1dLMWNLeHhKS1orYjBQTVpJQ0pmcHZRSnlSbUlOMEd6K3hhSgpMQk9wYmYwaWJ3a3UyS3I0UE1sdXNyZTFuUXNaRkFHRWR1cC9UZz09CjwvZHM6U2lnbmF0dXJlVmFsdWU+CjwvZHM6U2lnbmF0dXJlPjxzYW1sOlN1YmplY3Q+PHNhbWw6TmFtZUlEIEZvcm1hdD0idXJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6MS4xOm5hbWVpZC1mb3JtYXQ6dW5zcGVjaWZpZWQiPnZuMHNoeDY8L3NhbWw6TmFtZUlEPjxzYW1sOlN1YmplY3RDb25maXJtYXRpb24gTWV0aG9kPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6Y206YmVhcmVyIj48c2FtbDpTdWJqZWN0Q29uZmlybWF0aW9uRGF0YSBSZWNpcGllbnQ9Imh0dHA6Ly9icG1zLXN0YWdlLmNuLndhbC1tYXJ0LmNvbS9wb3J0YWwvci93P2NtZD1jb20uYWN0aW9uc29mdC5hcHBzLndhbG1hcnQuYmFzZV9sb2dpbiIgTm90T25PckFmdGVyPSIyMDE3LTA5LTEzVDAyOjMxOjE2LjAxOFoiLz48L3NhbWw6U3ViamVjdENvbmZpcm1hdGlvbj48L3NhbWw6U3ViamVjdD48c2FtbDpDb25kaXRpb25zIE5vdEJlZm9yZT0iMjAxNy0wOS0xM1QwMjoyMToxNi4wMThaIiBOb3RPbk9yQWZ0ZXI9IjIwMTctMDktMTNUMDI6MzE6MTYuMDE4WiI+PHNhbWw6QXVkaWVuY2VSZXN0cmljdGlvbj48c2FtbDpBdWRpZW5jZT5jbmJwbXM8L3NhbWw6QXVkaWVuY2U+PC9zYW1sOkF1ZGllbmNlUmVzdHJpY3Rpb24+PC9zYW1sOkNvbmRpdGlvbnM+PHNhbWw6QXV0aG5TdGF0ZW1lbnQgU2Vzc2lvbkluZGV4PSJzNy1qOExSaVM1U2pvOWQuNXl4cU9GOGl4N0EiIEF1dGhuSW5zdGFudD0iMjAxNy0wOS0xM1QwMjoyNjoxNC4xOTNaIj48c2FtbDpBdXRobkNvbnRleHQ+PHNhbWw6QXV0aG5Db250ZXh0Q2xhc3NSZWY+dXJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6Mi4wOmFjOmNsYXNzZXM6dW5zcGVjaWZpZWQ8L3NhbWw6QXV0aG5Db250ZXh0Q2xhc3NSZWY+PC9zYW1sOkF1dGhuQ29udGV4dD48L3NhbWw6QXV0aG5TdGF0ZW1lbnQ+PHNhbWw6QXR0cmlidXRlU3RhdGVtZW50PjxzYW1sOkF0dHJpYnV0ZSBOYW1lPSJVc2VyIElEIiBOYW1lRm9ybWF0PSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YXR0cm5hbWUtZm9ybWF0OmJhc2ljIj48c2FtbDpBdHRyaWJ1dGVWYWx1ZSB4c2k6dHlwZT0ieHM6c3RyaW5nIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiPnZuMHNoeDY8L3NhbWw6QXR0cmlidXRlVmFsdWU+PC9zYW1sOkF0dHJpYnV0ZT48c2FtbDpBdHRyaWJ1dGUgTmFtZT0iRW1haWwiIE5hbWVGb3JtYXQ9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphdHRybmFtZS1mb3JtYXQ6YmFzaWMiPjxzYW1sOkF0dHJpYnV0ZVZhbHVlIHhzaTp0eXBlPSJ4czpzdHJpbmciIHhtbG5zOnhzPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSIgeG1sbnM6eHNpPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSI+WXVlLlplbmdAd2FsbWFydC5jb208L3NhbWw6QXR0cmlidXRlVmFsdWU+PC9zYW1sOkF0dHJpYnV0ZT48c2FtbDpBdHRyaWJ1dGUgTmFtZT0iVXNlciBOYW1lIiBOYW1lRm9ybWF0PSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YXR0cm5hbWUtZm9ybWF0OmJhc2ljIj48c2FtbDpBdHRyaWJ1dGVWYWx1ZSB4c2k6dHlwZT0ieHM6c3RyaW5nIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiPll1ZSBaZW5nPC9zYW1sOkF0dHJpYnV0ZVZhbHVlPjwvc2FtbDpBdHRyaWJ1dGU+PHNhbWw6QXR0cmlidXRlIE5hbWU9IlRpdGxlIiBOYW1lRm9ybWF0PSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YXR0cm5hbWUtZm9ybWF0OmJhc2ljIj48c2FtbDpBdHRyaWJ1dGVWYWx1ZSB4c2k6dHlwZT0ieHM6c3RyaW5nIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiPumhueebrue7j+eQhjwvc2FtbDpBdHRyaWJ1dGVWYWx1ZT48L3NhbWw6QXR0cmlidXRlPjxzYW1sOkF0dHJpYnV0ZSBOYW1lPSJEZXB0IE5hbWUiIE5hbWVGb3JtYXQ9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphdHRybmFtZS1mb3JtYXQ6YmFzaWMiPjxzYW1sOkF0dHJpYnV0ZVZhbHVlIHhzaTp0eXBlPSJ4czpzdHJpbmciIHhtbG5zOnhzPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSIgeG1sbnM6eHNpPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSI+V2FsbWFydCBDaGluYSBUZWNobm9sb2d5PC9zYW1sOkF0dHJpYnV0ZVZhbHVlPjwvc2FtbDpBdHRyaWJ1dGU+PC9zYW1sOkF0dHJpYnV0ZVN0YXRlbWVudD48L3NhbWw6QXNzZXJ0aW9uPjwvc2FtbHA6UmVzcG9uc2U+";
+//		System.out.println(getUserID(re));
+	}
+}

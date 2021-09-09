@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.businessData.dao.PoDao">
+
+    <resultMap id="poMap" type="com.xforceplus.wapp.modules.posuopei.entity.PoEntity">
+        <id column="id" property="id"/>
+        <result column="pocode" property="pocode"/>
+        <result column="venderid" property="venderid"/>
+        <result column="receiptid" property="receiptid"/>
+        <result column="orderAmount" property="orderAmount"/>
+        <result column="receiptAmount" property="receiptAmount"/>
+        <result column="receiptdate" property="receiptdate"/>
+        <result column="taxrate" property="taxrate"/>
+        <result column="gfname" property="gfname"/>
+        <result column="amountpaid" property="amountpaid"/>
+        <result column="amountunpaid" property="amountunpaid"/>
+        <result column="jvcode" property="jvcode"/>
+        <result column="vendername" property="vendername"/>
+        <result column="host_status" property="hoststatus"/>
+        <result column="errcode" property="errcode"/>
+        <result column="errdesc" property="errdesc"/>
+        <result column="dxhy_match_status" property="dxhyMatchStatus"/>
+        <result column="printcode" property="printcode"/>
+        <result column="matchno" property="matchno"/>
+        <result column="invoice_deal_status" property="invoiceDealStatus"/>
+        <result column="invoice_no" property="invoiceno"/>
+        <result column="certificate_no" property="certificateno"/>
+        <result column="po_type" property="poType"/>
+        <result column="tractionNbr" property="tractionNbr"/>
+        <result column="due_date" property="dueDate"/>
+    </resultMap>
+
+
+
+
+   <select id="poQueryList" resultMap="poMap">
+       SELECT
+       <if test="offset != null and limit != null">
+           TOP (#{limit})
+       </if>
+       A.*
+       FROM
+       (
+       SELECT
+       row_number() OVER (ORDER BY o.id DESC ) AS rownumber, o.*
+       FROM(
+       SELECT * FROM t_dx_po_detail WITH(NOLOCK)
+       WHERE
+       venderid=#{venderid}
+       <if test="pocode !=null and pocode !=''">
+           AND pocode like concat('%',concat(#{pocode},'%'))
+       </if>
+       <if test="invoiceNo != null and invoiceNo != ''">
+           and invoice_no like concat('%',concat(#{invoiceNo},'%'))
+       </if>
+       <if test="receiptId != null and receiptId != ''">
+           and receiptid like concat('%',concat(#{receiptId},'%'))
+       </if>
+       <if test="poDateStart !=null and poDateStart !=''">
+           <![CDATA[ AND SUBSTRING(convert(varchar(100),receiptdate,20),0,11)  >= #{poDateStart} ]]>
+       </if>
+       <if test="poDateEnd !=null and poDateEnd !=''">
+           <![CDATA[ AND SUBSTRING(convert(varchar(100),receiptdate,20),0,11)  <= #{poDateEnd} ]]>
+       </if>
+       <if test="dxhyMatchStatus != '-1'">
+           AND dxhy_match_status=#{dxhyMatchStatus}
+       </if>
+           <![CDATA[ and datediff(day,receiptdate,GETDATE()) < 728]]>
+           and is_show != '1'
+           and substring(invoice_no,0,8) ='0000000'
+       <choose>
+           <when test="hoststatus ==0">
+               AND (host_status in ('0','1','10') or host_status is null)
+           </when>
+           <when test="hoststatus ==1">
+               AND host_status in ('5','11','12')
+           </when>
+           <when test="hoststatus ==2">
+               AND host_status in ('9','14')
+           </when>
+           <when test="hoststatus ==3">
+               AND host_status in ('15','19','99','999')
+           </when>
+           <when test="hoststatus ==8">
+               AND host_status in ('8')
+           </when>
+           <otherwise></otherwise>
+       </choose>
+       )as o)as A
+       <where>
+       <if test="offset != null and limit != null">
+           rownumber > #{offset}
+       </if>
+       </where>
+   </select>
+    <select id="poQueryCount" resultType="Integer">
+        SELECT count(1) FROM t_dx_po_detail WITH(NOLOCK)
+        WHERE
+        venderid=#{venderid}
+        <if test="pocode !=null and pocode !=''">
+            AND pocode like concat('%',concat(#{pocode},'%'))
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND invoice_no like concat('%',concat(#{invoiceNo},'%'))
+        </if>
+        <if test="receiptId != null and receiptId != ''">
+            AND receiptid like concat('%',concat(#{receiptId},'%'))
+        </if>
+        <if test="poDateStart !=null and poDateStart !=''">
+            <![CDATA[ AND SUBSTRING(convert(varchar(100),receiptdate,20),0,11)  >= #{poDateStart} ]]>
+        </if>
+        <if test="poDateEnd !=null and poDateEnd !=''">
+            <![CDATA[ AND SUBSTRING(convert(varchar(100),receiptdate,20),0,11)  <= #{poDateEnd} ]]>
+        </if>
+        <![CDATA[ and datediff(day,receiptdate,GETDATE()) < 728]]>
+            and is_show != '1'
+            and substring(invoice_no,0,8) ='0000000'
+        <if test="dxhyMatchStatus != '-1'">
+            AND dxhy_match_status=#{dxhyMatchStatus}
+        </if>
+        <choose>
+            <when test="hoststatus ==0">
+                AND (host_status in ('0','1','10') or host_status is null)
+            </when>
+            <when test="hoststatus ==1">
+                AND host_status in ('5','11','12')
+            </when>
+            <when test="hoststatus ==2">
+                AND host_status in ('9','14')
+            </when>
+            <when test="hoststatus ==3">
+                AND host_status in ('15','19','99','999')
+            </when>
+            <when test="hoststatus ==8">
+                AND host_status in ('8')
+            </when>
+            <otherwise></otherwise>
+        </choose>
+    </select>
+
+
+</mapper>

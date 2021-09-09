@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redInvoiceManager.dao.InputRedTicketInformationDao">
+
+    <resultMap id="invoiceResultMap" type="com.xforceplus.wapp.modules.redInvoiceManager.entity.InvoiceListEntity">
+        <id column="id" property="id"/>
+        <result column="red_letter_notice" property="redLetterNotice"/>
+        <result column="create_date" property="createDate"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+    </resultMap>
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY makeoutDate desc, id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        CONVERT(varchar(100),a.makeout_date,23) makeoutDate
+        from t_dx_makeout_redInvoice a
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.red_letter_status = '1'
+        and a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redNoticeNumber}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        LEFT(a.makeout_date, 4)+'-'+RIGHT(a.makeout_date,2) makeoutDate
+        from t_dx_makeout_redInvoice a
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.red_letter_status = '1'
+        and a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redNoticeNumber}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+    </select>
+    <select id="queryListAllExport" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        b.red_letter_notice redLetterNotice,
+        LEFT(a.makeout_date, 4)+'-'+RIGHT(a.makeout_date,2) makeoutDate
+        from t_dx_makeout_redInvoice a left join t_dx_redInvoice_detail b on a.serial_number = b.serial_number
+        where a.red_letter_status = '1'
+        and a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            and b.red_letter_notice = #{map.redNoticeNumber}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+    </select>
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+
+        select count(1) totalCount
+        from t_dx_makeout_redInvoice a
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.red_letter_status = '1'
+        and a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redNoticeNumber != null and map.redNoticeNumber != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redNoticeNumber}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+    </select>
+
+    <!--查询红票明细信息-->
+    <select id="getRedInvoiceList" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.InvoiceListEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY invoiceDate ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        red_letter_notice redNoticeNumber,
+        invoice_code   invoiceCode,
+        invoice_no     invoiceNo,
+        invoice_type   invoiceType,
+        IIF(invoice_date = '1900-01-01 00:00:00.000', '', convert(varchar(100),invoice_date,23))   invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount     taxAmount,
+        total_amount   totalAmount,
+        IIF(tax_rate >= 1, tax_rate, tax_rate*100) taxRate,
+        serial_number  serialNumber
+        from
+        t_dx_redInvoice_detail
+        where  serial_number in (
+        select  serial_number  from t_dx_makeout_redInvoice
+        where id =  #{map.id}
+        )
+        <!--= #{map.serialNumber}-->
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+
+    </select>
+
+
+    <!--查询红票明细条数-->
+    <select id="getRedInvoiceCount" resultType="java.lang.Integer">
+    select
+    count(1)
+    from
+    t_dx_redInvoice_detail
+    where  serial_number in (
+    select  serial_number  from t_dx_makeout_redInvoice
+    where id =  #{map.id}
+    )
+    <!-- = #{map.serialNumber}-->
+</select>
+
+    <select id="getGfNameAndTaxNo" resultType="com.xforceplus.wapp.modules.redTicket.entity.OrgEntity">
+        select orgname,taxno,orgcode
+        from 	t_ac_org WITH(NOLOCK)
+        LEFT JOIN t_ac_user_taxno on t_ac_user_taxno.orgid = t_ac_org.orgid
+        where  orgtype=8 and t_ac_user_taxno.userid =#{userId}
+
+    </select>
+    <select id="selectNoticeById" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+        SELECT
+        sum(invoice_amount)  redTotalAmount
+        FROM
+        t_dx_redInvoice_detail
+        WHERE
+        serial_number in (SELECT serial_number from t_dx_makeout_redInvoice where id = #{map.redTicketMatchId})
+    </select>
+
+
+    <select id="getRedInvoiceCount1" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_redInvoice_detail
+        where  serial_number in (
+        select  serial_number  from t_dx_makeout_redInvoice
+        where id =  #{map.id}
+        )
+        and (invoice_code = '' or invoice_code is null)
+        <!-- = #{map.serialNumber}-->
+    </select>
+
+    <select id="invoiceQueryList" resultType="com.xforceplus.wapp.modules.redTicket.entity.InvoiceEntity">
+        SELECT
+        id    ,
+        invoice_no  invoiceNo,
+        invoice_code  invoiceCode,
+        invoice_date  invoiceDate,
+        gf_tax_no   gfTaxNo,
+        invoice_type invoiceType,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        venderid venderid,
+        vendername vendername,
+        total_amount totalAmount,
+        dxhy_match_status dxhyMatchStatus,
+        detail_yesorno detailYesorno,
+        invoice_status invoiceStatus,
+        source_system systemSource,
+        tax_rate taxRate
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE
+        uuid=#{map.uuid}
+    </select>
+
+    <select id="invoiceQueryList1" resultType="com.xforceplus.wapp.modules.redTicket.entity.InvoiceEntity">
+        SELECT
+        id    ,
+        invoice_no  invoiceNo,
+        invoice_code  invoiceCode,
+        invoice_date  invoiceDate,
+        gf_tax_no   gfTaxNo,
+        xf_tax_no   xfTaxNo,
+        invoice_type invoiceType,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        venderid venderid,
+        vendername vendername,
+        total_amount totalAmount,
+        dxhy_match_status dxhyMatchStatus,
+        detail_yesorno detailYesorno,
+        invoice_status invoiceStatus,
+        source_system systemSource,
+        tax_rate taxRate
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE
+        uuid=#{uuid}
+    </select>
+
+    <select id="queryJvCode" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        SELECT
+        jv_code jvCode
+        FROM t_dx_makeout_redInvoice
+        WHERE
+        serial_number=#{serialNumber}
+    </select>
+
+    <select id="queryCompanyCode" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        SELECT
+        company_code companyCode
+        FROM t_ac_org WITH(NOLOCK)
+        WHERE
+        orgcode=#{jvCode}
+    </select>
+
+    <update id="updateRed">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        set
+        red_notice_number=""
+        where red_notice_number=#{map.redNoticeNumber}
+    </update>
+
+    <insert id="saveInvoice">
+        INSERT INTO t_dx_record_invoice WITH(ROWLOCK) (
+        invoice_code,
+        invoice_no,
+        invoice_amount,
+        invoice_date,
+        tax_amount,
+        tax_rate,
+        source_system,
+        uuid,
+        invoice_type,
+        gf_tax_no,
+        red_notice_number,
+        venderid,
+        detail_yesorno,
+        total_amount,
+        flow_type,
+        jvcode,
+        company_code,
+        invoice_status
+        ) VALUES (
+        #{map.invoiceCode},
+        #{map.invoiceNo},
+        #{map.invoiceAmount},
+        #{map.invoiceDate},
+        #{map.taxAmount},
+        #{map.taxRate},
+        '2',
+        #{map.uuid},
+        #{map.invoiceType},
+        #{map.gfTaxno},
+        #{map.redNoticeNumber},
+        '316666',
+        '0',
+        #{map.totalAmount},
+        '4',
+        #{map.jvCode},
+        #{map.companyCode},
+        '0'
+        )
+    </insert>
+
+    <update id="saveInvoiceMatch">
+        update t_dx_redInvoice_detail set
+        invoice_code = #{map.invoiceCode},
+        invoice_no = #{map.invoiceNo},
+        invoice_amount = #{map.invoiceAmount},
+        tax_rate = #{map.taxRate},
+        tax_amount = #{map.taxAmount},
+        total_amount = #{map.totalAmount},
+        uuid = #{map.uuid},
+        gf_tax_no = #{map.gfTaxNo},
+        invoice_type = #{map.invoiceType},
+        invoice_date = #{map.invoiceDate},
+        source_system = '2',
+        venderid = '316666'
+        where  red_letter_notice = #{map.redNoticeNumber}
+    </update>
+
+
+    <select id="getRedInvoiceCount2" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_redInvoice_detail
+        where red_letter_notice =  #{redNoticeNumber}
+    </select>
+
+
+    <update id="updateRedNoticeNumber">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        set
+        red_notice_number=#{map.redNoticeNumber}
+        where uuid=#{map.uuid}
+    </update>
+
+    <update id="saveInvoiceMatchEntity">
+        update t_dx_redInvoice_detail set
+        invoice_code = #{map.invoiceEntity.invoiceCode},
+        invoice_no = #{map.invoiceEntity.invoiceNo},
+        invoice_amount = #{map.invoiceEntity.invoiceAmount},
+        tax_rate = #{map.invoiceEntity.taxRate},
+        total_amount = #{map.invoiceEntity.totalAmount},
+        tax_amount = #{map.invoiceEntity.taxAmount},
+        uuid = #{map.uuid},
+        gf_tax_no = #{map.invoiceEntity.gfTaxNo},
+        invoice_type = #{map.invoiceEntity.invoiceType},
+        source_system = #{map.invoiceEntity.systemSource},
+        invoice_date = #{map.invoiceEntity.invoiceDate},
+        venderid = '316666'
+        where  red_letter_notice = #{map.redNoticeNumber}
+    </update>
+
+    <update id="allUpdate">
+        update t_dx_record_invoice WITH(ROWLOCK) set
+        invoice_code=#{map.invoiceCode},
+        invoice_no=#{map.invoiceNo},
+        invoice_amount=#{map.invoiceAmount},
+        invoice_date=#{map.invoiceDate},
+        total_amount=#{map.totalAmount},
+        tax_amount=#{map.taxAmount},
+        tax_rate=#{map.taxRate},
+        source_system= 2 ,
+        uuid=#{map.uuid},
+        invoice_type=#{map.invoiceType},
+        gf_tax_no=#{map.gfTaxno},
+        red_notice_number=#{map.redNoticeNumber},
+        jvcode=#{map.jvCode},
+        company_code= #{map.companyCode}
+        where id = #{map.invoiceId}
+    </update>
+
+    <update id="allUpdateMatch">
+        update t_dx_redInvoice_detail set
+        invoice_code=#{map.invoiceCode},
+        invoice_no=#{map.invoiceNo},
+        invoice_amount=#{map.invoiceAmount},
+        invoice_date=#{map.invoiceDate},
+        total_amount=#{map.totalAmount},
+        tax_amount=#{map.taxAmount},
+        tax_rate=#{map.taxRate},
+        source_system= '2' ,
+        uuid=#{map.uuid},
+        invoice_type=#{map.invoiceType},
+        gf_tax_no=#{map.gfTaxno},
+        red_letter_notice=#{map.redNoticeNumber},
+        venderid = '316666'
+        where id = #{map.id}
+    </update>
+
+    <update id="saveInvoiceMatchLR">
+        update t_dx_redInvoice_detail set
+        invoice_code = #{map.invoiceCode},
+        invoice_no = #{map.invoiceNo},
+        invoice_amount = #{map.invoiceAmount},
+        tax_rate = #{map.taxRate},
+        tax_amount = #{map.taxAmount},
+        total_amount = #{map.totalAmount},
+        uuid = #{map.uuid},
+        gf_tax_no = #{map.gfTaxNo},
+        invoice_type = #{map.invoiceType},
+        invoice_date = #{map.invoiceDate},
+        source_system = '2',
+        venderid = '316666'
+        where  red_letter_notice = #{map.redNoticeNumber}
+    </update>
+
+    <update id="emptyRedInvoice">
+        update t_dx_redInvoice_detail set
+        invoice_code = '',
+        invoice_no = '',
+        invoice_amount = null,
+        tax_rate = null,
+        total_amount = null,
+        uuid = '',
+        gf_tax_no = '',
+        invoice_type = '',
+        source_system = '2',
+        invoice_date = null,
+        tax_amount = null
+        where  id = #{id}
+    </update>
+
+    <update id="emptyRecord">
+        update t_dx_record_invoice WITH(ROWLOCK) set
+        red_notice_number = ''
+        where  uuid = #{uuid}
+    </update>
+
+    <select id="queryUuid" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.InputRedTicketInformationEntity">
+        SELECT
+        invoice_code invoiceCode,
+        invoice_no invoiceNo
+        FROM t_dx_redInvoice_detail
+        WHERE
+        id = #{id}
+    </select>
+
+    <select id="selectRedTicketById" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+        SELECT
+        uuid uuid,
+        IIF(tax_rate >= 1, tax_rate, tax_rate*100) taxRate,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        total_amount totalAmount
+        FROM
+        t_dx_redInvoice_detail
+        WHERE id =  #{map.id}
+    </select>
+
+    <select id="getRedNoticeMatch" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch">
+        SELECT
+        distinct id,
+        red_letter_notice redNoticeNumber,
+        invoice_code   invoiceCode,
+        invoice_no     invoiceNo,
+        invoice_type   invoiceType,
+        convert(varchar(100),invoice_date,23)   invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount     taxAmount,
+        total_amount   totalAmount,
+        tax_rate       taxRate,
+        serial_number  serialNumber
+        FROM
+        t_dx_redInvoice_detail
+        WHERE
+        red_notice_number = #{redNoticeNumber}
+    </select>
+
+    <update id="inputredExpressnoBatch">
+        update t_dx_redInvoice_detail
+        <set>
+            invoice_code = #{invoiceCode},
+            invoice_no = #{invoiceNo},
+            invoice_amount = #{invoiceAmount},
+            tax_amount = #{taxAmount},
+            tax_rate = #{taxRate},
+            total_amount = #{totalAmount}
+        </set>
+        where
+        red_notice_number = #{redNoticeNumber}
+    </update>
+
+
+    <update id="allUpdateBatchInvoice" parameterType="com.xforceplus.wapp.modules.redTicket.entity.ImportEntity">
+        update t_dx_record_invoice WITH(ROWLOCK) set
+        invoice_code=#{invoiceCode},
+        invoice_no=#{invoiceNo},
+        invoice_amount=#{amount},
+        invoice_date=#{invoiceDate},
+        tax_amount=#{taxAmount},
+        tax_rate=#{taxRate},
+        total_amount=#{totalAmount},
+        source_system= 2 ,
+        uuid=#{invoiceCode}+#{invoiceNo},
+        invoice_type='01',
+        red_notice_number=#{redNoticeNumber},
+        jvcode=#{jvcode},
+        company_code= #{companyCode}
+        where uuid = #{invoiceCode}+#{invoiceNo}
+    </update>
+
+    <select id="querySerialNumber" resultType="com.xforceplus.wapp.modules.redTicket.entity.ImportEntity">
+        SELECT
+        serial_number serialNumber
+        FROM t_dx_redInvoice_detail
+        WHERE
+        red_letter_notice=#{redNoticeNumber}
+    </select>
+
+    <update id="allUpdateMatchBatch" parameterType="com.xforceplus.wapp.modules.redTicket.entity.ImportEntity">
+        update t_dx_redInvoice_detail set
+        invoice_code = #{invoiceCode},
+        invoice_no = #{invoiceNo},
+        invoice_amount = #{amount},
+        tax_rate = #{taxRate},
+        tax_amount = #{taxAmount},
+        total_amount = #{totalAmount},
+        uuid = #{invoiceCode}+#{invoiceNo},
+        invoice_type = '01',
+        invoice_date = #{invoiceDate},
+        source_system = '2',
+        venderid = '316666'
+        where  red_letter_notice = #{redNoticeNumber}
+    </update>
+
+    <insert id="saveRedNoticeNumber">
+        update  t_dx_record_invoice WITH(ROWLOCK) set
+        red_notice_number = #{redNoticeNumber}
+        where uuid = #{uuid}
+    </insert>
+
+    <update id="saveInvoiceMatchBath" parameterType="com.xforceplus.wapp.modules.redTicket.entity.InvoiceEntity">
+   update t_dx_redInvoice_detail set
+        invoice_code = #{invoiceCode},
+        invoice_no = #{invoiceNo},
+        invoice_amount = #{invoiceAmount},
+        tax_rate = #{taxRate},
+        total_amount = #{totalAmount},
+        tax_amount = #{taxAmount},
+        uuid = #{uuid},
+        gf_tax_no = #{gfTaxNo},
+        invoice_type = #{invoiceType},
+        source_system = #{systemSource},
+        invoice_date = #{invoiceDate},
+        venderid = '316666'
+        where  red_letter_notice = #{redNoticeNumber}
+
+    </update>
+
+    <insert id="insertRedTicketInvoice" parameterType="com.xforceplus.wapp.modules.redTicket.entity.ImportEntity">
+        INSERT INTO t_dx_record_invoice WITH(ROWLOCK) (
+        invoice_code,
+        invoice_no,
+        invoice_amount,
+        invoice_date,
+        tax_amount,
+        tax_rate,
+        source_system,
+        uuid,
+        invoice_type,
+        detail_yesorno,
+        <!--gf_tax_no,-->
+        red_notice_number,
+        total_amount,
+        flow_type,
+        jvcode,
+        company_code,
+        invoice_status
+        ) VALUES (
+        #{invoiceCode},
+        #{invoiceNo},
+        #{amount},
+        #{invoiceDate},
+        #{taxAmount},
+        #{taxRate},
+        '2',
+        #{invoiceCode}+#{invoiceNo},
+        '01',
+        '1',
+        <!--#{map.gfTaxno},-->
+        #{redNoticeNumber},
+        #{totalAmount},
+        '4',
+        #{jvcode},
+        #{companyCode},
+        '0'
+        )
+    </insert>
+    <select id="getCopyPerson" resultType="java.lang.String">
+        SELECT
+	     dictname
+        FROM
+	    t_ac_dictdeta ta  WITH(NOLOCK) LEFT JOIN t_ac_dicttype tp WITH(NOLOCK) on ta.dicttype = tp.dicttypeid
+        WHERE
+	    ta.dictcode=#{dictcode} and tp.dicttypecode='SEND_MESSAGE_DATA'
+    </select>
+</mapper>

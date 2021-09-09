@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.SupplierInformationSearchDao">
+    
+    <sql id="querySql">
+        SELECT
+        b.userid,
+        b.usercode,
+        b.finusername,
+		b.username,
+		b.phone,
+		b.fax,
+		b.email,
+		b.org_level  orgLevel,
+		b.post_type    postType,
+		b.post_address postAddress,
+		b.city,
+        a.taxno,
+        b.usertype,
+        b.extf0,
+        b.extf1
+        FROM t_ac_user b WITH(NOLOCK)
+        left join t_ac_org a WITH(NOLOCK) on b.orgid=a.orgid
+        WHERE
+        a.orgtype ='8'
+        <if test="orgCode != null and orgCode != ''">
+            AND b.usercode like '%'+#{orgCode}+'%'
+        </if>
+        <if test="userName != null and userName != ''">
+            AND b.username like '%'+#{userName}+'%'
+        </if>
+        <if test="usertype == 0">
+            AND (b.usertype = 'P' or b.usertype = 'PP')
+        </if>
+        <if test="usertype == 1">
+            AND (b.usertype = 'E' OR b.usertype = 'EJ')
+        </if>
+        <if test="supplierType != null and supplierType != '' and supplierType != '-1'">
+            AND b.org_level = #{supplierType}
+        </if>
+      
+    </sql>
+    
+     <select id="count" resultType="Integer">
+        SELECT COUNT(1) FROM (
+        <include refid="querySql"/>
+        ) t
+    </select>
+
+    <!-- 供应商提交发票统计 -->
+    <select id="queryResult" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.SupplierInformationSearchEntity">
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from(
+        select row_number() over(order by userid) as rownumber,o.*
+        from(
+        </if>
+        <include refid="querySql"/>
+        <if test="offset != null and limit != null">
+        ) as o
+        ) a
+        where rownumber>#{offset}  ORDER BY userid;
+        </if>
+
+    </select>
+    <select id="getSupplierTypeList" resultType="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        select
+        t_ac_dictdeta.dictname label,
+        t_ac_dictdeta.dictcode  value
+        from  t_ac_dictdeta
+        LEFT JOIN t_ac_dicttype on  t_ac_dicttype.dicttypeid = t_ac_dictdeta.dicttype
+        where t_ac_dicttype.dicttypecode ='VENDOR_LEVEL'
+    </select>
+    <update id="updateSupplierTypeBath">
+        update t_ac_user WITH(ROWLOCK) set
+        org_level = #{supplierType}
+        where userid = #{id}
+    </update>
+
+
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.InvoiceAuthDailyReportDao">
+    <select id="getList" resultType="com.xforceplus.wapp.modules.report.entity.DailyReportEntity">
+        /**mycat:schema=${schemaLabel}*/SELECT
+        date_format(rzh_date, '%m-%d') rzhDate,
+        ifnull(sum(1), 0) count,
+        ifnull(sum(invoice_amount), 0) amount,
+        ifnull(sum(tax_amount), 0) tax
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE valid='1' and invoice_type in ('01','03','14') AND rzh_yesorno='1' AND gf_tax_no=#{map.gfName} AND rzh_belong_date = #{map.rzhBelongDate}
+        GROUP BY date_format(rzh_date, '%m-%d')
+        ORDER BY date_format(rzh_date, '%m-%d') ASC
+    </select>
+
+    <select id="getCurrentTaxPeriod" resultType="String">
+        /**mycat:schema=${schemaLabel}*/SELECT current_tax_period FROM t_dx_tax_current WITH(NOLOCK)  WHERE taxno=#{taxno}
+    </select>
+</mapper>

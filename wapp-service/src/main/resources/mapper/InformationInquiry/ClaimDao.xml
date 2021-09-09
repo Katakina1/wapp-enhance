@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.ClaimInquiryDao">
+    <!--查询索赔信息-->
+    <select id="claimlist" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.ClaimEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        return_goods_code    claimno,
+        supplier_association venderid,
+        return_goods_date    postdate,
+        return_cost_amount   claimAmount,
+        exchangeno         storeNbr,
+        host_status        hostStatus,
+        dept,
+        match_status       matchstatus,
+        jvcode,
+        invoiceNo          invoiceno,
+        newAmount
+        from t_dx_return_goods WITH(NOLOCK)
+        <where>
+            <if test="map.venderid != null and map.venderid != ''">
+                and supplier_association like concat('%',concat(#{map.venderid},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and invoiceNo like concat('%',concat(#{map.invoiceNo},'%'))
+            </if>
+            <if test="map.claimno != null and map.claimno != ''">
+                and return_goods_code like concat('%',concat(#{map.claimno},'%'))
+            </if>
+            <if test="map.matchstatus !='-1'">
+                AND match_status=#{map.matchstatus}
+            </if>
+            <choose>
+            <when test="map.hostStatus=='1'">
+                and (host_status in ('0','1','10','5','11','12','9','5','11','12','8') or host_status is null)
+            </when>
+            <when test="map.hostStatus=='0'">
+                and host_status in ('15','19','99','999')
+            </when>
+            </choose>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(10),return_goods_date,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),return_goods_date,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+        </where>
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+
+    <!--查询索赔信息条数-->
+    <select id="claimlistCount" resultType="Integer">
+        select count(1)
+        from t_dx_return_goods WITH(NOLOCK)
+        <where>
+            <if test="map.venderid != null and map.venderid != ''">
+                and supplier_association like concat('%',concat(#{map.venderid},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and invoiceNo like concat('%',concat(#{map.invoiceNo},'%'))
+            </if>
+            <if test="map.claimno != null and map.claimno != ''">
+                and return_goods_code like concat('%',concat(#{map.claimno},'%'))
+            </if>
+            <if test="map.matchstatus !='-1'">
+                AND match_status=#{map.matchstatus}
+            </if>
+            <choose>
+                <when test="map.hostStatus=='1'">
+                    and (host_status in ('0','1','10','5','11','12','9','5','11','12','8') or host_status is null)
+                </when>
+                <when test="map.hostStatus=='0'">
+                    and host_status in ('15','19','99','999')
+                </when>
+            </choose>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(10),return_goods_date,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),return_goods_date,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+        </where>
+    </select>
+
+    <!--查询索赔明细信息-->
+    <select id="claimDetailsList" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.ClaimDetailEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        d.id,
+        d.return_goods_code    claimno,
+        d.vndr_nbr             vndrNbr,
+        d.dept_nbr             deptNbr,
+        d.goods_name           goodsName,
+        d.goods_model          goodsModel,
+        d.goods_price          goodsPrice,
+        d.goods_unit           goodsUnit,
+        d.goods_number         goodsNumber,
+        d.goods_amount         goodsAmount,
+        d.tax_amount           taxAmount,
+        d.tax_rate             taxRate,
+        d.store_nbr            storeNbr,
+        d.item_nbr             itemNbr,
+        d.upc_nbr              upcNbr,
+        d.final_date           finalDate,
+        d.vendor_stock_id      vendorStockId,
+        d.vnpk_qty             vnpkQty,
+        d.gategory_nbr         gategoryNbr,
+        d.vnpk_cost            vnpkCost
+        from t_dx_return_goods_detail d WITH(NOLOCK)
+        left join t_dx_return_goods g  WITH(NOLOCK) on d.return_goods_code=g.return_goods_code
+        <where>
+            <if test="map.venderid != null and map.venderid != ''">
+                and g.supplier_association like concat('%',concat(#{map.venderid},'%'))
+            </if>
+            <if test="map.claimno != null and map.claimno != ''">
+                and g.return_goods_code like concat('%',concat(#{map.claimno},'%'))
+            </if>
+            <if test="map.matchstatus !='-1'">
+                AND g.match_status=#{map.matchstatus}
+            </if>
+            <choose>
+                <when test="map.hostStatus=='1'">
+                    and g.host_status in ('0','1','10','5','11','12','9','5','11','12','8') or host_status is null
+                </when>
+                <when test="map.hostStatus=='0'">
+                    and g.host_status in ('15','19','99','999')
+                </when>
+            </choose>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(10),g.return_goods_date,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),g.return_goods_date,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+        </where>
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+</mapper>

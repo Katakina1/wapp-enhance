@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <script src="../../libs/ajaxupload.js"></script>
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <script type="text/javascript" src="../../js/customer/release/wangEditor.min.js"></script>
+</head>
+<style type="text/css">
+    .btn-row2 {
+    }
+    td{
+        position: relative;
+    }
+
+    span[name*="invoiceLog"] table tr td{
+        display: inline;
+    }
+    .el-dialog__header{
+        background: #333333;
+        color: white;
+    }
+
+    .el-dialog__header span,.el-dialog__header i{
+        color: white !important;
+    }
+    .el-dialog__wrapper>.el-dialog{
+        overflow-x: hidden;
+    }
+    #requireMsg1 .el-form-item__label:before{
+        content: '*';
+        color: #f56c6c;
+        margin-right: 0.04rem;
+    }
+    #shell{
+        width: 721px;
+        height: 756px;
+        position: absolute;
+        top: 0px;
+        left: -36px;
+    }.big{font-weight: 700;}
+
+    #shell>div:nth-child(1){
+        width: 100%;
+        height: 136px;
+        border-radius: 40px 40px 0px 0px;
+        background-color:#017cc2;
+    }#shell>div:nth-child(1)>img{
+         height: 44px;
+         position: absolute;
+         top: 24px;
+         left: 531px;
+     }#shell>div:nth-child(1)>div{
+          color: #eee;
+          position: absolute;
+          top: 66px;
+          left: 442px;
+          font-size: 20px;
+          letter-spacing: -1px;
+      }
+
+    #shell>div:nth-child(2){
+        width: 100%;
+        height: 533px;
+        padding: 8px 30px;
+        font-size: 16px;
+        background-color: #fff;
+        line-height: 25px;
+    }#shell>div:nth-child(2)>div{
+         border: 1px solid #000000;
+         width: 645px;
+         overflow: hidden;
+         margin-bottom: 20px;
+         margin-left: 5px;
+     }#shell>div:nth-child(2)>div>div{
+          float: left;
+          width: 50%;
+          border: 1px solid #000000;
+      }#shell>div:nth-child(2)>div>div:nth-child(1),#shell>div:nth-child(2)>div>div:nth-child(2){
+           background-color: #aaa;
+           text-align: center;
+           height: 30px;
+           line-height: 30px;
+       }#shell>div:nth-child(2)>div>div:nth-child(3),#shell>div:nth-child(2)>div>div:nth-child(4){
+            height: 160px;
+        }
+
+    #shell>div:nth-child(3){
+        width: 100%;
+        height: 88px;
+        border-radius: 0px 0px 40px 40px ;
+        background-color:#017cc2;
+        position: relative;
+    }#shell>div:nth-child(3)>div{
+         color: #EEEEEE;
+         position: absolute;
+         top: 45px;
+         left: 450px;
+     }
+    #announceWin{
+        overflow-x: visible;
+    }
+    #announceWin>.el-dialog{
+        overflow-x: visible;
+    }
+    #shell table th {
+        text-align: center !important;
+    }
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-row>
+            <el-col :span="2" :offset="2">
+                <el-button class="btnexport" @click="reloadTaxCode">查询</el-button>
+            </el-col>
+            <el-col :span="2" :offset="2">
+                <el-button class="btnexport" id="import">导入税码表</el-button>
+            </el-col>
+        </el-row>
+    </div>
+    <div>
+        <el-table height="4rem" :data="taxCodeForm" border fit
+                  tooltip-effect="light" highlight-current-row
+                  v-loading="loading" element-loading-text="正在拼命加载中"
+                  style="width: 100%;">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="costIndex" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxSortcode" label="税收分类编码" min-width="60" align="center"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxName" label="名称" min-width="20"
+                             header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="note" label="说明" min-width="200"
+                             header-align="center"></el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination small layout="slot, sizes, prev, pager, next" background
+                           :current-page.sync="currentPage" :page-size="pageSize" :page-sizes="pageList"
+                           :total="total" @current-change="currentChange" @size-change="sizeChange" style="float:right">
+                <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+            </el-pagination>
+        </el-col>
+    </div>
+</div>
+</body>
+<script src="../../js/modules/base/taxcode.js"></script>
+</html>

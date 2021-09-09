@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+
+
+        [v-cloak] {
+            display: none;
+        }
+        .el-table .cell{
+            white-space: nowrap !important;
+        }
+
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<style type="text/css">
+    .textCenter{text-align: center}
+    .textRight{text-align: right}
+    .bigSize{font-size: large}
+    .bold{font-weight: bold}
+    .noBorder{border-color: white}
+    .noRightBorder{border-right-color: white}
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp">
+    <div>
+        <el-form ref="form" :model="form" :rules="rules" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="纳税人名称:" class="labelMid">
+                        <el-select id="gf-select" v-model="form.gfName" filterable @change="gfNameChange" @focus="gfNameFocus" @blur="gfNameBlur">
+                            <el-option
+                                    v-for="item in gfs"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="税款所属期:" prop="rzhBelongDate" class="labelMid">
+                        <el-date-picker type="month" :picker-options="rzhBelongDateOption" :clearable="false" :editable="false" @blur="blurpickerchange(1)" @focus="focuspickerchange(1)"  id="datevalue1"  v-model="form.rzhBelongDate" format="yyyyMM" value-format="yyyyMM" @change="dqskssqDateChange"></el-date-picker>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="query('form')">查询</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button id="export_btn" class="btn btnexport" @click="exportExcel">导出</el-button>
+                </el-col>
+            </el-row>
+
+
+        </el-form>
+    </div>
+    <hr>
+    <div>
+        <div align="left" style="float:left; color: red;display: none"><span id="noDetailTip"></span></div>
+    </div>
+    <table id="inputTaxTable" border="1" align="center"  style="word-break:break-all;width:8rem;">
+        <tr class="noBorder"><td colspan="4" class="textCenter bigSize bold">本期抵扣进项税额结构明细表</td></tr>
+        <tr class="noBorder"><td colspan="4" class="textCenter">税款所属期:&nbsp;{{rzhBelongDate.substring(0,4)}}年{{rzhBelongDate.substring(4,6)}}月</td></tr>
+        <tr><td class="noRightBorder">纳税人名称: {{taxName}}（公章）</td><td colspan="3" class="textRight">金额单位: 元至角分</td></tr>
+        <tr>
+            <td style="width:4.0rem;" class="textCenter">项目</td>
+            <td style="width:1.0rem;" class="textCenter">栏次</td>
+            <td style="width:1.5rem;" class="textCenter">金额</td>
+            <td style="width:1.5rem;" class="textCenter">税额</td>
+        </tr>
+        <tr>
+            <td>合计</td>
+            <td>1=2+4+5+11+16+18+27+29+30</td>
+            <td class="textCenter">{{rate.totalAmount}}</td>
+            <td class="textCenter">{{rate.totalTax}}</td>
+        </tr>
+        <tr><td colspan="4" class="textCenter bold">一、按税率或征收率归集（不包括购建不动产、通行费）的进项</td></tr>
+        <tr>
+            <td>17%或16%税率的进项</td>
+            <td>2</td>
+            <td class="textCenter">{{rate.amount17}}</td>
+            <td class="textCenter">{{rate.tax17}}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;其中: 有形动产租赁的进项</td>
+            <td>3</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>13%税率的进项</td>
+            <td>4</td>
+            <td class="textCenter">{{rate.amount13}}</td>
+            <td class="textCenter">{{rate.tax13}}</td>
+        </tr>
+        <tr>
+            <td>11%或10%税率的进项</td>
+            <td>5</td>
+            <td class="textCenter">{{rate.amount11}}</td>
+            <td class="textCenter">{{rate.tax11}}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;其中: 运输服务的进项</td>
+            <td>6</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;电信服务的进项</td>
+            <td>7</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;建筑安装服务的进项</td>
+            <td>8</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;不动产租赁服务的进项</td>
+            <td>9</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;受让土地使用权的进项</td>
+            <td>10</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>6%税率的进项</td>
+            <td>11</td>
+            <td class="textCenter">{{rate.amount6}}</td>
+            <td class="textCenter">{{rate.tax6}}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;其中: 电信服务的进项</td>
+            <td>12</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;金融保险服务的进项</td>
+            <td>13</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;生活服务的进项</td>
+            <td>14</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;取得无形资产的进项</td>
+            <td>15</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>5%税率的进项</td>
+            <td>16</td>
+            <td class="textCenter">{{rate.amount5}}</td>
+            <td class="textCenter">{{rate.tax5}}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;其中: 不动产租赁服务的进项</td>
+            <td>17</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>3%税率的进项</td>
+            <td>18</td>
+            <td class="textCenter">{{rate.amount3}}</td>
+            <td class="textCenter">{{rate.tax3}}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;其中: 货物及加工、修理修配劳务的进项</td>
+            <td>19</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;运输服务的进项</td>
+            <td>20</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;电信服务的进项</td>
+            <td>21</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;建筑安装服务的进项</td>
+            <td>22</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;金融保险服务的进项</td>
+            <td>23</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;有形动产租赁服务的进项</td>
+            <td>24</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;生活服务的进项</td>
+            <td>25</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;取得无形资产的进项</td>
+            <td>26</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>减按1.5%征收率的进项</td>
+            <td>27</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>28</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr><td colspan="4" class="textCenter bold">二、按抵扣项目归集的进项</td></tr>
+        <tr>
+            <td>用于购建不动产并一次性抵扣的进项</td>
+            <td>29</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>通行费的进项</td>
+            <td>30</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>31</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>32</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+</div>
+
+<script src="../../js/modules/report/inputTaxDetailReport.js"></script>
+</body>
+</html>

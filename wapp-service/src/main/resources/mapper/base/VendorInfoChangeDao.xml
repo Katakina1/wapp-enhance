@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.VendorInfoChangeDao">
+
+    <select id="queryVendorInfoChangeList" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        select * from (
+        select *,
+        ROW_NUMBER() OVER(Order by id desc) AS rownum
+        from t_ac_user_change WITH(NOLOCK)
+        where audit_status='0'
+        <if test="venderId != null and venderId != ''">
+            and usercode = #{venderId}
+        </if>
+
+        ) a where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+    </select>
+
+    <select id="queryVendorInfoChangeIsExist" resultType="java.lang.Integer">
+        select  count(1) from t_ac_user_change WITH(NOLOCK)
+        where usercode=#{usercode}
+        and audit_status='0'
+    </select>
+
+
+    <update id="updateVendorInfoChange">
+        update t_ac_user_change
+        set
+        new_username = #{newUserName},
+        new_bank_account = #{newBankAccount},
+        new_bank_name = #{newBankName}
+        where usercode = #{usercode}
+    </update>
+
+    <update id="updateAuditStatus">
+        update t_ac_user_change
+        set
+        audit_status = '1',
+        audit_date=getdate()
+        where usercode = #{usercode}
+    </update>
+
+    <update id="updateVendorInfo">
+        update t_ac_user
+        set
+        username = #{newUserName},
+        bank_account = #{newBankAccount},
+        bank_name = #{newBankName}
+        where usercode = #{usercode}
+    </update>
+
+    <select id="queryChangeInfoById" resultType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        select usercode,new_username,new_bank_account,new_bank_name
+        from t_ac_user_change WITH(NOLOCK)
+        where id=#{id}
+    </select>
+
+    <select id="queryVendorInfoChangeCount" resultType="int">
+        select count(1)
+        from t_ac_user_change WITH(NOLOCK)
+        where audit_status='0'
+        <if test="venderId != null and venderId != ''">
+            and usercode = #{venderId}
+        </if>
+    </select>
+
+    <insert id="submit" parameterType="com.xforceplus.wapp.modules.base.entity.UserEntity">
+        insert into t_ac_user_change
+        (
+        usercode,
+        username,
+        bank_account,
+        bank_name,
+        new_username,
+        new_bank_account,
+        new_bank_name,
+        audit_status,
+        create_date
+        ) values (
+        #{usercode},
+        #{username},
+        #{bankAccount},
+        #{bankName},
+        #{newUserName},
+        #{newBankAccount},
+        #{newBankName},
+        '0',
+        getdate()
+        )
+    </insert>
+</mapper>

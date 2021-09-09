@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.fixed.dao.SapUnconfirmDao">
+
+
+    <select id="saplist" resultType="com.xforceplus.wapp.modules.lease.entity.InvoiceImportAndExportEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.invoiceDate DESC) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        uuid,
+        company_code     companyCode,
+        invoice_code     invoiceCode,
+        invoice_type     invoiceType,
+        invoice_no       invoiceNo,
+        venderid         venderId,
+        vendername       venderName,
+        tax_amount       taxAmount,
+        tax_rate         taxRate,
+        invoice_amount   invoiceAmount,
+        total_amount     totalAmount,
+        invoice_date     invoiceDate,
+        remark           reMark,
+        jvcode           jvCode,
+        shop_no          shopNo,
+        period           peRiod,
+        fixed_matching         matChing,
+        fixed_matching_date    matChingDate,
+        sap,
+        sap_date sapDate
+        from t_dx_record_invoice WITH(NOLOCK)
+        where
+        1=1
+        and sap='2' and (invoice_type='01'or invoice_type='04')
+        <if test="map.jvCode != null and map.jvCode != '' and map.jvCode != '-1'">
+            and jvcode like concat('%',concat(#{map.jvCode},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+
+        <if test="map.companyCode != null and map.companyCode != ''">
+            and company_code = #{map.companyCode}
+       </if>
+
+       <if test="map.venderId != null and map.venderId != ''">
+             and venderid = #{map.venderId}
+        </if>
+
+        ) AS o
+        ) A
+        WHERE 1=1
+
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+
+    </select>
+
+    <select id="sapCount" resultType="Integer">
+        select count(1)
+        from t_dx_record_invoice m WITH(NOLOCK)
+        where
+        1=1
+        and m.sap='2' and (m.invoice_type='01'or m.invoice_type='04')
+            <if test="map.jvCode != null and map.jvCode != ''and map.jvCode != '-1'">
+                and m.jvcode like concat('%',concat(#{map.jvCode},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and m.invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+            </if>
+            <if test="map.companyCode != null and map.companyCode != ''">
+                and m.company_code = #{map.companyCode}
+            </if>
+            <if test="map.venderId != null and map.venderId != ''">
+                and m.venderid = #{map.venderId}
+            </if>
+    </select>
+
+    <update id="sapSuccess">
+        update t_dx_record_invoice
+        SET sap = '1',
+        sap_date = getdate()
+        where id = #{id}
+    </update>
+
+    <update id="refund" >
+        UPDATE t_dx_record_invoice
+        SET
+        sap='3',
+        scan_fail_reason=#{scanFailReason},
+        scan_match_status='2',
+        sap_date=getdate()
+        WHERE id=#{id}
+    </update>
+    <update id="refundInvoice" >
+        UPDATE t_dx_invoice
+        SET isdel='1',
+        del_date = GETDATE(),
+        refund_reason=#{reason}
+        WHERE uuid=#{uuid}
+    </update>
+</mapper>

@@ -1,0 +1,170 @@
+# Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+    max-http-post-size: -1
+  port: 8071
+  max-http-header-size: 1024000
+  servlet:
+    context-path: /
+
+# mysql
+spring:
+    devtools:
+            restart:
+                #热部署生效
+              enabled: true
+    # 环境 dev|test|pro|fast|mycat
+    profiles:
+        active: dev
+    # jackson时间格式化
+    jackson:
+        time-zone: GMT+0
+        date-format: yyyy-MM-dd HH:mm:ss
+    http:
+        multipart:
+            max-file-size: 100MB
+            max-request-size: 100MB
+            enabled: true
+            location: /tmp/tomcat
+    # 指定静态资源的路径
+    resources:
+        static-locations: classpath:/static/,classpath:/views/
+    redis:
+        open: false  # 是否开启redis缓存  true开启   false关闭
+        database: 0
+        host: localhost
+        port: 16379
+        password:       # 密码（默认为空）
+        timeout: 6000  # 连接超时时长（毫秒）
+        pool:
+            max-active: 1000  # 连接池最大连接数（使用负值表示没有限制）
+            max-wait: -1      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+            max-idle: 10      # 连接池中的最大空闲连接
+            min-idle: 5       # 连接池中的最小空闲连接
+    # Activemq
+    
+activemq:
+    url: failover:(tcp://127.0.0.1:61616\,tcp://127.0.0.1:61616)?randomize=false&jms.useAsyncSend=true&jms.sendTimeout=3000
+    url_one: tcp://127.0.0.1:61616
+    url_two: tcp://127.0.0.1:61616
+    user: admin
+    password: admin
+    producer_status: exprotRequestProducer    #导出申请生产者 exprotRequestProducer  导出完成生产者 exprotSeccussRequestProducer 二选一硬编码
+    producer_status_code: one   #one/two 硬编码
+    producer_status_url: one   #one/two 硬编码
+    queue: cn.wm.host.invoice_test.request  #没有用的东西，还不能删，要命
+    exprot_rquest_queue_gfone: cn.wm.host.exprot.rquest.queue.gfone
+    exprot_rquest_queue_gftwo: cn.wm.host.exprot.rquest.queue.gftwo
+    exprot_rquest_queue_xfone: cn.wm.host.exprot.rquest.queue.xfone
+    exprot_rquest_queue_xftwo: cn.wm.host.exprot.rquest.queue.xftwo
+    export_success_queue_gfone: cn.wm.host.export.success.queue.gfone
+    export_success_queue_gftwo: cn.wm.host.export.success.queue.gftwo
+    export_success_queue_xfone: cn.wm.host.export.success.queue.xfone
+    export_success_queue_xftwo: cn.wm.host.export.success.queue.xftwo
+    exprot_equest_queue: cn.wm.host.exprot.equest.queue
+    export_success_queue_one: cn.wm.host.export.success.queue.one
+    export_success_queue_two: cn.wm.host.export.success.queue.two
+    exprot_equest_queue_buyer: cn.wm.host.exprot.equest.queue.buyer
+    exprot_equest_queue_sellers: cn.wm.host.exprot.equest.queue.sellers
+    switch_on_off: off  #部署开关，没有服务器就只能自产自销喽
+
+# Mybatis配置
+mybatis:
+    mapperLocations: classpath:mapper/**/*.xml
+    configLocation: classpath:mybatis.xml
+
+# 日志
+logging:
+  path: /home/vn03qsx/logs/
+  file: ${logging.path}dxhy_jxpt
+
+# 定时器配置
+schedule:
+    open: false  # 是否开启定时任务功能  true开启   false关闭
+
+#图片存储路径
+filePathConstan:
+  remoteImageRootPath: /home/wapp/jxfp/image/
+  remoteCostFileRootPath: /home/wapp/jxfp/cost/
+  remoteKnowFileRootPath: /home/wapp/jxfp/knowCenter/
+  remoteAnnouncementRootPath: /home/wapp/jxfp/announcement/
+  remoteQuestionPaperFileRootPath: /home/wapp/jxfp/question/
+  remoteQuestionPaperFileTempRootPath: /home/wapp/jxfp/temp/question/
+  remoteCostFileTempRootPath: /home/wapp/jxfp/temp/cost/
+  remoteExcelFileRootPath: /home/dxhy1/wapp/excel/
+  remoteFixedRootPath: /jxfp/fixed/ #供应商红票remoteFixedRootPath
+  remoteFixedTempRootPath: /jxfp/temp/fixed/ #供应商红票远程文件临时存放路径
+  localImageRootPath: /home/vn03qsx/jxfp/image/
+  tempPath: /home/vn03qsx/jxfp/temp/zip/      # 文件暂存路径
+  depositPath: /home/vn03qsx/jxfp/zipto/ # 文件存储路
+  tempImgPath: /home/vn03qsx/jxfp/temp/imgzip/      # 图片临时存储路径
+  signInImgPath: /home/vn03qsx/jxfp/temp/image/     #扫码签收图片暂存路径
+  tempDir: /home/vn03qsx/jxfp/temp/excelZip/
+  sapRemoteRootPath: /jxfp/sap/source/   #sap源文件目录
+  sapRemoteBakPath: /jxfp/sap/bak/       #sap备份目录
+  sapLocalTempPath: /home/vn03qsx/jxfp/sap/temp/         #sap本地临时目录
+  aribatempPath: /usr/users/dxhy152/wapp/jxfp/temp/zip/      # 文件暂存路径
+  aribadepositPath: /usr/users/dxhy152/wapp/jxfp/zipto/ # 文件存储路
+  erweimaPath: /usr/users/dxhy152/wapp/jxfp/QRCode/image/
+  orderSapRemoteRootPath: /jxfp/order/sap/source/   #sap源文件目录（订单获取）
+  orderSapRemoteBakPath: /jxfp/order/sap/bak/       #sap备份目录（订单获取）
+  orderSapLocalTempPath: /usr/users/dxhy152/wapp/jxfp/order/sap/temp/
+  vendorRemoteRootPath: /jxfp/vendor/source/   #vendor源文件目录(导入10位供应商号)
+  vendorRemoteBakPath: /jxfp/vendor/bak/       #vendor备份目录
+  vendorLocalTempPath: /usr/users/dxhy152/wapp/jxfp/vendor/temp/         #vendor本地临时目录
+  localFixedRootPath: /usr/users/dxhy152/wapp/jxfp/fixed/temp/ #供应商红票本地文件存放路径
+  sso: d:/sso/sso.txt
+#sftp配置
+pro:
+  sftp:
+    host: 10.233.68.155  #10.44.100.123
+    username: VN03QSX
+    password: Dxhy@2019!
+    default:
+      port: 22
+      timeout: 60000
+      privateKey: /home/svcaccttomcat/.ssh/id_rsa
+      passphrase:
+# Mycat配置
+mycat:
+    default_schema_label: db_210  # 默认的分库schema名称
+
+# token配置
+token:
+    expire_time: 18000 #过期时间，单位秒
+
+# 税款所属期判断值
+currentTaxPeriod: 15
+#扫描修改处理http://10.233.50.33:8385/dxhy_yxgl_api
+scanEditUrl: http://127.0.0.1:8385/dxhy_yxgl_api/onlineUpload/updateInvoice
+
+#查验
+aribaCheck: http://127.0.0.1:8385/dxhy_yxgl_api/onlineUpload/check
+
+#电票上传
+scanElUploadUrl: http://127.0.0.1:8385/dxhy_yxgl_api/onlineUpload/elUpload
+
+
+getTaxInformation: https://dx301.wal-mart.com/RESTAdapter/WALMART/FapiaoDetails
+
+sso:
+  loginUrl: https://pfedprod.wal-mart.com/idp/startSSO.ping?PartnerSpId=CNWAPP
+  idp_metadata_url: 
+  WMIDP_Metadata_Dev: d:\sso\WMIDP_Metadata_Dev.xml
+export:
+  websocketUrl: ws://101.124.15.152:8071/b2bportal/dxhy-gylpt/websocket
+basicAuth:
+  ariba: dxhy:dxhy@123
+  getTaxInformation: PISNOW_DEV:Profit10
+  loginName: gf999
+  userName: gf999
+  userId: 123941
+  scheduled: 0 0/5 * * * ?
+
+ofd:
+  httpUrl: http://jxfpapi.ele-cloud.com/OFDParse
+  ofdPreviewUrl: http://jxfpapi.ele-cloud.com/OFDPreview
+  ofdPngUrl: http://jxfpapi.ele-cloud.com/image

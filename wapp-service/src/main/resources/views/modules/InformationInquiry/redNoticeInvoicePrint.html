@@ -1,0 +1,674 @@
+
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style scoped>
+        .hide-dialog {
+            display: none;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        #file {
+            outline: 0.01rem;
+            background-color: transparent;
+            filter: alpha(opacity=0);
+            -moz-opacity: 0;
+            -khtml-opacity: 0;
+            opacity: 0;
+            height: 0.4rem;
+            width: 100%;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.0rem;
+            height: 0.4rem;
+            line-height: 0.4rem;
+            overflow: hidden;
+        }
+
+        #upload {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            line-height: 0.4rem;
+            border: 0.01rem solid #dedede;
+            height: 0.4rem;
+        }
+
+        .row {
+            padding: 0 !important;
+        }
+    </style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+
+    <form id="upload_form" ref="upload_form" :model="upload_form"  target="frm" method="post" enctype="multipart/form-data" >
+
+        <div class="row" style="border-top: 0">
+            <el-form  ref="upload_form" label-width="1.1rem">
+                <el-col :span="12">
+                    <el-form-item label="红票类型:" >
+                        <el-select id="select1" name="redTicketType" v-model="upload_form.redTicketType" >
+                            <el-option label="外部红票" value="0" > </el-option>
+                            <!--<el-option label="内部红票" value="1"> </el-option>-->
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-form>
+
+
+            <!--<select name="redTicketType" id="select1">-->
+                <!--<option value="0">内部红票</option>-->
+                <!--<option value="1">外部红票</option>-->
+            <!--</select>-->
+
+            <div class="col-xs-4" style="margin-top:0.05rem;">
+                <div class="form-group">
+                    <label class="col-xs-4 control-label">选择上传文件:</label>
+                    <div class="col-xs-8" id="upload">
+                        <span v-html="selectFileFlag"></span>
+                        <input type="file" @change="onChangeFile($event)" id="file" name="file" class="text-input"
+                               hidden>
+                    </div>
+                </div>
+            </div>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="showSelectFileWin()">浏览</el-button>
+            </el-col>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="uploadFile($event)">批量上传</el-button>
+            </el-col>
+            <!--<el-col :span="1" :offset="1">
+            <el-button  class="btnexport" @click="exportData()">下载批量上传红字通知单模板</el-button>
+            </el-col>-->
+            <!--<el-col :span="1" :offset="1">
+                <el-button class="upload_btn_red_pdf btnexport" disabled @click="">批量生成PDF</el-button>
+            </el-col>-->
+            <el-col :span="1" :offset="1">
+                <el-button  class="upload_btn_red_pdf btnexport" disabled @click="downloadPDF">下载PDF</el-button>
+            </el-col>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="exportData()">模板下载</el-button>
+            </el-col>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="query()">查询</el-button>
+            </el-col>
+</div>
+        <iframe id="frm" name="frm" style="display: none;"></iframe>
+    </form>
+    <hr>
+    <div style="clear: both"></div>
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+              style="width: 100%; margin-top: 0.2rem"
+              @selection-change="changeFunPO"
+              v-loading="listLoading"
+              element-loading-text="正在拼命加载中"
+    >
+        <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection" label="选择" align="center"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  property="redTicketDataSerialNumber" label="序列号" align="center" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="xfName" label="供应商名称" align="center" header-align="center"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  property="xfTaxno" label="纳税人识别号" header-align="center" align="left" >
+        </el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" header-align="center" align="right"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="gfTaxno" label="购方纳税人识别号" header-align="center" align="right"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="amount" label="金额" header-align="center" align="right"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="taxRate" label="税率" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="tkDate" label="填开日期" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="redNoticeNumber" label="红字发票信息表编号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"   label="操作" class-name="noSpotSpotSpot" align="center">
+            <template slot-scope="scope">
+                <a  @click="detail(scope.row)"><span class="column-span" style="color: black">[查看]</span></a>
+            </template>
+        </el-table-column>
+
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>
+
+
+    <el-dialog width="95%" :visible.sync="detailDialogVehicleFormVisible" :before-close="detailFormCancel" :close-on-click-modal="false"  height="100%" >
+            <div align="center"><span class="bold bigSize" style="font-weight:bold;font-size:28px"> 开具红字增值税专用发票信息表</span> </div>
+            <br/>
+            <table border="1" style="text-align: center" width="90%" class="table1">
+                <tr>
+                    <td class="bold"  ><div  >填开日期：</div></td>
+                    <td class="bold" colspan="2" ><div >{{detailForm.tkDate}}</div></td>
+                    <td class="bold" ><div > </div></td>
+                    <td class="bold" ><div></div></td>
+                    <td class="bold" ><div></div></td>
+                    <td class="bold" ><div></div></td>
+                    <td class="bold" ><div></div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  rowspan="2" ><div  >销售方：</div></td>
+                    <td class="bold" ><div >名               称</div></td>
+                    <td class="bold" colspan="2" ><div >{{detailForm.xfName}}</div></td>
+                    <td class="bold" rowspan="2"><div>购买方</div></td>
+                    <td class="bold" ><div>名               称</div></td>
+                    <td class="bold"  colspan="2"><div>{{detailForm.gfName}}</div></td>
+                </tr>
+
+                <tr>
+                    <td class="bold" ><div >纳税人识别号</div></td>
+                    <td class="bold" colspan="2" ><div >{{detailForm.xfTaxno}}</div></td>
+                    <td class="bold" ><div>纳税人识别号</div></td>
+                    <td class="bold"  colspan="2"><div>{{detailForm.gfTaxno}}</div></td>
+                </tr>
+                <tr>
+                    <td class="bold" rowspan="3" ><div >开具
+                        红字
+                        专用
+                        发票
+                        内容</div></td>
+                    <td class="bold" colspan="3"><div >货物（劳务服务）名称 </div></td>
+
+                    <td class="bold" colspan="2"><div>金额</div></td>
+                    <td class="bold"  ><div>税率 </div></td>
+                    <td class="bold"  ><div>税额 </div></td>
+                </tr>
+                <tr>
+                    <td class="bold" colspan="3" ><div >商品一批（详见清单）</div></td>
+                    <td class="bold" colspan="2"><div>{{detailForm.amount}}</div></td>
+                    <td class="bold"  ><div>{{detailForm.taxRate}}</div></td>
+                    <td class="bold"  ><div>{{detailForm.taxAmount}}</div></td>
+                </tr>
+
+                <tr>
+                    <td class="bold" colspan="3" ><div >合计 </div></td>
+                    <td class="bold" colspan="2"><div>{{detailForm.amount}}</div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div>{{detailForm.taxAmount}}</div></td>
+                </tr>
+
+                <tr>
+                    <td class="bold" rowspan="15" ><div >说明 </div></td>
+                    <td class="bold" ><div>一、购买方<input type="checkbox" checked="checked" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+
+                <tr>
+                    <td class="bold"  colspan="3"><div>     对应蓝字专用发票抵扣增值税销项税额情况：</div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+
+                </tr>
+                <tr>
+                    <td class="bold"  colspan="3"><div> 1. 已抵扣<input type="checkbox" disabled="disabled" checked="checked"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+
+                </tr>
+                <tr>
+                    <td class="bold"  colspan="3"><div> 2. 未抵扣<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+
+                </tr>
+                <tr>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  colspan="2"><div> （1）无法认证<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  colspan="3"><div> （2）纳税人识别号认证不符<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  colspan="3"><div> （3）增值税专用发票代码、号码认证不符<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  colspan="4"><div> （4）所购货物或劳务、服务不属于增值税扣税项目范围<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+
+                <tr>
+                    <td class="bold"  colspan="4"><div>  对应蓝字专用发票的代码：<span></span></div></td>
+                    <td class="bold"  colspan="2"><div>号码：<span></span> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  ><div> 二、销售方<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+
+                <tr>
+                    <td class="bold"  colspan="4"><div>   1. 因开票有误购买方拒收的<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  colspan="4"><div>      2. 因开票有误等原因尚未交付的<input type="checkbox" disabled="disabled"></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  colspan="4"><div>       对应蓝字专用发票的代码：<span></span></div></td>
+                    <td class="bold"  colspan="2"><div> 号码：<span></span></div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+                    <td class="bold"  ><div></div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                    <td class="bold"  ><div> </div></td>
+                </tr>
+                <tr>
+
+                    <td class="bold"  ><div>红字发
+                        票信息
+                        表编号</div></td>
+                    <td class="bold"  colspan="7"><div>{{detailForm.redNoticeNumber}}</div></td>
+
+                </tr>
+            </table>
+    </el-dialog>
+
+
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+
+<script type="text/babel">
+    var allDataList = [];
+    var dataList = [];
+    Vue.http.options.emulateJSON = true;
+    Vue.http.options.emulateHTTP = true;
+    var isInitial = true;
+     var currentQueryParam = {
+         page: 1,
+         limit: 1,
+         redTicketType:""
+     }
+
+ var vm =   new Vue({
+        el: '#rrapp',
+        i18n,
+        data: {
+
+            total: 0,
+            currentPage: 1,
+            totalPage: 0,
+            pageSize: PAGE_PARENT.PAGE_SIZE,
+            pageList: PAGE_PARENT.PAGE_LIST,
+            pagerCount: 5,
+            tableData: [],
+
+            selection:[],
+            listLoading: false,
+            selectFileFlag: '',
+            fileList: [],
+            tempTableData: [],
+            importFileUrl: '',
+            multipleSelection: [],
+            upload_form:{
+                redTicketType:"0"
+            },
+            detailForm: {
+                tkDate: null,
+                xfName:null,
+                gfName:null,
+                xfTaxno:null,
+                gfTaxno:null,
+                amount:null,
+                taxRate:null,
+                taxAmount:null,
+                redNoticeNumber:null,
+            },
+            detailDialogVehicleFormVisible:false,
+            token: token
+        },
+        mounted: function () {
+            this.importFileUrl = baseURL + sysUrl.importCertification;
+        },
+        methods: {
+            changeFunPO:function(row) {
+                vm.selection=row;
+                if(vm.selection.length>0){
+                    //增加样式 export_btn_pdf
+                    $(".upload_btn_red_pdf").removeAttr("disabled").removeClass("is-disabled");
+                }else {
+                    $(".upload_btn_red_pdf").attr("disabled","disabled").addClass("is-disabled");
+                }
+            },
+            formatDate: function (row, column, cellValue, index) {
+                if (cellValue != null && cellValue != "") {
+
+                    return cellValue.substring(0, 4) + '-' + cellValue.substring(4, 6) + '-' + cellValue.substring(6, 8);
+                } else {
+                    return "";
+                }
+            },
+            detailFormCancel: function () {
+                vm.detailDialogVehicleFormVisible = false;
+                vm.detailForm.tkDate=null;
+                vm.detailForm.xfName=null;
+                vm.detailForm.gfName=null;
+                vm.detailForm.xfTaxno=null;
+                vm.detailForm.gfTaxno=null;
+                vm.detailForm.amount=null;
+                vm.detailForm.taxRate=null;
+                vm.detailForm.taxAmount=null;
+                vm.detailForm.redNoticeNumber=null;
+            },
+            detail:function(row){
+                vm.detailForm.tkDate=row.tkDate;
+                vm.detailForm.xfName=row.xfName;
+                vm.detailForm.gfName=row.gfName;
+                vm.detailForm.xfTaxno=row.xfTaxno;
+                vm.detailForm.gfTaxno=row.gfTaxno;
+                vm.detailForm.amount=row.amount;
+                vm.detailForm.taxRate=row.taxRate;
+                vm.detailForm.taxAmount=row.taxAmount;
+                vm.detailForm.redNoticeNumber=row.redNoticeNumber;
+                vm.detailDialogVehicleFormVisible = true;
+            },
+            exportData() {
+                document.getElementById("ifile").src = baseURL + "export/redInvoiceNoticeTemplate";
+            },
+
+            query:function(){
+                isInitial = false;
+
+                currentQueryParam = {
+                    'redTicketType': vm.upload_form.redTicketType
+                };
+                vm.findAll(1);
+            },
+
+            onChangeFile: function (event) {
+                const str = $("#file").val();
+                const index = str.lastIndexOf('.');
+                var photoExt = str.substr(index, 4);
+                photoExt = photoExt.toLowerCase();
+                if (photoExt != '' && !(photoExt == '.xls' || photoExt == '.xlsx')) {
+                    alert("请上传excel文件格式!");
+                    this.isNeedFileExtension = false;
+                    return false;
+                } else {
+                    this.selectFileFlag = '';
+                    this.file = '';
+                    var meFile = event.target.files[0];
+                    if (event != undefined && meFile != null && meFile != '') {
+                        this.file = event.target.files[0];
+                        this.isNeedFileExtension = true;
+                        //截取名称最后18位
+                        this.selectFileFlag = event.target.files[0].name;
+                    }
+                }
+            },
+
+            uploadFile: function (event) {
+                if (!this.isNeedFileExtension) {
+                    alert("请上传excel文件格式!");
+                } else {
+                    event.preventDefault();
+                    if (this.file == '' || this.file == undefined) {
+                        alert("请选择excel文件!");
+                        return;
+                    }
+                    allDataList=[];
+                    const formData = new FormData();
+                    formData.append('file', this.file);
+                    formData.append('token', this.token);
+                    formData.append('redTicketType', vm.upload_form.redTicketType);
+                    const config = {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    };
+                    this.tempTableData = this.tableData;
+                    this.tableData = [];
+                    this.listLoading = true;
+                    var flag = false
+                    var hh;
+                    const url = baseURL + "redNotice/redNoticeImport";
+                    this.$http.post(url, formData, config).then(function (response) {
+                        this.listLoading = false;
+                        flag = true;
+                        if(response.data.code !=undefined && response.data.code == 401) {
+                            return;
+                        }
+                        this.selectFileFlag = '';
+                        this.file = '';
+                        if(response.data.errorCount>0){
+                            alert("请检查数据是否完整！");
+                            return;
+                        }
+                        if (response.data.success) {
+                            if (this.tempTableData.length + response.data.reason.length + response.data.errorCount +response.data.errorCount1+response.data.errorCount2> 500) {
+                                this.tableData = this.tempTableData;
+                                alert('导入数据超过500条，请修改模板！');
+                                return;
+                            }
+                           // for (var i = 0; i < response.data.reason.length; i++) {
+                                // if (dataList.length > 0 && this.contains(dataList, response.data.reason[i].invoiceCode + response.data.reason[i].invoiceNo)) {
+                                //     response.data.reason[i].noAuthTip = "0";
+                                //     allDataList.push(response.data.reason[i])
+                                // } else {
+                                //     dataList.push(response.data.reason[i].invoiceCode + response.data.reason[i].invoiceNo);
+                                //     allDataList.push(response.data.reason[i])
+                                // }
+                                //allDataList.push(response.data.reason[i])
+                            //}
+                            var str = "";
+                            if(response.data.errorEntityList1.length>0){
+
+                                for (var i = 0; i < response.data.errorEntityList1.length; i++) {
+                                    str=str +  response.data.errorEntityList1[i].redTicketDataSerialNumber+"、";
+                                }
+
+                            }
+                            var str2 = "";
+                            if(response.data.errorEntityList2.length>0){
+
+                                for (var i = 0; i < response.data.errorEntityList2.length; i++) {
+                                    str2=str2 +  response.data.errorEntityList2[i].redTicketDataSerialNumber+"、";
+                                }
+
+                            }
+                            var str3 = "";
+                            if(response.data.errorEntityList3.length>0){
+
+                                for (var i = 0; i < response.data.errorEntityList3.length; i++) {
+                                    str3=str3 +  response.data.errorEntityList3[i].redTicketDataSerialNumber+"、";
+                                }
+
+                            }
+                           // this.tableData = allDataList;
+                            // alert("共计导入" + (response.data.reason.length + response.data.errorCount) + "条，成功" + response.data.reason.length + "条,失败" + response.data.errorCount + "条");
+                            alert("共计导入" + (response.data.reason.length + response.data.errorCount +  response.data.errorCount1  +  response.data.errorCount2+response.data.errorEntityList3.length) + "条，成功" + response.data.reason.length + "条,库里已存在红字通知单:"+response.data.errorCount1+"条,对应的序列号："+str+",excel表格重复"+
+                                response.data.errorCount2+"条"+ str2 +",数据错误"+response.data.errorEntityList3.length+"条，对应序列号"+str3 );
+                        } else {
+                            //this.tableData = this.tempTableData;
+                            //alert(response.data.reason);
+                        }
+                    }, (err) => {
+                       // this.tableData = this.tempTableData;
+                        this.listLoading = false;
+                        if (err.status == 408) {
+                            alert(err.statusText);
+                        }
+                    })
+                    var intervelId = setInterval(function () {
+                        if (flag) {
+                            hh=$(document).height();
+                            $("body",parent.document).find("#myiframe").css('height',hh+'px');
+                            clearInterval(intervelId);
+                            return;
+                        }
+                    },50);
+                }
+            },
+            currentChange: function(currentPage){
+                if(vm.total==0){
+                    return;
+                }
+                this.findAll(currentPage);
+            },
+            findAll: function (currentPage) {
+                currentQueryParam.page = currentPage;
+                currentQueryParam.limit = vm.pageSize;
+                this.listLoading = true;
+                var flag = false;
+                if (!isNaN(currentPage)) {
+                    this.currentPage = currentPage;
+                }
+                this.$http.post(baseURL + 'modules/redNoticeBatchTicket/selectRedTicketNoticeList',
+                    currentQueryParam,
+                    {
+                        'headers': {
+                            "token": token
+                        }
+                    }).then(function (res) {
+                    var xhr = res.body;
+                    this.total = xhr.page.totalCount;
+                    this.currentPage = xhr.page.currPage;
+                    this.totalPage = xhr.page.totalPage;
+                    this.tableData = xhr.page.list;
+                    this.listLoading = false;
+                });
+                var intervelId = setInterval(function () {
+                    if (flag) {
+                        hh=$(document).height();
+                        $("body",parent.document).find("#myiframe").css('height',hh+'px');
+                        clearInterval(intervelId);
+                        return;
+                    }
+                },50);
+            },
+            handleSizeChange: function (val) {
+                this.pageSize = val;
+                if(!isInitial) {
+                    this.findAll(1);
+                }
+            },
+            invoiceTypeFormat: function (row, column, cellValue, index) {
+                if (cellValue != null && cellValue != "") {
+                    if(cellValue =="01"){
+                        cellValue = "增值税专用发票";
+                    }
+                    if(cellValue =="03"){
+                        cellValue="机动车销售统一发票";
+                    }
+                    if(cellValue =="14"){
+                        cellValue="增值税电子普通发票（通行费）";
+                    }if(cellValue=="04"){
+
+                        cellValue="增值税普通发票";
+                    }if(cellValue=="10"){
+                        cellValue="增值税电子普通发票";
+                    }
+                    if(cellValue=="11"){
+                        cellValue="增值税普通发票（卷票）";
+                    }
+                } else {
+                    return "";
+                }
+                return cellValue;
+            },
+
+
+
+
+            showSelectFileWin() {
+                this.selectFileFlag = '';
+                this.file = '';
+                $("#upload_form")[0].reset();
+                $("#file").click();
+            },
+
+
+
+            reset: function () {
+                var me = this;
+                this.openConfirm(this, "是否确认重置表格数据", function(){
+                    me.tableData=[];
+                    me.tempTableData=[];
+                    allDataList=[];
+                }, function () {
+
+                })
+            },
+
+
+            downloadPDF: function () {
+                $.ajax({
+                    type: "POST",
+                    url: baseURL + "redNotice/createPDF",
+                    contentType: "application/json",
+                    data: JSON.stringify(vm.selection),
+                    success: function (r) {
+                        var filePath = r.path;
+                        document.getElementById("ifile").src = encodeURI(baseURL + "export/redNotice/downloadPDF?path=" + filePath);
+                    }
+                });
+            }
+        }
+    });
+
+
+</script>
+</html>

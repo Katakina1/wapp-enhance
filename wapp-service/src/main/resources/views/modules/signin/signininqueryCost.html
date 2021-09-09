@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <title>系统日志</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <style>
+        .el-dialog__body{
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div id="wh" style="width:100%;"></div>
+    <div>
+        <el-form ref="form" :model="q" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12">
+                    <div class="grid-content bg-purple">
+                        <el-form-item label="JV:" >
+                            <el-select v-model="q.gfName" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+                                <el-option
+                                        v-for="item in gfsh"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </div>
+                </el-col>
+
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="发票号码:" class="form-item">
+                            <el-input v-model="q.invoiceNo" placeholder="请输入发票号码" :maxlength="8"></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="扫描流水号:" class="form-item">
+                            <el-input v-model="q.scanId" placeholder="请输入扫描流水号" :maxlength="20"></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="供应商号:" class="form-item">
+                            <el-input v-model="q.venderid" placeholder="请输入供应商号"></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <div class="form-row">
+                        <el-form-item label="公司代码:" class="form-item">
+                            <el-input v-model="q.companyCode" placeholder="请输入公司代码"></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+
+
+                <el-col :span="14">
+                    <el-form-item label="扫描日期:" class="form-item" id="requireMsg4">
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker type="date" @blur="blurpickerchange(1)" :picker-options="qsStartDateOptions" @focus="focuspickerchange(1)" id="datevalue1" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.invoiceDate1" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="invoiceDate1Change"  ></el-date-picker>
+                            </el-col>
+                            <el-col :span="2">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" @blur="blurpickerchange(2)" :picker-options="qsEndDateOptions" @focus="focuspickerchange(2)" id="datevalue2" :editable="false" :clearable="false" placeholder="选择日期" v-model="q.invoiceDate2" format="yyyy-MM-dd" value-format="yyyy-MM-dd" @change="invoiceDate2Change" ></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="签收状态:">
+                        <el-select v-model="q.qsStatus" >
+                            <el-option label="全部" value="-1" selected></el-option>
+                            <el-option label="签收失败" value="0"></el-option>
+                            <el-option label="签收成功" value="1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1" class="">
+                    <el-button class="btnexport" @click="query">查询</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1" class="">
+                    <el-button class="btnexport" @click="toExceil" :disabled="exportCondition">导出</el-button >
+                </el-col>
+
+
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+
+    <div class="h15"></div>
+    <div>
+        <div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"><span id="totalStatistics"></span></div>
+    </div>
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+              v-loading="listLoading"   @selection-change="changeFun"
+              element-loading-text="正在拼命加载中">
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="createDate" width="128"   label="扫描日期" align="center" :formatter="formatCreateDate"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="scanId" label="扫描流水号" width="255" align="center" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="fileType" width="113"  label="文件类型"  align="center" header-align="center" :formatter="fileTypeFormatter"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="jvCode" label="JV" width="102"   align="center" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="companyCode" label="公司代码"  width="176"  align="center" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="qsStatus" label="签收状态"  width="114" align="center" header-align="center" :formatter="qsStatusFormatter"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="notes" label="扫描描述"  align="center" width="255" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="venderid" label="供应商号"  align="center"  width="117"  header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="costNo" label="费用号"  align="left" width="114" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="dyInvoiceCode" label="发票代码"  align="left" width="114" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" width="134" header-align="center">
+            <template scope="scope">
+                <span>{{ scope.row.dyInvoiceNo }}</span>
+                <el-tooltip class="item" effect="dark" placement="top-start">
+                    <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                    <img v-if="scope.row.invoiceType== '01'"  style="height:0.2rem;" src="../../img/special-invoice.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                    <img v-if="scope.row.invoiceType== '03' "  style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                    <img    v-if="scope.row.invoiceType=== '04' "
+                         style="height:0.2rem;" src="../../img/plain-invoice.png"  />
+                    <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                    <img v-if="scope.row.invoiceType== '10' " style="height:0.2rem;" src="../../img/einvoice.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                    <img    v-if="scope.row.invoiceType=== '11' "
+                         style="height:0.2rem;" src="../../img/roll-invoice.png" />
+                    <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                    <img v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" src="../../img/general-invoice.png" />
+                </el-tooltip>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" width="137"  :formatter="formatInvoiceDate"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="金额" align="right" width="108"  header-align="center" :formatter="invoiceAmountFormatDecimal"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right"  width="87"  header-align="center" :formatter="taxAmountFormatDecimal"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="rzhYesorno" label="认证结果"  align="center"  width="80"  header-align="center" :formatter="rzhYesornoFormatter"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="rzhDate" label="认证日期"  align="center"  width="92"  header-align="center" :formatter="formatRzhDate"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="scanMatchStatus" label="扫描匹配状态"  align="center"  width="108"  header-align="center" :formatter="formatScanMatchStatus"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="scanFailReason" label="扫票匹配失败原因"  align="center"  width="120"  header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="id"  label="操作" class-name="noSpotSpotSpot" width="200" class-name="noSpotSpotSpot" align="center" >
+            <template scope="scope">
+                <span v-if="scope.row.fileType==1&&scope.row.isdel==0" >
+                    <a  @click="editData(scope.row)"><span class="column-span" style="color: black">修改</span></a>
+                </span>
+               
+                <span>
+                    <a  @click="imgRow(scope.row.scanId)"><span class="column-span" style="color: black">图片</span></a>
+                </span>
+
+                <span v-if="scope.row.scanMatchStatus!=1&&scope.row.isdel==0" >
+                    <a  @click="deleteData(scope.row)"><span class="column-span" style="color: black">退票</span></a>
+                </span>
+                <span v-else-if="scope.row.scanMatchStatus!=1&&scope.row.isdel==1">
+                    <a  @click="returnData(scope.row)"><span class="column-span" style="color: black">撤回</span></a>
+                </span>
+                <span v-if="scope.row.scanMatchStatus!=1&&scope.row.isdel==0">
+                	<a  @click="deleteDataCost(scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                </span>
+                 <span v-if="scope.row.scanMatchStatus!=1&&scope.row.isdel==0">
+                	<a  @click="confirmDateCost(scope.row)"><span class="column-span" style="color: black">确认</span></a>
+                </span>
+            </template>
+        </el-table-column>
+
+        <!--<el-table-column :show-overflow-tooltip="true"  prop="signInDate" label="签收日期" align="center" :formatter="formatQsDate"></el-table-column>-->
+        <!--<el-table-column :show-overflow-tooltip="true"  prop="userAccount" label="签收人"  align="center" header-align="center"></el-table-column>-->
+        <!--<el-table-column :show-overflow-tooltip="true"  prop="gfName" label="购方名称" :show-overflow-tooltip="true" align="left" header-align="center" :formatter="checkNullFormat"></el-table-column>-->
+        <!--<el-table-column :show-overflow-tooltip="true"  prop="xfName" label="销方名称" :show-overflow-tooltip="true" align="left" header-align="center" :formatter="checkNullFormat"></el-table-column>-->
+
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination layout="slot, sizes,prev,pager,next" background
+                       :current-page.sync="currentPage" :page-size="pageSize" :total="total" :page-size="pageSize" :page-sizes="pageList" @size-change="handleSizeChange"
+                       :page-count="pageCount" @current-change="currentChange" style="float:right">
+        </el-pagination>
+        <span style="float: right;margin-top: 0.4%">共{{total}}条记录，第{{currentPage}}页，共{{pageCount}}页</span>
+    </el-col>
+   <!-- <table  highlight-row id="jqGrid"></table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="findAll" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>-->
+    <!--<div id="jqGridPager"></div>-->
+
+
+
+
+
+
+
+
+
+<el-dialog title="修改" :close-on-click-modal="false" :visible.sync="dialogVisibleEdit" :before-close="beforeCloseEditWin" @close="" width="80%"
+           v-loading="editDialogLoading">
+    <!--<div style="width: 100%;height: 3.0rem;overflow: auto;">-->
+    <div class="image_content" style="float: left;width: 60%;">
+        <a id="imgEdit2" href="javaScript:void(0);" onclick="bigimg()" :src="img_src">
+            <img id="imgEdit" style="padding: 0.3rem 0; width: 100%" :src="img_src"/>
+        </a>
+    </div>
+    <div class="form_content" style="float: right;width: 35%;">
+        <el-form ref="dataEditForm" :model="dataEditForm" label-width="1.0rem">
+
+            <el-form-item label="领用代码:" class="form-item" prop="invoiceCode" :rules="[{ required: true, message: '发票代码不能为空'}]">
+                <el-input v-model="dataEditForm.invoiceCode"   ></el-input>
+            </el-form-item>
+            <el-form-item label="领用号码:" class="form-item" prop="invoiceNo" :rules="[{ required: true, message: '发票号码不能为空'}]">
+                <el-input v-model="dataEditForm.invoiceNo"   ></el-input>
+            </el-form-item>
+            <el-form-item label="打印代码:" class="form-item" prop="dyInvoiceCode" :rules="[{ required: true, message: '打印代码不能为空'}]">
+                <el-input v-model="dataEditForm.dyInvoiceCode" ></el-input>
+            </el-form-item>
+            <el-form-item label="打印号码:" class="form-item" prop="dyInvoiceNo" :rules="[{ required: true, message: '打印号码不能为空'}]">
+                <el-input v-model="dataEditForm.dyInvoiceNo"  ></el-input>
+            </el-form-item>
+            <el-form-item label="开票日期:" class="form-item" prop="invoiceDate" :rules="[{ required: true, message: '开票日期不能为空'}]">
+                <el-date-picker type="date" :picker-options="invoiceDateOptions" :clearable="false" :editable="false" size="large" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                @change="invoiceDate3Change"  placeholder="选择开票日期" v-model="dataEditForm.invoiceDate"></el-date-picker>
+            </el-form-item>
+            <el-form-item label="购方税号" class="form-item" prop="gfTaxNo" :rules="[{ required: true, message: '购方税号不能为空'}]">
+                <el-input v-model="dataEditForm.gfTaxNo" max-length="20"></el-input>
+            </el-form-item>
+            <el-form-item label="销方税号" class="form-item" prop="xfTaxNo" :rules="[{ required: true, message: '销方税号不能为空'}]">
+                <el-input v-model="dataEditForm.xfTaxNo" max-length="20"></el-input>
+            </el-form-item>
+            <el-form-item label="发票金额:" class="form-item" prop="invoiceAmount" :rules="[{ required: true, message: '发票金额不能为空且不能超过两位小数'}]">
+                <el-input v-model="dataEditForm.invoiceAmount" @change="changeAmount"></el-input>
+            </el-form-item>
+            <el-form-item label="发票税额:" class="form-item" prop="taxAmount" :rules="[{ required: true, message: '发票税额不能为空且不能超过两位小数'}]">
+                <el-input v-model="dataEditForm.taxAmount" @change="changeTaxAmount"></el-input>
+            </el-form-item>
+            <el-form-item label="校验码:" class="form-item" prop="checkCode">
+                <el-input v-model="dataEditForm.checkCode" onkeyup="this.value=this.value.replace(/[^\d]/g,'')"></el-input>
+            </el-form-item>
+            <el-form-item  label="供应商号:" class="form-item" prop="venderid" :rules="[{ required: true, message: '供应商号不能为空'}]">
+                <el-input v-model="dataEditForm.venderid" :disabled="dataEditForm.venderidEdit==1"></el-input>
+            </el-form-item>
+            <el-form-item  label="费用号:" class="form-item" prop="costNo" :rules="[{ required: true, message: '费用号不能为空'}]">
+            	 <el-input v-model="dataEditForm.costNo"></el-input>
+            </el-form-item>
+            <!-- <el-form-item label="是否有红章:" prop="isExistStamper" :rules="[{ required: true, message: '是否有红章不能为空'}]">
+                <el-select v-model="dataEditForm.isExistStamper" filterable @focus="gfNameFocus" @blur="gfNameBlur">
+                    <el-option
+                            key="1"
+                            label="是"
+                            value="1">
+                    </el-option>
+                    <el-option
+                            key="0"
+                            label="否"
+                            value="0">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item  label="无红章原因:" class="form-item" prop="venderid">
+                <el-input v-model="dataEditForm.noExistStamperNotes" :disabled="dataEditForm.isExistStamper==1"></el-input>
+            </el-form-item> -->
+        </el-form>
+    </div>
+    <!--</div>-->
+    <!--<div style="clear: both"></div>-->
+    <span slot="footer" class="dialog-footer" :visible.sync="dialogVisibleEdit">
+            <el-button class="btnexport" @click="beforeCloseEditWin">取 消</el-button>
+            <el-button class="btnexport" @click="editSaveData">保存</el-button>
+    </span>
+</el-dialog>
+
+
+
+</div>
+
+
+<script src="../../js/modules/signin/signininqueryCost.js"></script>
+</body>
+</html>

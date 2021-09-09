@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redInvoiceManager.dao.InvoiceListDao">
+
+    <resultMap id="invoiceResultMap" type="com.xforceplus.wapp.modules.redInvoiceManager.entity.InvoiceListEntity">
+        <id column="id" property="id"/>
+        <result column="red_letter_notice" property="redLetterNotice"/>
+        <result column="create_date" property="createDate"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+    </resultMap>
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+    </resultMap>
+
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY makeoutDate desc, id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        a.red_letter_status redLetterStatus,
+        a.spf_name spfName,
+        CONVERT(varchar(7),a.makeout_date,120) makeoutDate
+        from t_dx_makeout_redInvoice a
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.UploadScarletLetterEntity">
+        select
+        a.id,
+        a.jv_code jvCode,
+        a.store,
+        a.buyer_name buyerName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.invoice_type invoiceType,
+        a.tax_rate taxRate,
+        a.serial_number serialNumber,
+        a.red_letter_status redLetterStatus,
+        LEFT(a.makeout_date, 4)+'-'+RIGHT(a.makeout_date,2) makeoutDate
+        from t_dx_makeout_redInvoice a
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY a.makeout_date desc, id desc
+        </if>
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+
+        select count(1) totalCount
+        from t_dx_makeout_redInvoice a
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            ,t_dx_redInvoice_detail b
+        </if>
+        where a.create_by in (select loginname from t_ac_user WITH(NOLOCK) where userid = #{map.userID})
+        <if test="map.jvCode != null and map.jvCode != ''">
+            and a.jv_code = #{map.jvCode}
+        </if>
+        <if test="map.store != null and map.store != ''">
+            and a.store = #{map.store}
+        </if>
+        <if test="map.redLetterNotice != null and map.redLetterNotice != ''">
+            and a.serial_number = b.serial_number
+            and b.red_letter_notice = #{map.redLetterNotice}
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.create_date,23)  <= #{map.createDate2} ]]>
+        </if>
+    </select>
+
+    <!--查询红票明细信息-->
+    <select id="getRedInvoiceList" resultType="com.xforceplus.wapp.modules.redInvoiceManager.entity.InvoiceListEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY invoiceDate ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        red_letter_notice redLetterNotice,
+        invoice_code   invoiceCode,
+        invoice_no     invoiceNo,
+        invoice_type   invoiceType,
+        convert(varchar(100),invoice_date,23)   invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount     taxAmount,
+        total_amount   totalAmount,
+        IIF(1>tax_rate,tax_rate * 100,tax_rate)       taxRate
+        from
+        t_dx_redInvoice_detail
+        where  serial_number in (
+        select  serial_number  from t_dx_makeout_redInvoice
+        where id =  #{map.id}
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+
+    </select>
+    <!--查询红票明细条数-->
+    <select id="getRedInvoiceCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_redInvoice_detail
+        where  serial_number in (
+        select  serial_number  from t_dx_makeout_redInvoice
+        where id =  #{map.id}
+        )
+    </select>
+
+
+    <!--查询详细红票明细信息-->
+    <select id="getRedInvoiceDetailList" resultMap="invoiceResultMap">
+        SELECT
+        *
+        from
+        t_dx_redInvoice_detail
+        where  concat(invoice_code,invoice_no) =  concat(#{map.invoiceCode}, #{map.invoiceNo})
+
+    </select>
+
+</mapper>

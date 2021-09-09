@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.scanRefund.dao.GroupRefundDao">
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="taxname" property="label" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.scanRefund.entity.GroupRefundEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY matchDate desc, id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+
+        DISTINCT(b.id),
+        b.gf_name gfName,
+        b.venderid venderId,
+        b.settlementamount settlementAmount,
+        b.invoice_num invoiceNum,
+        b.po_amount poAmonut,
+        b.po_num poNum,
+        b.claim_amount claimAmount,
+        b.claim_num claimNum,
+        convert(varchar(100),b.match_date,23) matchDate,
+        b.scan_fail_reason  reasonForCancel,
+        a.username venderName
+        from t_dx_match b WITH(NOLOCK)
+        LEFT JOIN t_ac_user a WITH(NOLOCK) on b.venderid = a.usercode
+        where
+        EXISTS
+        (select 1 from t_dx_match_po_claim_invoice c,t_dx_match b WITH(NOLOCK)
+        where c.matchid = b.id
+        and code_type = '0' and code in
+        (select id from t_dx_record_invoice e WITH(NOLOCK) where EXISTS
+        (select 1 from t_dx_invoice d WITH(NOLOCK)
+        where d.uuid = e.uuid
+        and (rebateyesorno != '1' or rebateyesorno is null) and (rebateno is null or rebateno = '')
+        and (isdel = '0'or isdel is null)
+        )
+        )
+        )
+        and b.scan_match_status = '2'
+        and b.match_status not in('6','5')
+
+        <if test="map.poCode != null and map.poCode != ''">
+            and b.id in
+            (select matchid from t_dx_match_po_claim_invoice
+            where code_type = '1' and code in(select id from t_dx_po_detail WITH(NOLOCK) where pocode = #{map.poCode}))
+        </if>
+        <if test="map.claimNo != null and map.claimNo != ''">
+            and b.id in
+            (select matchid from t_dx_match_po_claim_invoice
+            where code_type = '2' and code in(select id from t_dx_return_goods WITH(NOLOCK)  where return_goods_code = #{map.claimNo}))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and b.id in
+            (select matchid from t_dx_match_po_claim_invoice WITH(NOLOCK)
+            where code_type = '0' and code in(select id from t_dx_record_invoice WITH(NOLOCK)  where invoice_no = #{map.invoiceNo}))
+        </if>
+        <if test="map.matchDate1 != null and map.matchDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),b.match_date,23) >= #{map.matchDate1} ]]>
+        </if>
+        <if test="map.matchDate2 != null and map.matchDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),b.match_date,23)  <= #{map.matchDate2} ]]>
+        </if>
+        <if test="map.offset == null and map.limit == null">
+            ORDER BY b.match_date desc, id desc
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+
+        </if>
+        <!--limit #{map.offset}, #{map.limit}-->
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+        select COUNT(DISTINCT b.id) totalCount, ISNULL(sum(a.invoice_amount),0) totalAmount, ISNULL(sum(a.tax_amount),0) totalTax
+        from t_dx_record_invoice a WITH(NOLOCK), t_dx_match b WITH(NOLOCK)
+        LEFT JOIN t_ac_user d WITH(NOLOCK) on b.venderid = d.usercode
+        where
+        EXISTS
+        (select 1 from t_dx_match_po_claim_invoice c,t_dx_match b WITH(NOLOCK)
+        where c.matchid = b.id
+        and code_type = '0' and code in
+        (select id from t_dx_record_invoice e WITH(NOLOCK) where EXISTS
+        (select 1 from t_dx_invoice d WITH(NOLOCK)
+
+        where d.uuid = e.uuid
+        and (rebateyesorno != '1' or rebateyesorno is null) and (rebateno is null or rebateno = '')
+        and (isdel = '0'or isdel is null)
+        )
+        )
+        )
+        and b.scan_match_status = '2'
+        and b.match_status not in('6','5')
+        <if test="map.poCode != null and map.poCode != ''">
+            and b.id in
+            (select matchid from t_dx_match_po_claim_invoice WITH(NOLOCK)
+            where code_type = '1' and code in(select id from t_dx_po_detail WITH(NOLOCK)  where pocode = #{map.poCode}))
+        </if>
+        <if test="map.claimNo != null and map.claimNo != ''">
+            and b.id in
+            (select matchid from t_dx_match_po_claim_invoice WITH(NOLOCK)
+            where code_type = '2' and code in(select id from t_dx_return_goods WITH(NOLOCK)  where return_goods_code = #{map.claimNo}))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and b.id in
+            (select matchid from t_dx_match_po_claim_invoice WITH(NOLOCK)
+            where code_type = '0' and code in(select id from t_dx_record_invoice WITH(NOLOCK) where invoice_no = #{map.invoiceNo}))
+        </if>
+        <if test="map.matchDate1 != null and map.matchDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),b.match_date,23) >= #{map.matchDate1} ]]>
+        </if>
+        <if test="map.matchDate2 != null and map.matchDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),b.match_date,23)  <= #{map.matchDate2} ]]>
+        </if>
+
+    </select>
+    <!--查询抵账表信息-->
+    <select id="getRecordInvoiceList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        invoice_code   invoiceCode,
+        invoice_no     invoiceNo,
+        invoice_type   invoiceType,
+        convert(varchar(100),invoice_date,23)   invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount     taxAmount,
+        venderid       venderId,
+        tax_rate       taxRate,
+        vendername     venderName
+        from
+        t_dx_record_invoice WITH(NOLOCK)
+        where  id in (
+        select  code  from t_dx_match_po_claim_invoice WITH(NOLOCK)
+        where code_type = '0' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{map.id}
+        )
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+
+    </select>
+    <!--查询发票明细条数-->
+    <select id="getRecordInvoiceListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_record_invoice
+        where  id in (
+        select  code  from t_dx_match_po_claim_invoice WITH(NOLOCK)
+        where code_type = '0' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{map.id}
+        )
+        )
+    </select>
+
+    <!--查看PO信息列表-->
+    <select id="getPOList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        pocode   poCode,
+        amountunpaid  amountUnpaid,
+        receiptAmount   receiptAmount1,
+        venderid  venderId,
+        convert(varchar(100),receiptdate,23) receiptDate
+        from
+        t_dx_po_detail WITH(NOLOCK)
+        where  id in (
+        select  code  from t_dx_match_po_claim_invoice WITH(NOLOCK)
+        where code_type = '1' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{map.id}
+        )
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+    <!--查看PO明细条数-->
+    <select id="getPOListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_po_detail WITH(NOLOCK)
+        where  id in (
+        select  code  from t_dx_match_po_claim_invoice WITH(NOLOCK)
+        where code_type = '1' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{map.id}
+        )
+        )
+    </select>
+
+    <!--查看索赔信息列表-->
+    <select id="getClaimList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        return_goods_code   claimNo,
+        return_goods_amount  claimAmount1,
+        supplier_association  venderId,
+        convert(varchar(100),return_goods_date,23) postDate
+        from
+        t_dx_return_goods
+        where  id in (
+        select  code  from t_dx_match_po_claim_invoice
+        where code_type = '2' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{map.id}
+        )
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+    <!--查看索赔明细条数-->
+    <select id="getClaimListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_return_goods
+        where  id in (
+        select  code  from t_dx_match_po_claim_invoice
+        where code_type = '2' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{map.id}
+        )
+        )
+    </select>
+
+    <!--整组退修改扫描表-->
+    <update id="inputrefundnotes">
+
+        update t_dx_invoice WITH(ROWLOCK)
+        set
+        refund_notes = #{refundNotes},
+        rebateyesorno = '1',
+        rebate_date = getdate(),
+        rebateno =#{rebateNo}
+        where uuid = #{uuid} and (rebateno is null or rebateno = '')
+    </update>
+
+    <update id="inputrefundyesno">
+
+        update t_dx_invoice WITH(ROWLOCK)
+        set
+        isdel = '1',
+        del_date = GETDATE(),
+        refund_reason = #{refundReason}
+        where uuid = #{uuid}
+    </update>
+
+    <!--查询失败原因-->
+    <select id="queryReason" resultType="com.xforceplus.wapp.modules.scanRefund.entity.GroupRefundEntity">
+        select scan_fail_reason refundReason
+         from  t_dx_match WITH(NOLOCK)
+        where id =  #{id}
+    </select>
+
+    <select id="queryisdel" resultType="com.xforceplus.wapp.modules.scanRefund.entity.GroupRefundEntity">
+        select isdel
+        from t_dx_invoice WITH(NOLOCK)
+        where uuid = #{uuid}
+    </select>
+
+    <!--查询uuid-->
+    <select id="queryuuid" resultType="com.xforceplus.wapp.modules.scanRefund.entity.GroupRefundEntity">
+        select uuid from t_dx_record_invoice WITH(NOLOCK)
+        where id in (
+        select  code  from t_dx_match_po_claim_invoice WITH(NOLOCK)
+        where code_type = '0' and matchid in(
+        select id from  t_dx_match WITH(NOLOCK)
+        where id =  #{id}
+        )
+        )
+    </select>
+
+    <!--查询最大退单号-->
+    <select id="querymaxrebateno" resultType="com.xforceplus.wapp.modules.scanRefund.entity.GroupRefundEntity">
+        select MAX(rebateno)  rebateNo
+        from t_dx_invoice WITH(NOLOCK)
+    </select>
+
+
+    <!--<select id="queryrebateno" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">-->
+    <!--select bbindingno-->
+    <!--from t_dx_record_invoice WITH(NOLOCK)-->
+    <!--where id =#{id}-->
+    <!--</select>-->
+
+</mapper>

@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+        .el-dialog{
+            overflow-x: hidden;
+        }
+        .el-radio__input.is-checked+.el-radio__label {
+            color: #409EFF !important;
+        }
+        .el-radio__input.is-checked .el-radio__inner{
+            border-color: #409eff !important;
+            background: #409eff !important;
+        }
+        .el-radio__inner:after {
+            background-color: #fff !important;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="vm" v-cloak>
+    <div>
+        <el-form  :model="formInline"   label-width="1.0rem">
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="问卷标题:" prop="questionnaireTitle">
+                        <el-input class="inline-input" v-model="formInline.questionnaireTitle" :maxlength="255"
+                                  placeholder="请输入问卷标题"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="14">
+                    <el-form-item label="发布日期:" prop="createDate" id="requireMsg2">
+                        <el-row>
+                            <el-col :span="13">
+                                <el-date-picker @blur="blurpickerchange(1)" @focus="focuspickerchange(1)" type="date" id="datevalue1"
+                                                placeholder="选择日期" v-model="formInline.createStartDate"
+                                                :picker-options="createDateOptions"
+                                                :clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>
+                            </el-col>
+                            <el-col class="line" :span="2">—</el-col>
+                            <el-col :span="13">
+                                <el-date-picker type="date" placeholder="选择日期" v-model="formInline.createEndDate" id="datevalue2"
+                                                @blur="blurpickerchange(2)" @focus="focuspickerchange(2)"
+                                                :picker-options="createEndDateOptions"
+                                                :clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="onSubmit">查询</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+    <div>
+        <div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"></div>
+    </div>
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="100" :index="mainIndex" label="序号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="questionnaireTitle" label="问卷标题" align="center" header-align="center"  :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="releaseDate" label="发布日期" align="center"  :formatter="dateFormat" :show-overflow-tooltip="true">
+        </el-table-column>
+        <el-table-column  label="操作" class-name="noSpotSpotSpot" width="125" align="center"  >
+            <template scope="scope">
+                <a  @click="venderShow(scope.row)"><span class="column-span" style="color: black">关联供应商信息</span></a>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>
+
+    <el-dialog title="关联供应商列表"  :visible.sync="venderWin" :before-close="closeVenderWin"  width="70%">
+        <div>
+            <el-form :model="venderForm" label-width="1.0rem">
+                <el-row>
+                    <el-col :span="12.5">
+                        <el-form-item label="供应商号:">
+                            <el-input  v-model="venderForm.venderId" maxlength="6"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12.5">
+                        <el-form-item label="供应商名称:" >
+                            <el-input  v-model="venderForm.venderName" maxlength="150"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="1" :offset="1">
+                        <el-button class="btnexport" @click="queryVender" >查询</el-button>
+                    </el-col>
+                </el-row>
+                <!--<div style="margin-bottom: 0.05rem;margin-top: 0.05rem;width:100%; height:0.05rem; border-top:0.01rem solid #DEDEDE; clear:both;"></div>-->
+            </el-form>
+        </div>
+        <el-table   height="400"  border fit :data="venderTable" highlight-current-row style="width: 100%;font-size: 12px;"
+                    style="width: 100%; margin-top: 20px" v-loading="venderListLoading" >
+            <el-table-column   type="index" width="80" label="序号" :index="venderIndex" header-align="center" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="usercode" label="供应商号"  width="100"  :show-overflow-tooltip="true" align="center" header-align="center"></el-table-column>d
+            <el-table-column :show-overflow-tooltip="true"  property="username" label="供应商名称"   :show-overflow-tooltip="true" align="center" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="isAnswer" label="是否已答"  width="80"  align="center" header-align="center">
+                <template scope="scope">
+                    <span v-if="scope.row.isAnswer=== null" >—— ——</span>
+                    <span v-else-if="scope.row.isAnswer === '0'" >否</span>
+                    <span v-else-if="scope.row.isAnswer === '1'">是</span>
+                </template>
+            </el-table-column>
+            <el-table-column  label="操作" class-name="noSpotSpotSpot" width="110" align="center"  >
+                <template scope="scope">
+                    <a v-if="scope.row.isAnswer=== '1'" @click="questionShow(scope.row)"><span class="column-span" style="color: black">查看问卷</span></a>
+                    <a v-else style="color: #c0c4cc;text-decoration: none;cursor:not-allowed;">查看问卷</a>
+                </span>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-col class="toolbar"  style="padding:0.1rem;">
+            <el-pagination background @current-change="currentVenderChange" @size-change="handleVenderSizeChange"
+                           :pager-count="5"
+                           :current-page="venderCurrentPageData.venderCurrentPage" :page-size="pageSize" :page-sizes="pageList"
+                           layout="slot, sizes, prev, pager, next" :total="venderCurrentPageData.venderTotal" style="float:right">
+                <span>共{{venderCurrentPageData.venderTotal}}条记录，第{{venderCurrentPageData.venderCurrentPage}}页，共{{venderCurrentPageData.venderTotalPage}}页</span>
+            </el-pagination>
+        </el-col>
+    </el-dialog>
+
+    <el-dialog width="85%" :visible.sync="questionWin" :before-close="questionWinClose"
+               v-bind:title="questionnaire.questionnaireTitle"  class="titleDetail">
+        <el-card class="box-card" v-for="(topic,index) in questionnaire.topics" :key="index">
+            <div slot="header" class="clearfix" :key="index">
+                <span>{{topic.topicTitle}}</span>
+            </div>
+            <el-radio-group v-model="topic.topicOp" disabled>
+                <el-row>
+                    <el-col v-for="(option,index) in topic.options" :key="index">
+                        <el-radio  :label="option.id" style="width: 100%;text-overflow: ellipsis;white-space: normal;">{{option.optionName}}</el-radio>
+                    </el-col>
+                </el-row>
+            </el-radio-group>
+        </el-card>
+    </el-dialog>
+</div>
+</body>
+<script src="../../js/modules/base/questionnaireWo.js"></script>
+</html>

@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        .el-table .cell{
+            white-space: nowrap !important;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+        input[type="number"]{
+            -moz-appearance: textfield;
+        }
+        #file {
+            outline: 0.01rem;
+            background-color: transparent;
+            filter: alpha(opacity=0);
+            -moz-opacity: 0;
+            -khtml-opacity: 0;
+            opacity: 0;
+            height: 0.4rem;
+            width: 100%;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.0rem;
+            height: 0.4rem;
+            line-height: 0.4rem;
+            overflow: hidden;
+        }
+
+        #upload {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            line-height: 0.4rem;
+            border: 0.01rem solid #dedede;
+            height: 0.4rem;
+        }
+        .el-col-25 {
+            width: 25%;
+        }
+        .el-col-33 {
+            width: 31%;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<style type="text/css">
+    .el-row{
+        height: 0.35rem;
+        margin-bottom: 0.1rem;
+    }
+    .el-col{
+        height: 0.35rem;
+    }
+    .el-form-item__label{
+        width: 0.8rem;
+    }
+    .el-form-item__content{
+        margin-left: 0.8rem;
+    }
+    .el-form-item.is-error .el-input__inner {
+        border-color: #f56c6c;
+    }
+    .el-form{
+        padding: 0.01rem 0.1rem 0.1rem 0.5rem;
+    }
+
+
+
+
+
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="costApplicationApp" v-cloak>
+    <div>
+        <el-form ref="form" :model="form" :rules="formRules" label-width="1.0rem">
+            <el-row>
+                <el-col :span="13">
+                    <el-form-item prop="venderId" label="供应商号:">
+                        <el-input id="form_venderid" class="inline-input" readonly v-model="form.venderId" @blur="getGys"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="13">
+                    <el-form-item label="供应商名称:">
+                        <el-input class="inline-input" readonly v-model="form.venderName"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="13">
+                    <el-form-item label="开户行名称:">
+                        <el-input class="inline-input" readonly v-model="form.bankName"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="13">
+                    <el-form-item label="银行账号:">
+                        <el-input class="inline-input" readonly v-model="form.bankAccount"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="13">
+                    <el-form-item prop="staffEmail" label="审批人邮箱:">
+                        <el-input class="inline-input" v-model="form.staffEmail" @blur="blurStaffEmail" maxlength="100">
+                            <template slot="append">@walmart.com</template>
+                        </el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="13">
+                    <el-form-item prop="businessType" label="业务类型:">
+                        <el-select v-model="form.businessType" filterable @change="changeBusinessType" style="width:100%;" :disabled="isAble">
+                            <el-option
+                                    v-for="item in businessTypeOptions"
+                                    :key="item.optionKey"
+                                    :label="item.optionName"
+                                    :value="item.optionKey">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="33">
+                    <el-form-item prop="settlementAmount" label="结算金额:">
+                        <el-input type="number" v-model="form.settlementAmount" @blur="changeAmount"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="33">
+                    <el-form-item label="费用总金额:">
+                        <el-input type="number" class="inline-input" readonly v-model="form.costTotalAmount"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="33">
+                    <el-form-item label="发票总金额:">
+                        <el-input type="number" class="inline-input" readonly v-model="form.invoiceTotalAmount"></el-input>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+
+
+
+
+    <div class="fieldset" >
+        <div class="legend">费用详细</div>
+        <el-form ref="invoiceForm" :model="invoiceForm">
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="发票类型:">
+                        <el-select v-model="invoiceForm.invoiceKind" filterable @change="changeKind">
+                            <el-option v-for="item in kindOptions"
+                                       :key="item.optionKey"
+                                       :label="item.optionName"
+                                       :value="item.optionKey">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="JV:">
+                        <el-select v-model="invoiceForm.gfTaxNo" filterable>
+                            <el-option
+                                    v-for="item in gfInfoOptions"
+                                    :key="item.optionKey"
+                                    :label="item.optionName"
+                                    :value="item.optionKey">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="发票代码:">
+                        <el-input class="inline-input" v-model="invoiceForm.invoiceCode" @blur="changeItem"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="发票号码:">
+                        <el-input class="inline-input" v-model="invoiceForm.invoiceNo" @blur="searchInvoice"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="开票日期:" id="requireMsgs2">
+                        <el-date-picker
+                                type="date"
+                                :picker-options="invoiceDateOptions"
+                                :editable="false" :clearable="false"
+                                placeholder="选择日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                v-model="invoiceForm.invoiceDate" default-value="" >
+                        </el-date-picker>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="不含税金额:">
+                        <el-input type="number" class="inline-input" v-model="invoiceForm.invoiceAmount"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="税额:">
+                        <el-input type="number" class="inline-input" v-model="invoiceForm.taxAmount"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="含税金额:">
+                        <el-input type="number" class="inline-input" v-model="invoiceForm.totalAmount"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="税率:" id="rate_tip_id">
+                        <el-select v-model="invoiceForm.taxRate" filterable>
+                            <el-option
+                                    v-for="item in rateOptions"
+                                    :key="item.optionKey"
+                                    :label="item.optionName"
+                                    :value="item.optionKey">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12" id="item-checkCode">
+                    <el-form-item label="校验码:">
+                        <el-input type="number" maxlength="6" class="inline-input" v-model="invoiceForm.checkCode" placeholder="请录入后六位数字"></el-input>
+                        <div id="codeTic" style="color: red">请录入后六位数字</div>
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport"  @click="addInvoice(false)">保存</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport"  @click="importIn()">批量导入</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+
+        <el-table border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                  :default-expand-all="true">
+            <el-table-column :show-overflow-tooltip="true"  type="expand" >
+                <template slot-scope="props">
+                    <div>
+                        <span>税率明细</span>
+                        <el-form ref="props.row.invoiceRateForm" :model="props.row.invoiceRateForm">
+                            <el-row>
+                                <el-col :span="6">
+                                    <el-form-item label="含税金额:">
+                                        <el-input type="number" class="inline-input" v-model="props.row.invoiceRateForm.invoiceAmount"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="税率:">
+                                        <el-select v-model="props.row.invoiceRateForm.taxRate" filterable>
+                                            <el-option
+                                                    v-for="item in rateOptions"
+                                                    :key="item.optionKey"
+                                                    :label="item.optionName"
+                                                    :value="item.optionKey">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="6">
+                                    <el-form-item label="税额:">
+                                        <el-input type="number" class="inline-input" v-model="props.row.invoiceRateForm.taxAmount"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="1" :offset="1">
+                                    <el-button class="btnexport"  @click="addRate(props.row)">保存</el-button>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                        <el-table border fit :data="props.row.rateTableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                                  :default-expand-all="false">
+                            <el-table-column :show-overflow-tooltip="true"  type="expand" >
+                                <template slot-scope="costProps">
+                                    <div>
+                                        <span>费用行信息</span>
+                                        <el-form ref="costProps.row.costForm" :model="costProps.row.costForm">
+                                            <el-row>
+                                                <el-col :span="14">
+                                                    <el-form-item label="费用发生时间:" label-width="1.4rem">
+                                                        <el-row>
+                                                            <el-col :span="13">
+                                                                <el-date-picker type="date" placeholder="选择日期" v-model="costProps.row.costForm.costTime1"
+                                                                                :clearable="false" :editable="false"
+
+                                                                                format="yyyy-MM-dd" value-format="yyyy-MM-dd">
+                                                                </el-date-picker>
+                                                            </el-col>
+                                                            <el-col :span="2">至</el-col>
+                                                            <el-col :span="13">
+                                                                <el-date-picker type="date" placeholder="选择日期" v-model="costProps.row.costForm.costTime2"
+                                                                                :clearable="false" :editable="false"
+
+                                                                                format="yyyy-MM-dd" value-format="yyyy-MM-dd">
+                                                                </el-date-picker>
+                                                            </el-col>
+                                                        </el-row>
+                                                    </el-form-item>
+                                                </el-col>
+                                                <el-col :span="7">
+                                                    <el-form-item label="用途:">
+                                                        <el-input class="inline-input" v-model="costProps.row.costForm.costUse"></el-input>
+                                                    </el-form-item>
+                                                </el-col>
+                                                <el-col :span="7">
+                                                    <el-form-item label="含税金额:">
+                                                        <el-input type="number" class="inline-input" v-model="costProps.row.costForm.costAmount"></el-input>
+                                                    </el-form-item>
+                                                </el-col>
+                                                <el-col :span="12">
+                                                    <el-form-item label="费用类型:">
+                                                        <el-select v-model="costProps.row.costForm.costType" filterable>
+                                                            <el-option
+                                                                    v-for="item in costTypeOptions"
+                                                                    :key="item.optionKey"
+                                                                    :label="item.optionName"
+                                                                    :value="item.optionKey">
+                                                            </el-option>
+                                                        </el-select>
+                                                    </el-form-item>
+                                                </el-col>
+                                                <el-col :span="1" :offset="1">
+                                                    <el-button class="btnexport"  @click="addCost(costProps.row)">保存</el-button>
+                                                </el-col>
+                                            </el-row>
+                                        </el-form>
+                                        <el-table border fit :data="costProps.row.costTableData" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+                                            <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+                                            <el-table-column :show-overflow-tooltip="true"  prop="costType" label="费用类型" align="left" header-align="center">
+                                                <template scope="scope">
+                                                    <el-select v-if="scope.row.isEdit" v-model="scope.row.costType" filterable>
+                                                        <el-option
+                                                                v-for="item in costTypeOptions"
+                                                                :key="item.optionKey"
+                                                                :label="item.optionName"
+                                                                :value="item.optionKey">
+                                                        </el-option>
+                                                    </el-select>
+                                                    <div v-else class="cell">{{scope.row.costTypeName}}</div>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column :show-overflow-tooltip="true"  prop="costTime" label="费用发生时间"  align="center" header-align="center" width="300">
+                                                <template scope="scope">
+                                                    <el-row v-if="scope.row.isEdit">
+                                                        <el-col :span="13">
+                                                            <el-date-picker type="date" placeholder="选择日期" v-model="scope.row.costTime1"
+                                                                            :clearable="false" :editable="false"
+
+                                                                            format="yyyy-MM-dd" value-format="yyyy-MM-dd">
+                                                            </el-date-picker>
+                                                        </el-col>
+                                                        <el-col :span="2">
+                                                            至</el-col>
+                                                        <el-col :span="13">
+                                                            <el-date-picker type="date" placeholder="选择日期" v-model="scope.row.costTime2"
+                                                                            :clearable="false" :editable="false"
+
+                                                                            format="yyyy-MM-dd" value-format="yyyy-MM-dd">
+                                                            </el-date-picker>
+                                                        </el-col>
+                                                    </el-row>
+                                                    <div v-else class="cell">{{scope.row.costTime}}</div>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column prop="costAmount" label="含税金额" align="right" header-align="center">
+                                                <template scope="scope">
+                                                    <el-input v-if="scope.row.isEdit" type="number" v-model="scope.row.costAmount"></el-input>
+                                                    <div v-else class="cell">{{numberFormat(null,null,scope.row.costAmount)}}</div>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column :show-overflow-tooltip="true"  prop="costUse" label="用途" align="left" header-align="center">
+                                                <template scope="scope">
+                                                    <el-input v-if="scope.row.isEdit" v-model="scope.row.costUse"></el-input>
+                                                    <div v-else class="cell">{{scope.row.costUse}}</div>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column :show-overflow-tooltip="true"  prop="costDeptId" label="费用承担部门" align="left" header-align="center" >
+                                                <template scope="scope">
+                                                    <el-select v-model="scope.row.costDeptId" filterable @blur="modifyCostOff(scope.row)">
+                                                        <el-option
+                                                                v-for="item in costProps.row.costDeptOptions"
+                                                                :key="item.optionKey"
+                                                                :label="item.optionName"
+                                                                :value="item.optionKey">
+                                                        </el-option>
+                                                    </el-select>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column :show-overflow-tooltip="true"  label="操作" class-name="noSpotSpotSpot" align="center">
+                                                <template scope="scope">
+                                                    <a v-if="scope.row.isEdit" @click="modifyCostOff(scope.row)"><span class="column-span" style="color: black">完成</span></a>
+                                                    <a v-if="!scope.row.isEdit" @click="modifyCostOn(scope.row)"><span class="column-span" style="color: black">修改</span></a>
+                                                    <a  @click="deleteCost(costProps.row.costTableData,scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                                                </template>
+                                            </el-table-column>
+                                        </el-table>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column type="index"  label="序号" align="center"></el-table-column>
+                            <el-table-column prop="invoiceAmount" label="含税金额" align="right" header-align="center">
+                                <template scope="scope">
+                                    <el-input v-if="scope.row.isEdit" type="number" v-model="scope.row.invoiceAmount"></el-input>
+                                    <div v-else class="cell">{{numberFormat(null,null,scope.row.invoiceAmount)}}</div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column :show-overflow-tooltip="true"  prop="taxRate" label="税率" align="right" header-align="center">
+                                <template scope="scope">
+                                    <el-select v-if="scope.row.isEdit" v-model="scope.row.taxRate" filterable>
+                                        <el-option
+                                                v-for="item in rateOptions"
+                                                :key="item.optionKey"
+                                                :label="item.optionName"
+                                                :value="item.optionKey">
+                                        </el-option>
+                                    </el-select>
+                                    <div v-else class="cell">{{scope.row.taxRateName}}</div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right" header-align="center" :formatter="numberFormat">
+                                <template scope="scope">
+                                    <el-input v-if="scope.row.isEdit" type="number" v-model="scope.row.taxAmount"></el-input>
+                                    <div v-else class="cell">{{numberFormat(null,null,scope.row.taxAmount)}}</div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column :show-overflow-tooltip="true"  label="操作" class-name="noSpotSpotSpot" align="center">
+                                <template scope="scope">
+                                    <a v-if="scope.row.isEdit" @click="modifyRateOff(scope.row)"><span class="column-span" style="color: black">完成</span></a>
+                                    <a v-if="!scope.row.isEdit" @click="modifyRateOn(scope.row)"><span class="column-span" style="color: black">修改</span></a>
+                                    <a  @click="deleteRate(props.row.rateTableData,scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="gfTaxNo" label="JV" align="left" header-align="center"  :show-overflow-tooltip="true">
+                <template scope="scope">
+                    <!--<el-select v-if="scope.row.isEdit" v-model="scope.row.gfTaxNo" filterable>-->
+                    <!--<el-option-->
+                    <!--v-for="item in gfInfoOptions"-->
+                    <!--:key="item.optionKey"-->
+                    <!--:label="item.optionName"-->
+                    <!--:value="item.optionKey">-->
+                    <!--</el-option>-->
+                    <!--</el-select>-->
+                    <div class="cell">{{scope.row.gfName}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码" align="left" header-align="center"  >
+                <template scope="scope">
+                    <div class="cell">{{scope.row.invoiceCode}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center" >
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img v-if="scope.row.invoiceType== '01'" style="height:0.2rem;" style="height:0.2rem;" src="../../img/special-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img v-if="scope.row.invoiceType== '03' " style="height:0.2rem;" style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img   v-if="scope.row.invoiceType=== '04' "
+                             style="height:0.2rem;" style="height:0.2rem;" src="../../img/plain-invoice.png"  />
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img v-if="scope.row.invoiceType== '10' " style="height:0.2rem;" style="height:0.2rem;" src="../../img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img   v-if="scope.row.invoiceType=== '11' "
+                             style="height:0.2rem;" style="height:0.2rem;" src="../../img/roll-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" style="height:0.2rem;" src="../../img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="不含税金额" align="right" header-align="center"  :formatter="numberFormat">
+                <template scope="scope">
+                    <el-input v-if="scope.row.isEdit" type="number" v-model="scope.row.invoiceAmount"></el-input>
+                    <div v-else class="cell">{{numberFormat(null,null,scope.row.invoiceAmount)}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxRate" label="税率" align="right"  header-align="center"  >
+                <template scope="scope">
+                    <el-select v-if="scope.row.isEdit" v-model="scope.row.taxRate" filterable>
+                        <el-option
+                                v-for="item in rateOptions"
+                                :key="item.optionKey"
+                                :label="item.optionName"
+                                :value="item.optionKey">
+                        </el-option>
+                    </el-select>
+                    <div v-else class="cell">{{scope.row.taxRateName}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right"  header-align="center"  :formatter="numberFormat">
+                <template scope="scope">
+                    <el-input v-if="scope.row.isEdit" type="number" v-model="scope.row.taxAmount"></el-input>
+                    <div v-else class="cell">{{numberFormat(null,null,scope.row.taxAmount)}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="totalAmount" label="含税金额" align="right"  header-align="center"  :formatter="numberFormat">
+                <template scope="scope">
+                    <el-input v-if="scope.row.isEdit" type="number" v-model="scope.row.totalAmount"></el-input>
+                    <div v-else class="cell">{{numberFormat(null,null,scope.row.totalAmount)}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" :formatter="dateFormat" >
+                <template scope="scope">
+                    <el-date-picker v-if="scope.row.isEdit"
+                                    type="date"
+                                    :picker-options="invoiceDateOptions"
+                                    :editable="false" :clearable="false"
+                                    placeholder="选择日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+                                    v-model="scope.row.invoiceDate">
+                    </el-date-picker>
+                    <div v-else class="cell">{{scope.row.invoiceDate}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="checkCode" label="校验码" align="center" header-align="center"  >
+                <template scope="scope">
+                    <el-input v-if="scope.row.isEdit" v-model="scope.row.checkCode"></el-input>
+                    <div v-else class="cell">{{scope.row.checkCode}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center">
+                <template scope="scope">
+                    <a v-if="scope.row.isEdit" @click="modifyInvoiceOff(scope.row)"><span class="column-span" style="color: black">完成</span></a>
+                    <a v-if="!scope.row.isEdit" @click="modifyInvoiceOn(scope.row)"><span class="column-span" style="color: black">修改</span></a>
+                    <a  @click="deleteInvoice(tableData,scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                </template>
+            </el-table-column>
+        </el-table>
+
+    </div>
+
+
+    <div style="overflow:hidden;">
+        <div style="float:left; width: 20%; text-align: center; margin-top: 0.15rem">
+            <span style="font-size: 0.14rem; font-weight: 700">备注:</span>
+        </div>
+        <div style="float:left; width: 70%">
+            <textarea id="remarkId" style="width: 100%;"></textarea>
+        </div>
+    </div>
+
+    <div class="fieldset" style="padding-top:0.5rem;">
+        <div class="legend">上传文件</div>
+        <el-form ref="fileForm" v-model="fileForm" enctype="multipart/form-data">
+            <el-row>
+                <el-col :span="14">
+                    <input id="fileId" type="file" style="margin-top: 0.1rem"/>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="上传文件类型:" label-width="1rem">
+                        <el-select v-model="fileForm.fileType" @change="changeFile" filterable>
+                            <el-option label="发票图片" value="1"></el-option>
+                            <el-option label="附件" value="2"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button id="uploadBtn" class="btnexport"  @click="uploadFile()" :loading="uploadLoading">上传</el-button>
+                </el-col>
+
+            </el-row>
+            <div id="tic" style="color: red">支持图片格式:*.jpg、*.png</div>
+        </el-form>
+        <el-table border fit :data="invoiceImgData" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+            <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="fileName" label="文件名称" align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="fileType" label="文件类型" align="left" header-align="center" :formatter="formatFileType">
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center" >
+                <template scope="scope">
+                    <a  @click="viewFile(scope.row)"><span class="column-span" style="color: black">查看</span></a>
+                    <a  @click="deleteFile(invoiceImgData,scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-table border fit :data="costFileData" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+            <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="fileName" label="文件名称" align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="fileType" label="文件类型" align="left" header-align="center" :formatter="formatFileType">
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center" >
+                <template scope="scope">
+                    <a  @click="deleteFile(costFileData,scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                </template>
+            </el-table-column>
+        </el-table>
+    </div>
+
+    <div style="text-align: center">
+        <el-button id="submitId" class="btnexport" style="font-size: 0.2rem" @click="submitAll()" :loading="submitLoading">提交</el-button>
+        <el-button class="btnexport" style="font-size: 0.2rem" @click="resetAll()">重置</el-button>
+    </div>
+
+    <el-dialog title="图片" :visible.sync="showImgWin" :close-on-click-modal="false" :before-close="beforeCloseImgWin">
+        <div class="image_content_area">
+            <img id="viewImgId" style="width: 100%" src="">
+        </div>
+
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="showImgWin = false">关 闭</button>
+        </span>
+    </el-dialog>
+
+
+    <el-dialog title="批量导入" :visible.sync="importDialogFormVisible" :before-close="importFormCancel" :close-on-click-modal="false" v-loading="listLoadingImport"  element-loading-text="正在拼命加载中">
+        <div style="width: 100%;height: 3.0rem;overflow: auto;">
+            <form id="upload_form" target="frm" method="post" enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label class="col-xs-5 control-label">选择导入文件:</label>
+                    <div class="col-xs-5" id="upload">
+                        <span v-html="selectFileFlag"></span>
+                        <input type="file" @change="onChangeFile($event)" id="file" name="file" class="text-input"
+                               hidden>
+                    </div>
+                </div>
+                <el-col :span="1" :offset="1">
+                    <el-button  class="btnexport" @click="showSelectFileWin()">浏览</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="batchImport($event)">导入文件</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="exportData()">模板下载</el-button>
+                </el-col>
+                <iframe id="frm" name="frm" style="display: none;"></iframe>
+            </form>
+        </div>
+    </el-dialog>
+</div>
+</body>
+<script src="../../js/modules/cost/costApplication.js"></script>
+</html>

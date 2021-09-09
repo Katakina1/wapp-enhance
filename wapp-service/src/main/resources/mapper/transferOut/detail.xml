@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.transferOut.dao.DetailDao">
+    <resultMap id="invoiceResultMap" type="com.xforceplus.wapp.modules.transferOut.entity.DetailEntity">
+        <id column="id" property="id"/>
+        <result column="uuid" property="uuid"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="detail_no" property="detailNo"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="model" property="model"/>
+        <result column="unit" property="unit"/>
+        <result column="num" property="num"/>
+        <result column="unit_price" property="unitPrice"/>
+        <result column="detail_amount" property="detailAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="cph" property="cph"/>
+        <result column="lx" property="lx"/>
+        <result column="txrqq" property="txrqq"/>
+        <result column="txrqz" property="txrqz"/>
+        <result column="goods_num" property="goodsNum"/>
+    </resultMap>
+
+
+    <select id="getOutInfo" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        out_date outDate,
+        out_by outBy,
+        out_reason outReason,
+        out_invoice_amout outInvoiceAmout,
+        out_tax_amount outTaxAmount
+        from t_dx_record_invoice_out WITH(NOLOCK)
+        where uuid=#{uuid} and is_cancel='0'
+        order by out_date asc
+    </select>
+
+    <select id="getInvoiceDetail" resultMap="invoiceResultMap">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT uuid FROM t_dx_record_invoice WITH(NOLOCK) where id=#{id})
+    </select>
+
+    <select id="getInvoiceDetailList" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT concat(invoice_code,invoice_no) uuid
+         FROM t_dx_redInvoice_detail WITH(NOLOCK)
+         where id=#{id})
+    </select>
+
+    <select id="getInvoiceDetailList1" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_record_invoice WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT concat(invoice_code,invoice_no) uuid
+        FROM t_dx_redInvoice_detail
+        where id=#{id})
+    </select>
+
+    <select id="getCheckInvoiceDetail" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_check_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT concat(invoice_code,invoice_no) FROM t_dx_check_log WITH(NOLOCK) where id=#{id})
+    </select>
+
+    <select id="getInvoiceDetailByUUID" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        *
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid = #{uuid}
+    </select>
+
+    <select id="getInvoiceDetailTotal" resultType="Integer">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        count(1)
+        FROM
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        WHERE
+        uuid in (SELECT uuid FROM t_dx_record_invoice WITH(NOLOCK) where id=#{id})
+    </select>
+
+</mapper>

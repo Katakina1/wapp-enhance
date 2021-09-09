@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.CertificationQueryDao">
+
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+    <!-- 数据库中表名为:t_dx_record_invoice的列名,as前是数据库的列明,as后是列的别名用于映射成实体类中的属性,需要注意的是别名必须与resultMap中的column别名一致 -->
+    <sql id="t_dx_record_invoice_Column">
+
+           tdri.id as id
+          ,tdri.auth_status as authStatus
+          ,tdri.rzh_back_msg as rzhBackMsg
+          ,tdri.rzh_yesorno as rzhYesorno
+          ,tdri.rzh_date as rzhDate
+          ,tdri.confirm_user as confirmUser
+          ,tdri.rzh_belong_date as rzhBelongDate
+          ,tdri.invoice_no as invoiceNo
+         ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'INVOICE_TYPE_TIP' AND tad.dictcode =tdri.invoice_type) invoiceTypeName
+         ,tdri.gf_tax_no as gfTaxNo
+         ,tdri.xf_tax_no as xfTaxNo
+         ,tdri.invoice_date as invoiceDate
+         ,tdri.gx_type as gxType
+         ,tdri.confirm_date as confirmDate
+         ,tdri.gf_name as gfName
+         ,tdri.xf_name as xfName
+         ,Convert(decimal(18,2),tdri.invoice_amount)  as invoiceAmount
+         ,Convert(decimal(18,2),tdri.tax_amount) as taxAmount
+         ,tdri.invoice_status as invoiceStatus
+         ,tdri.qs_status as qsStatus
+         ,tdri.qs_date as qsDate
+          ,tdri.qs_type as qsType
+          ,tdri.jvcode as jvCode
+          ,tdri.venderid as venderid
+          ,tdri.invoice_code as invoiceCode
+          ,tdri.company_code as companyCode
+          ,tdri.rzh_type as rzhType
+          ,tdri.tax_rate as taxRate
+           ,tdri.flow_type as flowType
+         ,tdri.certificate_no as certificateNo
+         ,tdri.host_taxRate as hostTaxRate
+         ,tdri.uuid as uuid
+         ,tdri.invoice_type as invoiceType
+        ,tdri.create_date as create_date
+
+    </sql>
+
+    <sql id="queryWhere">
+        <if test="gfTaxNo != null and gfTaxNo != '' and gfTaxNo != '-1'">
+            and  tdri.jvcode = #{gfTaxNo}
+        </if>
+         <if test="flowType != null and flowType != '' and flowType != '-1'">
+            and  tdri.flow_type = #{flowType}
+        </if>
+        <if test="xfName != null and xfName != ''">
+            AND tdri.xf_name LIKE '%'+ #{xfName} + '%'
+        </if>
+        <if test="invoiceStartDate != null and invoiceStartDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), tdri.invoice_date, 23) >= #{invoiceStartDate} ]]>
+        </if>
+        <if test="invoiceEndDate != null and invoiceEndDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), tdri.invoice_date, 23)  <= #{invoiceEndDate} ]]>
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND tdri.invoice_no LIKE  '%'+ #{invoiceNo} + '%'
+        </if>
+        <if test="invoiceStatus != null and invoiceStatus != ''">
+            AND tdri.invoice_status = #{invoiceStatus}
+        </if>
+        <if test="rzhYesorno != null and rzhYesorno != ''">
+            AND tdri.rzh_yesorno = #{rzhYesorno}
+        </if>
+        <if test="rzhStartDate != null and rzhStartDate != ''">
+            <![CDATA[ AND  CONVERT(varchar(100), tdri.rzh_date, 23)  >= #{rzhStartDate} ]]>
+        </if>
+        <if test="rzhEndDate != null and rzhEndDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), tdri.rzh_date, 23)  <= #{rzhEndDate} ]]>
+        </if>
+        <if test="rzhBelongDate != null and rzhBelongDate != ''">
+            AND tdri.rzh_belong_date = #{rzhBelongDate}
+        </if>
+        <if test="qsStatus != null and qsStatus != ''">
+            AND tdri.qs_status = #{qsStatus}
+        </if>
+
+        <if test="qsType != null and qsType != ''">
+            AND tdri.qs_type = #{qsType}
+        </if>
+        <if test="authStatus != null and authStatus != ''">
+            AND tdri.auth_status = #{authStatus}
+        </if>
+        <if test="qsStartDate != null and qsStartDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), tdri.qs_date, 23) >= #{qsStartDate} ]]>
+        </if>
+        <if test="qsEndDate != null and qsEndDate != ''">
+            <![CDATA[ AND  CONVERT(varchar(100), tdri.qs_date, 23)  <= #{qsEndDate} ]]>
+        </if>
+        <if test="rzhType != null and rzhType != ''">
+            AND tdri.rzh_type = #{rzhType}
+        </if>
+        <if test="companyCode != null and companyCode != ''">
+            AND tdri.company_code = #{companyCode}
+        </if>
+        <if test="venderid != null and venderid != ''">
+            AND tdri.venderid =#{venderid}
+        </if>
+    </sql>
+
+    <!-- 获取人员可以查看的数据 -->
+    <sql id="getAuthData">
+         t_dx_record_invoice tdri WITH(NOLOCK)
+    </sql>
+
+    <!-- 获取认证总数 认证处理状态大于0的，4认证成功，5认证失败 -->
+    <select id="getCertificationListCount" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT count(1) totalCount, ISNULL(sum(invoice_amount), 0) totalAmount, ISNULL(sum(tax_amount), 0) totalTax
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.auth_status != 0
+        and tdri.auth_status is not null
+        AND tdri.invoice_type in('01','08')
+		
+        <include refid="queryWhere"/>
+    </select>
+
+    <!-- 获取认证发票信息集 认证处理状态大于0的，4认证成功，5认证失败 -->
+    <select id="selectCertificationList" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        <if test="limit != null ">
+            TOP (#{limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.invoiceDate DESC,o.id) AS rownumber ,o.*
+        FROM
+        (SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.auth_status != 0
+        and tdri.auth_status is not null
+        AND tdri.invoice_type in('01','08')
+        <include refid="queryWhere"/>) AS o
+        ) A
+        WHERE
+        1=1
+        <if test="offset != null ">
+            and   rownumber > #{offset}
+        </if>
+    </select>
+
+    <!-- 获取认证发票信息集 认证处理状态大于0的，4认证成功，5认证失败 -->
+    <select id="selectCertificationListExport" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        <if test="limit != null ">
+            TOP (#{limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.invoiceDate DESC,o.id) AS rownumber ,o.*
+        FROM
+        (SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.auth_status != 0
+        and tdri.auth_status is not null
+        AND tdri.invoice_type in('01','08')
+        <include refid="queryWhere"/>) AS o
+        ) A
+        WHERE
+        1=1
+        <if test="offset != null ">
+            and   rownumber > #{offset}
+        </if>
+    </select>
+
+    <select id="queryHostTaxRate" resultType="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        select
+        t_ac_dictdeta.dictname label,
+        t_ac_dictdeta.dictcode  value
+        from  t_ac_dictdeta  WITH(NOLOCK)
+        LEFT JOIN t_ac_dicttype WITH(NOLOCK)  on  t_ac_dicttype.dicttypeid = t_ac_dictdeta.dicttype
+        where t_ac_dicttype.dicttypecode ='TAX_RATE_TAX_CODE' and  t_ac_dictdeta.dictcode=#{value}
+    </select>
+    <select id="getCostTaxCode" resultType="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        select
+        t_ac_dictdeta.dictname label,
+        t_ac_dictdeta.dictcode  value,
+        t_dx_settlement_cost.cost_type  costType,
+        t_dx_settlement_cost.cost_type_name  costTypeName
+        from  t_ac_dictdeta WITH(NOLOCK)
+        LEFT JOIN t_ac_dicttype  WITH(NOLOCK) on  t_ac_dicttype.dicttypeid = t_ac_dictdeta.dicttype
+        left join t_dx_settlement_rate  WITH(NOLOCK) on  t_ac_dictdeta.dictcode = t_dx_settlement_rate.tax_rate
+        left join t_dx_settlement_cost  WITH(NOLOCK) on  t_dx_settlement_rate.id =  t_dx_settlement_cost.rate_id
+        where t_ac_dicttype.dicttypecode ='COST_CODE_TAX_CODE'
+        and  (t_dx_settlement_rate.invoice_code + LEFT(t_dx_settlement_rate.invoice_no,8)) =#{uuid}
+    </select>
+    <select id="getCostServiceType" resultType="java.lang.String">
+        select
+        t_ac_dictdeta.dictname lable
+        from  t_ac_dictdeta WITH(NOLOCK)
+        LEFT JOIN t_ac_dicttype  WITH(NOLOCK) on  t_ac_dicttype.dicttypeid = t_ac_dictdeta.dicttype
+        where t_ac_dicttype.dicttypecode ='COST_SERVICE_TYPE_RATE' and t_ac_dictdeta.dictcode = #{value}
+    </select>
+    <select id="selectOrgType" resultType="java.lang.String">
+        select top(1) orgtype from t_ac_org with(nolock) where taxNo=#{taxNo} and orgname=#{orgName} and orgtype=5
+    </select>
+    <select id="getTaxRateDetail" resultType="String">
+        select tax_rate from t_dx_record_invoice_detail with(nolock) where invoice_no=#{invoiceNo} and invoice_code=#{invoiceCode} group by tax_rate
+    </select>
+</mapper>

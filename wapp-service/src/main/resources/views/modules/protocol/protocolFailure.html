@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <script src="../../libs/ajaxupload.js"></script>
+    <style type="text/css">
+
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .el-form--inline .el-form-item {
+            width: 35%;
+        }
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+        .el-form-item__error{
+            transform: translateY(-5px);;
+        }
+    </style>
+</head>
+<body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="vm" v-cloak>
+    <div>
+        <el-form :model="formInline" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="供应商号:">
+                        <el-input v-model="formInline.venderId" maxlength="255"
+                                  placeholder="请输入供应商号"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="协议号码:">
+                        <el-input v-model="formInline.agreementCode" placeholder="请输入发票号码"  maxlength="15"
+                                  @keyup.native="numberOnKey($event)"
+                                  @change="numberChange"></el-input>
+                    </el-form-item>
+                </el-col>
+                <!--<el-col :span="14">-->
+                    <!--<el-form-item label="协议定案日期:" prop="createDate" id="requireMsg2">-->
+                        <!--<el-row>-->
+                            <!--<el-col :span="13">-->
+                                <!--<el-date-picker @blur="blurpickerchange(1)" @focus="focuspickerchange(1)" type="date" id="datevalue1"-->
+                                                <!--placeholder="选择日期" v-model="formInline.createStartDate"-->
+                                                <!--:picker-options="createDateOptions"-->
+                                                <!--:clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>-->
+                            <!--</el-col>-->
+                            <!--<el-col class="line" :span="2">—</el-col>-->
+                            <!--<el-col :span="13">-->
+                                <!--<el-date-picker type="date" placeholder="选择日期" v-model="formInline.createEndDate" id="datevalue2"-->
+                                                <!--@blur="blurpickerchange(2)" @focus="focuspickerchange(2)"-->
+                                                <!--:picker-options="createEndDateOptions"-->
+                                                <!--:clearable="false" :editable="false" value-format="yyyy-MM-dd"></el-date-picker>-->
+                            <!--</el-col>-->
+                        <!--</el-row>-->
+                    <!--</el-form-item>-->
+                <!--</el-col>-->
+
+            </el-row>
+            <el-row>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="onSubmit">查询</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="exportData()" :disabled="total == 0">导出</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+    </div>
+    <hr>
+        <el-table  height="5rem" border fit :data="tableData" class="tableData" highlight-current-row
+                  style="width: 100%;font-size: 0.12rem;"  >
+            <el-table-column type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+
+            <el-table-column prop="protocolNo" label="协议号" align="center" header-align="center" :show-overflow-tooltip="true" ></el-table-column>
+            <el-table-column prop="venderId" label="供应商号" align="center" header-align="center"  ></el-table-column>
+            <el-table-column prop="deptNo" label="部门号" align="center" header-align="center"  ></el-table-column>
+            <el-table-column prop="seq" label="顺序号" align="center" header-align="center"  ></el-table-column>
+            <el-table-column prop="payItem" label="扣款项目" align="center"  header-align="center" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="payCompanyCode"  label="扣款公司供码" align="center" header-align="center" width="200" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="amount" label="扣款金额" align="right" header-align="center" width="110" :formatter="numberFormat"></el-table-column>
+            <el-table-column prop="protocolStatus"  label="协议状态" align="center" :formatter="formatProtocolStatus" header-align="center" width="120" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="borrowDate"   label="协议定案日期" align="center" :formatter="formatCaseDate" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="failureReason" label="失败原因" align="center" header-align="center"  :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="uploadDate"   label="上传日期" align="center" :formatter="formatUploadDate" :show-overflow-tooltip="true"></el-table-column>
+
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                           :current-page="currentPage"
+                           :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                           layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+                <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+            </el-pagination>
+        </el-col>
+
+    <el-dialog title="协议明细" :visible.sync="detailWin" :before-close="closeDetailWin" width="80%">
+        <el-table height="4rem" border fit :data="detailTableData" highlight-current-row style="width: 100%;font-size: 12px;"
+                  style="width: 100%; margin-top: 20px" >
+            <el-table-column type="index" width="80" label="序号"  header-align="center" align="center"></el-table-column>
+            <el-table-column property="reason" label="扣款原因" label-width="200px" :show-overflow-tooltip="true"
+                             align="center" header-align="center"></el-table-column>
+            <el-table-column property="number" label="号码" align="center" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column property="numberDesc" label="号码解释"  :show-overflow-tooltip="true" align="center"  header-align="center"></el-table-column>
+            <el-table-column prop="detailAmount" label="扣款金额" align="right" header-align="center" width="110" :formatter="numberFormat"></el-table-column>
+            <el-table-column property="store" label="店号" align="center" header-align="center"></el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog title="发票明细" :visible.sync="invoiceDetailWin" :before-close="closeInvoiceDetailWin" width="80%">
+        <el-table height="4rem" border fit :data="invoiceDetailTableData" highlight-current-row style="width: 100%;font-size: 12px;"
+                  style="width: 100%; margin-top: 20px" >
+            <el-table-column type="index" width="80" label="序号"  header-align="center" align="center"></el-table-column>
+            <el-table-column prop="invoiceNo" label="发票号码" width="100" align="left" header-align="center"></el-table-column>
+            <el-table-column prop="invoiceAmount" label="金额" width="100" align="right" header-align="center" width="110" :formatter="numberFormat"></el-table-column>
+            <el-table-column prop="fapiao" label="Fapi发票" align="center" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="companyCode" label="公司"  width="100" align="center"  header-align="center"></el-table-column>
+            <el-table-column prop="postDate"   label="邮寄时间" width="100" align="center" :formatter="formatPostDate" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="postNo" label="快递单号" align="center" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="postCompany" label="快递公司" align="center" header-align="center" :show-overflow-tooltip="true"></el-table-column>
+        </el-table>
+    </el-dialog>
+
+</div>
+</body>
+<script src="../../js/modules/protocol/protocolFailure.js"></script>
+</html>

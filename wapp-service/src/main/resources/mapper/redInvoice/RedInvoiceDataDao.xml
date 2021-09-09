@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redInvoiceManager.dao.RedInvoiceDao">
+
+        <insert id="insertRedInvoiceData" >
+            insert into t_dx_makeout_redInvoice (jv_code,store,invoice_amount,tax_amount,tax_rate,makeout_date,create_by,serial_number,create_date,invoice_type,buyer_name,spf_name)
+            values(
+            #{invoice.jvCode},
+            #{invoice.store},
+            #{invoice.invoiceAmount},
+            #{invoice.taxAmount},
+            #{invoice.taxRate},
+            #{invoice.invoiceDate},
+            #{invoice.createBy},
+            #{invoice.serialNumber},
+            getdate(),
+            #{invoice.invoiceType},
+            #{invoice.kpfName},
+            #{invoice.spfName}
+            )
+        </insert>
+
+        <select id="selectLastRedInvoiceData" resultType="java.lang.String">
+            select top(1) serial_number from t_dx_makeout_redInvoice  order by id desc
+        </select>
+
+        <select id="findTaxMD" resultType="java.lang.String">
+            select top(1) store_tax from t_ac_store where jvcode=#{jvcode}
+        </select>
+
+        <select id="findDict" resultType="java.lang.String">
+          SELECT dictcode from t_ac_dictdeta
+          where dicttype in (
+          select dicttypeid from t_ac_dicttype where dicttypecode='VATRATE'
+          )
+        </select>
+
+        <select id="selectIsExists" resultType="java.lang.Integer">
+            select  count(1) from t_dx_makeout_redInvoice where jv_code=#{jv} and makeout_date=#{invoiceDate} and invoice_amount=#{invoiceAmount}
+        </select>
+</mapper>

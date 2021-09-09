@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.protocol.dao.ProtocolDao">
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.protocol.entity.ProtocolEntity">
+        select * from (
+        select id,protocol_no, vender_id,dept_no,pay_item,pay_company_code,amount,protocol_status,
+        case_date,seq,o1.orgname venderName,o.orgname payCompany,pay_date,upload_date,
+        ROW_NUMBER() OVER(Order by id desc) AS rownum
+        from t_dx_protocol p
+        left join t_ac_user u WITH(NOLOCK) on p.vender_id = u.usercode
+        left join t_ac_org o1 WITH(NOLOCK) on u.orgid = o1.orgid
+        LEFT JOIN (select MAX(g.orgname) orgname,g.orgcode from t_ac_org g WITH(NOLOCK) group by g.orgcode) o ON p.pay_company_code = o.orgcode
+
+        where 1=1
+        <if test="venderId != null and venderId != ''">
+            and vender_id like  '%'+#{venderId}+'%'
+        </if>
+        <if test="agreementCode != null and agreementCode != ''">
+            and protocol_no like '%'+#{agreementCode}+'%'
+        </if>
+        <if test="payItem != null and payItem != ''">
+            and pay_item like '%'+#{payItem}+'%'
+        </if>
+        <if test="protocolXF == '1'.toString()">
+            and vender_id =#{userCode}
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23)  <= #{createEndDate} ]]>
+        </if>
+        <if test="uploadStartDate != null and uploadStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  >= #{uploadStartDate} ]]>
+        </if>
+        <if test="uploadEndDate != null and uploadEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  <= #{uploadEndDate} ]]>
+        </if>
+
+        ) a
+        <if test="offset != null and limit != null">
+        where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="int">
+        select count(1)
+        from t_dx_protocol  WITH(NOLOCK) where 1=1
+        <if test="protocolXF == '1'.toString()">
+            and vender_id=#{userCode}
+        </if>
+        <if test="venderId != null and venderId != ''">
+            and vender_id like  '%'+#{venderId}+'%'
+        </if>
+        <if test="agreementCode != null and agreementCode != ''">
+            and protocol_no like '%'+#{agreementCode}+'%'
+        </if>
+        <if test="payItem != null and payItem != ''">
+            and pay_item like '%'+#{payItem}+'%'
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23)  <= #{createEndDate} ]]>
+        </if>
+        <if test="uploadStartDate != null and uploadStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  >=  #{uploadStartDate} ]]>
+        </if>
+        <if test="uploadEndDate != null and uploadEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  <= #{uploadEndDate} ]]>
+        </if>
+        <if test="caseDate != null and caseDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23)  = #{caseDate} ]]>
+        </if>
+        <if test="invoiceAmount != null and invoiceAmount != ''">
+           and amount  = #{invoiceAmount}
+        </if>
+    </select>
+
+    <select id="queryFailureList" resultType="com.xforceplus.wapp.modules.protocol.entity.ProtocolEntity">
+        select * from (
+        select id,protocol_no, vender_id,dept_no,pay_item,pay_company_code,amount,protocol_status,
+        case_date,seq,pay_date,upload_date,reason,"number",
+        number_desc,detail_amount,store,failure_reason,
+        ROW_NUMBER() OVER(Order by id desc) AS rownum
+        from t_dx_protocol_failure p WITH(NOLOCK)
+
+        where 1=1
+        <if test="venderId != null and venderId != ''">
+            and vender_id like  '%'+#{venderId}+'%'
+        </if>
+        <if test="agreementCode != null and agreementCode != ''">
+            and protocol_no like '%'+#{agreementCode}+'%'
+        </if>
+        <if test="userCode != null and userCode != ''">
+            and create_by =#{userCode}
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23)  <= #{createEndDate} ]]>
+        </if>
+
+        ) a
+        <if test="offset != null and limit != null">
+            where <![CDATA[rownum>#{offset} and rownum<=#{offset}+#{limit}]]>
+        </if>
+    </select>
+
+    <select id="queryFailureCount" resultType="int">
+        select count(1)
+        from t_dx_protocol_failure WITH(NOLOCK)  where 1=1
+
+        <if test="venderId != null and venderId != ''">
+            and vender_id like  '%'+#{venderId}+'%'
+        </if>
+        <if test="agreementCode != null and agreementCode != ''">
+            and protocol_no like '%'+#{agreementCode}+'%'
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23)  <= #{createEndDate} ]]>
+        </if>
+    </select>
+
+    <select id="queryDetailList" resultType="com.xforceplus.wapp.modules.protocol.entity.ProtocolDetailEntity">
+        select *
+        from t_dx_protocol_detail WITH(NOLOCK)
+        where vender_id=#{venderId} and protocol_no=#{protocolNo}
+         <![CDATA[ and convert(varchar(100),case_date,23) = #{caseDate} ]]>
+        and amount=#{amount}
+    </select>
+
+    <select id="queryInvoiceDetailList" resultType="com.xforceplus.wapp.modules.protocol.entity.ProtocolInvoiceDetailEntity">
+        select d.*,o1.orgname venderName
+        from t_dx_protocol_invoice_detail d
+        left join t_ac_user u WITH(NOLOCK) on d.vender_id = u.usercode
+        left join t_ac_org o1 WITH(NOLOCK) on u.orgid = o1.orgid
+
+        where  protocol_no=#{protocolNo}
+         <![CDATA[ AND convert(varchar(100),case_date,23)  = #{caseDate} ]]>
+        <if test="venderName != null">
+            and venderName=#{venderName}
+        </if>
+    </select>
+
+    <select id="queryInvoiceDetailFailureList" resultType="com.xforceplus.wapp.modules.protocol.entity.ProtocolInvoiceDetailEntity">
+        select *
+        from t_dx_protocol_invoice_detail_failure
+    </select>
+
+    <select id="queryProtocolAndVenderId" resultType="int" >
+        select count(*) from t_dx_protocol WITH(NOLOCK)
+        where vender_id=#{entity.venderId}
+        and protocol_no =  #{entity.protocolNo}
+       <![CDATA[ AND convert(varchar(100),case_date,23) = #{entity.caseDate} ]]>
+        and amount=#{entity.amount}
+    </select>
+
+    <select id="queryProtocolAndVenderIdDetail" resultType="int" >
+        select count(*) from t_dx_protocol_detail WITH(NOLOCK)
+        where 1=1
+        and protocol_no =  #{entity.protocolNo}
+        <![CDATA[ AND convert(varchar(100),case_date,23) = #{entity.caseDate} ]]>
+        and number_desc =  #{entity.numberDesc}
+    </select>
+
+    <select id="queryInvoiceDetailExist" resultType="Long" >
+        select id from t_dx_protocol_invoice_detail WITH(NOLOCK)
+        where protocol_no=#{entity.protocolNo}
+        and vender_id = #{entity.venderId}
+        and invoice_no=#{entity.invoiceNo}
+        <if test="entity.invoiceAmount != null">
+            and invoice_amount = #{entity.invoiceAmount}
+        </if>
+        <if test="entity.invoiceAmount == null">
+            and invoice_amount is null
+        </if>
+    </select>
+
+    <delete id="deleteByProtocolAndVenderId">
+        delete from t_dx_protocol where vender_id = #{venderId} and protocol_no =#{protocolNo}
+    </delete>
+
+    <delete id="deleteByProtocolAndUserCode">
+        delete from t_dx_protocol_failure where create_by = #{userCode}
+    </delete>
+
+    <delete id="deleteByProtocolAndVenderIdDetail">
+        delete from t_dx_protocol_detail where vender_id = #{venderId} and protocol_no =#{protocolNo}
+    </delete>
+
+    <insert id="save" parameterType="com.xforceplus.wapp.modules.protocol.entity.ProtocolEntity">
+        insert into t_dx_protocol
+        (
+        vender_id,
+        protocol_no,
+        dept_no,
+        pay_item,
+        pay_company_code,
+        amount,
+        protocol_status,
+        seq,
+        case_date,
+        pay_date,
+        upload_date,
+        create_by
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.venderId},
+            #{item.protocolNo},
+            #{item.deptNo},
+            #{item.payItem},
+            #{item.payCompanyCode},
+            #{item.amount},
+            #{item.protocolStatus},
+            #{item.seq},
+            CONVERT(datetime,#{item.caseDate}),
+            CONVERT(datetime,#{item.payDate}),
+            getdate(),
+            #{item.userCode}
+        )
+        </foreach>
+    </insert>
+
+    <insert id="saveFailure" parameterType="com.xforceplus.wapp.modules.protocol.entity.ProtocolEntity">
+        insert into t_dx_protocol_failure
+        (
+        vender_id,
+        protocol_no,
+        dept_no,
+        pay_item,
+        pay_company_code,
+        amount,
+        protocol_status,
+        seq,
+        case_date,
+        pay_date,
+        upload_date,
+           reason,
+        "number",
+        number_desc,
+        detail_amount,
+        store,
+        failure_reason,
+        create_by
+        )
+        values
+        <foreach collection="list" item="item" separator=",">(
+            #{item.venderId},
+            #{item.protocolNo},
+            #{item.deptNo},
+            #{item.payItem},
+            #{item.payCompanyCode},
+            #{item.amount},
+            #{item.protocolStatus},
+            #{item.seq},
+            CONVERT(datetime,#{item.caseDate}),
+            CONVERT(datetime,#{item.payDate}),
+            getdate(),
+            #{item.reason},
+            #{item.number},
+            #{item.numberDesc},
+            #{item.detailAmount},
+            #{item.store},
+            #{item.failureReason},
+            #{userCode}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateInvoiceDetail">
+        update t_dx_protocol_invoice_detail
+        set
+        content=#{entity.content},
+        post_date=#{entity.postDate},
+        post_no=#{entity.postNo},
+        post_company=#{entity.postCompany},
+        case_date=#{entity.caseDate}
+        where id=#{entity.id}
+    </update>
+
+    <insert id="saveInvoiceDetail" parameterType="com.xforceplus.wapp.modules.protocol.entity.ProtocolInvoiceDetailEntity">
+        insert into t_dx_protocol_invoice_detail
+        (
+        vender_id,
+        protocol_no,
+        company_name,
+        invoice_no,
+        company_code,
+        invoice_amount,
+        fapiao,
+        seq,
+        case_date,
+        post_date,
+        "date",
+        content,
+        notes,
+        post_no,
+        post_company
+        )
+        values
+        (
+        #{entity.venderId},
+        #{entity.protocolNo},
+        #{entity.companyName},
+        #{entity.invoiceNo},
+        #{entity.companyCode},
+        #{entity.invoiceAmount},
+        #{entity.fapiao},
+        #{entity.seq},
+        CONVERT(datetime,#{entity.caseDate}),
+        CONVERT(datetime,#{entity.postDate}),
+        CONVERT(datetime,#{entity.date}),
+        #{entity.content},
+        #{entity.notes},
+        #{entity.postNo},
+        #{entity.postCompany}
+        )
+    </insert>
+
+    <insert id="saveFailureInvoiceDetail" parameterType="com.xforceplus.wapp.modules.protocol.entity.ProtocolInvoiceDetailEntity">
+        insert into t_dx_protocol_invoice_detail_failure
+        (
+        vender_id,
+        protocol_no,
+        company_name,
+        invoice_no,
+        company_code,
+        invoice_amount,
+        fapiao,
+        seq,
+        case_date,
+        post_date,
+        "date",
+        content,
+        notes,
+        post_no,
+        post_company,
+        failure_reason
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+        (
+        #{item.venderId},
+        #{item.protocolNo},
+        #{item.companyName},
+        #{item.invoiceNo},
+        #{item.companyCode},
+        #{item.invoiceAmount},
+        #{item.fapiao},
+        #{item.seq},
+        CONVERT(datetime,#{item.caseDate}),
+        CONVERT(datetime,#{item.postDate}),
+        CONVERT(datetime,#{item.date}),
+        #{item.content},
+        #{item.notes},
+        #{item.postNo},
+        #{item.postCompany},
+        #{item.failureReason}
+        )
+        </foreach>
+    </insert>
+
+    <insert id="saveDetail" parameterType="com.xforceplus.wapp.modules.protocol.entity.ProtocolDetailEntity">
+        insert into t_dx_protocol_detail
+        (
+        vender_id,
+        protocol_no,
+        reason,
+        "number",
+        number_desc,
+        detail_amount,
+        store,
+         upload_date,
+          case_date,
+        amount
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.venderId},
+            #{item.protocolNo},
+            #{item.reason},
+            #{item.number},
+            #{item.numberDesc},
+            #{item.detailAmount},
+            #{item.store},
+             getdate(),
+              CONVERT(datetime,#{item.caseDate}),
+            #{item.amount}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteProtocol">
+        delete from t_dx_protocol
+        where id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </delete>
+
+    <delete id="deleteProtocolDetail">
+        delete from t_dx_protocol_detail
+        where id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </delete>
+
+    <select id="queryProtocolById" resultType="com.xforceplus.wapp.modules.protocol.entity.ProtocolEntity">
+        SELECT
+        vender_id venderId,protocol_no protocolNo,amount,case_date caseDate
+        FROM t_dx_protocol
+        where id=#{id}
+    </select>
+
+    <update id="emptyFailureProtocol">
+       truncate  table t_dx_protocol_failure
+    </update>
+
+    <update id="emptyFailureInvoiceDetail">
+        truncate  table t_dx_protocol_invoice_detail_failure
+    </update>
+
+    <select id="queryProtocolIds" resultType="Long">
+        select id
+        from t_dx_protocol p WITH(NOLOCK)
+        where 1=1
+        <if test="venderId != null and venderId != ''">
+            and vender_id like  '%'+#{venderId}+'%'
+        </if>
+        <if test="agreementCode != null and agreementCode != ''">
+            and protocol_no like '%'+#{agreementCode}+'%'
+        </if>
+        <if test="payItem != null and payItem != ''">
+            and pay_item like '%'+#{payItem}+'%'
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),case_date,23)  <= #{createEndDate} ]]>
+        </if>
+        <if test="uploadStartDate != null and uploadStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  >= #{uploadStartDate} ]]>
+        </if>
+        <if test="uploadEndDate != null and uploadEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),upload_date,23)  <= #{uploadEndDate} ]]>
+        </if>
+    </select>
+
+    <select id="queryProtocolDetailIds" resultType="Long">
+        select d.id
+        from t_dx_protocol_detail d WITH(NOLOCK)
+        inner join t_dx_protocol p on  p.vender_id=d.vender_id and p.protocol_no=d.protocol_no and p.case_date =d.case_date and p.amount=d.amount
+        where p.id in (
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </select>
+</mapper>

@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.pack.dao.GenerateBindNumberDao">
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="taxname" property="label" />
+    </resultMap>
+
+    <resultMap id="flowoptionMap" type="com.xforceplus.wapp.modules.pack.entity.QueryFlowTypeEntity">
+        <result column="billtypecode" property="value" />
+        <result column="billTypeName" property="label"/>
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="map.offset != null and map.limit != null">
+        SELECT
+        TOP (#{map.limit}) A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER ( ORDER BY scanSubId asc,scanRightId asc) AS rownumber, o.*
+        FROM
+        (
+        </if>
+        select
+        DISTINCT(a.id),
+        RIGHT(a.scanning_seriano,17) scanRightId,
+		SUBSTRING(a.scanning_seriano,0,CHARINDEX('_', a.scanning_seriano)) scanSubId,
+        a.scanning_seriano invoiceSerialNo,
+        a.venderid venderId,
+        a.vendername venderName,
+        convert(varchar(100),a.scan_match_date,23) createDate,
+        a.gf_name gfName,
+        a.uuid,
+        a.invoice_type invoiceType,
+        a.invoice_code invoiceCode,
+        a.invoice_no invoiceNo,
+        convert(varchar(100),a.invoice_date,23) invoiceDate,
+        a.gf_tax_no gfTaxNo,
+        a.xf_tax_no xfTaxNo,
+        a.xf_name xfName,
+        a.invoice_amount invoiceAmount,
+        a.tax_amount taxAmount,
+        a.total_amount totalAmount,
+        a.remark,
+        a.invoice_status invoiceStatus,
+        a.rzh_date rzhDate,
+        a.qs_date qsDate,
+        a.rzh_belong_date rzhBelongDate,
+        a.rzh_yesorno rzhYesorno,
+        a.auth_status authStatus,
+        a.qs_type  qsType,
+        a.qs_status qsStatus,
+        a.jvcode jvcode,
+        a.company_code companyCode,
+        a.flow_type flowType,
+        a.tax_rate taxRate,
+        a.eps_no
+        from t_dx_record_invoice a WITH(NOLOCK)
+        <!--LEFT JOIN t_ac_org b WITH(NOLOCK) on b.orgcode = a.jvcode-->
+        where
+         a.scan_match_status='1'
+        and (a.bindyesorno != '1' or a.bindyesorno is null)
+        and (a.tp_status='0' or a.tp_status is null)
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and a.eps_no = #{map.epsNo}
+        </if>
+        <if test="map.flowType != null and map.flowType != '' and map.flowType != '-1'">
+            and a.flow_type = #{map.flowType}
+        </if>
+        <if test="map.orgcode != null and map.orgcode != ''">
+            and a.gf_tax_no in(select taxno from t_ac_org WITH(NOLOCK) where orgcode = #{map.orgcode})
+        </if>
+        <if test="map.companyCode != null and map.companyCode != ''">
+            and a.gf_tax_no in(select taxno from t_ac_org WITH(NOLOCK) where company_code = #{map.companyCode})
+            and a.company_code=#{map.companyCode}
+        </if>
+        <if test="map.venderId != null and map.venderId != ''">
+            and a.venderid = #{map.venderId}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and a.invoice_no =  #{map.invoiceNo}
+        </if>
+        <if test="map.invoiceSerialNo != null and map.invoiceSerialNo != ''">
+            and a.scanning_seriano like concat('%',concat(#{map.invoiceSerialNo},'%'))
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.scan_match_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.scan_match_date,23)  <= #{map.createDate2} ]]>
+        </if>
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        ORDER BY scanSubId,scanRightId asc
+        </if>
+        <!--limit #{map.offset}, #{map.limit}-->
+    </select>
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/
+        select count(DISTINCT(a.id)) totalCount, ISNULL(sum(a.invoice_amount),0) totalAmount, ISNULL(sum(a.tax_amount),0) totalTax
+        from t_dx_record_invoice a WITH(NOLOCK)
+       <!-- LEFT JOIN t_ac_org b WITH(NOLOCK) on b.orgcode = a.jvcode-->
+        where
+         a.scan_match_status='1'
+        and (a.bindyesorno != '1' or a.bindyesorno is null)
+        and (a.tp_status='0' or a.tp_status is null)
+        <if test="map.epsNo != null and map.epsNo != ''">
+            and a.eps_no = #{map.epsNo}
+        </if>
+        <if test="map.flowType != null and map.flowType != '' and map.flowType != '-1'">
+            and a.flow_type = #{map.flowType}
+        </if>
+        <if test="map.orgcode != null and map.orgcode != ''">
+            and a.gf_tax_no in(select taxno from t_ac_org WITH(NOLOCK) where orgcode = #{map.orgcode})
+        </if>
+        <if test="map.companyCode != null and map.companyCode != ''">
+            and a.gf_tax_no in(select taxno from t_ac_org WITH(NOLOCK) where company_code = #{map.companyCode})
+        </if>
+        <if test="map.venderId != null and map.venderId != ''">
+            and a.venderid = #{map.venderId}
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and a.invoice_no =  #{map.invoiceNo}
+        </if>
+        <if test="map.invoiceSerialNo != null and map.invoiceSerialNo != ''">
+            and a.scanning_seriano like concat('%',concat(#{map.invoiceSerialNo},'%'))
+        </if>
+        <if test="map.createDate1 != null and map.createDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),a.scan_match_date,23) >= #{map.createDate1} ]]>
+        </if>
+        <if test="map.createDate2 != null and map.createDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),a.scan_match_date,23)  <= #{map.createDate2} ]]>
+        </if>
+    </select>
+
+    <update id="bbindingnobyId">
+        update t_dx_record_invoice WITH(ROWLOCK)
+        <set>
+            bbindingno = #{bbindingNo},
+            bindyesorno = '1',
+            bbinding_date = getdate()
+        </set>
+        where id =  #{id}
+        <!--<foreach item="id" collection="ids" open="(" separator="," close=")">-->
+            <!--#{id}-->
+        <!--</foreach>-->
+
+    </update>
+
+    <select id="querybbindingno" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        select bbindingno
+        from t_dx_record_invoice WITH(NOLOCK)
+        where id =#{id}
+    </select>
+
+    <select id="querymaxbbindingno" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        select MAX(bbindingno) bbindingNo
+        from t_dx_record_invoice WITH(NOLOCK) 
+    </select>
+
+
+
+    <!--查询抵账表信息-->
+    <select id="getRecordInvoiceList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        invoice_code   invoiceCode,
+        invoice_no     invoiceNo,
+        invoice_type   invoiceType,
+        convert(varchar(100),invoice_date,23)   invoiceDate,
+        invoice_amount invoiceAmount,
+        tax_amount     taxAmount,
+        venderid       venderId,
+        vendername     venderName
+        from
+        t_dx_record_invoice WITH(NOLOCK)
+        where id = #{map.id}
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+
+    </select>
+    <!--查询发票明细条数-->
+    <select id="getRecordInvoiceListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_record_invoice WITH(NOLOCK)
+        where id = #{map.id}
+
+    </select>
+
+
+    <!--查看PO信息列表-->
+    <select id="getPOList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        pocode   poCode,
+        receiptid  receiptId,
+        amountunpaid  amountUnpaid,
+        receiptAmount   receiptAmount1,
+        venderid  venderId,
+        convert(varchar(100),receiptdate,23) receiptDate
+        from
+        t_dx_po where id in (select code from t_dx_match_po_claim_invoice where matchid in
+        (select matchid from t_dx_match_po_claim_invoice
+        where code_type='0' and code = #{map.id}) and code_type='1'
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+    <!--查看PO明细条数-->
+    <select id="getPOListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+        t_dx_po where id in (select code from t_dx_match_po_claim_invoice where matchid in
+        (select matchid from t_dx_match_po_claim_invoice
+        where code_type='0' and code = #{map.id}) and code_type='1'
+        )
+    </select>
+
+    <!--查看索赔信息列表-->
+    <select id="getClaimList" resultType="com.xforceplus.wapp.modules.pack.entity.GenerateBindNumberEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        id,
+        claimno   claimNo,
+        claimAmount  claimAmount1,
+        venderid  venderId,
+        convert(varchar(100),postdate,23) postDate
+        from
+        t_dx_claim where id in (select code from t_dx_match_po_claim_invoice where matchid in
+        (select matchid from t_dx_match_po_claim_invoice
+        where code_type='0' and code = #{map.id}) and code_type='2'
+        )
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+    <!--查看索赔明细条数-->
+    <select id="getClaimListCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from
+         t_dx_claim where id in (select code from t_dx_match_po_claim_invoice where matchid in
+        (select matchid from t_dx_match_po_claim_invoice
+        where code_type='0' and code = #{map.id}) and code_type='2'
+        )
+    </select>
+
+
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        /**mycat:schema=${schemaLabel}*/select
+        id,
+        uuid,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        gf_tax_no gfTaxNo,
+        gf_name gfName,
+        xf_tax_no xfTaxNo,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        total_amount totalAmount,
+        remark,
+        invoice_status invoiceStatus,
+        rzh_date rzhDate,
+        qs_date qsDate,
+        rzh_belong_date rzhBelongDate,
+        rzh_yesorno rzhYesorno,
+        auth_status authStatus,
+        qs_type  qsType,
+        qs_status qsStatus
+        from t_dx_record_invoice WITH(NOLOCK)
+        where valid='1'
+        <if test="map.gfName != null and map.gfName != '-1'">
+            and gf_tax_no = #{map.gfName}
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            and xf_name like concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),invoice_date,23) >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND convert(varchar(10),invoice_date,23)  <= #{map.invoiceDate2} ]]>
+        </if>
+        <if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">
+            and invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.invoiceType !=null and map.invoiceType != '-1'">
+            and invoice_type = #{map.invoiceType}
+        </if>
+        <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+            and qs_status = #{map.qsStatus}
+        </if>
+        <if test="map.rzhYesorno !=null and map.rzhYesorno != '-1'">
+            and rzh_yesorno = #{map.rzhYesorno}
+        </if>
+        <if test="map.qsType !=null and map.qsType != '-1'">
+            and qs_type = #{map.qsType}
+        </if>
+        <if test="map.qsDate1 != null and map.qsDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),qs_date,23) >= #{map.qsDate1} ]]>
+        </if>
+        <if test="map.qsDate2 != null and map.qsDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),qs_date,23)  <= #{map.qsDate2} ]]>
+        </if>
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        <if test="map.rzhDate1 != null and map.rzhDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),rzh_date,23) >= #{map.rzhDate1} ]]>
+        </if>
+        <if test="map.rzhDate2 != null and map.rzhDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),rzh_date,23)  <= #{map.rzhDate2} ]]>
+        </if>
+        and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+        order by invoice_date desc, id desc
+    </select>
+
+    <select id="searchFlowType" resultMap="flowoptionMap">
+        select
+        billtypename  billTypeName,
+        billtypecode
+        from
+        t_ac_billtype
+
+
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+	<meta charset="UTF-8">
+	<title>抵扣统计</title>
+	<link rel="stylesheet" href="../../libs/customer/index.css">
+	<style type="text/css">
+
+
+
+		[v-cloak] {
+			display: none;
+		}
+
+		.hideItem {
+			display: none !important;
+		}
+		
+		.qsItem {
+		}
+		
+	</style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+	<div id="appForm">
+		<el-form  :model="form" class="demo-form-inline" label-width="1.0rem">
+			<el-row>
+				<el-col :span="12">
+					<div class="grid-content bg-purple">
+				<el-form-item label="JV:">
+					<el-select v-model="form.gfTaxNo" filterable id="gfSelect" @focus="gfNameFocus" @blur="gfNameBlur">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option
+								v-for="gf in form.gfNames"
+								:key="gf.taxNo"
+								:label="gf.name"
+								:value="gf.taxNo">
+						</el-option>
+					</el-select>
+				</el-form-item>
+					</div>
+				</el-col>
+				<el-col :span="12">
+				<el-form-item label="税款所属期:" id="requireMsg4">
+					<el-col>
+						<el-date-picker type="month" placeholder="选择日期" v-model="form.skssq"
+										:picker-options="limitDate"  :editable="false"
+										:clearable="false" :editable="false" format="yyyyMM" value-format="yyyyMM"></el-date-picker>
+					</el-col>
+				</el-form-item>
+				</el-col>
+				<el-col :span="12">
+				<el-form-item  label="统计状态:" class="form-item">
+					<el-select v-model="form.tjStatus">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option label="未统计" value="0"></el-option>
+						<el-option label="统计中" value="1"></el-option>
+						<el-option label="统计成功" value="2"></el-option>
+						<el-option label="统计失败" value="3"></el-option>
+					</el-select>
+				</el-form-item>
+				</el-col>
+				<el-col :span="13">
+				<el-form-item  label="确认统计状态:" class="form-item">
+					<el-select v-model="form.qsStatus">
+						<el-option label="全部" value="-1" selected></el-option>
+						<el-option label="未确认" value="0"></el-option>
+						<el-option label="确认中" value="1"></el-option>
+						<el-option label="确认成功" value="2"></el-option>
+						<el-option label="确认失败" value="3"></el-option>
+					</el-select>
+				</el-form-item>
+				</el-col>
+				<el-col :span="4">
+				</el-col>
+				<el-col :span="12">
+					<el-form-item class="filter-item" label="是否需要密码:" >
+						<el-select v-model="form.dkWhetherPassword" >
+							<el-option label="否" value="0" selected></el-option>
+							<el-option label="是" value="1"></el-option>
+						</el-select>
+					</el-form-item>
+				</el-col>
+				<el-col :span="1" :offset="1" class="defaultShow">
+					<el-button class="btnexport" @click="query">查询</el-button>
+				</el-col>
+				<el-col :span="1" :offset="1" class="defaultShow">
+					<el-button id="export_btn1" disabled class="btnexport" @click="applyCount">申请统计</el-button>
+				</el-col>
+				<el-col :span="1" :offset="1" class="defaultShow">
+					<el-button id="export_btn2" disabled class="btnexport" @click="confirmCount">确认统计</el-button>
+				</el-col>
+			</el-row>
+		</el-form>
+	</div>
+	<hr>
+	<div>
+		<div align="left" style="float:left;font-size: 0.18rem; margin-top:0.09rem"><span id="totalStatistics"></span></div>
+	</div>
+	<el-table border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+			  v-loading="listLoading"   @selection-change="changeFun"
+			  element-loading-text="正在拼命加载中">
+
+		<el-table-column type="selection" width="55" align="center" class="selection" prop='id' @selection-change="changeFun"></el-table-column>
+		<el-table-column type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+
+		<el-table-column prop="taxno" label="购方税号" align="center" show-overflow-tooltip :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column prop="taxname" label="购方名称" align="center" show-overflow-tooltip :show-overflow-tooltip="true"></el-table-column>
+		<el-table-column  prop="skssq" label="税款所属期" align="left" width="100" ></el-table-column>
+        <el-table-column prop="tjDate" label="统计时间" align="center" header-align="center" :formatter="tjDateFormat">
+        </el-table-column>
+		<el-table-column prop="dksehj"  label="抵扣税额合计" align="center" :formatter="dksehjFormatDecimal">
+		</el-table-column>
+		<el-table-column prop="tjStatus" label="统计状态" width="100"  align="center" header-align="center">
+			<template scope="scope">
+				<span v-if="scope.row.tjStatus=== null" >—— ——</span>
+				<span v-if="scope.row.tjStatus=== ''" >—— ——</span>
+				<span v-if="scope.row.tjStatus=== '0'" >未统计</span>
+				<span v-if="scope.row.tjStatus=== '1'" >统计中</span>
+				<span v-if="scope.row.tjStatus=== '2'" >统计成功</span>
+				<span v-if="scope.row.tjStatus=== '3'" >统计失败</span>
+			</template>
+		</el-table-column>
+		<el-table-column prop="qsStatus" label="确认统计状态" align="center" >
+			<template scope="scope">
+				<span v-if="scope.row.qsStatus=== null" >—— ——</span>
+				<span v-if="scope.row.qsStatus=== ''" >—— ——</span>
+				<span v-if="scope.row.qsStatus=== '0'" >未确认</span>
+				<span v-if="scope.row.qsStatus=== '1'" >确认中</span>
+				<span v-if="scope.row.qsStatus=== '2'" >确认成功</span>
+				<span v-if="scope.row.qsStatus=== '3'" >确认失败</span>
+			</template>
+		</el-table-column>
+		<el-table-column prop="sfdqskssq" label="是否当前属期" align="center" header-align="center" show-overflow-tooltip :show-overflow-tooltip="true">
+			<template scope="scope">
+				<span v-if="scope.row.sfdqskssq=== null" >—— ——</span>
+				<span v-if="scope.row.sfdqskssq=== ''" >—— ——</span>
+				<span v-if="scope.row.sfdqskssq=== '0'" >否</span>
+				<span v-if="scope.row.sfdqskssq=== '1'" >是</span>
+			</template>
+		</el-table-column>
+		<el-table-column prop="dkWhetherPassword" label="是否需要密码"  align="center" header-align="center">
+			<template scope="scope">
+				<span v-if="scope.row.dkWhetherPassword=== null" >—— ——</span>
+				<span v-if="scope.row.dkWhetherPassword=== ''" >—— ——</span>
+				<span v-if="scope.row.dkWhetherPassword=== '0'" >否</span>
+				<span v-if="scope.row.dkWhetherPassword=== '1'" >是</span>
+			</template>
+		</el-table-column>
+		<el-table-column prop="id"  label="操作" width="150" align="center" >
+			<template scope="scope">
+                <span v-if="scope.row.tjStatus=='2'">
+                    <a   @click="openUpdateWin(scope.row)">
+                    <span class="column-span" style="color: black">明细</span></a>
+                </span>
+				<span v-else>
+                    <a style="color: #c0c4cc;text-decoration: none;cursor:not-allowed;">明细</a>
+                </span>
+			</template>
+		</el-table-column>
+	</el-table>
+	<el-col class="toolbar" style="padding:0.1rem;">
+		<el-pagination layout="slot, sizes,prev,pager,next" background
+					   :current-page.sync="currentPage" :page-size="pageSize" :total="total" :page-size="pageSize" :page-sizes="pageList" @size-change="handleSizeChange"
+					   :page-count="pageCount" @current-change="currentChange" style="float:right">
+		</el-pagination>
+		<span style="float: right;margin-top: 0.4%">共{{total}}条记录，第{{currentPage}}页，共{{pageCount}}页</span>
+	</el-col>
+	<el-dialog :title="'发票统计表(报表更新时间：'+tjDate+')'" :visible.sync="updateWin" width="80%" center>
+		<el-row>
+			<el-col :span="6"><div>纳税人名称：{{taxPayerName}}</div></el-col>
+			<el-col :span="6"><div>纳税人识别号：{{taxPayerNo}}</div></el-col>
+			<el-col :span="6"><div>所属月份：{{belongMonth}}</div></el-col>
+			<el-col :span="6"><div>单位：（份、元）</div></el-col>
+		</el-row>
+		<el-table :data="detailTable" width="100%">
+			<el-table-column prop="invoiceType" label="发票类型" align="center">
+				<template scope="scope">
+					<span v-if="scope.row.invoiceType=== null" >—— ——</span>
+					<span v-if="scope.row.invoiceType=== ''" >—— ——</span>
+					<span v-if="scope.row.invoiceType=== '01'" >增值税专用发票</span>
+					<span v-if="scope.row.invoiceType=== '03'" >机动车销售统一发票</span>
+					<span v-if="scope.row.invoiceType=== '14'" >增值税电子普通发票</br>（通行费）</span>
+					<span v-if="scope.row.invoiceType=== '17'" >海关缴款书</span>
+					<span v-if="scope.row.invoiceType=== '24'" >出口转内销发票</span>
+					<span v-if="scope.row.invoiceType=== '30'" >出口转内销海关缴款书</span>
+					<span v-if="scope.row.invoiceType=== '08'" >增值税专用电子发票</span>
+					<span v-if="scope.row.invoiceType=== '80'" >出口转内销专用电子发票</span>
+					<span v-if="scope.row.invoiceType=== '99'" >合计</span>
+				</template>
+			</el-table-column>
+			<el-table-column label="抵扣" align="center">
+				<el-table-column prop="dkInvoiceCount" label="份数" align="center" :formatter="dkNumFormat"></el-table-column>
+				<el-table-column prop="dkAmountCount" label="金额" align="center" :formatter="dkjeFormatDecimal"></el-table-column>
+				<el-table-column prop="dkTaxAmountCount" label="抵扣税额" align="center" :formatter="dkseFormatDecimal"></el-table-column>
+			</el-table-column>
+			<el-table-column label="不抵扣" align="center">
+				<el-table-column prop="bdkInvoiceCount" label="份数" align="center" :formatter="bdkNumFormat"></el-table-column>
+				<el-table-column prop="bdkAmountCount" label="金额" align="center" :formatter="bdkjeFormatDecimal"></el-table-column>
+				<el-table-column prop="bdkTaxAmountCount" label="抵扣税额" align="center" :formatter="bdkseFormatDecimal"></el-table-column>
+			</el-table-column>
+		</el-table>
+	</el-dialog>
+	<el-dialog title="请输入确认密码" :visible.sync="passwordWin" :before-close="closePasswordWin" width="50%">
+		<div style="width: 100%;">
+			<el-form ref="passwordForm" :model="passwordForm" label-width="1.2rem">
+				<el-row>
+					<el-col :span="16">
+						<el-form-item label="请输入确认密码:" class="form-item" prop="dkPassword" >
+							<el-input v-model="passwordForm.dkPassword" max-length="100" ></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+			</el-form>
+		</div>
+		<span slot="footer" class="dialog-footer">
+            <div align="right">
+                <el-button class="btnexport"  @click="confirmApplyCountPassword">确定</el-button>
+                <el-button class="queryBtn" @click="closePasswordWin()">取消</el-button>
+            </div>
+        </span>
+	</el-dialog>
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script src="../../js/modules/certification/dkCount.js"></script>
+</html>

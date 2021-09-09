@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.SignForQueryDao">
+
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.SignForQueryEntity">
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER ( order by scanSubId,scanRightId asc  ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        RIGHT(m.scan_id,17) scanRightId,
+		SUBSTRING(m.scan_id,0,CHARINDEX('_', m.scan_id)) scanSubId,
+        m.scan_id scanId,
+        m.id               Id,
+        m.qs_status        qsStatus,--签收状态
+        m.qs_date          qsDate,--签收日期
+        m.invoice_code     invoiceCode,--发票代码
+        m.invoice_no       invoiceNo,--发票号码
+        m.invoice_date      invoiceDate,--开票日期
+        m.gf_name          gfName,--购方名
+        m.xf_name          xfName,--销方名
+        m.invoice_amount   invoiceAmount,--金额
+        m.tax_amount       taxAmount,--税额
+        m.jv_code           jvCode,
+        m.company_code     companyCode,
+        m.invoice_type     invoiceType,
+        m.venderid         venderid,
+        m.notes            notes,
+        m.flow_type     flowType,
+        m.isdel         isdel,
+        r.scan_match_status scanMatchStatus,
+        r.scan_fail_reason  scanFailReason
+        from t_dx_invoice m WITH(NOLOCK)
+        left join t_dx_record_invoice r WITH(NOLOCK) ON m.uuid=r.uuid
+        <where>
+        <if test="map.jvCode != null and map.jvCode != ''and map.jvCode != '-1'">
+            and m.jv_code like concat('%',concat(#{map.jvCode},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and m.invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+            <if test="map.flowType != null and map.flowType != ''and map.flowType != '-1' ">
+                and m.flow_type =#{map.flowType}
+            </if>
+            and m.flow_type != '2'
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND convert(varchar(100),m.qs_date,23) >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND convert(varchar(100),m.qs_date,23)  <= #{map.invoiceDate2} ]]>
+        </if>
+        <!--<if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">-->
+            <!--and m.invoice_status = #{map.invoiceStatus}-->
+        <!--</if>-->
+        <!--<if test="map.invoiceType !=null and map.invoiceType != '-1'">-->
+            <!--and m.invoice_type = #{map.invoiceType}-->
+        <!--</if>-->
+        <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+            and m.qs_status = #{map.qsStatus}
+        </if>
+        <if test="map.companyCode != null and map.companyCode != ''">
+            and m.company_code = #{map.companyCode}
+       </if>
+       <if test="map.invoiceType !=null and map.invoiceType != '-1' and map.invoiceType != '-2'">
+            and m.invoice_type = #{map.invoiceType}
+       </if>
+         <if test="map.invoiceType == '-2'">
+            and m.invoice_type in ('01','04')
+       </if>
+       <if test="map.venderid != null and map.venderid != ''">
+             and m.venderid = #{map.venderid}
+        </if>
+        <if test="map.isdel ==0">
+                and (m.isdel = #{map.isdel} or m.isdel is null)
+        </if>
+        <if test="map.isdel ==1">
+                and m.isdel = #{map.isdel}
+        </if>
+    </where>
+        ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    order by scanSubId,scanRightId asc
+
+    </select>
+
+    <!--查询发票信息条数-->
+    <select id="invoiceMatchCount" resultType="Integer">
+        select count(1)
+        from t_dx_invoice m WITH(NOLOCK)
+        left join t_dx_record_invoice r WITH(NOLOCK) ON m.uuid=r.uuid
+        <where>
+            <if test="map.jvCode != null and map.jvCode != ''and map.jvCode != '-1'">
+                and m.jv_code like concat('%',concat(#{map.jvCode},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and m.invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+            </if>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.qs_date,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(100),m.qs_date,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+            <!--<if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">-->
+                <!--and m.invoice_status = #{map.invoiceStatus}-->
+            <!--</if>-->
+            <if test="map.invoiceType !=null and map.invoiceType != '-1'">
+                and m.invoice_type = #{map.invoiceType}
+            </if>
+            <if test="map.flowType != null and map.flowType != ''and map.flowType != '-1'">
+                and m.flow_type like concat('%',concat(#{map.flowType},'%'))
+            </if>
+            and m.flow_type != '2'
+            <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+                and m.qs_status = #{map.qsStatus}
+            </if>
+            <if test="map.companyCode != null and map.companyCode != ''">
+                and m.company_code = #{map.companyCode}
+            </if>
+            <if test="map.invoiceType !=null and map.invoiceType != '-1' and map.invoiceType != '-2'">
+                and m.invoice_type = #{map.invoiceType}
+            </if>
+            <if test="map.invoiceType == '-2'">
+                and m.invoice_type in ('01','04')
+            </if>
+            <if test="map.venderid != null and map.venderid != ''">
+                and m.venderid = #{map.venderid}
+            </if>
+            <if test="map.isdel ==0">
+                and (m.isdel = #{map.isdel} or m.isdel is null)
+            </if>
+            <if test="map.isdel ==1">
+                and m.isdel = #{map.isdel}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.InformationInquiry.entity.SignForQueryEntity">
+        select
+         RIGHT(m.scan_id,17) scanRightId,
+		SUBSTRING(m.scan_id,0,CHARINDEX('_', m.scan_id)) scanSubId,
+        m.scan_id scanId,
+        m.id               Id,
+        m.qs_status        qsStatus,--签收状态
+        m.qs_date          qsDate,--签收日期
+        m.invoice_code     invoiceCode,--发票代码
+        m.invoice_no       invoiceNo,--发票号码
+        m.invoice_date      invoiceDate,--开票日期
+        m.gf_name          gfName,--购方名
+        m.xf_name          xfName,--销方名
+        m.invoice_amount   invoiceAmount,--金额
+        m.tax_amount       taxAmount,--税额
+        m.jv_code           jvCode,
+        m.company_code     companyCode,
+        m.invoice_type     invoiceType,
+        m.venderid         venderid,
+        m.notes            notes,
+        m.flow_type     flowType,
+        m.isdel         isdel,
+        r.scan_match_status scanMatchStatus,
+        r.scan_fail_reason  scanFailReason
+        from t_dx_invoice m WITH(NOLOCK)
+        left join t_dx_record_invoice r WITH(NOLOCK) ON m.uuid=r.uuid
+        where 1=1
+            <if test="map.jvCode != null and map.jvCode != '' and map.jvCode != '-1'">
+                and m.jv_code like concat('%',concat(#{map.jvCode},'%'))
+            </if>
+            <if test="map.invoiceNo != null and map.invoiceNo != ''">
+                and m.invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+            </if>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.qs_date,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(100),m.qs_date,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+        <if test="map.flowType != null and map.flowType != ''and map.flowType != '-1'">
+            and m.flow_type like concat('%',concat(#{map.flowType},'%'))
+        </if>
+        and m.flow_type != '2'
+            <!--<if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">-->
+                <!--and m.invoice_status = #{map.invoiceStatus}-->
+            <!--</if>-->
+            <if test="map.invoiceType !=null and map.invoiceType != '-1'">
+                and m.invoice_type = #{map.invoiceType}
+            </if>
+            <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+                and m.qs_status = #{map.qsStatus}
+            </if>
+            <if test="map.companyCode != null and map.companyCode != ''">
+                and m.company_code = #{map.companyCode}
+            </if>
+            <if test="map.invoiceType !=null and map.invoiceType != '-1' and map.invoiceType != '-2'">
+                and m.invoice_type = #{map.invoiceType}
+            </if>
+            <if test="map.invoiceType == '-2'">
+                and m.invoice_type in ('01','04')
+            </if>
+            <if test="map.venderid != null and map.venderid != ''">
+                and m.venderid = #{map.venderid}
+            </if>
+            <if test="map.isdel ==0">
+            and (m.isdel = #{map.isdel} or m.isdel is null)
+            </if>
+            <if test="map.isdel ==1">
+            and m.isdel = #{map.isdel}
+            </if>
+            order by scanSubId,scanRightId asc
+    </select>
+
+
+</mapper>

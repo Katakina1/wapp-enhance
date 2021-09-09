@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style scoped>
+        .hide-dialog {
+            display: none;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        #file {
+            outline: 0.01rem;
+            background-color: transparent;
+            filter: alpha(opacity=0);
+            -moz-opacity: 0;
+            -khtml-opacity: 0;
+            opacity: 0;
+            height: 0.4rem;
+            width: 100%;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.0rem;
+            height: 0.4rem;
+            line-height: 0.4rem;
+            overflow: hidden;
+        }
+
+        #upload {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            line-height: 0.4rem;
+            border: 0.01rem solid #dedede;
+            height: 0.4rem;
+        }
+
+        .row {
+            padding: 0 !important;
+        }
+    </style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <form id="upload_form" target="frm" method="post" enctype="multipart/form-data">
+        <div class="row" style="border-top: 0">
+            <div class="col-xs-4" style="margin-top:0.05rem;">
+                <div class="form-group">
+                    <label class="col-xs-5 control-label">选择上传文件:</label>
+                    <div class="col-xs-5" id="upload">
+                        <span v-html="selectFileFlag"></span>
+                        <input type="file" @change="onChangeFile($event)" id="file" name="file" class="text-input"
+                               hidden>
+                    </div>
+                </div>
+            </div>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="showSelectFileWin()">浏览</el-button>
+            </el-col>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="uploadFile($event)">导入文件</el-button>
+            </el-col>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="exportData()">模板下载</el-button>
+            </el-col>
+            <el-col :span="1" :offset="1">
+                <el-button  class="btnexport" @click="reset()">重置</el-button>
+            </el-col>
+        </div>
+        <iframe id="frm" name="frm" style="display: none;"></iframe>
+    </form>
+    <hr>
+    <div style="clear: both"></div>
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;" style="width: 100%; margin-top: 0.2rem"  v-loading="listLoading" element-loading-text="正在拼命加载中">
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="jvCode" label="JVCODE"
+                         align="center"
+                         header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="store" label="税务承担店号"
+                         align="center"
+                         header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="kpfName" label="开票方名称" align="center"
+        ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="spfName" label="收票方名称" align="center"
+        ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="invoiceType" label="开票类型" header-align="center" align="center" :formatter="invoiceTypeFormat">
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="开红票金额" header-align="center" align="right" v-bind:formatter="numberFormat"
+        ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="taxRate" label="开红票税率" align="center"  >
+            <template scope="scope">
+                <span v-if="scope.row.taxRate == null" >—— ——</span>
+                <span v-else>{{scope.row.taxRate}}%</span>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="开红票税额" align="right" header-align="center"  v-bind:formatter="numberFormat"
+        ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票月份" align="center" :formatter="formatDate"></el-table-column>
+    </el-table>
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script type="text/babel">
+    var allDataList = [];
+    var dataList = [];
+    Vue.http.options.emulateJSON = true;
+    Vue.http.options.emulateHTTP = true;
+    new Vue({
+        el: '#rrapp',
+        i18n,
+        data: {
+            listLoading: false,
+            selectFileFlag: '',
+            fileList: [],
+            tableData: [],
+            tempTableData: [],
+            currentPage: 1,
+            total: 10,
+            importFileUrl: '',
+            multipleSelection: [],
+
+
+            token: token
+        },
+        mounted: function () {
+            this.importFileUrl = baseURL + sysUrl.importCertification;
+        },
+        methods: {
+
+            formatDate: function (row, column, cellValue, index) {
+                return dateFormatStrToYM(cellValue);
+            },
+            exportData() {
+                document.getElementById("ifile").src = baseURL + "export/redInvoiceTemplate";
+            },
+
+
+
+            onChangeFile: function (event) {
+
+                const str = $("#file").val();
+                const index = str.lastIndexOf('.');
+                var photoExt = str.substr(index, 4);
+                photoExt = photoExt.toLowerCase();
+                if (photoExt != '' && !(photoExt == '.xls' || photoExt == '.xlsx')) {
+                    alert("请上传excel文件格式!");
+                    this.isNeedFileExtension = false;
+                    return false;
+                } else {
+                    var meFile = event.target.files[0];
+                    if (event != undefined && meFile != null && meFile != '') {
+                        this.file = event.target.files[0];
+                        this.isNeedFileExtension = true;
+                        //截取名称最后18位
+                        this.selectFileFlag = event.target.files[0].name;
+                    }
+                }
+            },
+
+            uploadFile: function (event) {
+                if (!this.isNeedFileExtension) {
+                    alert("请上传excel文件格式!");
+                } else {
+                    event.preventDefault();
+                    if (this.file == '' || this.file == undefined) {
+                        alert("请选择excel文件!");
+                        return;
+                    }
+                    allDataList=[];
+                    const formData = new FormData();
+                    formData.append('file', this.file);
+                    formData.append('token', this.token);
+                    const config = {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    };
+                    this.tempTableData = this.tableData;
+                    this.tableData = [];
+                    this.listLoading = true;
+                    var flag = false
+                    var hh;
+                    const url = baseURL + "redInvoice/redInvoiceImport";
+                    this.$http.post(url, formData, config).then(function (response) {
+                        this.listLoading = false;
+                        flag = true;
+                        if(response.data.code !=undefined && response.data.code == 401) {
+                            return;
+                        }
+                        this.selectFileFlag = '';
+                        this.file = '';
+                        if(response.data.errorCount>0){
+                            alert("请检查数据是否完整！");
+                            return;
+                        }
+                        if (response.data.success) {
+                            if (this.tempTableData.length + response.data.reason.length + response.data.errorCount > 500) {
+                                this.tableData = this.tempTableData;
+                                alert('导入数据超过500条，请修改模板！');
+                                return;
+                            }
+                            for (var i = 0; i < response.data.reason.length; i++) {
+                                // if (dataList.length > 0 && this.contains(dataList, response.data.reason[i].invoiceCode + response.data.reason[i].invoiceNo)) {
+                                //     response.data.reason[i].noAuthTip = "0";
+                                //     allDataList.push(response.data.reason[i])
+                                // } else {
+                                //     dataList.push(response.data.reason[i].invoiceCode + response.data.reason[i].invoiceNo);
+                                //     allDataList.push(response.data.reason[i])
+                                // }
+                                allDataList.push(response.data.reason[i])
+                            }
+                            this.tableData = allDataList;
+                            // alert("共计导入" + (response.data.reason.length + response.data.errorCount) + "条，成功" + response.data.reason.length + "条,失败" + response.data.errorCount + "条");
+                            alert("共计导入" + (response.data.reason.length + response.data.errorCount) + "条，成功" + response.data.reason.length + "条");
+                            this.selectFileFlag = '';
+                            this.file = '';
+                            $("#upload_form")[0].reset();
+                        } else {
+                            this.tableData = this.tempTableData;
+                            alert(response.data.reason);
+                            this.selectFileFlag = '';
+                            this.file = '';
+                            $("#upload_form")[0].reset();
+                        }
+                    }, (err) => {
+                        this.tableData = this.tempTableData;
+                        this.listLoading = false;
+                        if (err.status == 408) {
+                            alert(err.statusText);
+                        }
+                    })
+                    var intervelId = setInterval(function () {
+                        if (flag) {
+                            hh=$(document).height();
+                            $("body",parent.document).find("#myiframe").css('height',hh+'px');
+                            clearInterval(intervelId);
+                            return;
+                        }
+                    },50);
+
+                }
+            },
+            invoiceTypeFormat: function (row, column, cellValue, index) {
+                if (cellValue != null && cellValue != "") {
+                    if(cellValue =="01"){
+                        cellValue = "增值税专用发票";
+                    }
+                    if(cellValue =="03"){
+                        cellValue="机动车销售统一发票";
+                    }
+                    if(cellValue =="14"){
+                        cellValue="增值税电子普通发票（通行费）";
+                    }if(cellValue=="04"){
+
+                        cellValue="增值税普通发票";
+                    }if(cellValue=="10"){
+                        cellValue="增值税电子普通发票";
+                    }
+                    if(cellValue=="11"){
+                        cellValue="增值税普通发票（卷票）";
+                    }
+                } else {
+                    return "";
+                }
+                return cellValue;
+            },
+
+
+
+
+            showSelectFileWin() {
+                this.selectFileFlag = '';
+                this.file = '';
+                $("#upload_form")[0].reset();
+                $("#file").click();
+            },
+
+
+
+            reset: function () {
+                var me = this;
+                this.openConfirm(this, "是否确认重置表格数据", function(){
+                    me.tableData=[];
+                    me.tempTableData=[];
+                    allDataList=[];
+                }, function () {
+
+                })
+            }
+        }
+    });
+
+
+</script>
+</html>

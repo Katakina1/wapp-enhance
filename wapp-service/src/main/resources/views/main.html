@@ -1,0 +1,1335 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--ele-->
+    <link rel="stylesheet" href="libs/customer/index.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/customer.css">
+    <link rel="stylesheet" href="css/index_main/index_main.css">
+    <!-- 先引入 Vue -->
+    <script src="libs/customer/vue.js"></script>
+    <!-- 引入组件库 -->
+    <script src="libs/customer/index.js"></script>
+
+    <script src="js/autoRem.js"></script>
+
+    <!--highcharts-->
+    <script src="libs/customer/highcharts1.js"></script>
+    <script>
+
+        //获取浏览器页面可见高度和宽度
+
+        var _PageHeight = document.documentElement.clientHeight,
+
+            _PageWidth = document.documentElement.clientWidth;
+
+        //计算loading框距离顶部和左部的距离（loading框的宽度为2.15rem，高度为0.61rem）
+
+        var _LoadingTop = _PageHeight > 61 ? (_PageHeight - 61) / 2 : 0,
+
+            _LoadingLeft = _PageWidth > 215 ? (_PageWidth - 215) / 2 : 0;
+
+        //在页面未加载完毕之前显示的loading Html自定义内容
+
+        var _LoadingHtml = '<div id="loadingDiv" style="position:absolute;left:0;width:100%;height:' + _PageHeight +
+            'px;top:0;background:white;opacity:98;filter:alpha(opacity=98);z-index:10000;">' +
+            '<div style="position: absolute; cursor1: wait; left: ' + _LoadingLeft + 'px; top:' + _LoadingTop + 'px; width: auto; height: 0.57rem; line-height: 0.57rem; padding-left: 0.5rem; padding-right: 0.05rem; background: #fff ' +
+            'border: 0.02rem solid #95B8E7; color: #red; font-family:\'Microsoft YaHei\';">' +
+            '页面加载中，请等待...</div></div>';
+
+        //呈现loading效果
+
+        document.write(_LoadingHtml);
+
+
+        //监听加载状态改变
+
+        document.onreadystatechange = completeLoading;
+
+        //加载状态为complete时移除loading效果
+
+        function completeLoading() {
+
+            if (document.readyState == "complete") {
+
+                var loadingMask = document.getElementById('loadingDiv');
+
+                loadingMask.parentNode.removeChild(loadingMask);
+
+            }
+
+        }
+    </script>
+    <style type="text/css">
+        .btn-row2 {
+        }
+        td{
+            position: relative;
+        }
+
+        span[name*="invoiceLog"] table tr td{
+            display: inline;
+        }
+        [v-cloak] {
+            display: none;
+        }
+        *{box-sizing: border-box;}
+        #shell{
+            width: 721px;
+            height: 756px;
+            position: absolute;
+            top: 0px;
+            left: -36px;
+        }.big{font-weight: 700;}
+
+        #shell>div:nth-child(1){
+            width: 100%;
+            height: 136px;
+            border-radius: 40px 40px 0px 0px;
+            background-color:#017cc2;
+        }#shell>div:nth-child(1)>img{
+             height: 44px;
+             position: absolute;
+             top: 24px;
+             left: 531px;
+         }#shell>div:nth-child(1)>div{
+              color: #eee;
+              position: absolute;
+              top: 66px;
+              left: 442px;
+              font-size: 20px;
+              letter-spacing: -1px;
+          }
+
+        #shell>div:nth-child(2){
+            width: 100%;
+            height: 533px;
+            padding: 8px 30px;
+            font-size: 16px;
+            background-color: #fff;
+            line-height: 25px;
+        }#shell>div:nth-child(2)>div{
+             border: 1px solid #000000;
+             width: 645px;
+             overflow: hidden;
+             margin-bottom: 20px;
+             margin-left: 5px;
+         }#shell>div:nth-child(2)>div>div{
+              float: left;
+              width: 50%;
+              border: 1px solid #000000;
+          }#shell>div:nth-child(2)>div>div:nth-child(1),#shell>div:nth-child(2)>div>div:nth-child(2){
+               background-color: #aaa;
+               text-align: center;
+               height: 30px;
+               line-height: 30px;
+           }#shell>div:nth-child(2)>div>div:nth-child(3),#shell>div:nth-child(2)>div>div:nth-child(4){
+                height: 160px;
+            }
+
+        #shell>div:nth-child(3){
+            width: 100%;
+            height: 88px;
+            border-radius: 0px 0px 40px 40px ;
+            background-color:#017cc2;
+            position: relative;
+        }#shell>div:nth-child(3)>div{
+             color: #EEEEEE;
+             position: absolute;
+             top: 45px;
+             left: 450px;
+         }
+        #announceWin>.el-dialog__wrapper>.el-dialog{
+            overflow-x: visible;
+        }
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+        a:link {color: #337ab7} /* 未访问的链接 */
+        a:visited {color: #337ab7} /* 已访问的链接 */
+        a:hover {color: #337ab7} /* 鼠标移动到链接上 */
+        a:active {color: #0000FF} /* 选定的链接 */
+    </style>
+</head>
+<body style="background-color:#f2f2f2;">
+<div id="index_main_panel">
+    <!---->
+    <div style=" width: 98%;margin: 0 auto;background-color: #FFFFFF;padding-top:0.2rem;">
+        <el-row>
+            <el-col :span="7">
+                <div class="grid-content bg-content">
+                    <span class="orangebox" style="margin-left: 0.2rem;"><i class="leftbox"></i>今日发票情况：<i
+                            class="rightbox"></i></span>
+                    <el-row>
+                        <el-col>
+                            <div>
+                                <a href="javascript:void(0);" @click="getDataList1()">
+                                    <el-tag type="success">{{dataCount1}}份发票采集</el-tag>
+                                </a>
+                                <a href="javascript:void(0);" @click="getDataList2()">
+                                    <el-tag type="success">{{dataCount2}}份发票查验
+                                    </el-tag>
+                                </a>
+                                <a href="javascript:void(0);" @click="getDataList3()">
+                                    <el-tag type="success">{{dataCount3}}份发票录入
+                                    </el-tag>
+                                </a>
+                            </div>
+                        </el-col>
+                    </el-row>
+
+                </div>
+
+            </el-col>
+            <el-col :span="1">
+                <table style="height:2.0rem;border-color:#EDEDED;border-left-style:solid;border-width:0.01rem">
+                    <tr>
+                        <td valign="top"></td>
+                    </tr>
+                </table>
+            </el-col>
+            <el-col :span="7">
+                <div class="grid-content bg-content">
+                    <span class="orangebox" style="margin-left: 0.2rem;"><i class="leftbox"></i>今日发票签收情况：<i
+                            class="rightbox"></i></span>
+                    <el-row>
+                        <el-col :span="24">
+                            <a href="javascript:void(0);" @click="getDataList4()">
+                                <el-tag type="success"> {{dataCount4}} 份签收成功</el-tag>
+                            </a>
+                            <a href="javascript:void(0);" @click="getDataList5()">
+                                <el-tag type="success"> {{dataCount5}} 份签收失败</el-tag>
+                            </a>
+                        </el-col>
+                    </el-row>
+                </div>
+            </el-col>
+            <el-col :span="1">
+                <table style="height:2.0rem;border-color:#EDEDED;border-left-style:solid;border-width:0.01rem">
+                    <tr>
+                        <td valign="top"></td>
+                    </tr>
+                </table>
+            </el-col>
+            <el-col :span="8">
+                <div class="grid-content bg-content">
+                    <span class="orangebox" style="margin-left: 0.2rem;"><i class="leftbox"></i>今日发票认证情况：<i
+                            class="rightbox"></i></span>
+                    <el-row>
+                        <el-col :span="24">
+                            <div>
+                                <a href="javascript:void(0);" @click="getDataList6()">
+                                    <el-tag type="success"> {{dataCount6}}份认证成功
+                                    </el-tag>
+                                </a>
+                                <a href="javascript:void(0);" @click="getDataList7()">
+                                    <el-tag type="success"> {{dataCount7}}份认证失败
+                                    </el-tag>
+                                </a>
+                                <a href="javascript:void(0);" @click="getDataList8()">
+                                    <el-tag type="success">{{dataCount8}}份未认证
+                                    </el-tag>
+                                </a>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </div>
+            </el-col>
+            <el-col :span="1">
+                <table style="height:2.0rem;border-color:#EDEDED;border-left-style:solid;border-width:0.01rem">
+                    <tr>
+                        <td valign="top"></td>
+                    </tr>
+                </table>
+            </el-col>
+            <el-col :span="8">
+                <div class="grid-content bg-content">
+                    <span class="orangebox" style="margin-left: 0.2rem;"><i class="leftbox"></i>今日扫描匹配情况：<i
+                            class="rightbox"></i></span>
+                    <el-row>
+                        <el-col :span="24">
+                            <div>
+                                <a href="javascript:void(0);" @click="getDataList9()">
+                                    <el-tag type="success"> {{dataCount9}}份扫描匹配成功
+                                    </el-tag>
+                                </a>
+                                <a href="javascript:void(0);" @click="getDataList10()">
+                                    <el-tag type="success"> {{dataCount10}}份扫描匹配失败
+                                    </el-tag>
+                                </a>
+                                <a href="javascript:void(0);" @click="getDataList11()">
+                                    <el-tag type="success">{{dataCount11}}份未扫描匹配
+                                    </el-tag>
+                                </a>
+                            </div>
+
+                        </el-col>
+                    </el-row>
+                </div>
+            </el-col>
+        </el-row>
+
+    </div>
+
+    <!--中间-->
+    <div style=" width:98%;    margin: 0 auto;background-color: #FFFFFF; padding-top: 0.01rem;">
+        <el-row style="margin-top:0.15rem;" :span="24">
+            <el-col :span="11.5" style="width: 45%">
+                <div class="center-grid-content bg-content">
+                    <div>
+                        <el-row style="display: inline-block">
+                            <el-col>
+                                <div class="contentd">
+                                    待办：
+                                </div>
+                            </el-col>
+                        </el-row>
+
+                    </div>
+                    <div>
+                        <el-row style="display: inline-block">
+                            <a href="javascript:void(0);" @click="getDataList12()">
+                                <el-col>
+                                    <div class="contentd">
+                                        申请开红票数量：<span>{{dataCount12}}份</span>
+                                    </div>
+                                </el-col>
+                            </a>
+                        </el-row>
+                        <el-row style="display: inline-block">
+                            <a href="javascript:void(0);" @click="getDataList13()">
+                                <el-col>
+                                    <div class="contentd">
+                                        已开红票数量：<span>{{dataCount13}}份</span>
+                                    </div>
+                                </el-col>
+                            </a>
+                        </el-row>
+                    </div>
+                </div>
+
+            </el-col>
+
+        </el-row>
+    </div>
+
+    <div style=" width:98%;    margin: 0 auto;background-color: #FFFFFF; padding-top: 0.01rem;">
+        <el-row style="margin-top:0.15rem;">
+            <el-col :span="11.5" style="width: 45%">
+                <div class="center-grid-content bg-content">
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    商品供应商发票邮寄地址：
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    <span>{{address1}}</span>
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    电话：<span>{{tel1}}</span> &nbsp;&nbsp; 邮编：<span>{{code1}}</span>
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    收件人：<span>{{recipients1}}</span>
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                </div>
+            </el-col>
+            <el-col :span="11.5" style="width: 45%">
+                <div class="center-grid-content bg-content">
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    费用供应商发票邮寄地址：
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    <span>{{address2}}</span>
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    电话：<span>{{tel2}}</span> &nbsp;&nbsp; 邮编：<span>{{code2}}</span>
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                    <el-row>
+                        <a href="javascript:void(0);">
+                            <el-col>
+                                <div class="contentd_xx">
+                                    收件人：<span>{{recipients2}}</span>
+                                </div>
+                            </el-col>
+                        </a>
+                    </el-row>
+                </div>
+            </el-col>
+        </el-row>
+        <el-row style="margin-left:0.15rem;">
+            <div class="contentd_xx">亦可直接人工投递至沃尔玛总部二号楼四楼收票箱</div>
+        </el-row>
+    </div>
+
+    <el-form ref="upform" :model="upform"  label-width="1.05rem">
+        <el-row style="display: /*inline-block*/block;margin-top: 0.05rem;margin-left: -0.35rem;">
+            <el-col :span="14">
+                <el-form-item label="发票选择:">
+                    <el-select id="selectqqq" v-model="upform.refundType"
+                               @change="func()">
+                        <el-option
+                                v-for="item in options"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+            </el-col>
+        </el-row>
+        <el-row style="display: /*inline-block*/block;margin-top: 0.05rem;margin-left: -0.35rem;">
+            <el-col :span="24">
+                <div class="contentd" style="margin-left: 0.3rem;">
+                    <span id="rz_span" style="display: block">
+                    <div
+                            style="display: inline-block;border: 0.01rem solid #FFAA00;cursor: pointer"
+                            id="showMonth"
+                            class="btnexport"
+                            @click="doStatisticsSwitchDay(2)"> 月报
+                    </div>
+                    <div
+                            style="display:inline-block;border: 0.01rem solid #FFAA00;cursor: pointer"
+                            id="showDay"
+                            class="btnexport"
+                            @click="doStatisticsSwitchDay(1)"> 日报
+                    </div>
+                        </span>
+                    <span id="qs_span" style="display: none">
+                          <div
+                                  style="display: inline-block;border: 0.01rem solid #FFAA00;cursor: pointer"
+                                  id="showMonth1"
+                                  class="btnexport"
+                                  @click="doStatisticsSwitchDayQS(2)"> 月报
+                    </div>
+                    <div
+                            style="display:inline-block;border: 0.01rem solid #FFAA00;cursor: pointer"
+                            id="showDay1"
+                            class="btnexport"
+                            @click="doStatisticsSwitchDayQS(1)"> 日报
+                    </div>
+                        </span>
+                </div>
+            </el-col>
+        </el-row>
+        </el-form>
+    <!--下-->
+
+    <div id="container" class="main-bottom-grid">
+    </div>
+
+    <el-dialog title="今日采集发票列表" :close-on-click-modal="false" :visible.sync="dialogVisible1" width="80%" center @close="closeDialog1">
+        <el-table  :data="dataList1" v-loading="listLoading1" border fit
+                  highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                  style="width: 100%; margin-top: 0.2rem"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex1" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="采集日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate"
+            ></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center"
+                             v-bind:formatter="numberFormat"
+            ></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center"
+                             v-bind:formatter="numberFormat"
+            ></el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange1"
+                           :pager-count="5"
+                           @size-change="handleSizeChange1"
+                           :current-page="currentPage1" :page-size="pageSize1" :page-sizes="pageList1"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount1"
+                           style="float:right">
+                <span>共{{dataCount1}}条记录，第{{currentPage1}}页，共{{totalPage1}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog1">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日查验发票列表" :close-on-click-modal="false" :visible.sync="dialogVisible2" width="80%" center
+               @close="closeDialog2">
+        <el-table  :data="dataList2" v-loading="listLoading2" border fit
+                  highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                  style="width: 100%; margin-top: 0.2rem"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex2" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="采集日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange2"
+                           :pager-count="5"
+                           @size-change="handleSizeChange2"
+                           :current-page="currentPage2" :page-size="pageSize2" :page-sizes="pageList2"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount2"
+                           style="float:right">
+                <span>共{{dataCount2}}条记录，第{{currentPage2}}页，共{{totalPage2}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog2">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票录入列表" :close-on-click-modal="false" :visible.sync="dialogVisible3" width="80%" center
+               @close="closeDialog3">
+        <el-table  :data="dataList3" v-loading="listLoading3" border fit
+                  highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                  style="width: 100%; margin-top: 0.2rem"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex3" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="采集日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange3"
+                           :pager-count="5"
+                           @size-change="handleSizeChange3"
+                           :current-page="currentPage3" :page-size="pageSize3" :page-sizes="pageList3"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount3"
+                           style="float:right">
+                <span>共{{dataCount3}}条记录，第{{currentPage3}}页，共{{totalPage3}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog3">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票签收成功列表" :close-on-click-modal="false" :visible.sync="dialogVisible4" width="80%" center
+               @close="closeDialog4">
+        <el-table  :data="dataList4" v-loading="listLoading4" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex4" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="扫描日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange4"
+                           @size-change="handleSizeChange4"
+                           :pager-count="5"
+                           :current-page="currentPage4" :page-size="pageSize4" :page-sizes="pageList4"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount4"
+                           style="float:right">
+                <span>共{{dataCount4}}条记录，第{{currentPage4}}页，共{{totalPage4}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog4">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票签收失败列表" :close-on-click-modal="false" :visible.sync="dialogVisible5" width="80%" center
+               @close="closeDialog5">
+        <el-table  :data="dataList5" v-loading="listLoading5" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex5" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="扫描日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+                &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                v-bind:formatter="numberFormat"
+                &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                v-bind:formatter="numberFormat"
+                &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange5"
+                           @size-change="handleSizeChange5"
+                           :pager-count="5"
+                           :current-page="currentPage5" :page-size="pageSize5" :page-sizes="pageList5"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount5"
+                           style="float:right">
+                <span>共{{dataCount5}}条记录，第{{currentPage5}}页，共{{totalPage5}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog5">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票认证成功列表" :close-on-click-modal="false" :visible.sync="dialogVisible6" width="80%" center
+               @close="closeDialog6">
+        <el-table  :data="dataList6" v-loading="listLoading6" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex6" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="rzhDate" label="认证时间" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange6"
+                           @size-change="handleSizeChange6"
+                           :pager-count="5"
+                           :current-page="currentPage6" :page-size="pageSize6"
+                           :page-sizes="pageList6"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount6"
+                           style="float:right">
+                <span>共{{dataCount6}}条记录，第{{currentPage6}}页，共{{totalPage6}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog6">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票认证失败列表" :close-on-click-modal="false" :visible.sync="dialogVisible7" width="80%" center
+               @close="closeDialog7">
+        <el-table  :data="dataList7" v-loading="listLoading7" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex7" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="rzhDate" label="认证时间" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+                &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                v-bind:formatter="numberFormat"
+                &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                v-bind:formatter="numberFormat"
+                &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange7"
+                           @size-change="handleSizeChange7"
+                           :pager-count="5"
+                           :current-page="currentPage7" :page-size="pageSize7"
+                           :page-sizes="pageList7"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount7"
+                           style="float:right">
+                <span>共{{dataCount7}}条记录，第{{currentPage7}}页，共{{totalPage7}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog7">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票未认证列表" :close-on-click-modal="false" :visible.sync="dialogVisible8" width="80%" center
+               @close="closeDialog8">
+        <el-table  :data="dataList8" v-loading="listLoading8" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex8" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="rzhDate" label="认证时间" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+                &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                v-bind:formatter="numberFormat"
+                &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                v-bind:formatter="numberFormat"
+                &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange8"
+                           @size-change="handleSizeChange8"
+                           :pager-count="5"
+                           :current-page="currentPage8" :page-size="pageSize8"
+                           :page-sizes="pageList8"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount8"
+                           style="float:right">
+                <span>共{{dataCount8}}条记录，第{{currentPage8}}页，共{{totalPage8}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog8">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票扫描匹配成功列表" :close-on-click-modal="false" :visible.sync="dialogVisible9" width="80%" center
+               @close="closeDialog9">
+        <el-table  :data="dataList9" v-loading="listLoading9" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex9" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="采集日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange9"
+                           :pager-count="5"
+                           @size-change="handleSizeChange9"
+                           :current-page="currentPage9" :page-size="pageSize9" :page-sizes="pageList9"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount9"
+                           style="float:right">
+                <span>共{{dataCount9}}条记录，第{{currentPage9}}页，共{{totalPage9}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog9">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票扫描匹配失败列表" :close-on-click-modal="false" :visible.sync="dialogVisible10" width="80%" center
+               @close="closeDialog10">
+        <el-table  :data="dataList10" v-loading="listLoading10" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex10" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="采集日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange10"
+                           :pager-count="5"
+                           @size-change="handleSizeChange10"
+                           :current-page="currentPage10" :page-size="pageSize10" :page-sizes="pageList10"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount10"
+                           style="float:right">
+                <span>共{{dataCount10}}条记录，第{{currentPage10}}页，共{{totalPage10}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog10">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="今日发票未扫描匹配列表" :close-on-click-modal="false" :visible.sync="dialogVisible11" width="80%" center
+               @close="closeDialog11">
+        <el-table  :data="dataList11" v-loading="listLoading11" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex11" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="createDate" label="采集日期" v-bind:show-overflow-tooltip="true"
+                             align="center" header-align="center" :formatter="formatDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceCode" label="发票代码" v-bind:show-overflow-tooltip="true"
+                             align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'" src="img/special-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' " src="img/motor-vehicles.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png"/>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceDate" label="开票日期" align="center" :formatter="formatDate">
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="gfName" label="购方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="xfName" label="销方名称" align="left" header-align="center"
+                             v-bind:show-overflow-tooltip="true" :formatter="formatterNull"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="invoiceAmount" label="金额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="taxAmount" label="税额" align="right" header-align="center">
+                             v-bind:formatter="numberFormat"
+            &gt;</el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange11"
+                           :pager-count="5"
+                           @size-change="handleSizeChange11"
+                           :current-page="currentPage11" :page-size="pageSize11" :page-sizes="pageList11"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount11"
+                           style="float:right">
+                <span>共{{dataCount11}}条记录，第{{currentPage11}}页，共{{totalPage11}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog11">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="申请开红票列表" :close-on-click-modal="false" :visible.sync="dialogVisible12" width="80%" center
+               @close="closeDialog12">
+        <el-table  :data="dataList12" v-loading="listLoading12" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex12" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="redticketDataSerialNumber" label="生成红票资料序列号" align="left" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="venderId" label="供应商号" align="left" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="redTotalAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="红冲总金额" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码" align="left" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center" :formatter="assignNullValue">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' " >增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'"  src="img/special-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '03' " >机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' "  src="img/motor-vehicles.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '04' " >增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"  />
+                        <div slot="content" v-if="scope.row.invoiceType== '10' " >增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' " >增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '14' " >增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png" />
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="redticketCreationTime" label="创建日期" align="center"
+                             :formatter="formatInvoiceDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="gfTaxNo" placement="bottom" :show-overflow-tooltip="true"  align="left" label="购方税号" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="金额" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="税额" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxRate" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="税率" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="totalAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="价税合计" header-align="center" :formatter="assignNullValue"></el-table-column>
+        </el-table>
+        <el-col class="toolbar"  style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange12"
+                           :pager-count="5"
+                           @size-change="handleSizeChange12"
+                           :current-page="currentPage12" :page-size="pageSize12" :page-sizes="pageList12"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount12"
+                           style="float:right">
+                <span>共{{dataCount12}}条记录，第{{currentPage12}}页，共{{totalPage12}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog12">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="已开红票列表" :close-on-click-modal="false" :visible.sync="dialogVisible13" width="80%" center
+               @close="closeDialog13">
+        <el-table  :data="dataList13" v-loading="listLoading13" border fit
+                   highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                   style="width: 100%; margin-top: 0.2rem"
+                   element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="mainIndex13" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="redticketDataSerialNumber" label="生成红票资料序列号" align="left" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="venderId" label="供应商号" align="left" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="redTotalAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="红冲总金额" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码" align="left" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center" :formatter="assignNullValue">
+                <template scope="scope">
+                    <span>{{ scope.row.invoiceNo }}</span>
+                    <el-tooltip class="item" effect="dark" placement="top-start">
+                        <div slot="content" v-if="scope.row.invoiceType== '01' " >增值税专用发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '01'"  src="img/special-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '03' " >机动车销售统一发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '03' "  src="img/motor-vehicles.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '04' " >增值税普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '04' "
+                             src="img/plain-invoice.png"  />
+                        <div slot="content" v-if="scope.row.invoiceType== '10' " >增值税电子普通发票</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '10' " src="img/einvoice.png"/>
+                        <div slot="content" v-if="scope.row.invoiceType== '11' " >增值税普通发票（卷票）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType=== '11' "
+                             src="img/roll-invoice.png" />
+                        <div slot="content" v-if="scope.row.invoiceType== '14' " >增值税电子普通发票（通行费）</div>
+                        <img style="height:0.2rem;" v-if="scope.row.invoiceType== '14' " src="img/general-invoice.png" />
+                    </el-tooltip>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="redticketCreationTime" label="创建日期" align="center"
+                             :formatter="formatInvoiceDate"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="gfTaxNo" placement="bottom" :show-overflow-tooltip="true"  align="left" label="购方税号" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="金额" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="税额" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxRate" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="税率" header-align="center" :formatter="assignNullValue"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="totalAmount" align="right" allowSort="true" decimalPlaces="2" dataType="float" label="价税合计" header-align="center" :formatter="assignNullValue"></el-table-column>
+        </el-table>
+        <el-col class="toolbar"  style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange13"
+                           :pager-count="5"
+                           @size-change="handleSizeChange13"
+                           :current-page="currentPage13" :page-size="pageSize13" :page-sizes="pageList13"
+                           layout="slot, sizes, prev, pager, next" :total="dataCount13"
+                           style="float:right">
+                <span>共{{dataCount13}}条记录，第{{currentPage13}}页，共{{totalPage13}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <div style="text-align: right">
+                <el-button class="btnexport" @click="closeDialog13">关闭</el-button>
+            </div>
+        </span>
+    </el-dialog>
+
+
+    <el-dialog title="未读公告列表"  :visible.sync="announceUnreadWin" :before-close="closeAnnounceUnreadWin"  width="50%">
+        <el-table   height="300"  border fit :data="announceTable" highlight-current-row style="width: 100%;font-size: 12px;"
+                   style="width: 100%; margin-top: 20px" v-loading="announceListLoading" >
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="80" label="序号" :index="announceIndex" header-align="center" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  property="announcementTitle" label="公告标题" label-width="120px" :show-overflow-tooltip="true" align="center" header-align="center">
+                <template scope="scope">
+                    <a  @click="detail(scope.row)" href="#">{{scope.row.announcementTitle}}</a>
+                </template>
+            </el-table-column>
+
+
+        </el-table>
+        <el-col class="toolbar"  style="padding:0.1rem;">
+            <el-pagination background @current-change="currentAnnounceChange" @size-change="handleAnnounceSizeChange"
+                           :pager-count="5"
+                           :current-page="announceCurrentPageData.announceCurrentPage" :page-size="pageSize" :page-sizes="pageList"
+                           layout="slot, sizes, prev, pager, next" :total="announceCurrentPageData.announceTotal" style="float:right">
+                <span>共{{announceCurrentPageData.announceTotal}}条记录，第{{announceCurrentPageData.announceCurrentPage}}页，共{{announceCurrentPageData.announceTotalPage}}页</span>
+            </el-pagination>
+        </el-col>
+    </el-dialog>
+    <div id="announceWin">
+        <el-dialog  :visible.sync="announceWin" :before-close="closeAnnounceWin"    width="650px" >
+            <div style="width: 100%;">
+                <el-form :ref="announceForm" :model="announceForm" name="announceForm">
+                    <div id="shell">
+                        <div>
+                            <img   src="img/WalmartLogo.jpg" />
+                            <div>{{announceForm.header}}</div>
+                            <a id="zdh" onclick="zdh()" href="javaScript:void(0);">最大化</a>
+                        </div>
+                        <div style="overflow-y:scroll">
+                            <span v-html="announceForm.announcementInfo"></span>
+                            <span v-if="announceForm.announcementType=='1'" slot="footer" class="dialog-footer">
+                            <div align="right">
+                                <el-button class="btnexport"  @click="agree">同意</el-button>
+                                <el-button class="queryBtn" @click="disagree">不同意</el-button>
+                            </div>
+                         </span>
+                            <span v-if="announceForm.announcementType=='0'" slot="footer" class="dialog-footer">
+                            <div align="right">
+                                <el-button class="btnexport"  @click="isRead">确认</el-button>
+                            </div>
+                         </span>
+                        </div>
+                        <div>
+                            <div>{{announceForm.footer}}</div>
+                        </div>
+                    </div>
+                </el-form>
+            </div>
+        </el-dialog>
+    </div>
+</div>
+
+<script src="libs/jquery.min.js"></script>
+<script src="libs/customer/vue-resource@1.5.1.js"></script>
+<script src="libs/router.js"></script>
+<script src="plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="libs/bootstrap.min.js"></script>
+<script src="js/modules/index/indexmodel.js"></script>
+<script src="js/common.js"></script>
+<script src="js/global.js"></script>
+<script src="libs/app.js"></script>
+<script src="plugins/layer/layer.js"></script>
+
+<script src="js/index.js"></script>
+<script src="js/modules/index/index_main.js"></script>
+</body>
+</html>

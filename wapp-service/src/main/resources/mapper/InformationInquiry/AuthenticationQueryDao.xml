@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.InformationInquiry.dao.AuthenticationQueryDao">
+
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+
+
+
+    <!-- 数据库中表名为:t_dx_record_invoice的列名,as前是数据库的列明,as后是列的别名用于映射成实体类中的属性,需要注意的是别名必须与resultMap中的column别名一致 -->
+    <sql id="t_dx_record_invoice_Column">
+         id as id
+        ,auth_status as auth_status
+        ,rzh_yesorno as rzhYesorno
+        ,rzh_date as rzhDate
+        ,rzh_belong_date as rzhBelongDate
+        ,invoice_code as invoiceCode
+        ,invoice_no as invoiceNo
+        ,invoice_type as invoiceType
+        ,invoice_date as invoiceDate
+        ,gf_tax_no as gfTaxNo
+        ,gf_name as gfName
+        ,xf_tax_no as xfTaxNo
+        ,shop_no as store
+        ,xf_name as xfName
+        ,total_amount as totalAmount
+        ,xf_name as vendername
+        ,uuid as uuid
+        ,Convert(decimal(18,2),invoice_amount)  as invoiceAmount
+        ,Convert(decimal(18,2),tax_amount) as taxAmount
+        ,invoice_status as invoiceStatus
+        ,jvcode as jvCode
+        ,company_code as companyCode
+        ,venderid
+        ,tax_rate as taxRate
+        ,flow_type as flowType
+        ,certificate_no as certificateNo
+        ,create_date as create_date
+        ,qs_date as qsDate
+        ,remark as remark
+        ,dk_invoiceAmount as dkInvoiceAmount
+        ,deductible_tax as deductibleTax
+        ,deductible_tax_rate as deductibleTaxRate
+        ,rzh_back_msg as rzhBackMsg
+        ,cost_dept_id as costDeptId
+        ,eps_no as epsNo
+        ,fixed_tax_code taxCode
+        ,is_gl gl
+       ,(select top 1 user_name scanName from t_dx_invoice aa WITH(NOLOCK) where  aa.uuid = uuid)  as scanName
+    </sql>
+
+    <sql id="queryWhere">
+        <if test="gfTaxNo != null and gfTaxNo != '' and gfTaxNo != '-1'">
+            and  jvcode = #{gfTaxNo}
+        </if>
+        <if test="rzhBelongDate != null and rzhBelongDate != '' and rzhBelongDate != '-1'">
+            and  rzh_belong_date = #{rzhBelongDate}
+        </if>
+        <if test="invoiceType != null and invoiceType != ''and invoiceType != '-1'">
+            AND invoice_type = #{invoiceType}
+        </if>
+        <if test="qsStartDate != null and qsStartDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), qs_date, 23) >= #{qsStartDate} ]]>
+        </if>
+        <if test="qsEndDate != null and qsEndDate != ''">
+            <![CDATA[ AND  CONVERT(varchar(100),qs_date, 23)  <= #{qsEndDate} ]]>
+        </if>
+        <if test="xfName != null and xfName != ''">
+            AND xf_name LIKE '%'+ #{xfName} + '%'
+        </if>
+
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND  invoice_no = #{invoiceNo}
+        </if>
+
+        <if test="companyCode != null and companyCode != ''">
+            AND company_code = #{companyCode}
+        </if>
+        <if test="venderid != null and venderid != ''">
+            AND venderid =#{venderid}
+        </if>
+        <if test="flowType != null and flowType != '' and flowType != '-1'">
+            AND flow_type =#{flowType}
+        </if>
+        <if test="gl != null and gl != '' and gl != '-1'">
+            AND is_gl =#{gl}
+        </if>
+        AND (no_deduction is null or no_deduction ='')
+        AND flow_type !='8'
+    </sql>
+
+    <select id="getCertificationListCount" resultMap="reportStatisticsMap">
+        select
+        aa.totalCount totalCount,
+        (
+        aa.totalAmount + aa.totalAmount1
+        ) totalAmount,
+        (aa.totalTax + aa.totalTax1) totalTax
+        from
+        (SELECT
+        COUNT (1) totalCount,
+        ISNULL(SUM(invoice_amount), 0) totalAmount,
+        ISNULL(SUM(tax_amount), 0) totalTax,
+        ISNULL(SUM(dk_invoiceAmount), 0) totalAmount1,
+        ISNULL(SUM(deductible_tax), 0) totalTax1
+        FROM
+        t_dx_record_invoice WITH(NOLOCK)
+        <where>
+            ((invoice_type ='01'and rzh_yesorno ='1')or(invoice_type ='04'AND deductible_tax_rate is not null and deductible_tax is not null and deductible_tax_rate>0 and deductible_tax>0 and host_status in('9','11','12','15','99','999')))
+        </where>
+        <include refid="queryWhere"/>) aa
+    </select>
+
+    <select id="selectCertificationList" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        SELECT
+        <if test="limit != null ">
+            TOP (#{limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.rzhDate asc,o.id asc) AS rownumber ,o.*
+        FROM
+        (
+        
+        SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM
+        t_dx_record_invoice WITH(NOLOCK)
+        <where>
+            ((invoice_type ='01'and rzh_yesorno ='1')or(invoice_type ='04'AND deductible_tax_rate is not null and deductible_tax is not null and deductible_tax_rate>0 and deductible_tax>0 and host_status in('9','11','12','15','99','999')))
+        </where>
+        <include refid="queryWhere"/>
+        
+        ) AS o
+        ) A
+        WHERE
+        1=1
+        <if test="offset != null ">
+            and   rownumber > #{offset} ORDER BY rzhDate asc, id asc
+        </if>
+    </select>
+
+    <select id="getAribaCertificationListCount" resultMap="reportStatisticsMap">
+        select
+        aa.totalCount totalCount,
+        (
+        aa.totalAmount + aa.totalAmount1
+        ) totalAmount,
+        (aa.totalTax + aa.totalTax1) totalTax
+        from
+        (SELECT
+        COUNT (1) totalCount,
+        ISNULL(SUM(cast(a.fapiao_total_amount as decimal)), 0) totalAmount,
+        ISNULL(SUM(cast(a.fapiao_tax_amount as decimal)), 0) totalTax,
+        ISNULL(SUM(t.dk_invoiceAmount), 0) totalAmount1,
+        ISNULL(SUM(t.deductible_tax), 0) totalTax1
+        FROM
+        t_dx_record_invoice t WITH (nolock)
+        JOIN t_dx_ariba_paid a ON t.invoice_code= a.fapiao_code
+        AND t.invoice_no= a.fapiao_number join t_ac_ariba_billtype b on a.mcc_code=b.mcc_code and a.gl_account=b.gl_account
+        <where>
+            t.rzh_yesorno ='1'
+        </where>
+        <if test="gfTaxNo != null and gfTaxNo != '' and gfTaxNo != '-1'">
+            and  a.jv_code = #{gfTaxNo}
+        </if>
+        <if test="rzhBelongDate != null and rzhBelongDate != '' and rzhBelongDate != '-1'">
+            and  t.rzh_belong_date = #{rzhBelongDate}
+        </if>
+        <if test="invoiceType != null and invoiceType != ''and invoiceType != '-1'">
+            AND t.invoice_type = #{invoiceType}
+        </if>
+        <if test="qsStartDate != null and qsStartDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), t.qs_date, 23) >= #{qsStartDate} ]]>
+        </if>
+        <if test="qsEndDate != null and qsEndDate != ''">
+            <![CDATA[ AND  CONVERT(varchar(100),t.qs_date, 23)  <= #{qsEndDate} ]]>
+        </if>
+        <if test="xfName != null and xfName != ''">
+            AND t.xf_name LIKE '%'+ #{xfName} + '%'
+        </if>
+
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND  t.invoice_no = #{invoiceNo}
+        </if>
+
+        <if test="companyCode != null and companyCode != ''">
+            AND t.company_code = #{companyCode}
+        </if>
+        <if test="venderid != null and venderid != ''">
+            AND a.venderid =#{venderid}
+        </if>
+        AND t.flow_type ='8'
+        AND (t.no_deduction is null or t.no_deduction ='')
+        ) aa
+    </select>
+
+    <select id="selectAribaCertificationList" resultType="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        SELECT
+        <if test="limit != null ">
+            TOP (#{limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.rzhDate asc,o.id asc) AS rownumber ,o.*
+        FROM
+        (
+        SELECT
+        t.id id,
+        t.invoice_no invoiceNo,
+        t.invoice_code invoiceCode,
+        t.invoice_type invoiceType,
+        t.qs_date,
+        a.fapiao_tax_amount taxAmount,
+        a.fapiao_total_amount totalAmount,
+        t.invoice_date invoiceDate,
+        t.invoice_amount,
+        t.gf_name gfName,
+        t.gf_tax_no gfTaxNo,
+        t.rzh_date  rzhDate,
+        a.tax_code taxCode,
+        a.supplier_number venderid,
+        a.supplier_name vendername,
+        a.purchasing_document_number remark,
+        a.cost_center store,
+        a.tax_rate taxRate,
+        a.mcc_code mccCode,
+        a.gl_account glAccount,
+        a.jv_code jvCode,
+        b.service_name serviceType,
+        b.service_type flowType
+        FROM
+        t_dx_record_invoice t WITH ( nolock )
+        JOIN t_dx_ariba_paid a ON t.invoice_code= a.fapiao_code
+        AND t.invoice_no= a.fapiao_number join t_ac_ariba_billtype b on a.mcc_code=b.mcc_code and a.gl_account=b.gl_account
+        <where>
+            t.rzh_yesorno ='1'
+        </where>
+        <if test="gfTaxNo != null and gfTaxNo != '' and gfTaxNo != '-1'">
+            and  t.jvcode = #{gfTaxNo}
+        </if>
+        <if test="rzhBelongDate != null and rzhBelongDate != '' and rzhBelongDate != '-1'">
+            and  t.rzh_belong_date = #{rzhBelongDate}
+        </if>
+        <if test="invoiceType != null and invoiceType != ''and invoiceType != '-1'">
+            AND t.invoice_type = #{invoiceType}
+        </if>
+        <if test="qsStartDate != null and qsStartDate != ''">
+            <![CDATA[ AND CONVERT(varchar(100), t.qs_date, 23) >= #{qsStartDate} ]]>
+        </if>
+        <if test="qsEndDate != null and qsEndDate != ''">
+            <![CDATA[ AND  CONVERT(varchar(100),t.qs_date, 23)  <= #{qsEndDate} ]]>
+        </if>
+        <if test="xfName != null and xfName != ''">
+            AND t.xf_name LIKE '%'+ #{xfName} + '%'
+        </if>
+
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND  t.invoice_no = #{invoiceNo}
+        </if>
+
+        <if test="companyCode != null and companyCode != ''">
+            AND t.company_code = #{companyCode}
+        </if>
+        <if test="venderid != null and venderid != ''">
+            AND a.venderid =#{venderid}
+        </if>
+        AND t.flow_type ='8'
+        AND (t.no_deduction is null or t.no_deduction ='')
+
+        ) AS o
+        ) A
+        WHERE
+        1=1
+        <if test="offset != null ">
+            and   rownumber > #{offset} ORDER BY rzhDate asc, id asc
+        </if>
+    </select>
+
+    <select id="getTpDateByUuid" resultType="java.lang.String">
+        select top 1 rebate_date  from t_dx_invoice WITH(NOLOCK) where invoice_code + invoice_no = #{uuid} order by rebate_date desc
+    </select>
+
+    <select id="selectStore" resultType="java.lang.String">
+      select top 1 store from t_ac_jv_store where jv=#{jv}
+    </select>
+
+    <select id="selectCostDeptToJv" resultType="java.lang.String">
+      select orgcode from t_ac_org with(nolock) where orgid=(select orgid from t_ac_org_dev with(nolock) where cost_center=#{costDept})
+    </select>
+</mapper>

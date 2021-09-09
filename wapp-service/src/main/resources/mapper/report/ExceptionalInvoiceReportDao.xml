@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.report.dao.ExceptionalInvoiceReportDao">
+
+    <resultMap id="reportStatisticsMap" type="com.xforceplus.wapp.modules.report.entity.ReportStatisticsEntity">
+        <result column="totalCount" property="totalCount" />
+        <result column="totalAmount" property="totalAmount" />
+        <result column="totalTax" property="totalTax" />
+    </resultMap>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="taxname" property="label" />
+    </resultMap>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        /**mycat:schema=${schemaLabel}*/select
+        id,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        gf_tax_no gfTaxNo,
+        gf_name gfName,
+        xf_tax_no xfTaxNo,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        total_amount totalAmount,
+        remark,
+        invoice_status invoiceStatus,
+        status_update_date statusUpdateDate,
+        rzh_date rzhDate,
+        qs_date qsDate,
+        rzh_belong_date rzhBelongDate,
+        rzh_yesorno rzhYesorno,
+        qs_type qsType,
+        qs_status qsStatus
+        from t_dx_record_invoice WITH(NOLOCK)
+        where valid='1'
+        <if test="map.gfName != null and map.gfName != '-1'">
+            and gf_tax_no = #{map.gfName}
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            and xf_name like concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{map.invoiceDate2} ]]>
+        </if>
+        <if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">
+            and invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+            and qs_status = #{map.qsStatus}
+        </if>
+        <if test="map.rzhYesorno !=null and map.rzhYesorno != '-1'">
+            and rzh_yesorno = #{map.rzhYesorno}
+        </if>
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and invoice_type in ('01','03','14')
+        and invoice_status != '0'
+        and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+        order by status_update_date desc,invoice_date  desc
+        <if test="map.offset != null and map.limit != null">
+            limit #{map.offset}, #{map.limit}
+        </if>
+    </select>
+
+    <select id="queryTotalResult" resultMap="reportStatisticsMap">
+        /**mycat:schema=${schemaLabel}*/select count(1) totalCount, ifnull(sum(invoice_amount), 0) totalAmount, ifnull(sum(tax_amount), 0) totalTax
+        from t_dx_record_invoice WITH(NOLOCK)
+        where valid='1'
+        <if test="map.gfName != null and map.gfName != '-1'">
+            and gf_tax_no = #{map.gfName}
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            and xf_name like concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{map.invoiceDate2} ]]>
+        </if>
+        <if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">
+            and invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+            and qs_status = #{map.qsStatus}
+        </if>
+        <if test="map.rzhYesorno !=null and map.rzhYesorno != '-1'">
+            and rzh_yesorno = #{map.rzhYesorno}
+        </if>
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and invoice_type in ('01','03','14')
+        and invoice_status != '0'
+        and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+        order by status_update_date desc, id desc
+    </select>
+
+
+
+    <select id="queryListAll" resultType="com.xforceplus.wapp.modules.report.entity.ComprehensiveInvoiceQueryEntity">
+        /**mycat:schema=${schemaLabel}*/select
+        id,
+        invoice_type invoiceType,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        gf_tax_no gfTaxNo,
+        gf_name gfName,
+        xf_tax_no xfTaxNo,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount,
+        total_amount totalAmount,
+        remark,
+        invoice_status invoiceStatus,
+        status_update_date statusUpdateDate,
+        rzh_date rzhDate,
+        qs_date qsDate,
+        rzh_belong_date rzhBelongDate,
+        rzh_yesorno rzhYesorno,
+        qs_type qsType,
+        qs_status qsStatus
+        from t_dx_record_invoice WITH(NOLOCK)
+        where valid='1'
+        <if test="map.gfName != null and map.gfName != '-1'">
+            and gf_tax_no = #{map.gfName}
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            and xf_name like concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            and invoice_no like concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{map.invoiceDate1} ]]>
+        </if>
+        <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{map.invoiceDate2} ]]>
+        </if>
+        <if test="map.invoiceStatus !=null and map.invoiceStatus != '-1'">
+            and invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.qsStatus !=null and map.qsStatus != '-1'">
+            and qs_status = #{map.qsStatus}
+        </if>
+        <if test="map.rzhYesorno !=null and map.rzhYesorno != '-1'">
+            and rzh_yesorno = #{map.rzhYesorno}
+        </if>
+        <if test="map.rzhBelongDate !=null and map.rzhBelongDate != ''">
+            and rzh_belong_date = #{map.rzhBelongDate}
+        </if>
+        and invoice_type in ('01','03','14')
+        and invoice_status != '0'
+        and gf_tax_no in (select taxno from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{map.userID}))
+        order by status_update_date desc, id desc
+    </select>
+
+</mapper>

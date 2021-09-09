@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.transferOut.dao.InvoiceDao">
+<resultMap id="invoiceResultMap" type="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+    <id column="id" property="id"/>
+    <result column="invoiceId" property="invoiceId"/>
+    <result column="invoice_type" property="invoiceType"/>
+    <result column="invoice_code" property="invoiceCode"/>
+    <result column="invoice_no" property="invoiceNo"/>
+    <result column="invoice_date" property="invoiceDate"/>
+    <result column="gf_tax_no" property="gfTaxNo"/>
+    <result column="gf_name" property="gfName"/>
+    <result column="gf_address_and_phone" property="gfAddressAndPhone"/>
+    <result column="gf_bank_and_no" property="gfBankAndNo"/>
+    <result column="xf_tax_no" property="xfTaxNo"/>
+    <result column="xf_name" property="xfName"/>
+    <result column="xf_address_and_phone" property="xfAddressAndPhone"/>
+    <result column="xf_bank_and_no" property="xfBankAndNo"/>
+    <result column="invoice_amount" property="invoiceAmount"/>
+    <result column="tax_amount" property="taxAmount"/>
+    <result column="total_amount" property="totalAmount"/>
+    <result column="remark" property="remark"/>
+    <result column="invoice_status" property="invoiceStatus"/>
+    <result column="status_update_date" property="statusUpdateDate"/>
+    <result column="last_update_date" property="lastUpdateDate"/>
+    <result column="rzh_date" property="rzhDate"/>
+    <result column="qs_date" property="qsDate"/>
+    <result column="rzh_belong_date_late" property="rzhBelongDateLate"/>
+    <result column="rzh_belong_date" property="rzhBelongDate"/>
+    <result column="confirm_user" property="confirmUser"/>
+    <result column="confirm_date" property="confirmDate"/>
+    <result column="rzh_type" property="rzhType"/>
+    <result column="rzh_yesorno" property="rzhYesorno"/>
+    <result column="gx_user_account" property="gxUserAccount"/>
+    <result column="gx_user_name" property="gxUserName"/>
+    <result column="source_system" property="sourceSystem"/>
+    <result column="valid" property="valid"/>
+    <result column="uuid" property="uuid"/>
+    <result column="create_date" property="createDate"/>
+    <result column="gx_date" property="gxDate"/>
+    <result column="rzh_back_msg" property="rzhBackMsg"/>
+    <result column="dqskssq" property="dqskssq"/>
+    <result column="gxjzr" property="gxjzr"/>
+    <result column="gxfwq" property="gxfwq"/>
+    <result column="gxfwz" property="gxfwz"/>
+    <result column="sfygx" property="sfygx"/>
+    <result column="detail_yesorno" property="detailYesorno"/>
+    <result column="gx_type" property="gxType"/>
+    <result column="auth_status" property="authStatus"/>
+    <result column="machinecode" property="machinecode"/>
+    <result column="send_date" property="sendDate"/>
+    <result column="rzlx" property="rzlx"/>
+    <result column="sfdbts" property="sfdbts"/>
+    <result column="qs_type" property="qsType"/>
+    <result column="qs_status" property="qsStatus"/>
+    <result column="check_code" property="checkCode"/>
+    <result column="txfbz" property="txfbz"/>
+    <result column="lslbz" property="lslbz"/>
+    <result column="out_status" property="outStatus"/>
+    <result column="out_invoice_amout" property="outInvoiceAmout"/>
+    <result column="out_tax_amount" property="outTaxAmount"/>
+    <result column="out_reason" property="outReason"/>
+    <result column="out_remark" property="outRemark"/>
+    <result column="out_date" property="outDate"/>
+    <result column="out_by" property="outBy"/>
+</resultMap>
+
+    <select id="getTransferOutById" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        rzh_date,
+        invoice_code,
+        invoice_no,
+        invoice_date,
+        gf_tax_no,
+        invoice_status,
+        gf_name,
+        xf_name,
+        invoice_amount,
+        tax_amount,
+        invoice_type,
+        out_invoice_amout,
+        out_tax_amount
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE id=#{id}
+    </select>
+
+    <select id="getTransferOutByInvoice" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        rzh_date,
+        invoice_code,
+        invoice_no,
+        invoice_date,
+        gf_tax_no,
+        invoice_status,
+        gf_name,
+        xf_name,
+        invoice_amount,
+        tax_amount,
+        invoice_type,
+        out_invoice_amout,
+        out_tax_amount
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE invoice_code=#{invoiceCode} AND invoice_no=#{invoiceNo}
+    </select>
+
+    <select id="getTransferOutHisById" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        invoice_code,
+        invoice_no
+        FROM t_dx_record_invoice_out WITH(NOLOCK)
+        WHERE id=#{id}
+    </select>
+
+    <insert id="saveOutHis">
+        /**mycat:schema=${schemaLabel}*/
+        insert into t_dx_record_invoice_out WITH(ROWLOCK) (invoice_code, invoice_no, uuid, out_status,
+        out_invoice_amout, out_tax_amount, out_reason, out_remark, out_date, out_by, is_cancel)
+        values
+        (#{invoice.invoiceCode}, #{invoice.invoiceNo}, #{invoice.uuid}, #{invoice.outStatus},
+        #{invoice.outInvoiceAmout}, #{invoice.outTaxAmount}, #{invoice.outReason}, #{invoice.outRemark},
+        now(), #{invoice.outBy}, '0')
+    </insert>
+
+
+    <select id="transferOutQuery" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        rzh_date,
+        invoice_code,
+        invoice_no,
+        invoice_date,
+        gf_tax_no,
+        invoice_status,
+        gf_name,
+        xf_name,
+        invoice_amount,
+        tax_amount,
+        invoice_type,
+        out_invoice_amout,
+        out_tax_amount
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE rzh_yesorno='1' AND  out_status IN ('0','2') AND invoice_type in ('01','03','14')
+        <if test="map.gfTaxNo != null and map.gfTaxNo != ''">
+           AND  gf_tax_no =#{map.gfTaxNo}
+        </if>
+        <if test="map.userId != null and map.userId != ''">
+            AND  gf_tax_no IN
+            (select  taxno
+            FROM t_ac_org WITH(NOLOCK)
+            where orgid in
+            (SELECT orgid from t_ac_user_taxno where userid=#{map.userId}))
+        </if>
+        <if test="map.dqskssq != null and map.dqskssq != ''">
+            AND rzh_belong_date = #{map.dqskssq}
+        </if>
+        <if test="map.invoiceStatus != null and map.invoiceStatus != ''">
+            AND invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.rzhDate1 != null and map.rzhDate1 != ''">
+            <![CDATA[ AND date_format(rzh_date,'%Y-%m-%d') >= #{map.rzhDate1} ]]>
+        </if>
+        <if test="map.rzhDate2 != null and map.rzhDate2 != ''">
+            <![CDATA[ AND date_format(rzh_date,'%Y-%m-%d')  <= #{map.rzhDate2} ]]>
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            AND xf_name LIKE concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            AND invoice_no LIKE concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        ORDER BY rzh_date DESC
+        <if test="map.offset != null and map.limit != null">
+            limit #{map.offset}, #{map.limit}
+        </if>
+    </select>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        truncate(SUM(invoice_amount),2) sumTotalAmount,
+        truncate(SUM(tax_amount),2) sumTaxAmount
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE rzh_yesorno='1' AND  out_status IN ('0','2') AND invoice_type in ('01','03','14')
+        <if test="map.gfTaxNo != null and map.gfTaxNo != ''">
+            AND  gf_tax_no =#{map.gfTaxNo}
+        </if>
+        <if test="map.userId != null and map.userId != ''">
+            AND  gf_tax_no IN
+            (select  taxno
+            FROM t_ac_org WITH(NOLOCK)
+            where orgid in
+            (SELECT orgid from t_ac_user_taxno where userid=#{map.userId}))
+        </if>
+        <if test="map.dqskssq != null and map.dqskssq != ''">
+            AND rzh_belong_date = #{map.dqskssq}
+        </if>
+        <if test="map.invoiceStatus != null and map.invoiceStatus != ''">
+            AND invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.rzhDate1 != null and map.rzhDate1 != ''">
+            <![CDATA[ AND date_format(rzh_date,'%Y-%m-%d') >= #{map.rzhDate1} ]]>
+        </if>
+        <if test="map.rzhDate2 != null and map.rzhDate2 != ''">
+            <![CDATA[ AND date_format(rzh_date,'%Y-%m-%d')  <= #{map.rzhDate2} ]]>
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            AND xf_name LIKE concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            AND invoice_no LIKE concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+    </select>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getOutedSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        truncate(SUM(invoice_amount),2) sumTotalAmount,
+        truncate(SUM(tax_amount),2) sumTaxAmount
+        FROM t_dx_record_invoice_out a WITH(NOLOCK) LEFT JOIN t_dx_record_invoice b WITH(NOLOCK) ON a.invoice_code=b.invoice_code AND a.invoice_no=b.invoice_no
+        WHERE a.is_cancel='0'
+        <if test="map.gfTaxNo != null and map.gfTaxNo != ''">
+            AND  b.gf_tax_no =#{map.gfTaxNo}
+        </if>
+        <if test="map.userId != null and map.userId != ''">
+            AND  b.gf_tax_no IN
+            (select  taxno
+            FROM t_ac_org WITH(NOLOCK)
+            where orgid in
+            (SELECT orgid from t_ac_user_taxno where userid=#{map.userId}))
+        </if>
+        <if test="map.outReason != null and map.outReason != ''">
+            AND  a.out_reason =#{map.outReason}
+        </if>
+        <if test="map.invoiceStatus != null and map.invoiceStatus != ''">
+            AND b.invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.outDate1 != null and map.outDate1 != ''">
+            <![CDATA[ AND date_format(a.out_date,'%Y-%m-%d') >= #{map.outDate1} ]]>
+        </if>
+        <if test="map.outDate2 != null and map.outDate2 != ''">
+            <![CDATA[ AND date_format(a.out_date,'%Y-%m-%d')  <= #{map.outDate2} ]]>
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            AND b.xf_name LIKE concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            AND b.invoice_no LIKE concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+    </select>
+    
+    <select id="transferOutQueryTotal" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        count(1)
+        FROM t_dx_record_invoice WITH(NOLOCK)
+        WHERE rzh_yesorno='1'AND  out_status IN ('0','2') AND invoice_type in ('01','03','14')
+        <if test="map.gfTaxNo != null and map.gfTaxNo != ''">
+            AND  gf_tax_no =#{map.gfTaxNo}
+        </if>
+        <if test="map.userId != null and map.userId != ''">
+            AND  gf_tax_no IN
+            (select taxno
+            FROM t_ac_org WITH(NOLOCK)
+            where orgid in
+            (SELECT orgid from t_ac_user_taxno where userid=#{map.userId}))
+        </if>
+        <if test="map.dqskssq != null and map.dqskssq != ''">
+            AND rzh_belong_date = #{map.dqskssq}
+        </if>
+        <if test="map.invoiceStatus != null and map.invoiceStatus != ''">
+            AND invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.rzhDate1 != null and map.rzhDate1 != ''">
+            <![CDATA[ AND date_format(rzh_date,'%Y-%m-%d') >= #{map.rzhDate1} ]]>
+        </if>
+        <if test="map.rzhDate2 != null and map.rzhDate2 != ''">
+            <![CDATA[ AND date_format(rzh_date,'%Y-%m-%d')  <= #{map.rzhDate2} ]]>
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            AND xf_name LIKE concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            AND invoice_no LIKE concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        ORDER BY rzh_date DESC
+    </select>
+
+    <select id="getDqskssq" resultType="String">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        current_tax_period
+        FROM t_dx_tax_current WITH(NOLOCK)
+        WHERE taxno =#{gfTaxNo}
+    </select>
+
+    <select id="transferOutedQuery" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        a.id,
+        b.id invoiceId,
+        a.out_date,
+        a.out_invoice_amout,
+        a.out_tax_amount,
+        a.out_reason,
+        b.invoice_date,
+        b.invoice_code,
+        b.invoice_no,
+        b.gf_tax_no,
+        b.invoice_status,
+        b.gf_name,
+        b.xf_name,
+        b.invoice_amount invoice_amount,
+        b.tax_amount tax_amount,
+        b.invoice_type
+        FROM t_dx_record_invoice_out a WITH(NOLOCK) LEFT JOIN t_dx_record_invoice b WITH(NOLOCK) ON a.invoice_code=b.invoice_code AND a.invoice_no=b.invoice_no
+        WHERE a.is_cancel='0'
+        <if test="map.gfTaxNo != null and map.gfTaxNo != ''">
+            AND  b.gf_tax_no =#{map.gfTaxNo}
+        </if>
+        <if test="map.userId != null and map.userId != ''">
+            AND  b.gf_tax_no IN
+            (select  taxno
+            FROM t_ac_org WITH(NOLOCK)
+            where orgid in
+            (SELECT orgid from t_ac_user_taxno where userid=#{map.userId}))
+        </if>
+        <if test="map.outReason != null and map.outReason != ''">
+            AND  a.out_reason =#{map.outReason}
+        </if>
+        <if test="map.invoiceStatus != null and map.invoiceStatus != ''">
+            AND b.invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.outDate1 != null and map.outDate1 != ''">
+            <![CDATA[ AND date_format(a.out_date,'%Y-%m-%d') >= #{map.outDate1} ]]>
+        </if>
+        <if test="map.outDate2 != null and map.outDate2 != ''">
+            <![CDATA[ AND date_format(a.out_date,'%Y-%m-%d')  <= #{map.outDate2} ]]>
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            AND b.xf_name LIKE concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            AND b.invoice_no LIKE concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        ORDER BY a.out_date DESC
+        <if test="map.offset != null and map.limit != null">
+            limit #{map.offset}, #{map.limit}
+        </if>
+    </select>
+
+    <select id="transferOutedQueryTotal" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        count(1)
+        FROM t_dx_record_invoice_out a WITH(NOLOCK) LEFT JOIN t_dx_record_invoice b WITH(NOLOCK) ON a.invoice_code=b.invoice_code AND a.invoice_no=b.invoice_no
+        WHERE a.is_cancel='0'
+        <if test="map.gfTaxNo != null and map.gfTaxNo != ''">
+            AND  b.gf_tax_no =#{map.gfTaxNo}
+        </if>
+        <if test="map.userId != null and map.userId != ''">
+            AND  b.gf_tax_no IN
+            (select  taxno
+            FROM t_ac_org WITH(NOLOCK)
+            where orgid in
+            (SELECT orgid from t_ac_user_taxno where userid=#{map.userId}))
+        </if>
+        <if test="map.outReason != null and map.outReason != ''">
+            AND  a.out_reason =#{map.outReason}
+        </if>
+        <if test="map.invoiceStatus != null and map.invoiceStatus != ''">
+            AND b.invoice_status = #{map.invoiceStatus}
+        </if>
+        <if test="map.outDate1 != null and map.outDate1 != ''">
+            <![CDATA[ AND date_format(a.out_date,'%Y-%m-%d') >= #{map.outDate1} ]]>
+        </if>
+        <if test="map.outDate2 != null and map.outDate2 != ''">
+            <![CDATA[ AND date_format(a.out_date,'%Y-%m-%d')  <= #{map.outDate2} ]]>
+        </if>
+        <if test="map.xfName != null and map.xfName != ''">
+            AND b.xf_name LIKE concat('%',concat(#{map.xfName},'%'))
+        </if>
+        <if test="map.invoiceNo != null and map.invoiceNo != ''">
+            AND b.invoice_no LIKE concat('%',concat(#{map.invoiceNo},'%'))
+        </if>
+        ORDER BY a.out_date DESC
+    </select>
+
+
+
+
+    <update id="setTransferOut" parameterType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        update
+        t_dx_record_invoice WITH(ROWLOCK)
+        set out_date=now(),out_status =#{invoiceEntity.outStatus} ,
+        out_invoice_amout = #{invoiceEntity.outInvoiceAmout},
+        out_tax_amount = #{invoiceEntity.outTaxAmount},
+        out_reason = #{invoiceEntity.outReason},
+        out_by=#{invoiceEntity.outBy}
+        <if test="invoiceEntity.outRemark != null and invoiceEntity.outRemark != ''">
+            , out_remark = #{invoiceEntity.outRemark}
+        </if>
+        where id=#{invoiceEntity.id}
+    </update>
+
+    <select id="getTotalOutAmount" resultMap="invoiceResultMap">
+        /**mycat:schema=${schemaLabel}*/
+        select
+        ifnull(sum(out_invoice_amout), 0) out_invoice_amout,
+        ifnull(sum(out_tax_amount), 0) out_tax_amount
+        from t_dx_record_invoice_out WITH(NOLOCK) where uuid=#{uuid} and is_cancel='0'
+    </select>
+
+    <update id="updateOutMain" parameterType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        update
+        t_dx_record_invoice WITH(ROWLOCK)
+        set
+        out_status =#{invoiceEntity.outStatus},
+        out_invoice_amout = #{invoiceEntity.outInvoiceAmout},
+        out_tax_amount = #{invoiceEntity.outTaxAmount}
+        where id=#{invoiceEntity.id}
+    </update>
+
+    <update id="cancelTransferOut">
+        /**mycat:schema=${schemaLabel}*/
+        update
+        t_dx_record_invoice_out WITH(ROWLOCK)
+        set is_cancel='1'
+        where id in
+        <foreach collection="id" item="item"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getToOutInformation" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+/**mycat:schema=${schemaLabel}*/
+        select
+        ifnull(invoice_amount,0)-ifnull(out_invoice_amout,0) invoice_amount,
+        ifnull(tax_amount,0)-ifnull(out_tax_amount,0) tax_amount,
+        out_invoice_amout,
+        out_tax_amount
+        from t_dx_record_invoice WITH(NOLOCK)
+        where id = #{id}
+    </select>
+
+    <select id="getToOutInformationAll" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+/**mycat:schema=${schemaLabel}*/
+        select
+        invoice_amount,tax_amount
+        from t_dx_record_invoice WITH(NOLOCK)
+        where id = #{id}
+    </select>
+
+    <select id="getXfName" resultType="String">
+/**mycat:schema=${schemaLabel}*/
+        select
+        DISTINCT xf_name
+        from t_dx_record_invoice WITH(NOLOCK)
+        where xf_name like concat('%',concat(#{queryString},'%'))
+    </select>
+
+    <select id="getDetailInfo" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+/**mycat:schema=${schemaLabel}*/
+        select
+        a.*,
+        b.user_name qsBy
+        FROM t_dx_record_invoice a WITH(NOLOCK)
+        LEFT JOIN t_dx_invoice b WITH(NOLOCK) ON a.uuid=b.uuid
+        WHERE a.id=#{id}
+    </select>
+
+    <select id="getCheckDetailInfo" resultType="com.xforceplus.wapp.modules.transferOut.entity.InvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        select
+        a.invoice_code invoiceCode,
+        a.invoice_no invoiceNo,
+        a.invoice_type invoiceType,
+        a.invoice_amount invoiceAmount,
+        a.total_amount totalAmount,
+        a.tax_amount taxAmount,
+        b.XFYHZH xfBankAndNo,
+        b.XFDZDH xfAddressAndPhone,
+
+--         gxDate,
+--                         gxUserName,
+--                         confirmDate,
+--                         confirmUser,
+--                         sendDate,
+--                         authStatus,
+              b.JQBH          machinecode,
+               b.GFSH         gfTaxNo,
+--                         invoiceStatus,
+--                         sourceSystem,
+--                         createDate,
+--                         statusUpdateDate,
+--                         qsType,
+--                         qsDate,
+--                         rzhYesorno,
+--                         dqskssq,
+--                         rzhDate,
+--                         outDate,
+--                         outBy,
+--                         outReason,
+--                         qsStatus,
+--                         outStatus,
+           a.check_code             checkCode,
+           b.GFMC             gfName,
+            a.invoice_date            invoiceDate,
+             b.GFDZDH           gfAddressAndPhone,
+              b.GFYHZH          gfBankAndNo,
+          b.XFMC              xfName,
+          b.XFSH              xfTaxNo,
+            b.BZ            remark,
+
+
+        c.user_name qsBy
+        FROM t_dx_check_log a WITH(NOLOCK)
+        LEFT JOIN t_dx_check_record_invoice b WITH(NOLOCK) ON a.invoice_code=b.FPDM and a.invoice_no=b.FPHM
+        LEFT JOIN t_dx_invoice c WITH(NOLOCK) ON a.invoice_code=c.invoice_code and a.invoice_no=c.invoice_no
+        WHERE a.id=#{id}
+    </select>
+</mapper>

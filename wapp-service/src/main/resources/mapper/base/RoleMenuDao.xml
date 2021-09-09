@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.RoleMenuDao">
+
+	<sql id="condition">
+		<if test="entity.rolerightid != null"> and rolerightid = #{entity.rolerightid} </if>
+		<if test="entity.roleid != null"> and roleid = #{entity.roleid} </if>
+		<if test="entity.menuid != null"> and menuid = #{entity.menuid} </if>
+		<if test="entity.menuIdList != null"> and menuid in
+			<foreach item="id" collection="entity.menuIdList" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+		<if test="entity.roleIdList != null"> and roleid in
+			<foreach item="id" collection="entity.roleIdList" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+	</sql>
+
+	<insert id="save">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_role_menu
+		(
+			roleid,
+			menuid
+		)
+		values
+		<foreach collection="entity.menuIdList" item="item" index="index" separator="," >
+		(
+			#{entity.roleid},
+			#{item}
+		)
+		</foreach>
+	</insert>
+	
+	<delete id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_role_menu where roleid = #{roleid}
+	</delete>
+	
+	<select id="queryMenuIdList" resultType="long">
+		/**mycat:schema=${schemaLabel}*/ select menuid from t_ac_role_menu where roleid = #{roleid}
+	</select>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.RoleMenuEntity">
+		<if test="entity.offset != null and entity.limit != null">
+			SELECT
+			TOP (#{entity.limit}) A.*
+			FROM
+			(
+			SELECT
+			row_number() OVER (ORDER BY o.rolerightid asc) AS rownumber, o.*
+			FROM(
+		</if>
+
+		select * from t_ac_role_menu r
+		<where>
+			<include refid="condition" />
+		</where>
+		<if test="entity.offset == null and entity.limit == null">
+		order by r.rolerightid asc
+		</if>
+		<if test="entity.offset != null and entity.limit != null">
+			)as o)as A
+			WHERE
+			rownumber > #{entity.offset}
+		</if>
+	</select>
+
+	<select id="queryTotal" resultType="int">
+		/**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_role_menu
+		<where>
+			<include refid="condition" />
+		</where>
+	</select>
+</mapper>

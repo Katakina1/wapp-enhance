@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redTicket.dao.UploadRedNoticeDao">
+
+    <select id="queryOpenRedTicket" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch" >
+
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY Id desc) AS rownumber ,o.*
+        FROM
+        (
+        select
+        distinct   m.id  Id,
+        m.redticket_data_serial_number  redTicketDataSerialNumber,
+        m.business_type                 businessType,
+        m.red_total_amount              redTotalAmount,
+        m.whether_upload_data           dataStatus,
+        m.whether_upload_rednotice       noticeStatus,
+        m.red_notice_number              redNoticeNumber,
+        m.audit_results                  examineResult,
+        m.audit_remarks                  examineRemarks,
+        m.tax_rate               taxRate,
+        m.whether_open_redticket               whetherOpenRedticket,
+        m.data_association               dataAssociation,
+        m.rednotice_association           redNoticeAssociation
+        from t_dx_red_ticket_matching m WITH(NOLOCK)
+        <if test='map.businessType == "1"'>
+            left join t_dx_return_agreement_middle  tam  WITH(NOLOCK)  on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_all_record_invoice_detail  tg WITH(NOLOCK)  on  tg.id = tam.return_agreement_association
+
+        </if>
+
+        <if test='map.businessType == "2"'>
+            left join t_dx_return_agreement_middle  tam WITH(NOLOCK)   on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_protocol  ta WITH(NOLOCK)  on  ta.id = tam.return_agreement_association
+
+        </if>
+        <where>
+            and m.redticket_status='0'
+            AND m.whether_upload_data ='1'
+            AND m.audit_results ='2'
+            <choose>
+                <when test=' map.businessType == "1"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and tg.return_goods_code like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+
+                </when>
+                <when test=' map.businessType == "2"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and ta.protocol_no like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                </when>
+
+            </choose>
+            <if test="map.userCode != null and map.userCode != ''">
+                and  m.venderid   like concat('%',concat(#{map.userCode},'%'))
+            </if>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.redticket_creation_time,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),m.redticket_creation_time,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+
+            <if test="map.businessType != null and map.businessType != ''and map.businessType != '-1'">
+                and m.business_type = #{map.businessType}
+            </if>
+
+        </where> ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+
+    </select>
+
+    <select id="getRedTicketMatchListCount" resultType="java.lang.Integer" >
+        select
+        count(1)
+        from (
+        select
+        distinct m.id
+        from t_dx_red_ticket_matching m WITH(NOLOCK)
+        <if test='map.businessType == "1"'>
+            left join t_dx_return_agreement_middle  tam  WITH(NOLOCK)  on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_all_record_invoice_detail  tg  WITH(NOLOCK) on  tg.id = tam.return_agreement_association
+
+        </if>
+
+        <if test='map.businessType == "2"'>
+            left join t_dx_return_agreement_middle  tam  WITH(NOLOCK)  on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_protocol  ta WITH(NOLOCK)  on  ta.id = tam.return_agreement_association
+
+        </if>
+        <where>
+            and m.redticket_status='0'
+           AND m.whether_upload_data ='1'
+            AND m.audit_results ='2'
+            <choose>
+                <when test=' map.businessType == "1"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and tg.return_goods_code like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+
+                </when>
+                <when test=' map.businessType == "2"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and ta.protocol_no like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+
+                </when>
+            </choose>
+            <if test="map.userCode != null and map.userCode != ''">
+                and  m.venderid   like concat('%',concat(#{map.userCode},'%'))
+            </if>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.redticket_creation_time,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),m.redticket_creation_time,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+
+            <if test="map.businessType != null and map.businessType != '' and map.businessType != '-1'">
+                and m.business_type = #{map.businessType}
+            </if>
+
+        </where>
+        ) a
+    </select>
+
+
+    <select id="queryRedNoticelist" resultType="com.xforceplus.wapp.modules.redTicket.entity.FileEntity">
+        select id,file_Name ,file_type,file_path  from t_dx_file_table  WITH(NOLOCK)  where id =#{map.redNoticeAssociation}
+    </select>
+    <update id="updateMatchStatusDelectNotice">
+          update t_dx_red_ticket_matching set whether_upload_rednotice = '2',red_notice_number = '' where redticket_data_serial_number = #{map.redTicketDataSerialNumber}
+    </update>
+    <update id="updateStatusDelectNotice">
+          update t_dx_all_record_invoice_detail set return_goods_status = '1' where redticket_data_serial_number = #{map.redTicketDataSerialNumber}
+    </update>
+    <update id="updateProcolStatusDelectNotice">
+          update t_dx_protocol set protocol_status = '0' where redticket_data_serial_number = #{map.redTicketDataSerialNumber}
+    </update>
+</mapper>

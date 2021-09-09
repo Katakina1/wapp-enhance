@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.collect.dao.NoDetailedInvoiceDao">
+
+    <resultMap id="resultCollectionMap" type="com.xforceplus.wapp.modules.collect.entity.InvoiceCollectionInfo">
+        <id column="id" property="id"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="dqskssq" property="dqskssq"/>
+        <result column="out_reason" property="outReason"/>
+        <result column="xf_bank_and_no" property="xfBankAndNo"/>
+        <result column="uuid" property="uuid"/>
+        <result column="gx_type" property="gxType"/>
+        <result column="send_date" property="sendDate"/>
+        <result column="gx_user_name" property="gxUserName"/>
+        <result column="auth_status" property="authStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="gf_address_and_phone" property="gfAddressAndPhone"/>
+        <result column="rzh_type" property="rzhType"/>
+        <result column="txfbz" property="txfbz"/>
+        <result column="source_system" property="sourceSystem"/>
+        <result column="out_tax_amount" property="outTaxAmount"/>
+        <result column="rzh_back_msg" property="rzhBackMsg"/>
+        <result column="xf_address_and_phone" property="xfAddressAndPhone"/>
+        <result column="rzh_date" property="rzhDate"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="status_update_date" property="statusUpdateDate"/>
+        <result column="qs_status" property="qsStatus"/>
+        <result column="confirm_date" property="confirmDate"/>
+        <result column="invoice_status" property="invoiceStatus"/>
+        <result column="rzh_belong_date" property="rzhBelongDate"/>
+        <result column="rzh_yesorno" property="rzhYesorno"/>
+        <result column="out_date" property="outDate"/>
+        <result column="remark" property="remark"/>
+        <result column="rzh_belong_date_late" property="rzhBelongDateLate"/>
+        <result column="gxfwq" property="gxfwq"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="valid" property="valid"/>
+        <result column="xf_name" property="xfName"/>
+        <result column="check_code" property="checkCode"/>
+        <result column="gf_bank_and_no" property="gfBankAndNo"/>
+        <result column="sfdbts" property="sfdbts"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="gxfwz" property="gxfwz"/>
+        <result column="out_invoice_amout" property="outInvoiceAmout"/>
+        <result column="last_update_date" property="lastUpdateDate"/>
+        <result column="detail_yesorno" property="detailYesorno"/>
+        <result column="rzlx" property="rzlx"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="gx_user_account" property="gxUserAccount"/>
+        <result column="out_status" property="outStatus"/>
+        <result column="qs_date" property="qsDate"/>
+        <result column="gx_date" property="gxDate"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="out_remark" property="outRemark"/>
+        <result column="gxjzr" property="gxjzr"/>
+        <result column="sfygx" property="sfygx"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="qs_type" property="qsType"/>
+        <result column="xf_tax_no" property="xfTaxNo"/>
+        <result column="lslbz" property="lslbz"/>
+    </resultMap>
+
+    <!-- 数据库中表名为:t_dx_record_invoice的列名,as前是数据库的列明,as后是列的别名用于映射成实体类中的属性,需要注意的是别名必须与resultMap中的column别名一致 -->
+    <sql id="t_dx_record_invoice_Column">
+        tdri.id as id
+        ,CONVERT (decimal(38,2),tdri.tax_amount) as tax_amount
+        ,tdri.gf_tax_no as gf_tax_no
+        ,tdri.dqskssq as dqskssq
+        ,tdri.out_reason as out_reason
+        ,tdri.xf_bank_and_no as xf_bank_and_no
+        ,tdri.uuid as uuid
+        ,tdri.gx_type as gx_type
+        ,tdri.send_date as send_date
+        ,tdri.gx_user_name as gx_user_name
+        ,tdri.auth_status as auth_status
+        ,tdri.create_date as create_date
+        ,tdri.gf_address_and_phone as gf_address_and_phone
+        ,tdri.rzh_type as rzh_type
+        ,tdri.txfbz as txfbz
+        ,tdri.source_system as source_system
+        ,tdri.out_tax_amount as out_tax_amount
+        ,tdri.rzh_back_msg as rzh_back_msg
+        ,tdri.xf_address_and_phone as xf_address_and_phone
+        ,tdri.rzh_date as rzh_date
+        ,tdri.total_amount as total_amount
+        ,tdri.status_update_date as status_update_date
+        ,tdri.qs_status as qs_status
+        ,tdri.confirm_date as confirm_date
+        ,tdri.invoice_status as invoice_status
+        ,tdri.rzh_belong_date as rzh_belong_date
+        ,tdri.rzh_yesorno as rzh_yesorno
+        ,tdri.out_date as out_date
+        ,tdri.remark as remark
+        ,tdri.rzh_belong_date_late as rzh_belong_date_late
+        ,tdri.gxfwq as gxfwq
+        ,CONVERT (decimal(38,2),tdri.invoice_amount) as invoice_amount
+        ,tdri.invoice_date as invoice_date
+        ,tdri.valid as valid
+        ,tdri.xf_name as xf_name
+        ,tdri.check_code as check_code
+        ,tdri.gf_bank_and_no as gf_bank_and_no
+        ,tdri.sfdbts as sfdbts
+        ,tdri.invoice_type as invoice_type
+         ,(SELECT tad.dictname FROM t_ac_dictdeta tad LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype WHERE tadt.dicttypecode = 'INVOICE_TYPE_TIP' AND tad.dictcode =tdri.invoice_type) invoiceTypeName
+        ,tdri.gxfwz as gxfwz
+        ,tdri.out_invoice_amout as out_invoice_amout
+        ,tdri.last_update_date as last_update_date
+        ,tdri.detail_yesorno as detail_yesorno
+        ,tdri.rzlx as rzlx
+        ,tdri.invoice_no as invoice_no
+        ,tdri.gx_user_account as gx_user_account
+        ,tdri.out_status as out_status
+        ,tdri.qs_date as qs_date
+        ,tdri.gx_date as gx_date
+        ,tdri.invoice_code as invoice_code
+        ,tdri.out_remark as out_remark
+        ,tdri.gxjzr as gxjzr
+        ,tdri.sfygx as sfygx
+        ,tdri.gf_name as gf_name
+        ,tdri.qs_type as qs_type
+        ,tdri.xf_tax_no as xf_tax_no
+        ,tdri.lslbz as lslbz
+    </sql>
+
+    <!-- 获取人员可以查看的数据 -->
+    <sql id="getAuthData">
+        (
+        SELECT tdri.* FROM t_dx_record_invoice tdri WITH(NOLOCK)
+        ) tdri
+    </sql>
+
+    <!-- 查询未补明细发票的数量 -->
+    <select id="getNoDetailInvoiceCount" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT COUNT(1)
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.source_system = '0' AND tdri.detail_yesorno = '0'
+        <if test="gfName != null and gfName != ''">
+            AND tdri.gf_name = #{gfName}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND tdri.gf_tax_no = #{gfTaxNo}
+        </if>
+        <!--<if test="createDate != null and createDate != ''">-->
+            <!--AND date_format(tdri.create_date,'%Y-%m-%d' ) = #{createDate}-->
+        <!--</if>-->
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),tdri.create_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),tdri.create_date,23)  <= #{createEndDate} ]]>
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND tdri.invoice_no LIKE '%${invoiceNo}%'
+        </if>
+        <if test="invoiceType != null and invoiceType != ''">
+            AND tdri.invoice_type = #{invoiceType}
+        </if>
+        <if test="invoiceType == null or invoiceType == ''">
+            AND tdri.invoice_type IN ('01','04')
+        </if>
+    </select>
+
+    <!-- 查询未补明细发票集 -->
+    <select id="selectNoDetailedInvoice" resultMap="resultCollectionMap">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="offset != null and limit != null">
+        select top (#{limit}) a.*
+        from
+        (select row_number() over(order by o.create_date,o.gf_tax_no,o.gf_name) as rownumber,o.*
+        from(
+        </if>
+        SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.source_system = '0' AND tdri.detail_yesorno = '0'
+        <if test="gfName != null and gfName != ''">
+            AND tdri.gf_name = #{gfName}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND tdri.gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),tdri.create_date,23) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),tdri.create_date,23)  <= #{createEndDate} ]]>
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND tdri.invoice_no LIKE '%${invoiceNo}%'
+        </if>
+        <if test="invoiceType != null and invoiceType != ''">
+            AND tdri.invoice_type = #{invoiceType}
+        </if>
+        <if test="invoiceType == null or invoiceType == ''">
+            AND tdri.invoice_type IN ('01','04')
+        </if>
+        <if test="offset != null and limit != null">
+        )as o
+        )a
+        where rownumber>#{offset};
+        </if>
+
+    </select>
+
+    <!-- 将手工查验的发票明细存入抵账明细表 -->
+    <insert id="insertNoDetailedInvoice">
+        /**mycat:schema=${schemaLabel}*/
+        INSERT INTO t_dx_record_invoice_detail WITH(ROWLOCK) ( 
+        uuid,
+        invoice_code,
+        invoice_no,
+        detail_no,
+        goods_name,
+        model,
+        unit,
+        num,
+        unit_price,
+        detail_amount,
+        tax_rate,
+        tax_amount,
+        cph,
+        lx,
+        txrqq,
+        txrqz,
+        goods_num
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.uuid},#{item.invoiceCode},#{item.invoiceNo},#{item.detailNo},#{item.goodsName},#{item.model},
+            #{item.unit},#{item.num},#{item.unitPrice},#{item.detailAmount},#{item.taxRate},#{item.taxAmount},#{item.cph},#{item.lx},
+            #{item.txrqq},#{item.txrqz},#{item.goodsNum})
+        </foreach>
+    </insert>
+
+    <!-- 根据类型查询数据字典表获取对应明细 -->
+    <select id="getParamMapByType" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT tad.dictcode typeCode, tad.dictname typeName
+        FROM t_ac_dictdeta tad
+        LEFT JOIN t_ac_dicttype tadt ON tadt.dicttypeid = tad.dicttype
+        WHERE tadt.dicttypecode = #{type}
+    </select>
+
+    <!-- 手动查验成功后更新抵账主表数据 -->
+    <update id="updateRecordInvoice">
+        /**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK) SET
+        gf_tax_no=#{gfTaxNo},
+        gf_name=#{gfName},
+        invoice_type=#{invoiceType},
+        invoice_code=#{invoiceCode},
+        invoice_no=#{invoiceNo},
+        total_amount=#{totalAmount},
+        invoice_amount=#{invoiceAmount},
+        tax_amount=#{taxAmount},
+        xf_tax_no=#{xfTaxNo},
+        xf_name=#{xfName},
+        xf_address_and_phone=#{xfAddressAndPhone},
+        xf_bank_and_no=#{xfBankAndNo},
+        gf_bank_and_no=#{gfBankAndNo},
+        gf_address_and_phone=#{gfAddressAndPhone},
+        invoice_date=#{invoiceDate},
+        remark=#{remark},
+        check_code=#{checkCode},
+        detail_yesorno=#{detailYesorno},
+        invoice_status=#{invoiceStatus},
+        machinecode=#{machinecode}
+        WHERE invoice_code=#{invoiceCode} AND invoice_no=#{invoiceNo}
+    </update>
+        <select id="selectStatisticsList" resultType="Integer" parameterType="com.xforceplus.wapp.modules.collect.entity.RecordInvoiceStatistics">
+            select count(1) from t_dx_record_invoice_statistics WITH(NOLOCK) where tax_amount = #{taxAmount}
+            and zkbl = #{zkbl} and invoice_no = #{invoiceNo} and jylx = #{jylx} and tax_rate = #{taxRate}
+            and invoice_code = #{invoiceCode} and detail_amount = #{detailAmount} and total_amount = #{totalAmount}
+            and zkje = #{zkje} and ywzk = #{ywzk} and create_date = #{createDate} and depart = #{depart}
+        </select>
+
+    <update id="updateStatisticsList" parameterType="com.xforceplus.wapp.modules.collect.entity.RecordInvoiceStatistics">
+      UPDATE t_dx_record_invoice_statistics WITH(ROWLOCK) SET
+        tax_amount = #{taxAmount},
+        zkbl = #{zkbl},
+        invoice_no = #{invoiceNo},
+        jylx = #{jylx},
+        tax_rate = #{taxRate},
+        invoice_code = #{invoiceCode},
+        detail_amount = #{detailAmount},
+        total_amount = #{totalAmount},
+        zkje = #{zkje},
+        ywzk = #{ywzk},
+        create_date = getdate(),
+        depart = #{depart}
+    </update>
+    <!-- RecordInvoiceStatistics批量插入到对应数据库的表中-->
+    <insert id="insertStatisticsList" parameterType="com.xforceplus.wapp.modules.collect.entity.RecordInvoiceStatistics">
+        /**mycat:schema=${schemaLabel}*/
+        insert into
+        t_dx_record_invoice_statistics WITH(ROWLOCK) (tax_amount,zkbl,invoice_no,jylx,tax_rate,invoice_code,detail_amount,total_amount,zkje,ywzk,create_date,depart)
+        values
+            (#{taxAmount},#{zkbl},#{invoiceNo},#{jylx},#{taxRate},#{invoiceCode},#{detailAmount},#{totalAmount},#{zkje},#{ywzk},getdate(),#{depart})
+       <!-- <selectKey keyProperty="count" resultType="Integer" order="BEFORE">
+            select count(*) from t_dx_record_invoice_statistics WITH(NOLOCK) where tax_amount = #{list.RecordInvoiceStatistics.taxAmount}
+            and zkbl = #{list.RecordInvoiceStatistics.zkbl} and invoice_no = #{list.RecordInvoiceStatistics.invoiceNo} and jylx = #{list.RecordInvoiceStatistics.jylx} and tax_rate = #{list.RecordInvoiceStatistics.taxRate}
+            and invoice_code = #{list.RecordInvoiceStatistics.invoiceCode} and detail_amount = #{list.RecordInvoiceStatistics.detailAmount} and total_amount = #{list.RecordInvoiceStatistics.totalAmount}
+            and zkje = #{list.RecordInvoiceStatistics.zkje} and ywzk = #{list.RecordInvoiceStatistics.ywzk} and create_date = #{list.RecordInvoiceStatistics.createDate} and depart = #{list.RecordInvoiceStatistics.depart}
+        </selectKey>
+        <if test="count > 0">
+        UPDATE t_dx_record_invoice_statistics WITH(ROWLOCK) SET
+        tax_amount = #{taxAmount},
+        zkbl = #{zkbl},
+        invoice_no = #{invoiceNo},
+        jylx = #{jylx},
+        tax_rate = #{taxRate},
+        invoice_code = #{invoiceCode},
+        detail_amount = #{detailAmount},
+        total_amount = #{totalAmount},
+        zkje = #{zkje},
+        ywzk = #{ywzk},
+        create_date = getdate(),
+        depart = #{depart}
+        </if>
+        <if test="count==0">
+        insert into
+        t_dx_record_invoice_statistics WITH(ROWLOCK) (tax_amount,zkbl,invoice_no,jylx,tax_rate,invoice_code,detail_amount,total_amount,zkje,ywzk,create_date,depart)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.taxAmount},#{item.zkbl},#{item.invoiceNo},#{item.jylx},#{item.taxRate},#{item.invoiceCode},#{item.detailAmount},#{item.totalAmount},#{item.zkje},#{item.ywzk},getdate(),#{item.depart})
+        </foreach>
+        </if>-->
+
+    </insert>
+
+    <!-- 将tDxRecordInvoice批量插入到对应数据库的表中-->
+    <insert id="insertRecordInvoice">
+        /**mycat:schema=${schemaLabel}*/
+        insert into t_dx_record_invoice WITH(ROWLOCK) (
+        invoice_type ,
+        invoice_code ,
+        invoice_no ,
+        invoice_date ,
+        gf_tax_no ,
+        gf_name ,
+        xf_name ,
+        invoice_amount ,
+        tax_amount ,
+        total_amount ,
+        xf_tax_no ,
+        check_code ,
+        uuid,
+        qs_status,
+        qs_type,
+        valid,
+        create_date,
+        qs_date,
+        source_system,
+        detail_yesorno,
+        remark,
+        gf_address_and_phone,
+        xf_address_and_phone,
+        gf_bank_and_no,
+        xf_bank_and_no,
+        invoice_status,
+        machinecode
+        ) VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.invoiceType},
+            #{item.invoiceCode},
+            #{item.invoiceNo},
+            #{item.invoiceDate},
+            #{item.gfTaxNo},
+            #{item.gfName},
+            #{item.xfName},
+            #{item.invoiceAmount},
+            #{item.taxAmount},
+            #{item.totalAmount},
+            #{item.xfTaxNo},
+            #{item.checkCode},
+            #{item.uuid},
+            '1',
+            '3',
+            '1',
+            getdate(),
+            getdate(),
+            '1',
+            #{item.detailYesorno},
+            #{item.remark},
+            #{item.gfAddressAndPhone},
+            #{item.xfAddressAndPhone},
+            #{item.gfBankAndNo},
+            #{item.xfBankAndNo},
+            #{item.invoiceStatus},
+            #{item.machinecode}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getNoDetailSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        CONVERT (decimal(38,2),sum(invoice_amount)) summationTotalAmount,
+        CONVERT (decimal(38,2),sum(tax_amount)) summationTaxAmount
+        FROM (
+        SELECT
+        <include refid="t_dx_record_invoice_Column"/>
+        FROM
+        <include refid="getAuthData"/>
+        WHERE tdri.source_system = '0' AND tdri.detail_yesorno = '0'
+        <if test="gfName != null and gfName != ''">
+            AND tdri.gf_name = #{gfName}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            AND tdri.gf_tax_no = #{gfTaxNo}
+        </if>
+        <!--<if test="createDate != null and createDate != ''">-->
+            <!--AND date_format(tdri.create_date,'%Y-%m-%d' ) = #{createDate}-->
+        <!--</if>-->
+        <if test="createStartDate != null and createStartDate != ''">
+            <![CDATA[ AND convert(varchar(100),tdri.create_date,20) >= #{createStartDate} ]]>
+        </if>
+        <if test="createEndDate != null and createEndDate != ''">
+            <![CDATA[ AND convert(varchar(100),tdri.create_date,20)  <= #{createEndDate} ]]>
+        </if>
+        <if test="invoiceNo != null and invoiceNo != ''">
+            AND tdri.invoice_no LIKE '%${invoiceNo}%'
+        </if>
+        <if test="invoiceType != null and invoiceType != ''">
+            AND tdri.invoice_type = #{invoiceType}
+        </if>
+        <if test="invoiceType == null or invoiceType == ''">
+            AND tdri.invoice_type IN ('01','03','14')
+        </if>
+        ) a
+    </select>
+    <select id="selectVehicleDetailList" resultType="Integer" parameterType="com.xforceplus.wapp.modules.check.entity.InvoiceCheckVehicleDetailModel">
+       select count(*) from t_dx_vehicle_sale_invoice where uuid = #{uuid} and buyer_id_num = #{buyerIdNum}
+            and vehicle_type = #{vehicleType} and factory_model = #{factoryModel} and product_place = #{productPlace}
+            and certificate = #{certificate} and certificate_import = #{certificateImport} and inspection_num = #{inspectionNum}
+            and engine_no = #{engineNo} and vehicle_no = #{vehicleNo} and phone = #{phone} and buyer_bank = #{buyerBank}
+            and tax_rate = #{taxRate} and tax_bureau_name = #{taxBureauName} and tax_bureau_code = #{taxBureauCode}
+            and tax_records = #{taxRecords} and limit_people = #{limitPeople} and check_status = #{checkStatus}
+            and tonnage = #{tonnage} and create_date = #{createDate}
+    </select>
+
+    <update id="updateVehicleDetailList" parameterType="com.xforceplus.wapp.modules.check.entity.InvoiceCheckVehicleDetailModel">
+        UPDATE t_dx_vehicle_sale_invoice SET
+            uuid=#{uuid},
+            buyer_id_num=#{buyerIdNum},
+            vehicle_type=#{vehicleType},
+            factory_model=#{factoryModel},
+            product_place=#{productPlace},
+            certificate=#{certificate},
+            certificate_import=#{certificateImport},
+            inspection_num=#{inspectionNum},
+            engine_no=#{engineNo},
+            vehicle_no=#{vehicleNo},
+            phone=#{phone},
+            buyer_bank=#{buyerBank},
+            tax_rate=#{taxRate},
+            tax_bureau_name=#{taxBureauName},
+            tax_bureau_code=#{taxBureauCode},
+            tax_records=#{taxRecords},
+            limit_people=#{limitPeople},
+            check_status=#{checkStatus},
+            tonnage=#{tonnage},
+            create_date=getdate()
+    </update>
+    <!--invoice_type = 03 明细-->
+    <insert id="insertVehicleDetailList">
+        /** mycat:schema=${schemaLabel}*/
+        insert into t_dx_vehicle_sale_invoice (uuid, buyer_id_num, vehicle_type,
+        factory_model, product_place, certificate,
+        certificate_import, inspection_num, engine_no,
+        vehicle_no, phone, buyer_bank,
+        tax_rate, tax_bureau_name, tax_bureau_code,
+        tax_records, limit_people, check_status,
+        tonnage, create_date)
+        values
+            (#{uuid,jdbcType=VARCHAR}, #{buyerIdNum,jdbcType=VARCHAR},
+            #{vehicleType,jdbcType=VARCHAR},
+            #{factoryModel,jdbcType=VARCHAR}, #{productPlace,jdbcType=VARCHAR},
+            #{certificate,jdbcType=VARCHAR},
+            #{certificateImport,jdbcType=VARCHAR}, #{inspectionNum,jdbcType=VARCHAR},
+            #{engineNo,jdbcType=VARCHAR},
+            #{vehicleNo,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR},
+            #{buyerBank,jdbcType=VARCHAR},
+            #{taxRate,jdbcType=VARCHAR}, #{taxBureauName,jdbcType=VARCHAR},
+            #{taxBureauCode,jdbcType=VARCHAR},
+            #{taxRecords,jdbcType=VARCHAR}, #{paramsData.limitPeople,jdbcType=VARCHAR},
+            #{checkStatus,jdbcType=VARCHAR},
+            #{tonnage,jdbcType=VARCHAR}, getdate())
+
+      <!--  <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            select count(*) from t_dx_vehicle_sale_invoice where uuid = #{uuid} and buyer_id_num = #{buyer_id_num}
+            and vehicle_type = #{vehicle_type} and factory_model = #{factory_model} and product_place = #{product_place}
+            and certificate = #{certificate} and certificate_import = #{certificate_import} and inspection_num = #{inspection_num}
+            and engine_no = #{engine_no} and vehicle_no = #{vehicle_no} and phone = #{phone} and buyer_bank = #{buyer_bank}
+            and tax_rate = #{tax_rate} and tax_bureau_name = #{tax_bureau_name} and tax_bureau_code = #{tax_bureau_code}
+            and tax_records = #{tax_records} and limit_people = #{limit_people} and check_status = #{check_status}
+            and tonnage = #{tonnage} and create_date = #{create_date}
+        </selectKey>
+        <if test="count > 0">
+            UPDATE t_dx_vehicle_sale_invoice SET
+            uuid=#{uuid},
+            buyer_id_num=#{buyer_id_num},
+            vehicle_type=#{vehicle_type},
+            factory_model=#{factory_model},
+            product_place=#{product_place},
+            certificate=#{certificate},
+            certificate_import=#{certificate_import},
+            inspection_num=#{inspection_num},
+            engine_no=#{engine_no},
+            vehicle_no=#{vehicle_no},
+            phone=#{phone},
+            buyer_bank=#{buyer_bank},
+            tax_rate=#{tax_rate},
+            tax_bureau_name=#{tax_bureau_name},
+            tax_bureau_code=#{tax_bureau_code},
+            tax_records=#{tax_records},
+            limit_people=#{limit_people},
+            check_status=#{check_status},
+            tonnage=#{tonnage},
+            create_date=getdate()
+        </if>
+        <if test="count==0">
+            insert into t_dx_vehicle_sale_invoice (uuid, buyer_id_num, vehicle_type,
+            factory_model, product_place, certificate,
+            certificate_import, inspection_num, engine_no,
+            vehicle_no, phone, buyer_bank,
+            tax_rate, tax_bureau_name, tax_bureau_code,
+            tax_records, limit_people, check_status,
+            tonnage, create_date)
+            values
+            <foreach collection="list" item="paramsData" index="index" separator=",">
+                (#{paramsData.uuid,jdbcType=VARCHAR}, #{paramsData.buyerIdNum,jdbcType=VARCHAR},
+                #{paramsData.vehicleType,jdbcType=VARCHAR},
+                #{paramsData.factoryModel,jdbcType=VARCHAR}, #{paramsData.productPlace,jdbcType=VARCHAR},
+                #{paramsData.certificate,jdbcType=VARCHAR},
+                #{paramsData.certificateImport,jdbcType=VARCHAR}, #{paramsData.inspectionNum,jdbcType=VARCHAR},
+                #{paramsData.engineNo,jdbcType=VARCHAR},
+                #{paramsData.vehicleNo,jdbcType=VARCHAR}, #{paramsData.phone,jdbcType=VARCHAR},
+                #{paramsData.buyerBank,jdbcType=VARCHAR},
+                #{paramsData.taxRate,jdbcType=VARCHAR}, #{paramsData.taxBureauName,jdbcType=VARCHAR},
+                #{paramsData.taxBureauCode,jdbcType=VARCHAR},
+                #{paramsData.taxRecords,jdbcType=VARCHAR}, #{paramsData.limitPeople,jdbcType=VARCHAR},
+                #{paramsData.checkStatus,jdbcType=VARCHAR},
+                #{paramsData.tonnage,jdbcType=VARCHAR}, getdate())
+            </foreach>
+        </if>-->
+    </insert>
+
+
+    <delete id="deleteDetail" >
+        delete from t_dx_record_invoice_detail where uuid =#{invoiceDetailInfo.uuid}
+    </delete>
+</mapper>

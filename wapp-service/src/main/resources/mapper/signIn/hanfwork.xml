@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.signin.dao.HandWorkRepository">
+    <select id="getInvoiceTotal" resultType="Integer">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        count(1)
+        FROM  t_dx_record_invoice WITH(NOLOCK)
+        where qs_status in(0,'',null)
+        and valid = 1
+        AND gf_tax_no in (SELECT taxno FROM t_ac_org WITH(NOLOCK) where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{query.userId}))
+        <choose>
+            <when test="query.invoiceType != null and query.invoiceType != ''and query.invoiceType!='-1'">
+                and invoice_type= #{query.invoiceType}
+            </when>
+            <otherwise>
+                AND invoice_type in (01,14,03)
+            </otherwise>
+        </choose>
+        <if test="query.shName != null and query.shName!='' and query.shName!='-1'">
+            and gf_tax_no = #{query.shName}
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != '' and query.invoiceNo!='-1'">
+            and invoice_no like concat('%',concat(#{query.invoiceNo},'%'))
+        </if>
+        <if test="query.invoiceDate1 != null and query.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{query.invoiceDate1} ]]>
+        </if>
+        <if test="query.invoiceDate2 != null and query.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{query.invoiceDate2} ]]>
+        </if>
+        order by invoice_date desc, id
+    </select>
+
+    <!-- 获取金额合计和税额合计 -->
+    <select id="getSumAmount" resultType="map">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        truncate(SUM(invoice_amount),2) sumTotalAmount,
+        truncate(SUM(tax_amount),2) sumTaxAmount
+        FROM  t_dx_record_invoice WITH(NOLOCK)
+        where qs_status in(0,'',null)
+        and valid = 1
+        AND gf_tax_no in (SELECT taxno FROM t_ac_org WITH(NOLOCK) where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{query.userId}))
+        <choose>
+            <when test="query.invoiceType != null and query.invoiceType != ''and query.invoiceType!='-1'">
+                and invoice_type= #{query.invoiceType}
+            </when>
+            <otherwise>
+                AND invoice_type in (01,14,03)
+            </otherwise>
+        </choose>
+        <if test="query.shName != null and query.shName!='' and query.shName!='-1'">
+            and gf_tax_no = #{query.shName}
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != '' and query.invoiceNo!='-1'">
+            and invoice_no like concat('%',concat(#{query.invoiceNo},'%'))
+        </if>
+        <if test="query.invoiceDate1 != null and query.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{query.invoiceDate1} ]]>
+        </if>
+        <if test="query.invoiceDate2 != null and query.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{query.invoiceDate2} ]]>
+        </if>
+    </select>
+
+    <select id="selectInvoiceList" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        invoice_type invoiceType,
+        gf_name gfName,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount
+        FROM  t_dx_record_invoice WITH(NOLOCK)
+        where qs_status in (0,'',null)
+        and valid = 1
+        AND gf_tax_no in (SELECT taxno FROM t_ac_org WITH(NOLOCK) where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{query.userId}))
+        <choose>
+            <when test="query.invoiceType != null and query.invoiceType != ''and query.invoiceType!='-1'">
+                and invoice_type= #{query.invoiceType}
+            </when>
+            <otherwise>
+                AND invoice_type in (01,14,03)
+            </otherwise>
+        </choose>
+        <if test="query.shName != null and query.shName!='' and query.shName!='-1'">
+            and gf_tax_no = #{query.shName}
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != '' and query.invoiceNo!='-1'">
+            and invoice_no like concat('%',concat(#{query.invoiceNo},'%'))
+        </if>
+        <if test="query.invoiceDate1 != null and query.invoiceDate1 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{query.invoiceDate1} ]]>
+        </if>
+        <if test="query.invoiceDate2 != null and query.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{query.invoiceDate2} ]]>
+        </if>
+        order by invoice_date desc, id
+        <if test="query.offset != null and query.limit != null">
+            limit #{query.offset}, #{query.limit}
+        </if>
+    </select>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        id,
+        invoice_code invoiceCode,
+        invoice_no invoiceNo,
+        invoice_date invoiceDate,
+        gf_name gfName,
+        xf_name xfName,
+        invoice_amount invoiceAmount,
+        tax_amount taxAmount
+        FROM  t_dx_record_invoice WITH(NOLOCK)
+        where qs_status in(0,'',null)
+        and valid = 1
+        AND gf_tax_no in (SELECT taxno FROM t_ac_org WITH(NOLOCK) where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{query.userId}))
+        <choose>
+            <when test="query.invoiceType != null and query.invoiceType != ''and query.invoiceType!='-1'">
+                and invoice_type= #{query.invoiceType}
+            </when>
+            <otherwise>
+                AND invoice_type in (01,14,03)
+            </otherwise>
+        </choose>
+        <if test="query.shName != null and query.shName != ''  and query.shName!='-1'">
+            and gf_tax_no = #{query.shName}
+        </if>
+        <if test="query.invoiceNo != null and query.invoiceNo != '' and query.invoiceNo!='-1'">
+            and invoice_no like concat('%',concat(#{query.invoiceNo},'%'))
+        </if>
+        <if test="query.invoiceDate1!= null and query.invoiceDate1!= ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d') >= #{query.invoiceDate1} ]]>
+        </if>
+        <if test="query.invoiceDate2 != null and query.invoiceDate2 != ''">
+            <![CDATA[ AND date_format(invoice_date,'%Y-%m-%d')  <= #{query.invoiceDate2} ]]>
+        </if>
+        order by invoice_date desc, id
+    </select>
+    
+    <update id="receiptInvoice">
+/**mycat:schema=${schemaLabel}*/
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        qs_status=1,
+        qs_type=4,
+        qs_date=NOW()
+        where id=#{id}
+    </update>
+
+    <insert id="saveData">
+/**mycat:schema=${schemaLabel}*/
+        INSERT INTO  t_dx_invoice WITH(ROWLOCK)
+        (
+        invoice_type ,
+        invoice_code ,
+        invoice_no ,
+        invoice_date ,
+        gf_tax_no ,
+        gf_name ,
+        xf_name ,
+        invoice_amount ,
+        tax_amount ,
+        total_amount ,
+        xf_tax_no ,
+        check_code ,
+        uuid,
+        qs_status,
+        qs_type,
+        valid,
+        create_date,
+        user_name,
+        user_account,
+        qs_date
+        )
+        VALUES
+        (
+          #{r.invoiceType},
+          #{r.invoiceCode},
+          #{r.invoiceNo},
+          #{r.invoiceDate},
+          #{r.gfTaxNo},
+          #{r.gfName},
+          #{r.xfName},
+          #{r.invoiceAmount},
+          #{r.taxAmount},
+          #{r.totalAmount},
+          #{r.xfTaxNo},
+          #{r.checkCode},
+          #{r.uuid},
+          1,
+          4,
+          1,
+          NOW(),
+          #{r.userName},
+          #{r.userNum},
+          NOW()
+        )
+    </insert>
+
+    <select id="getInvoiceDetail" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceDetailEntity">
+/**mycat:schema=${schemaLabel}*/
+        SELECT
+        t.gf_name gfName;
+        t.gf_address_and_phone gfAdressndPhone,
+        t.xf_bank_and_no gfBankAndNo,
+        t.gf_tax_no gfTaxNo,
+        t.xf_tax_no xfTaxNo,
+        t.xf_name xfName,
+        t.xf_address_and_phone xfAdressndPhone,
+        t.xf_bank_and_no xfBankAndNo,
+        d.goods_name goodsName,
+        d.model model,
+        d.uuid ,
+        d.num num,
+        d.unit_price unitPrice,
+        d.detail_amount invoiceAmount,
+        d.tax_rate taxRate,
+        d.tax_amount taxAmount
+        FROM t_dx_record_invoice t WITH(NOLOCK)
+        LEFT JOIN t_dx_record_invoice_detail d ON d.invoice_no=#{invoiceNo}
+        where t.invoice_no=#{invoiceNo}
+    </select>
+
+    <resultMap id="optionMap" type="com.xforceplus.wapp.modules.report.entity.OptionEntity">
+        <result column="taxno" property="value" />
+        <result column="orgname" property="label" />
+    </resultMap>
+    <select id="searchGf" resultMap="optionMap">
+        /**mycat:schema=${schemaLabel}*/
+        select taxno, orgname from t_ac_org WITH(NOLOCK) where orgid in (select orgid from t_ac_user_taxno where userid=#{userId})
+    </select>
+
+   <!-- <resultMap id="invoiceMap" type="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceEntity">
+        <result column="invoice_code" property="invoiceCode" />
+        <result column="invoice_type" property="invoiceType" />
+        <result column="invoice_no" property="invoiceNo" />
+        <result column="invoice_date" property="invoiceDate" />
+        <result column="gf_tax_no" property="gfTaxNo" />
+        <result column="gf_name" property="gfName" />
+        <result column="xf_tax_no" property="xfTaxNo" />
+        <result column="xf_name" property="xfName" />
+        <result column="invoice_amount" property="invoiceAmount" />
+        <result column="tax_amount" property="taxAmount" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="remark" property="remark" />
+    </resultMap>
+    <select id="getInvoiceData" resultType="invoiceMap">
+
+    </select>-->
+
+
+    <select id="getInvoiceDataById" resultType="com.xforceplus.wapp.modules.signin.entity.RecordInvoiceDataEntity">
+        /**mycat:schema=${schemaLabel}*/
+        SELECT
+        t.invoice_type invoiceType,
+        t.invoice_code invoiceCode,
+        t.invoice_no invoiceNo,
+        t.invoice_date invoiceDate,
+        t.gf_tax_no gfTaxNo,
+        t.gf_name gfName,
+        t.xf_name xfName,
+        t.invoice_amount invoiceAmount,
+        t.tax_amount taxAmount,
+        t.total_amount totalAmount,
+        t.xf_tax_no xfTaxNo,
+        t.check_code checkCode,
+        t.uuid
+        FROM t_dx_record_invoice t WITH(NOLOCK)
+        where id=#{id}
+    </select>
+</mapper>

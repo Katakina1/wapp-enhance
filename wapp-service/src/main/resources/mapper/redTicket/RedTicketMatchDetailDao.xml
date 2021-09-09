@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.redTicket.dao.RedTicketMatchDetailDao">
+
+    <resultMap id="invoiceDetMap" type="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatchDetail">
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_model" property="goodsModel"/>
+        <result column="goods_unit" property="goodsUnit"/>
+        <result column="goods_number" property="goodsNumber"/>
+        <result column="goods_price" property="goodsPrice"/>
+        <result column="goods_amount" property="goodsAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="red_rush_number" property="redRushNumber"/>
+        <result column="red_rush_amount" property="redRushAmount"/>
+        <result column="red_rush_price" property="redRushPrice"/>
+        <result column="redticket_data_serial_number" property="redTicketDataSerialNumber"/>
+    </resultMap>
+
+    <insert id="insertRedRushDetails" parameterType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatchDetail" useGeneratedKeys="true" keyProperty="map.id">
+    insert into t_dx_Invoice_details WITH(ROWLOCK)
+    (
+    goods_name,
+    goods_model,
+    goods_unit,
+    goods_amount,
+    tax_rate,
+    tax_amount,
+    red_rush_number,
+    red_rush_amount,
+    red_rush_price,
+    redticket_data_serial_number
+    ) values(
+    #{map.goodsName},
+    #{map.model},
+    #{map.unit},
+    #{map.detailAmount},
+    #{map.taxRate},
+    #{map.taxAmount},
+    #{map.redRushNumber},
+    #{map.redRushAmount},
+    #{map.redRushPrice},
+    #{redTicketNumber}
+    )
+    </insert>
+
+    <select id="getRedRushDetails" resultMap="invoiceDetMap">
+        select goods_name,goods_model,goods_unit,
+    goods_number,goods_price,goods_amount,tax_rate,
+    tax_amount,red_rush_number,red_rush_amount,
+    red_rush_price
+    from t_dx_Invoice_details WITH(NOLOCK)
+    where redticket_data_serial_number=#{redTicketNumber}
+    </select>
+</mapper>

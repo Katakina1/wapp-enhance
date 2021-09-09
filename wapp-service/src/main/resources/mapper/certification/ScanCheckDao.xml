@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.certification.dao.ScanCheckDao">
+
+	<select id="selectCheck" resultType="com.xforceplus.wapp.modules.certification.entity.InvoiceCertificationEntity" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+
+		id 				 ,
+		gx_date 		 gxDate,
+    	invoice_code 	 invoiceCode,
+    	invoice_no 		 invoiceNo,
+    	invoice_date	 invoiceDate,
+    	(SELECT c.current_tax_period FROM t_dx_tax_current c WHERE c.taxno=t.gf_tax_no)currentTaxPeriod,
+    	invoice_type     invoiceType,
+    	valid            ,
+    	check_code       checkCode,
+    	rzh_yesorno      rzhYesOrNo,
+    	detail_yesorno   detailYesOrNo,
+    	invoice_status   invoiceStatus,
+		invoice_amount   invoiceAmount,
+		auth_status      authStatus,
+    	tax_amount 		 taxAmount        
+ 		from t_dx_record_invoice  t WITH(NOLOCK)
+ 		where 1=1
+		and invoice_code=#{map.invoiceCode}
+		and invoice_no=#{map.invoiceNo}
+		AND date_format(invoice_date,'%Y-%m-%d')= #{map.invoiceDate}
+		<!--
+		<if test="map.checkCode == null or map.checkCode == ''">
+			and invoice_amount=#{map.invoiceAmount}
+		</if>
+		-->
+	</select>
+
+
+	<select id="selectCheckTaxAccess" resultType="Integer" >
+		/**mycat:schema=${schemaLabel}*/
+		select
+		count(1)
+		from t_dx_record_invoice t WITH(NOLOCK)
+		where 1=1
+		AND gf_tax_no in (SELECT taxno FROM t_ac_org WITH(NOLOCK) where orgid in(SELECT orgid FROM t_ac_user_taxno where userid=#{map.userId}))
+		and invoice_code=#{map.invoiceCode}
+		and invoice_no=#{map.invoiceNo}
+		<!--
+		<if test="map.checkCode == null or map.checkCode == ''">
+			and invoice_amount=#{map.invoiceAmount}
+		</if>
+		-->
+		AND date_format(invoice_date,'%Y-%m-%d')= #{map.invoiceDate}
+
+	</select>
+
+	<update id="scanCheck">
+        /**mycat:schema=${schemaLabel}*/
+		update t_dx_record_invoice WITH(ROWLOCK) set
+		gx_date = now(),
+		auth_status = 1,
+		gx_type = 1,
+		gx_user_account=#{loginName},
+		gx_user_name=#{userName}
+		where ID = #{id}
+
+	</update>
+
+</mapper>

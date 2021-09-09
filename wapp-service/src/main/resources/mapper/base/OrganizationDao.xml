@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.OrganizationDao">
+
+    <sql id="condition">
+        <if test="entity.orgid != null ">and orgid = #{entity.orgid}</if>
+        <if test="entity.orgcode != null and entity.orgcode.trim() != ''">
+            and orgcode like concat(concat('%',#{entity.orgcode}),'%')
+        </if>
+        <if test="entity.orgname != null and entity.orgname.trim() != ''">
+            and orgname like N'%'+#{entity.orgname}+'%'
+        </if>
+        <if test="entity.taxno != null and entity.taxno.trim() != ''">
+            and taxno like concat(concat('%',#{entity.taxno}),'%')
+        </if>
+        <if test="entity.taxname != null and entity.taxname.trim() != ''">
+            and taxname like N'%'+#{entity.taxname}+'%'
+        </if>
+        <if test="entity.parentid != null">and parentid = #{entity.parentid}</if>
+        <if test="entity.orgtypeStr != null and entity.orgtypeStr != ''">
+            and CHARINDEX(orgtype,#{entity.orgtypeStr})>0
+        </if>
+        <if test="entity.orgtype != null and entity.orgtype != ''">and orgtype = #{entity.orgtype}</if>
+        <if test="entity.linkman != null and entity.linkman != ''">and linkman = #{entity.linkman}</if>
+        <if test="entity.phone != null and entity.phone != ''">and phone = #{entity.phone}</if>
+        <if test="entity.address != null and entity.address != ''">and address = #{entity.address}</if>
+        <if test="entity.email != null and entity.email != ''">and email = #{entity.email}</if>
+        <if test="entity.postcode != null and entity.postcode != ''">and postcode = #{entity.postcode}</if>
+        <if test="entity.bank != null and entity.bank != ''">and bank = #{entity.bank}</if>
+        <if test="entity.account != null and entity.account != ''">and account = #{entity.account}</if>
+        <if test="entity.isbottom != null and entity.isbottom != ''">and isbottom = #{entity.isbottom}</if>
+        <if test="entity.orglevel != null and entity.orglevel != ''">and orglevel = #{entity.orglevel}</if>
+        <if test="entity.orglayer != null and entity.orglayer != ''">and orglayer = #{entity.orglayer}</if>
+        <if test="entity.company != null and entity.company != ''">and company = #{entity.company}</if>
+        <if test="entity.remark != null and entity.remark != ''">and remark = #{entity.remark}</if>
+        <if test="entity.sortno != null and entity.sortno != ''">and sortno = #{entity.sortno}</if>
+        <if test="entity.createTime != null">and create_time = #{entity.createTime}</if>
+        <if test="entity.createBy != null and entity.createBy != ''">and create_by = #{entity.createBy}</if>
+        <if test="entity.lastModifyTime != null">and last_modify_time = #{entity.lastModifyTime}</if>
+        <if test="entity.lastModifyBy != null">and last_modify_by = #{entity.lastModifyBy}</if>
+        <if test="entity.comType != null">and com_type = #{entity.comType}</if>
+        <if test="entity.isBlack != null">and is_black = #{entity.isBlack}</if>
+        <if test="entity.extf0 != null">and extf0 = #{entity.extf0}</if>
+        <if test="entity.extf1 != null">and extf1 = #{entity.extf1}</if>
+        <if test="entity.extf2 != null">and extf2 = #{entity.extf2}</if>
+        <if test="entity.extf3 != null">and extf3 = #{entity.extf3}</if>
+        <if test="entity.extf4 != null">and extf4 = #{entity.extf4}</if>
+        <if test="entity.extf5 != null">and extf5 = #{entity.extf5}</if>
+        <if test="entity.extf6 != null">and extf6 = #{entity.extf6}</if>
+        <if test="entity.extf7 != null">and extf7 = #{entity.extf7}</if>
+        <if test="entity.extf8 != null">and extf8 = #{entity.extf8}</if>
+        <if test="entity.extf9 != null">and extf9 = #{entity.extf9}</if>
+        <if test="entity.type != null">and orgtype!=8</if>
+        <if test="entity.companyCode != null and entity.companyCode != ''">and company_code = #{entity.companyCode}</if>
+        <if test="entity.orgIds != null">
+            and parentid IN
+            <foreach item="items" collection="entity.orgIds" open="(" separator="," close=")">
+                #{items}
+            </foreach>
+        </if>
+        <if test="entity.ids != null">
+            and orgid IN
+            <foreach item="item" collection="entity.ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="queryObject" resultType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_org WITH(NOLOCK) where orgid = #{orgid}
+	</select>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.orgid asc) AS rownumber, o.*
+            FROM(
+        </if>
+        select d.*,(select p.orgname from t_ac_org p WITH(NOLOCK) where p.orgid = d.parentid) as
+        parentName
+        from t_ac_org d WITH(NOLOCK)
+        <where>
+            <include refid="condition"/>
+        </where>
+        <!--  数据过滤  -->
+        <if test="entity.offset == null and entity.limit == null">
+        order by d.orgid asc
+        </if>
+        <if test="entity.offset != null and entity.limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{entity.offset}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity" useGeneratedKeys="true"
+            keyProperty="entity.orgid">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_org WITH(ROWLOCK)
+		(
+		<if test="entity.orgid !=null">
+		orgid,
+        </if>
+		orgcode,
+		orgname,
+		taxno,
+		taxname,
+		parentid,
+		orgtype,
+		linkman,
+		phone,
+		address,
+		email,
+		postcode,
+		bank,
+		account,
+		isbottom,
+		orglevel,
+		orglayer,
+		company,
+		remark,
+		sortno,
+		create_time,
+		create_by,
+		last_modify_time,
+		last_modify_by,
+		com_type,
+		is_black,
+		extf0,
+		extf1,
+		extf2,
+		extf3,
+		extf4,
+		extf5,
+		extf6,
+		extf7,
+		extf8,
+		extf9,
+		link_name,
+        company_code,
+        store_number,
+        is_update
+		)
+		values
+		(
+        <if test="entity.orgid !=null">
+		#{entity.orgid},
+        </if>
+		#{entity.orgcode},
+		#{entity.orgname},
+		#{entity.taxno},
+		#{entity.taxname},
+		#{entity.parentid},
+		#{entity.orgtype},
+		#{entity.linkman},
+		#{entity.phone},
+		#{entity.address},
+		#{entity.email},
+		#{entity.postcode},
+		#{entity.bank},
+		#{entity.account},
+		#{entity.isbottom},
+		#{entity.orglevel},
+		#{entity.orglayer},
+		#{entity.company},
+		#{entity.remark},
+		#{entity.sortno},
+        CONVERT(datetime,#{entity.createTime}),
+		#{entity.createBy},
+        CONVERT(datetime,#{entity.lastModifyTime}),
+		#{entity.lastModifyBy},
+		#{entity.comType},
+		#{entity.isBlack},
+		#{entity.extf0},
+		#{entity.extf1},
+		#{entity.extf2},
+		#{entity.extf3},
+		#{entity.extf4},
+		#{entity.extf5},
+		#{entity.extf6},
+		#{entity.extf7},
+		#{entity.extf8},
+		#{entity.extf9},
+		#{entity.linkName},
+        #{entity.companyCode},
+        #{entity.storeNumber},
+        #{entity.isUpdate}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity">
+        /**mycat:schema=${schemaLabel}*/ update t_ac_org WITH(ROWLOCK)
+        <set>
+            <if test="entity.orgcode != null">orgcode = #{entity.orgcode},</if>
+            <if test="entity.orgname != null">orgname = #{entity.orgname},</if>
+            <if test="entity.taxno != null">taxno = #{entity.taxno},</if>
+            <if test="entity.taxname != null">taxname = #{entity.taxname},</if>
+            <if test="entity.parentid != null">parentid = #{entity.parentid},</if>
+            <if test="entity.orgtype != null">orgtype = #{entity.orgtype},</if>
+            <if test="entity.linkman != null">linkman = #{entity.linkman},</if>
+            <if test="entity.phone != null">phone = #{entity.phone},</if>
+            <if test="entity.address != null">address = #{entity.address},</if>
+            <if test="entity.email != null">email = #{entity.email},</if>
+            <if test="entity.postcode != null">postcode = #{entity.postcode},</if>
+            <if test="entity.bank != null">bank = #{entity.bank},</if>
+            <if test="entity.account != null">account = #{entity.account},</if>
+            <if test="entity.isbottom != null">isbottom = #{entity.isbottom},</if>
+            <if test="entity.orglevel != null">orglevel = #{entity.orglevel},</if>
+            <if test="entity.orglayer != null">orglayer = #{entity.orglayer},</if>
+            <if test="entity.company != null">company = #{entity.company},</if>
+            <if test="entity.remark != null">remark = #{entity.remark},</if>
+            <if test="entity.sortno != null">sortno = #{entity.sortno},</if>
+            <if test="entity.lastModifyTime != null">last_modify_time = #{entity.lastModifyTime},</if>
+            <if test="entity.lastModifyBy != null">last_modify_by = #{entity.lastModifyBy},</if>
+            <if test="entity.comType != null">com_type = #{entity.comType},</if>
+            <if test="entity.isBlack != null">is_black = #{entity.isBlack}</if>
+            <if test="entity.extf0 != null">extf0 = #{entity.extf0},</if>
+            <if test="entity.extf1 != null">extf1 = #{entity.extf1},</if>
+            <if test="entity.extf2 != null">extf2 = #{entity.extf2},</if>
+            <if test="entity.extf3 != null">extf3 = #{entity.extf3},</if>
+            <if test="entity.extf4 != null">extf4 = #{entity.extf4},</if>
+            <if test="entity.extf5 != null">extf5 = #{entity.extf5},</if>
+            <if test="entity.extf6 != null">extf6 = #{entity.extf6},</if>
+            <if test="entity.extf7 != null">extf7 = #{entity.extf7},</if>
+            <if test="entity.extf8 != null">extf8 = #{entity.extf8},</if>
+            <if test="entity.extf9 != null">extf9 = #{entity.extf9},</if>
+            <if test="entity.linkName != null">link_name = #{entity.linkName},</if>
+            <if test="entity.companyCode != null">company_code = #{entity.companyCode},</if>
+            <if test="entity.isUpdate != null">is_update = #{entity.isUpdate},</if>
+            <if test="entity.storeNumber != null">store_number = #{entity.storeNumber},</if>
+        </set>
+        where orgid = #{entity.orgid}
+    </update>
+
+    <update id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from  t_ac_org WITH(ROWLOCK) where orgid = #{orgid}
+	</update>
+
+    <select id="queryOrgIdList" resultType="long">
+		/**mycat:schema=${schemaLabel}*/ select orgid from t_ac_org WITH(NOLOCK) where parentid = #{orgid}
+	</select>
+
+    <select id="queryTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_org r WITH(NOLOCK)
+        <where>
+            <include refid="condition"/>
+        </where>
+    </select>
+
+    <delete id="deleteBatch" parameterType="int">
+        /**mycat:schema=${schemaLabel}*/ delete from t_ac_org WITH(ROWLOCK) where orgid in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getNotAddList" resultType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="userTaxnoEntity.offset != null and userTaxnoEntity.limit != null">
+            SELECT
+            TOP (#{userTaxnoEntity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.orgid asc) AS rownumber, o.*
+            FROM(
+        </if>
+
+        select * from t_ac_org t WITH(NOLOCK) where t.company = #{userTaxnoEntity.company}
+        AND t.orgtype=#{orgType}
+        AND t.orgid IN
+        <foreach item="item" collection="orgChildArr" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="null != userTaxnoEntities and !userTaxnoEntities.empty">
+            AND t.orgid not IN
+            <foreach item="UserTaxnoEntity" collection="userTaxnoEntities" open="(" separator="," close=")">
+                #{UserTaxnoEntity.orgid}
+            </foreach>
+        </if>
+        <if test="userTaxnoEntity.orgname !=null and userTaxnoEntity.orgname.trim() !=''">
+            AND t.orgname like concat(concat('%',#{userTaxnoEntity.orgname}),'%')
+        </if>
+        <if test="userTaxnoEntity.taxno !=null and userTaxnoEntity.taxno.trim() !=''">
+            AND t.taxno like concat(concat('%',#{userTaxnoEntity.taxno}),'%')
+        </if>
+
+        <if test="userTaxnoEntity.offset != null and userTaxnoEntity.limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{userTaxnoEntity.offset}
+        </if>
+    </select>
+
+    <select id="getNotAddListTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_org t WITH(NOLOCK) where t.company = #{userTaxnoEntity.company}
+        AND t.orgtype=#{orgType}
+        AND t.orgid IN
+        <foreach item="item" collection="orgChildArr" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="null != userTaxnoEntities and !userTaxnoEntities.empty">
+            AND t.orgid not IN
+            <foreach item="UserTaxnoEntity" collection="userTaxnoEntities" open="(" separator="," close=")">
+                #{UserTaxnoEntity.orgid}
+            </foreach>
+        </if>
+        <if test="userTaxnoEntity.orgname !=null and userTaxnoEntity.orgname.trim() !=''">
+            AND t.orgname like concat('%',#{userTaxnoEntity.orgname},'%')
+        </if>
+        <if test="userTaxnoEntity.taxno !=null and userTaxnoEntity.taxno.trim() !=''">
+            AND t.taxno like concat('%',#{userTaxnoEntity.taxno},'%')
+        </if>
+    </select>
+
+    <select id="getOrgDetail" resultType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.orgid asc) AS rownumber, o.*
+            FROM(
+        </if>
+        select b.* ,
+        t.id AS userTaxnoId
+        FROM t_ac_user_taxno t
+        LEFT JOIN t_ac_org b WITH(NOLOCK) ON b.orgid=t.orgid
+        WHERE t.userid=#{entity.userid}
+        and CHARINDEX(convert(varchar(7),t.orgid),#{entity.subOrgIdStr})>0
+        <if test="entity.orgname != null and entity.orgname.trim() != ''">
+            and b.orgname like concat(concat('%',#{entity.orgname}),'%')
+        </if>
+        <if test="entity.taxno != null and entity.taxno.trim() != ''">
+            and b.taxno like concat(concat('%',#{entity.taxno}),'%')
+        </if>
+        <if test="entity.offset != null and entity.limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{entity.offset}
+        </if>
+    </select>
+
+    <select id="getOrgDetailCount" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*)
+        FROM t_ac_user_taxno t
+        LEFT JOIN t_ac_org b WITH(NOLOCK) ON b.orgid=t.orgid
+        WHERE t.userid=#{entity.userid}
+        and CHARINDEX(convert(varchar(7),t.orgid),#{entity.subOrgIdStr})>0
+        <if test="entity.orgname != null and entity.orgname.trim() != ''">
+            and b.orgname like concat('%',#{entity.orgname},'%')
+        </if>
+        <if test="entity.taxno != null and entity.taxno.trim() != ''">
+            and b.taxno like concat('%',#{entity.taxno},'%')
+        </if>
+    </select>
+
+    <select id="totalDataAccess" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) FROM t_ac_user_taxno
+        <where>
+            <if test="orgIds != null">
+                orgid IN
+                <foreach item="items" collection="orgIds" open="(" separator="," close=")">
+                    #{items}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="renameCheckTaxNo" resultType="int">
+    /**mycat:schema=${schemaLabel}*/ select count(1) from t_ac_org WITH(NOLOCK)
+    <where>
+        taxno = #{entity.taxno} and orgtype='8' and (orgname=#{entity.orgname} or taxname=#{entity.taxname})
+        <if test="entity.orgid != null ">
+            and orgid != #{entity.orgid}
+        </if>
+    </where>
+</select>
+
+
+    <select id="countTaxnoAndOrgcode" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(1) from t_ac_org WITH(NOLOCK)
+        <where>
+            taxno = #{entity.taxno} and  orgtype='5'  and  orgcode=#{entity.orgcode}
+            <if test="entity.orgid != null ">
+                and orgid != #{entity.orgid}
+            </if>
+        </where>
+    </select>
+
+    <select id="renameCheckOrglayer" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_org WITH(NOLOCK) WHERE  orglayer = #{entity.orglayer}
+    </select>
+
+    <select id="querySubOrgIdList" resultType="long">
+        /**mycat:schema=${schemaLabel}*/ select orgid from t_ac_org WITH(NOLOCK)
+        WHERE company = #{company}
+    </select>
+
+    <select id="getMenuByNameAndOrgid" resultType="Integer">
+       /**mycat:schema=${schemaLabel}*/ select count(1) from t_ac_menu where menuname=#{menuname} and orgid=#{orgid} and menulevel=#{menulevel}
+    </select>
+
+    <insert id="saveOrgMenu">
+         /**mycat:schema=${schemaLabel}*/ insert into t_ac_menu (menucode, parentid, orgid, menuname, menulabel, menuaction, menulevel, isbottom, sortno)
+        select menucode, parentid, #{orgid}, menuname, menulabel, menuaction, menulevel, isbottom, sortno from t_ac_menu where menuname=#{menuname} and orgid=1 and menulevel=#{menulevel}
+    </insert>
+
+    <update id="fitPid">
+        /**mycat:schema=${schemaLabel}*/  update t_ac_menu  set parentid=#{pid}
+        where orgid=#{orgid} and menuname=#{menuname} and menulevel=#{menulevel}
+    </update>
+
+    <select id="getPid" resultType="Long">
+        /**mycat:schema=${schemaLabel}*/select parentid from t_ac_menu where menuname=#{menuname} and orgid=#{orgid} and menulevel=#{menulevel}
+    </select>
+
+    <select id="getPname" resultType="String">
+        /**mycat:schema=${schemaLabel}*/select menuname from t_ac_menu where menuid=#{pid}
+    </select>
+
+    <select id="getPid2" resultType="Long">
+        /**mycat:schema=${schemaLabel}*/select menuid from t_ac_menu where menuname=#{menuname} and orgid=#{orgid} and menulevel=#{menulevel}-1
+    </select>
+
+    <select id="selectJvAndStoreExists" resultType="Integer">
+        select count(1) from t_ac_org WITH(NOLOCK) where orgcode=#{orgcode} and orgtype ='5'
+    </select>
+
+    <select id="selectStoreExists" resultType="Integer">
+        select count(1) from t_ac_org WITH(NOLOCK) where parentid=#{parentid} and orgcode=#{storeNumber} and orgtype ='7'
+    </select>
+
+    <select id="selectOrgTypeExists" resultType="String">
+        select orgtype from t_ac_org WITH(NOLOCK) where orgcode=#{orgcode}
+    </select>
+
+    <select id="selectOrgTypeSecondExists" resultType="Integer">
+        select orgid from t_ac_org WITH(NOLOCK) where orgtype='2'
+    </select>
+
+
+    <update id="updateJvAndStoreExists">
+        update t_ac_org WITH(ROWLOCK) set orgname=#{map.orgname},last_modify_time=#{lastModifyTime},last_modify_by=#{lastModifyBy}
+        where orgcode=#{map.storeNumber}
+        and orgtype='7'
+    </update>
+
+    <update id="updateCompanyCodeExists">
+        update t_ac_org WITH(ROWLOCK) set company_code=#{companyCode},last_modify_time=#{lastModifyTime},last_modify_by=#{lastModifyBy}
+        where orgcode=#{orgcode}
+        and orgtype='5'
+    </update>
+
+    <insert id="insertJvAndStoreExists" parameterType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity" useGeneratedKeys="true" keyProperty="map.orgid">
+        insert into t_ac_org WITH(ROWLOCK)(
+        orgname,
+        taxname,
+        create_by,
+        create_time,
+        orgcode,
+        orgtype,
+        parentid,
+        orglevel
+        ) values(
+        #{map.orgname},
+        #{map.orgname},
+        #{createBy},
+        #{createTime},
+        #{map.storeNumber},
+        '7',
+        #{parentid},
+        4
+        )
+    </insert>
+
+    <insert id="insertJvExists" parameterType="com.xforceplus.wapp.modules.base.entity.OrganizationEntity" useGeneratedKeys="true" keyProperty="map.orgid">
+        insert into t_ac_org WITH(ROWLOCK)(
+        orgname,
+        taxname,
+        taxno,
+        orgcode,
+        create_by,
+        create_time,
+        orgtype,
+        parentid,
+        orglevel
+        <if test="map.address != null and map.address != ''">
+            ,address
+        </if>
+        <if test="map.phone != null and map.phone != ''">
+            ,phone
+        </if>
+        <if test="map.bank != null and map.bank != ''">
+            ,bank
+        </if>
+        <if test="map.account != null and map.account != ''">
+            ,account
+        </if>
+        ) values(
+        #{map.orgname},
+        #{map.orgname},
+        #{map.taxno},
+        #{map.orgcode},
+        #{createBy},
+        #{createTime},
+        '5',
+        #{parentid},
+        3
+        <if test="map.address != null and map.address != ''">
+            ,#{map.address}
+        </if>
+        <if test="map.phone != null and map.phone != ''">
+            ,#{map.phone}
+        </if>
+        <if test="map.bank != null and map.bank != ''">
+            ,#{map.bank}
+        </if>
+        <if test="map.account != null and map.account != ''">
+            ,#{map.account}
+        </if>
+        )
+    </insert>
+
+    <update id="updateOrgInformationExists">
+        update t_ac_org WITH(ROWLOCK) set
+        orgname=#{map.orgname},
+        last_modify_time=#{lastModifyTime},
+        last_modify_by=#{lastModifyBy},
+        taxno=#{map.taxno}
+        <if test="map.address != null and map.address != ''">
+            ,address=#{map.address}
+        </if>
+        <if test="map.phone != null and map.phone != ''">
+            ,phone=#{map.phone}
+        </if>
+        <if test="map.bank != null and map.bank != ''">
+            ,bank=#{map.bank}
+        </if>
+        <if test="map.account != null and map.account != ''">
+            ,account=#{map.account}
+        </if>
+        where orgcode=#{map.orgcode}
+        and orgtype='5'
+    </update>
+
+    <select id="selectAlreadyOrgSecondExists" resultType="Integer">
+        select orgid from t_ac_org WITH(NOLOCK) where orgcode=#{orgcode}
+    </select>
+
+    <select id="getOrgCodeCount" resultType="Integer">
+      /**mycat:schema=${schemaLabel}*/select count(*) from t_ac_org r WITH(NOLOCK) where orgcode=#{orgcode} and orgtype=5
+    </select>
+</mapper>

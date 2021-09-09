@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.modules.redTicket.dao.CheckRedTicketInformationGDao">
+
+    <resultMap id="returnGoodsMap" type="com.xforceplus.wapp.modules.businessData.entity.ReturngoodsEntity">
+        <id column="id" property="id"/>
+        <result column="return_goods_code" property="returnGoodsCode"/>
+        <result column="supplier_association" property="supplierAssociation"/>
+        <result column="return_goods_date" property="returnGoodsDate"/>
+        <result column="return_goods_amount" property="returnGoodsAmount"/>
+        <result column="return_cost_amount" property="returncostAmount"/>
+        <result column="return_goods_status" property="returnGoodsStatus"/>
+        <result column="redticket_data_serial_number" property="redticketDataSerialNumber"/>
+
+    </resultMap>
+
+    <resultMap id="redTicketMatchMiddleMap" type="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatchMiddle">
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="red_rush_amount" property="redRushAmount"/>
+        <result column="tax_rate" property="taxRate"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="red_ticket_matching_association" property="redTicketMatchingAssociation"/>
+    </resultMap>
+
+    <!--取消退货状态-->
+    <update id="cancelReturnGoodsStatus">
+        UPDATE t_dx_all_record_invoice_detail
+        SET
+        return_goods_status='0',
+        redticket_data_serial_number=null
+        <where>
+                and  supplier_association = #{map.userCode}
+                and redticket_data_serial_number  = #{map.redticketDataSerialNumber}
+        </where>
+    </update>
+
+    <!--取消协议状态-->
+    <update id="cancelAgreementStatus">
+        UPDATE t_dx_protocol
+        SET
+        redticket_data_serial_number=null
+        <where>
+                and  vender_id = #{map.userCode}
+                and redticket_data_serial_number = #{map.redticketDataSerialNumber}
+        </where>
+    </update>
+
+    <!--红票匹配状态作废-->
+    <update id="redRushInformationObsolete">
+        UPDATE t_dx_red_ticket_matching
+        SET
+        redticket_status='2'
+        <where>
+                and  id = #{map.id}
+        </where>
+    </update>
+
+    <!--清空发票明细红冲数据-->
+    <update id="clearTicketInformationData">
+        UPDATE t_dx_record_invoice_detail WITH(ROWLOCK)
+        SET
+        red_rush_price=null,
+        red_rush_number=null,
+        red_rush_amount=null,
+        redticket_data_serial_number=null
+        <where>
+                and  redticket_data_serial_number = #{map.redticketDataSerialNumber}
+        </where>
+    </update>
+
+    <!--发票中间表查询-->
+    <select id="queryRedTicketMatchMiddle" resultMap="redTicketMatchMiddleMap">
+        select
+        invoice_code,invoice_no,red_rush_amount
+        from t_dx_red_ticket_matching_middle WITH(NOLOCK)
+        <where>
+                and red_ticket_matching_association = #{map.id}
+        </where>
+    </select>
+
+    <!--发票可红冲金额回冲-->
+    <update id="invoiceRedRushAmountBackflush">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET
+        red_money_amount=red_money_amount+#{map.redRushAmount}
+        <where>
+                and uuid = concat(#{map.invoiceCode},#{map.invoiceNo})
+        </where>
+    </update>
+
+    <!--获取红票匹配表信息-->
+    <select id="getRedTicketMatchList" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatch" >
+        SELECT
+        <if test=" map.limit != null">
+            TOP (#{map.limit})
+        </if>
+        A.*
+        FROM
+        (
+        SELECT
+        row_number () OVER (ORDER BY o.id ) AS rownumber ,o.*
+        FROM
+        (
+        select
+        distinct   m.id ,
+        m.redticket_data_serial_number  redTicketDataSerialNumber,
+        m.business_type                 businessType,
+        m.red_total_amount              redTotalAmount,
+        m.whether_upload_data           dataStatus,
+        m.whether_upload_rednotice       noticeStatus,
+        m.red_notice_number              redNoticeNumber,
+        m.audit_results                  examineResult,
+        m.audit_remarks                  examineRemarks,
+        m.data_association               dataAssociation,
+        m.rednotice_association          redNoticeAssociation,
+        m.tax_rate                       taxRate,
+        m.red_ticket_examine_time examineDate,
+        m.redticket_creation_time redTicketCreationTime,
+        m.upload_rednotice_time uploadRednoticeTime,
+        m.open_redticket_time openRedticketTime,
+        m.two_examine_time twoExamineTime,
+        m.two_audit_remarks twoAuditRemarks
+        from t_dx_red_ticket_matching m WITH(NOLOCK)
+        <if test='map.businessType == "1"'>
+            left join t_dx_return_agreement_middle  tam   WITH(NOLOCK) on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_all_record_invoice_detail  tg  WITH(NOLOCK) on  tg.id = tam.return_agreement_association
+
+        </if>
+
+        <if test='map.businessType == "2"'>
+            left join t_dx_return_agreement_middle  tam  WITH(NOLOCK)  on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_protocol  ta  WITH(NOLOCK) on  ta.id = tam.return_agreement_association
+
+        </if>
+        <where>
+            and m.redticket_status='0'
+            <choose>
+                <when test=' map.businessType == "1"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and tg.return_goods_code like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                </when>
+                <when test=' map.businessType == "2"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and ta.protocol_no like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                </when>
+            </choose>
+            <if test="map.userCode != null and map.userCode != ''">
+                and m.venderid =#{map.userCode}
+            </if>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.redticket_creation_time,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),m.redticket_creation_time,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+
+            <if test="map.businessType != null and map.businessType != ''and map.businessType != '-1'">
+                and m.business_type = #{map.businessType}
+            </if>
+        </where>  ) AS o
+        ) A
+        WHERE 1=1
+        <if test="map.offset != null ">
+            and   rownumber > #{map.offset}
+        </if>
+    </select>
+
+    <!--获取红票匹配表信息条数-->
+    <select id="getRedTicketMatchListCount" resultType="java.lang.Integer" >
+        select
+        count(1)
+        from (
+        select
+        distinct m.id
+        from t_dx_red_ticket_matching m WITH(NOLOCK)
+        <if test='map.businessType == "1"'>
+            left join t_dx_return_agreement_middle  tam WITH(NOLOCK)   on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_all_record_invoice_detail  tg WITH(NOLOCK)  on  tg.id = tam.return_agreement_association
+
+        </if>
+
+        <if test='map.businessType == "2"'>
+            left join t_dx_return_agreement_middle  tam WITH(NOLOCK)   on m.id=tam.red_ticket_matching_association
+            LEFT JOIN  t_dx_protocol  ta  WITH(NOLOCK) on  ta.id = tam.return_agreement_association
+
+        </if>
+        <where>
+            and m.redticket_status='0'
+            <choose>
+                <when test=' map.businessType == "1"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and tg.return_goods_code like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                </when>
+                <when test=' map.businessType == "2"'>
+                    <if test="map.serviceNo != null and map.serviceNo != ''">
+                        and ta.protocol_no like concat('%',concat(#{map.serviceNo},'%'))
+                    </if>
+                </when>
+
+            </choose>
+            <if test="map.invoiceDate1 != null and map.invoiceDate1 != ''">
+                <![CDATA[ AND convert(varchar(100),m.redticket_creation_time,23) >= #{map.invoiceDate1} ]]>
+            </if>
+            <if test="map.invoiceDate2 != null and map.invoiceDate2 != ''">
+                <![CDATA[ AND convert(varchar(10),m.redticket_creation_time,23)  <= #{map.invoiceDate2} ]]>
+            </if>
+            <if test="map.userCode != null and map.userCode != ''">
+                and  m.venderid   like concat('%',concat(#{map.userCode},'%'))
+            </if>
+
+            <if test="map.businessType != null and map.businessType != ''and map.businessType != '-1'">
+                and m.business_type = #{map.businessType}
+            </if>
+        </where>
+        ) a
+    </select>
+
+    <!--协议红票明细查询协议信息-->
+    <select id="protocolList" resultType="com.xforceplus.wapp.modules.redTicket.entity.ProtocolEntity">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        ta.id,
+        ta.protocol_no                   protocolNo,
+        ta.vender_id                     venderId,
+        ta.dept_no                       deptNo,
+        ta.pay_item                      payItem,
+        ta.pay_company_code              payCompanyCode,
+        ta.amount,
+        ta.protocol_status               protocolStatus,
+        ta.case_date                     caseDate,
+        ta.seq,
+        ta.pay_date                      payDate,
+        ta.redticket_data_serial_number  redticketDataSerialNumber
+        from t_dx_protocol ta WITH(NOLOCK)
+        LEFT JOIN t_dx_return_agreement_middle tam  WITH(NOLOCK) on ta.id =tam.return_agreement_association
+        where tam.red_ticket_matching_association = #{map.id}
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <!--协议红票明细查询协议信息条数-->
+    <select id="protocolListCouont" resultType="Integer">
+        select
+        count(1)
+        from t_dx_protocol ta WITH(NOLOCK)
+        LEFT JOIN t_dx_return_agreement_middle tam WITH(NOLOCK)  on ta.id =tam.return_agreement_association
+        where tam.red_ticket_matching_association = #{map.id}
+    </select>
+
+    <!--协议红票明细查询蓝票信息-->
+    <select id="invoiceList" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatchMiddle">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id,
+        gf_tax_no      gfTaxNo,
+        invoice_code   invoiceCode,
+        invoice_no     invoiceNo,
+        invoice_type   invoiceType,
+        invoice_date   invoiceDate,
+        tax_rate       taxRate,
+        tax_amount     taxAmount,
+        red_rush_amount redRushAmount,
+        total_amount    totalAmount
+        from
+        t_dx_red_ticket_matching_middle WITH(NOLOCK)
+        where  red_ticket_matching_association = #{map.id}
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <!--协议红票明细查询蓝票信息条数-->
+    <select id="invoiceListCount" resultType="Integer">
+        select
+        count(1)
+        from
+        t_dx_red_ticket_matching_middle WITH(NOLOCK)
+        where  red_ticket_matching_association = #{map.id}
+    </select>
+
+    <!--协议红票明细查询发票明细-->
+    <select id="invoiceDetailList" resultType="com.xforceplus.wapp.modules.redTicket.entity.InvoiceDetail">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id,
+        goods_name goodsName ,
+        model  ,
+        unit_price  unitPrice,
+        unit   ,
+        tax_rate    taxRate ,
+        detail_amount    detailAmount ,
+        tax_amount    taxAmount ,
+        red_rush_number   redRushNumber,
+        red_rush_amount   redRushAmount,
+        red_rush_price    redRushPrice,
+        redticket_data_serial_number redTicketDataSerialNumber,
+        invoice_code  invoiceCode ,
+        invoice_no  invoiceNo
+        from
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        where   redticket_data_serial_number =#{map.redTicketDataSerialNumber}
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <!--协议红票明细查询发票明细条数-->
+    <select id="invoiceDetailListCount" resultType="Integer">
+        select
+        count(1)
+        from
+        t_dx_record_invoice_detail WITH(NOLOCK)
+        where   redticket_data_serial_number =#{map.redTicketDataSerialNumber}
+    </select>
+
+    <!--协议红票明细查询红冲明细-->
+    <select id="redTicketMatchDetailList" resultType="com.xforceplus.wapp.modules.redTicket.entity.RedTicketMatchDetail">
+        <if test="map.offset != null and map.limit != null">
+            SELECT
+            TOP (#{map.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number () OVER (ORDER BY id desc) AS rownumber, o.*
+            FROM
+            (
+        </if>
+        select
+        id   ,
+        goods_number     goodsNumber,
+        goods_price      goodsPrice,
+        goods_amount     goodsAmount,
+        redticket_data_serial_number  redTicketDataSerialNumber,
+        goods_name  goodsName,
+        goods_unit  goodsUnit,
+        goods_model  goodsModel,
+        tax_amount  taxAmount,
+        tax_rate  taxRate,
+        red_rush_number  redRushNumber,
+        red_rush_amount  redRushAmount,
+        red_rush_price  redRushPrice
+        from t_dx_Invoice_details WITH(NOLOCK)
+        where redticket_data_serial_number  = #{map.redTicketDataSerialNumber}
+        <if test="map.offset != null and map.limit != null">
+            )
+            AS o
+            )A
+            WHERE
+            rownumber >#{map.offset}
+        </if>
+    </select>
+
+    <!--协议红票明细查询红冲明细条数-->
+    <select id="redTicketMatchDetailListCount" resultType="Integer">
+        select
+        count(1)
+        from t_dx_Invoice_details WITH(NOLOCK)
+        where redticket_data_serial_number  = #{map.redTicketDataSerialNumber}
+    </select>
+
+
+</mapper>

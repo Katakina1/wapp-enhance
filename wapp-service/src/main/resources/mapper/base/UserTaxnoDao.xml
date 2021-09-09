@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.base.dao.UserTaxnoDao">
+
+	<sql id="condition">
+		<if test="entity.id != null">
+			and id = #{entity.id}
+		</if>
+		<if test="entity.userid != null">
+			and userid = #{entity.userid}
+		</if>
+		<if test="entity.orgid != null">
+			and orgid = #{entity.orgid}
+		</if>
+	</sql>
+
+	<select id="queryList" resultType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity">
+		<if test="entity.offset != null and entity.limit != null">
+			SELECT
+			TOP (#{entity.limit}) A.*
+			FROM
+			(
+			SELECT
+			row_number() OVER (ORDER BY o.id asc) AS rownumber, o.*
+			FROM(
+		</if>
+		select * from t_ac_user_taxno
+		<where>
+			<include refid="condition"/>
+		</where>
+		<if test="entity.offset == null and entity.limit == null">
+		order by id asc
+		</if>
+		<if test="entity.offset != null and entity.limit != null">
+			)as o)as A
+			WHERE
+			rownumber > #{entity.offset}
+		</if>
+	</select>
+
+	<select id="queryTotal" parameterType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity"  resultType="int">
+		/**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_user_taxno
+		<where>
+			<include refid="condition"/>
+		</where>
+	</select>
+ 
+	<insert id="save" parameterType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity" useGeneratedKeys="true" keyProperty="entity.id">
+		insert into t_ac_user_taxno
+		(
+		<if test="entity.id !=null">
+			id,
+		</if>
+			userid,
+			orgid
+		)
+		values
+		(
+		<if test="entity.id !=null">
+			#{entity.id},
+		</if>
+			#{entity.userid},
+			#{entity.orgid}
+		)
+	</insert>
+	
+	<delete id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_user_taxno where id = #{id}
+	</delete>
+
+	<delete id="deleteByUserId">
+		/**mycat:schema=${schemaLabel}*/ delete from t_ac_user_taxno where userid = #{userId}
+	</delete>
+
+	<update id="update" parameterType="com.xforceplus.wapp.modules.base.entity.UserTaxnoEntity">
+		/**mycat:schema=${schemaLabel}*/ update t_ac_user_taxno
+		<set>
+			<if test="entity.userid != null">userid = #{entity.userid}, </if>
+			<if test="entity.orgid != null">orgid = #{entity.orgid}, </if>
+		</set>
+		where id = #{entity.id}
+	</update>
+</mapper>

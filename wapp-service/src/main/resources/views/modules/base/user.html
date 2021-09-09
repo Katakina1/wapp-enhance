@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>用户管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<style type="text/css">
+    .hideItem {
+        display: none;
+    }
+
+    .form-row {
+        width: 98%;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .form-item {
+        width: 50%;
+    }
+
+    .table-bordered {
+        border: none;
+    }
+
+    .el-dialog__body {
+        padding: 0.05rem 0.2rem;
+        border: 0.01rem solid #dcdfe6;
+    }
+
+    .el-dialog {
+        width: 7.0rem;
+    }
+
+    .el-dialog__footer {
+        padding: 0 0.2rem 0.2rem;
+        height: 0.6rem;
+    }
+
+    .el-textarea {
+        width: 5.09rem;
+    }
+
+    hr {
+        margin-top: 0.15rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .input-class {
+        -webkit-appearance: none;
+        background-color: #fff;
+        background-image: none;
+        border: 0.01rem solid #dcdfe6;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        color: #606266;
+        display: inline-block;
+        font-size: inherit;
+        height: 0.4rem;
+        line-height: 0.4rem;
+        outline: 0;
+        padding: 0 0.15rem;
+        -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+        transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+        width: 100%;
+    }
+
+    .input-class:focus {
+        border: 0.01rem solid #ffc653;
+    }
+
+    .colNew {
+        padding-top: 0.1rem;
+        border-radius: 0.04rem;
+        border: 0.01rem solid #eee;
+        border-bottom: none;
+    }
+
+    .el-date-editor.el-input {
+        width: 2.02rem !important;
+    }
+    .el-dialog__header{
+        background: #333333;
+        color: white;
+    }
+    .el-dialog__header span,.el-dialog__header i{
+        color: white !important;
+    }
+    .el-col-16{
+        width: 50%;
+    }
+    .el-col-5{
+        width: 15%;
+    }
+    .el-col-18  .el-col-5{
+        width: 7%;
+    }
+    .el-col-18 .el-col-16{
+        width: 33%;
+    }
+</style>
+
+<body>
+<div id="rrapp" v-cloak>
+    <div>
+        <el-row style="font-size:0.18rem;color: #FFFFFF;background-color: #666666;margin-bottom: 0.05rem">
+            <el-col :span="6" style="height: 0.6rem;font-size: 0.18rem;border-radius: 0; border: 0 solid #666666;">
+                <div class="grid-content bg-purple" style=" padding: 0.2rem;">
+                    <span style="text-align: left; ">机构树</span>
+                </div>
+            </el-col>
+            <el-col :span="18" style="height: 0.6rem;font-size: 0.18rem;border-radius: 0; border: 0 solid #666666;">
+                <div class="grid-content bg-purple" style=" padding: 0.2rem;">
+                    <span style="text-align: left; ">用户信息</span>
+                </div>
+            </el-col>
+        </el-row>
+        <el-row :gutter="5">
+            <el-col :span="6" class="colNew">
+                <div class="grid-content bg-purple" style="margin: 0 auto;width: 90%">
+                    <ul id="orgTree" class="ztree"></ul>
+                </div>
+            </el-col>
+
+            <el-col :span="9" class="colNew" v-if="orgModel">
+                <div class="bg-purple">
+                    <el-form ref="queryForm" :model="queryForm" label-width="1.0rem">
+                        <el-row>
+                            <el-col :span="16">
+                            <el-form-item label="机构名称:"  prop="orgname">
+                                <el-input maxlength="200" v-model.trim="queryForm.orgname"
+                                          placeholder="请输入机构名称"></el-input>
+                            </el-form-item>
+                            </el-col>
+                            <el-col :span="16">
+                            <el-form-item label="机构编码:"  prop="orgcode">
+                                <el-input maxlength="40" v-model.trim="queryForm.orgcode"
+                                          placeholder="请输入机构编码"></el-input>
+                            </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="16">
+                            <el-form-item label="纳税人名称:"  prop="taxname">
+                                <el-input maxlength="200" v-model.trim="queryForm.taxname"
+                                          placeholder="请输入纳税人名称"></el-input>
+                            </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                        <el-col :span="16">
+                            <el-form-item label="纳税人识别号:" prop="taxno" class="labelLong">
+                                <el-input maxlength="40" v-model.trim="queryForm.taxno"
+                                          placeholder="请输入纳税人识别号"></el-input>
+                            </el-form-item>
+                        </el-col>
+                            <el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="query">查询</el-button>
+                            </el-col>
+                            <!--<el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="resetForm('queryForm')">重置</el-button>
+                            </el-col>-->
+                        </el-row>
+                    </el-form>
+
+                    <el-table height="4rem" ref="orgTable" :data="orgData" border fit highlight-current-row tooltip-effect="light"
+                              v-loading="orgLoading" element-loading-text="正在拼命加载中"
+                              style="width: 100%;min-width:4.0rem;margin-top: 0.2rem">
+
+                        <el-table-column :show-overflow-tooltip="true"  type="index" :index="orgIndex" label="序号" width="60"
+                                         align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="orgcode" label="机构编码" min-width="100"
+                                         align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="orgname" label="机构名称" min-width="100"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  :formatter="formatterField" property="taxno" label="纳税人识别号" min-width="140"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="orgid" label="操作" class-name="noSpotSpotSpot" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-button @click="searchUser(scope.row)" type="text" size="small">用户
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-col class="toolbar" style="padding:0.1rem;">
+                        <el-pagination small layout="slot, sizes, prev, pager, next" background
+                                       :page-sizes="pageList"
+                                       :current-page.sync="orgPage.currentPage" :page-size="orgPage.pageSize"
+                                       :total="orgPage.total" @current-change="currentChangeOrg" @size-change="sizeChangeOrg"
+                                       style="float:right">
+                            <span>共{{orgPage.total}}条记录，第{{orgPage.currentPage}}页，共{{orgPage.totalPage}}页</span>
+                        </el-pagination>
+                    </el-col>
+                </div>
+            </el-col>
+
+            <el-col :span="spanValue" class="colNew" v-if="userModel">
+                <div class="bg-purple" >
+                    <el-form ref="queryUserForm" :model="queryUserForm" label-width="1.0rem">
+                        <el-row>
+                            <el-col :span="16">
+                            <el-form-item label="用户名称:"  prop="username">
+                                <el-input maxlength="150" v-model.trim="queryUserForm.username"
+                                          placeholder="请输入用户名称"></el-input>
+                            </el-form-item>
+                            </el-col>
+                            <el-col :span="16">
+                                <el-form-item label="用户编码:"  prop="usercode">
+                                    <el-input maxlength="40" v-model.trim="queryUserForm.usercode"
+                                              placeholder="请输入用户编码"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="queryUser">查询</el-button>
+                            </el-col>
+                            <el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="addOrUpdata(true)">新增</el-button>
+                            </el-col>
+                            <el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="deleteUser">删除</el-button>
+                            </el-col>
+
+                            <!--<el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="resetForm('queryUserForm')">重置</el-button>
+                            </el-col>-->
+                        </el-row>
+                        <el-row>
+
+                        </el-row>
+
+                        <hr>
+                    </el-form>
+
+                    <el-table ref="userTable" :data="userData" border fit @selection-change="changeFunUser"
+                              tooltip-effect="light" highlight-current-row
+                              v-loading="userLoading" element-loading-text="正在拼命加载中"
+                              style="width: 100%;">
+
+                        <el-table-column type="selection" width="55" align="center"></el-table-column>
+                        <el-table-column type="index" :index="userIndex"  label="序号" width="60"
+                                         align="center"></el-table-column>
+                        <el-table-column :formatter="formatterField" property="usercode" label="用户编码"
+                                         min-width="100" align="center"></el-table-column>
+                        <el-table-column property="username" label="用户名称" min-width="100"
+                                         header-align="center"></el-table-column>
+                        <el-table-column property="loginname" label="登录名" min-width="100"
+                                         header-align="center"></el-table-column>
+                        <el-table-column property="userid" label="操作" class-name="noSpotSpotSpot" width="100" align="center">
+                            <template slot-scope="scope">
+                                <el-button @click="openAddOrUpdataWin(scope.row)" type="text" size="small">修改
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-col class="toolbar" style="padding:0.1rem;">
+                        <el-pagination small layout="slot, sizes, prev, pager, next" background
+                                       :current-page.sync="userPage.currentPage" :page-size="userPage.pageSize" :page-sizes="pageList"
+                                       :total="userPage.total" @current-change="currentChangeUser" @size-change="sizeChangeUser"
+                                       style="float:right">
+                            <span>共{{userPage.total}}条记录，第{{userPage.currentPage}}页，共{{userPage.totalPage}}页</span>
+                        </el-pagination>
+                    </el-col>
+                </div>
+            </el-col>
+
+        </el-row>
+    </div>
+
+    <el-dialog :title="addOrUpdateUserForm.title" :visible.sync="addOrUpdateWin" :before-close="addOrUpdataWinClose" :close-on-click-modal="false"
+               @close="clearValidate('addOrUpdateUserForm')">
+        <el-form ref="addOrUpdateUserForm" :model="addOrUpdateUserForm" label-width="1.05rem">
+            <div class="form-row">
+                <el-form-item label="所属机构:">
+                    <input class="input-class" readonly="readonly" v-model="addOrUpdateUserForm.orgName"
+                           placeholder="请选择所属机构">
+                </el-form-item>
+            </div>
+
+            <div class="form-row">
+                <el-form-item label="用户名称:" prop="username" :rules="[{ required: true, message: '用户名称不能为空'}]">
+                    <input class="input-class" v-model.trim="addOrUpdateUserForm.username" maxlength="150">
+                </el-form-item>
+                <el-form-item label="用户编码:" prop="usercode" :rules="[{ required: true, message: '用户编码不能为空'}]">
+                    <input class="input-class" v-model.trim="addOrUpdateUserForm.usercode" maxlength="6">
+                </el-form-item>
+            </div>
+
+            <div class="form-row">
+                <el-form-item label="登录名:" prop="loginname" :rules="[{ required: true, message: '登录名不能为空'}]">
+                    <input class="input-class" v-model.trim="addOrUpdateUserForm.loginname" maxlength="40">
+                </el-form-item>
+                <el-form-item label="密 码:" prop="password" :rules="[{ required: true, message: '密码不能为空'}]">
+                    <input class="input-class"  type="password" v-model.trim="addOrUpdateUserForm.password"
+                           maxlength="40">
+                </el-form-item>
+            </div>
+
+            <div class="form-row">
+                <el-form-item label="出生日期:" prop="birthday">
+                    <el-date-picker type="date" :editable="false"
+                                    v-model="addOrUpdateUserForm.birthday"></el-date-picker>
+                </el-form-item>
+                <el-form-item label="性别:" prop="sex">
+                    <el-select v-model="addOrUpdateUserForm.sex" style="width: 2.02rem;!important;">
+                        <el-option v-for="item in items"
+                                   :key="item.value"
+                                   :label="item.text"
+                                   :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+
+            <div class="form-row">
+                <!-- :rules="[{ pattern: /^(0\d{2,3}-\d{7,8})(-\d{1,4})?$/,message: '请输入正确的电话号码'}]"-->
+                <el-form-item label="电话号码:" prop="phone">
+                    <input class="input-class" v-model.trim="addOrUpdateUserForm.phone" maxlength="40">
+                </el-form-item>
+                <el-form-item label="手机号码:" prop="cellphone" :rules="[{ pattern: /^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1}))+\d{8})$/,message: '请输入正确的手机号'}
+                ]">
+                    <input class="input-class" v-model.trim="addOrUpdateUserForm.cellphone" maxlength="11">
+                </el-form-item>
+            </div>
+
+            <div class="form-row">
+                <el-form-item label="电子邮箱:" prop="email" :rules="[
+                { required: true, message: '电子邮箱不能为空'},
+                { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
+                ]">
+                    <input class="input-class" v-model.trim="addOrUpdateUserForm.email" maxlength="40">
+                </el-form-item>
+                <el-form-item label="用户状态:" prop="status" :rules="[{ required: true, message: '用户状态不能为空'}]">
+                    <el-select v-model="addOrUpdateUserForm.status" style="width: 2.02rem;!important;">
+                        <el-option v-for="status in itemsStatus"
+                                   :key="status.value"
+                                   :label="status.text"
+                                   :value="status.value"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+            <div v-if="!orgState||scanPoint" class="form-row">
+                <el-form-item label="扫描点:" prop="extf0" :rules="[{ required: true, message: '扫描点不能为空'}]">
+                    <el-select v-model="addOrUpdateUserForm.extf0">
+                        <el-option v-for="item in scanPathList"
+                                   :key="item.value"
+                                   :label="item.text"
+                                   :value="item.value"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+            <div  class="form-row">
+                <el-form-item label="联系地址:" prop="address">
+                    <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4}" maxlength="200"
+                              v-model.trim="addOrUpdateUserForm.address"></el-input>
+                </el-form-item>
+            </div>
+
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+            <el-button class="btnexport" @click="submitForm">确 定</el-button>
+            <el-button class="btnexport" @click="addOrUpdateReset()">重 置</el-button>
+        </span>
+    </el-dialog>
+
+</div>
+
+<script src="../../js/modules/base/user.js"></script>
+</body>
+
+</html>

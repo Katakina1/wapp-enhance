@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style scoped>
+        .hide-dialog {
+            display: none;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        #file {
+            outline: 0.01rem;
+            background-color: transparent;
+            filter: alpha(opacity=0);
+            -moz-opacity: 0;
+            -khtml-opacity: 0;
+            opacity: 0;
+            height: 0.4rem;
+            width: 100%;
+        }
+
+        #file1 {
+            outline: 0.01rem;
+            background-color: transparent;
+            filter: alpha(opacity=0);
+            -moz-opacity: 0;
+            -khtml-opacity: 0;
+            opacity: 0;
+            height: 0.4rem;
+            width: 100%;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.0rem;
+            height: 0.4rem;
+            line-height: 0.4rem;
+            overflow: hidden;
+        }
+
+        #upload {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            line-height: 0.4rem;
+            border: 0.01rem solid #dedede;
+            height: 0.4rem;
+        }
+
+        .row {
+            padding: 0 !important;
+        }
+
+        .form-row {
+            width: 98%;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .form-item {
+            width: 25%;
+        }
+
+        .el-dialog__body {
+            padding: 0.15rem 0.2rem;
+            border: 0.01rem solid #dcdfe6;
+        }
+
+        .el-dialog {
+            width: 7.0rem;
+        }
+
+        .el-form-item {
+            margin-bottom: 0.2rem;
+        }
+
+        .el-textarea {
+            width: 5.0rem;
+        }
+
+        .input-class {
+            -webkit-appearance: none;
+            background-color: #fff;
+            background-image: none;
+            border: 0.01rem solid #dcdfe6;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            color: #606266;
+            display: inline-block;
+            font-size: inherit;
+            height: 0.4rem;
+            line-height: 0.4rem;
+            outline: 0;
+            padding: 0 0.15rem;
+            -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+            transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+            width: 100%;
+        }
+
+        .input-class:focus {
+            border: 0.01rem solid #ffc653;
+        }
+
+        .colNew {
+            padding-top: 0.1rem;
+            border-radius: 0.04rem;
+            border: 0.01rem solid #eee;
+            border-bottom: none;
+        }
+
+        button span {
+            font-size: 0.14rem !important;
+        }
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<iframe id="ifileCost" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div>
+    <el-form ref="form" :model="form" label-width="1.0rem">
+        <el-row>
+            <el-col :span="12"  :offset="1">
+                <el-form-item label="员工号:"   >
+                    <el-input  class="inline-input" v-model="form.staffNo" ></el-input>
+                </el-form-item>
+            </el-col>
+            <el-col :span="12"  :offset="1">
+                <el-form-item label="邮箱:"   >
+                    <el-input  class="inline-input" v-model="form.email" ></el-input>
+                </el-form-item>
+            </el-col>
+
+            <el-col :span="1" :offset="1" class="btn-row2">
+                <el-button class="btnexport" @click="query()">查询</el-button>
+                <el-button class="btnexport" @click="importIn()">员工信息批量导入</el-button>
+                <el-button class="btnexport" @click="importCbzx()">成本中心批量导入</el-button>
+            </el-col>
+        </el-row>
+    </el-form>
+        </div>
+    <hr>
+    <div style="clear: both"></div>
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;" class="tableData"
+              style="width: 100%; margin-top: 0.2rem"
+              v-loading="listLoading"
+              element-loading-text="正在拼命加载中"
+    >
+        <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  property="winID" label="WINID"
+                         align="center"
+                         header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="staffNo" label="员工号"
+                         align="center"
+                         header-align="center"></el-table-column>
+
+        <el-table-column :show-overflow-tooltip="true"  property="staffName" label="员工名称" align="center"
+        ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  property="email" label="员工邮箱" header-align="center" align="left">
+
+        </el-table-column>
+
+        <!--<el-table-column property="costCenter" label="成本中心编号" header-align="center" align="right"-->
+        <!--&gt;</el-table-column>-->
+        <!--<el-table-column property="costCenterName" label="成本中心名称" align="center"-->
+        <!--&gt;</el-table-column>-->
+        <!--<el-table-column property="gfTaxNo" label="购方税号" align="center"-->
+        <!--&gt;</el-table-column>-->
+        <el-table-column   label="操作" class-name="noSpotSpotSpot" align="center" fixed="right">
+            <template scope="scope">
+                <a  @click="updateStaff(scope.row)"><span class="column-span" style="color: black">修改</span></a>
+                <a  @click="deleteStaff(scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                <a  @click="bindVendor(scope.row)"><span class="column-span" style="color: black">绑定vendor关系</span></a>
+                <a  @click="bindJv(scope.row)"><span class="column-span" style="color: black">绑定jv关系</span></a>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination small layout="slot, sizes, prev, pager, next" background  @current-change="currentChange" @size-change="handleSizeChange"
+                       :current-page.sync="currentPage" :page-size="pageSize" :page-sizes="pageList"
+                       :total="total" @current-change="query" @size-change="query"
+                       style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>
+
+    <el-dialog title="员工信息批量导入" :visible.sync="importDialogFormVisible" :before-close="importFormCancel" :close-on-click-modal="false" v-loading="listLoadingImport"  element-loading-text="正在拼命加载中">
+        <div style="width: 100%;height: 3.0rem;overflow: auto;">
+        <form id="upload_form" target="frm" method="post" enctype="multipart/form-data">
+
+                    <div class="form-group">
+                        <label class="col-xs-5 control-label">选择上传文件:</label>
+                        <div class="col-xs-5" id="upload">
+                            <span v-html="selectFileFlag"></span>
+                            <input type="file" @change="onChangeFile($event)" id="file" name="file" class="text-input"
+                                   hidden>
+                        </div>
+                    </div>
+
+
+
+                <!--<el-col :span="1" :offset="1">-->
+                <!--<el-button class="btnexport" @click="showSelectFileWin()">浏览</el-button>-->
+                <!--</el-col>-->
+
+                <el-col :span="1" :offset="1">
+                    <el-button  class="btnexport" @click="showSelectFileWin()">浏览</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="uploadFile($event)">导入文件</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="exportData()">模板下载</el-button>
+                </el-col>
+            <iframe id="frm" name="frm" style="display: none;"></iframe>
+        </form>
+        </div>
+    </el-dialog>
+
+    <el-dialog title="绑定供应商" :visible.sync="showVendorWin1" :close-on-click-modal="false" :before-close="beforeCloseVendorWin1" width="80%">
+
+        <el-form ref="form1" :model="form1" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="供应商号:"   >
+                        <el-input  class="inline-input" v-model="form1.usercode" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="供应商名称:"   >
+                        <el-input  class="inline-input" v-model="form1.username" ></el-input>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="1" :offset="1" class="btn-row2">
+                    <el-button class="btnexport" @click="query1()">查询</el-button>
+                    <el-button class="btnexport" @click="addVendor()">新增</el-button>
+                    <el-button class="btnexport" @click="deleteVendor()">删除</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+
+        <el-table height="4rem" border fit :data="tableData1" highlight-current-row style="width: 100%;font-size: 12px;"
+                  v-loading="listLoading1" @selection-change="handleSelectionChange1"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection" label="选择" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  type="index" :index="mainIndex1"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="usercode" label="供应商号" align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="username" label="供应商名称" align="left" header-align="center"></el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="margin-top:0.2rem;padding:10px;">
+            <el-pagination background @current-change="currentChange1" @size-change="handleSizeChange1"
+                           :current-page="currentPage1" :page-size="pageSize1" :page-sizes="pageList1" :pager-count="pagerCount1"
+                           layout="slot, sizes, prev, pager, next" :total="total1" style="float:right">
+                <span>共{{total1}}条记录，第{{currentPage1}}页，共{{totalPage1}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="beforeCloseVendorWin1">关 闭</button>
+        </span>
+    </el-dialog>
+
+
+    <el-dialog title="添加供应商" :visible.sync="showVendorWin2" :close-on-click-modal="false" :before-close="beforeCloseVendorWin2" width="80%">
+
+        <el-form ref="form2" :model="form2" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="供应商号:"   >
+                        <el-input  class="inline-input" v-model="form2.usercode" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="供应商名称:"   >
+                        <el-input  class="inline-input" v-model="form2.username" ></el-input>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="1" :offset="1" class="btn-row2">
+                    <el-button class="btnexport" @click="query2()">查询</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+
+        <el-table height="4rem" border fit :data="tableData2" highlight-current-row style="width: 100%;font-size: 12px;"
+                  v-loading="listLoading2" @selection-change="handleSelectionChange2"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection" label="选择" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  type="index" :index="mainIndex2" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="usercode" label="供应商号" align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="username" label="供应商名称" align="left" header-align="center"></el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="margin-top:0.2rem;padding:10px;">
+            <el-pagination background @current-change="currentChange2" @size-change="handleSizeChange2"
+                           :current-page="currentPage2" :page-size="pageSize2" :page-sizes="pageList2" :pager-count="pagerCount2"
+                           layout="slot, sizes, prev, pager, next" :total="total2" style="float:right">
+                <span>共{{total2}}条记录，第{{currentPage2}}页，共{{totalPage2}}页</span>
+            </el-pagination>
+        </el-col>
+
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="addVendorSubmit">确 认</button>
+            <button class="btn btnexport" style="background-color: white" type="button" @click="beforeCloseVendorWin2">关 闭</button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="修改员工信息" :visible.sync="updateStaffShow" :before-close="updateStaffShowCancel" :close-on-click-modal="false"  >
+        <div style="width: 100%;height: 3.0rem;overflow: auto;">
+        <el-form ref="updateForm" :model="updateForm" label-width="1.0rem">
+            <div class="form-row">
+                    <el-form-item label="员工号:" prop="staffNo">
+                        <input class="input-class" maxlength="10" readonly="readonly" v-model.trim="updateForm.staffNo">
+                    </el-form-item>
+                    <el-form-item label="员工邮箱:" prop="email">
+                        <input class="input-class" maxlength="200" readonly="readonly" v-model.trim="updateForm.email">
+                    </el-form-item>
+            </div>
+            <div class="form-row">
+                    <el-form-item label="WINID:" prop="winID" :rules="[
+                     { pattern: /^2\d{8}$/,message: '请输入以2开头九位数字的WINID'}
+                     ]">
+                        <input class="input-class" maxlength="9" v-model.trim="updateForm.winID" />
+                    </el-form-item>
+                    <el-form-item label="员工名称:" prop="staffName" :rules="[{ required: true, message: '员工名称不能为空'}]">
+                        <input class="input-class" maxlength="50" v-model.trim="updateForm.staffName" />
+                    </el-form-item>
+            </div>
+            <!--<div class="form-row">-->
+                    <!--<el-form-item label="成本中心编号:" prop="costCenter" :rules="[-->
+                     <!--{ pattern: /\d{4}/,message: '成本中心编号必须为四位数字'}-->
+                     <!--]">-->
+                        <!--<input class="input-class" maxlength="4" v-model.trim="updateForm.costCenter">-->
+                    <!--</el-form-item>-->
+
+                    <!--<el-form-item label="成本中心名称:" prop="costCenterName" :rules="[{ required: true, message: '成本中心名称不能为空'}]">-->
+                        <!--<input class="input-class" maxlength="200" v-model.trim="updateForm.costCenterName">-->
+                    <!--</el-form-item>-->
+            <!--</div>-->
+            <!--<div class="form-row">-->
+
+
+                <!--<el-form-item label="购方税号:" prop="gfTaxNo" :rules="[{ required: true, message: '购方税号不能为空'}]">-->
+                    <!--<input class="input-class" maxlength="200" v-model.trim="updateForm.gfTaxNo">-->
+                <!--</el-form-item>-->
+            <!--</div>-->
+        </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <button class="btnexport" style="background-color: white" type="button" @click="submitForm()">保存</button>
+            </span>
+    </el-dialog>
+
+    <el-dialog title="绑定JV" :visible.sync="showJvWin3" :close-on-click-modal="false" :before-close="beforeCloseJvWin3" width="80%">
+
+        <el-form ref="form3" :model="form3" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="jv:"   >
+                        <el-input  class="inline-input" v-model="form3.jv" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="购方名称:"   >
+                        <el-input  class="inline-input" v-model="form3.orgname" ></el-input>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="1" :offset="1" class="btn-row2">
+                    <el-button class="btnexport" @click="query3()">查询</el-button>
+                    <el-button class="btnexport" @click="addJv()">新增</el-button>
+                    <el-button class="btnexport" @click="deleteJv()">删除</el-button>
+                    <!--<el-button class="btnexport" @click="importJv()">批量导入</el-button>-->
+                </el-col>
+            </el-row>
+        </el-form>
+
+        <el-table height="5rem" border fit :data="tableData3" highlight-current-row style="width: 100%;font-size: 12px;"
+                  v-loading="listLoading3" @selection-change="handleSelectionChange3"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column type="selection" width="55" class="selection" label="选择" align="center"></el-table-column>
+            <el-table-column type="index" :index="mainIndex1"  label="序号" align="center"></el-table-column>
+            <el-table-column prop="jv" label="jv" align="left" header-align="center"></el-table-column>
+            <el-table-column prop="orgname" label="购方名称" align="left" header-align="center"></el-table-column>
+            <el-table-column   label="操作" class-name="noSpotSpotSpot" align="center" fixed="right">
+                <template scope="scope">
+                    <a  @click="bindCost(scope.row)"><span class="column-span" style="color: black">绑定成本中心</span></a>
+                </template>
+            </el-table-column>
+
+        </el-table>
+        <el-col class="toolbar" style="margin-top:0.2rem;padding:10px;">
+            <el-pagination background @current-change="currentChange3" @size-change="handleSizeChange3"
+                           :current-page="currentPage3" :page-size="pageSize3" :page-sizes="pageList3" :pager-count="pagerCount3"
+                           layout="slot, sizes, prev, pager, next" :total="total3" style="float:right">
+                <span>共{{total3}}条记录，第{{currentPage3}}页，共{{totalPage3}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="beforeCloseJvWin3">关 闭</button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="添加JV" :visible.sync="showJvWin4" :close-on-click-modal="false" :before-close="beforeCloseJvWin4" width="80%">
+
+        <el-form ref="form4" :model="form4" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="jv:"   >
+                        <el-input  class="inline-input" v-model="form4.jv" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="购方名称:"   >
+                        <el-input  class="inline-input" v-model="form4.orgname" ></el-input>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="1" :offset="1" class="btn-row2">
+                    <el-button class="btnexport" @click="query4()">查询</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+
+        <el-table height="5rem" border fit :data="tableData4" highlight-current-row style="width: 100%;font-size: 12px;"
+                  v-loading="listLoading4" @selection-change="handleSelectionChange4"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column type="selection" width="55" class="selection" label="选择" align="center"></el-table-column>
+            <el-table-column type="index" :index="mainIndex2" label="序号" align="center"></el-table-column>
+            <el-table-column prop="jv" label="jv" align="left" header-align="center"></el-table-column>
+            <el-table-column prop="orgname" label="购方名称" align="left" header-align="center"></el-table-column>
+
+        </el-table>
+        <el-col class="toolbar" style="margin-top:0.2rem;padding:10px;">
+            <el-pagination background @current-change="currentChange4" @size-change="handleSizeChange4"
+                           :current-page="currentPage4" :page-size="pageSize4" :page-sizes="pageList4" :pager-count="pagerCount4"
+                           layout="slot, sizes, prev, pager, next" :total="total4" style="float:right">
+                <span>共{{total4}}条记录，第{{currentPage4}}页，共{{totalPage4}}页</span>
+            </el-pagination>
+        </el-col>
+
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="addJvSubmit">确 认</button>
+            <button class="btn btnexport" style="background-color: white" type="button" @click="beforeCloseJvWin4">关 闭</button>
+        </span>
+    </el-dialog>
+
+
+    <el-dialog title="绑定成本中心" :visible.sync="showCostWin1" :close-on-click-modal="false" :before-close="beforeCloseCostWin1" width="80%">
+
+        <el-form ref="form5" :model="form5" label-width="1.0rem">
+            <el-row>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="成本中心编码:"   >
+                        <el-input  class="inline-input" v-model="form5.costcode" ></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12"  :offset="1">
+                    <el-form-item label="成本中心名称:"   >
+                        <el-input  class="inline-input" v-model="form5.costname" ></el-input>
+                    </el-form-item>
+                </el-col>
+
+                <el-col :span="1" :offset="1" class="btn-row2">
+                    <el-button class="btnexport" @click="queryCost()">查询</el-button>
+                    <el-button class="btnexport" @click="addCost()">新增</el-button>
+                    <el-button class="btnexport" @click="deleteCost()">删除</el-button>
+
+                </el-col>
+            </el-row>
+        </el-form>
+
+        <el-table height="5rem" border fit :data="tableData5" highlight-current-row style="width: 100%;font-size: 12px;"
+                  v-loading="listLoading5" @selection-change="handleSelectionChange5"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column type="selection" width="55" class="selection" label="选择" align="center"></el-table-column>
+            <el-table-column type="index" :index="mainIndex1"  label="序号" align="center"></el-table-column>
+            <el-table-column prop="costcode" label="成本中心编码" align="left" header-align="center"></el-table-column>
+            <el-table-column prop="costname" label="成本中心名称" align="left" header-align="center"></el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="margin-top:0.2rem;padding:10px;">
+            <el-pagination background @current-change="currentChange5" @size-change="handleSizeChange5"
+                           :current-page="currentPage5" :page-size="pageSize5" :page-sizes="pageList5" :pager-count="pagerCount5"
+                           layout="slot, sizes, prev, pager, next" :total="total5" style="float:right">
+                <span>共{{total5}}条记录，第{{currentPage5}}页，共{{totalPage5}}页</span>
+            </el-pagination>
+        </el-col>
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="beforeCloseJvWin3">关 闭</button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="添加成本中心信息" :visible.sync="showCostWin2" :before-close="addCostShowCancel" :close-on-click-modal="false"  >
+        <div style="width: 80%;height: 3.0rem;overflow: auto;">
+            <el-form ref="addCostForm" :model="addCostForm" label-width="1.0rem">
+                <div class="form-row">
+                    <el-form-item label="成本中心编码:" prop="costcode">
+                        <input class="input-class" maxlength="4"  v-model.trim="addCostForm.costcode">
+                    </el-form-item>
+                    <el-form-item label="成本中心名称:" prop="costname">
+                        <input class="input-class" maxlength="100"  v-model.trim="addCostForm.costname">
+                    </el-form-item>
+                </div>
+            </el-form>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <button class="btnexport" style="background-color: white" type="button" @click="submitCostForm()">保存</button>
+            </span>
+    </el-dialog>
+
+    <el-dialog title="成本中心批量上传" :visible.sync="importCbzxFormVisible" :before-close="importCbzxCancel" :close-on-click-modal="false" v-loading="listLoadingImport"  element-loading-text="正在拼命加载中">
+        <div style="width: 100%;height: 3.0rem;overflow: auto;">
+            <form id="upload_form" target="frm" method="post" enctype="multipart/form-data">
+
+                <div class="form-group">
+                    <label class="col-xs-5 control-label">选择上传文件:</label>
+                    <div class="col-xs-5" id="upload">
+                        <span v-html="selectFileFlag"></span>
+                        <input type="file" @change="onChangeFile($event)" id="file" name="file" class="text-input"
+                               hidden>
+                    </div>
+                </div>
+
+
+
+                <!--<el-col :span="1" :offset="1">-->
+                <!--<el-button class="btnexport" @click="showSelectFileWin()">浏览</el-button>-->
+                <!--</el-col>-->
+
+                <el-col :span="1" :offset="1">
+                    <el-button  class="btnexport" @click="showSelectFileWin()">浏览</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="uploadFile1($event)">导入文件</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button class="btnexport" @click="exportCostData()">模板下载</el-button>
+                </el-col>
+                <iframe id="frm" name="frm" style="display: none;"></iframe>
+            </form>
+        </div>
+    </el-dialog>
+</div>
+</body>
+<script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+<script type="text/javascript" charset="utf-8" src="../../js/modules/base/staff.js"></script>
+
+</html>

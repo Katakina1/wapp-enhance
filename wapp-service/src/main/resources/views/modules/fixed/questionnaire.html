@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <title>上传问题单文件</title>
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        .el-table .cell{
+            white-space: nowrap !important;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+        input[type="number"]{
+            -moz-appearance: textfield;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<body>
+<iframe id="downloadFileId" style="display:none"></iframe>
+<div id="fixedQuestionnaireApp" v-cloak>
+    <el-form ref="form" :model="form" class="demo-form-inline" label-width="1.1rem">
+    <el-row>
+        <el-col :span="12">
+            <el-form-item label="发票号码:" class="form-item">
+                <el-input class="inline-input" v-model="form.invoiceNo"   maxlength="8" placeholder="请输入发票号码"></el-input>
+            </el-form-item>
+        </el-col>
+        <el-col :span="12">
+            <el-form-item label="订单号:" class="form-item">
+                <el-input class="inline-input" v-model="form.orderNo"  maxlength="20" placeholder="请输入订单号"></el-input>
+            </el-form-item>
+        </el-col>
+        <el-col :span="14">
+            <el-form-item label="匹配日期:" class="form-item" id="requireMsg2">
+                <el-row>
+                    <el-col :span="13">
+                        <el-date-picker  type="date" placeholder="选择日期" v-model="form.matchDate1"
+                                        :clearable="false" :editable="false"
+                                        :picker-options="matchDateOptions"
+                                        format="yyyy-MM-dd" value-format="yyyy-MM-dd">
+                        </el-date-picker>
+                    </el-col>
+                    <el-col :span="2">至</el-col>
+                    <el-col :span="13">
+                        <el-date-picker type="date" placeholder="选择日期" v-model="form.matchDate2"
+                                        :clearable="false" :editable="false"
+                                        :picker-options="matchDateOptions"
+                                        format="yyyy-MM-dd" value-format="yyyy-MM-dd">
+                        </el-date-picker>
+                    </el-col>
+                </el-row>
+            </el-form-item>
+        </el-col>
+        <el-col :span="1" :offset="1">
+            <el-button class="btnexport"  @click="query">查询</el-button>
+        </el-col>
+    </el-row>
+    </el-form>
+
+    <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+              v-loading="listLoading" element-loading-text="正在拼命加载中">
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="80" :index="mainIndex" label="序号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="gfName" label="购方名称" align="left" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="venderName" label="供应商名称" align="left" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="venderid" label="供应商号" align="center" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="发票金额" align="right" header-align="center" :formatter="numberFormat"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="invoiceCount" label="发票数量" align="right" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="orderAmount" label="订单金额" align="right" header-align="center" :formatter="numberFormat"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="orderCount" label="订单数量" align="right" header-align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="matchDate" label="匹配日期" align="center" header-align="center" :formatter="dateFormat"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="settlementMethod" label="结算方式" align="center" header-align="center">
+            <template scope="scope">
+                <div v-if="scope.row.settlementMethod== '0'"><span >正常匹配</span></div>
+                <div v-if="scope.row.settlementMethod!= '0'">
+                    <div v-for="item in questionTypeArray">
+                        <span  v-if="item.value == scope.row.settlementMethod">{{item.label}}</span>
+                    </div>
+                </div>
+            </template>
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center" >
+            <template scope="scope">
+                <a  @click="matchDetail(scope.row)"><span class="column-span" style="color: black">匹配明细</span></a>
+                <a  @click="fileDetail(scope.row)"><span class="column-span" style="color: black">上传文件</span></a>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>
+
+
+    <el-dialog title="匹配明细" :visible.sync="showDetailWin" :close-on-click-modal="false" :before-close="beforeCloseDetailWin" width="95%">
+        <div class="claim">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;font-weight: bolder;line-height: 0.15rem">发票信息</div>
+                <div style="clear: both"></div>
+            </div>
+            <div>
+                <el-table  border fit :data="invoiceData" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码" :show-overflow-tooltip="true"  align="center" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码"  align="center" header-align="center">
+                        <template scope="scope">
+                            <span>{{ scope.row.invoiceNo }}</span>
+                            <el-tooltip class="item" effect="dark" placement="top-start">
+                                <div slot="content" v-if="scope.row.invoiceType== '01' ">增值税专用发票</div>
+                                <img v-if="scope.row.invoiceType== '01'" style="height:0.2rem;" src="../../img/special-invoice.png" />
+                                <div slot="content" v-if="scope.row.invoiceType== '03' ">机动车销售统一发票</div>
+                                <img v-if="scope.row.invoiceType== '03' " style="height:0.2rem;" src="../../img/motor-vehicles.png" />
+                                <div slot="content" v-if="scope.row.invoiceType== '04' ">增值税普通发票</div>
+                                <img   v-if="scope.row.invoiceType=== '04' "
+                                       style="height:0.2rem;" src="../../img/plain-invoice.png"  />
+                                <div slot="content" v-if="scope.row.invoiceType== '10' ">增值税电子普通发票</div>
+                                <img v-if="scope.row.invoiceType== '10' " style="height:0.2rem;" src="../../img/einvoice.png"/>
+                                <div slot="content" v-if="scope.row.invoiceType== '11' ">增值税普通发票（卷票）</div>
+                                <img   v-if="scope.row.invoiceType=== '11' "
+                                       style="height:0.2rem;" src="../../img/roll-invoice.png" />
+                                <div slot="content" v-if="scope.row.invoiceType== '14' ">增值税电子普通发票（通行费）</div>
+                                <img v-if="scope.row.invoiceType== '14' " style="height:0.2rem;" src="../../img/general-invoice.png"/>
+                            </el-tooltip>
+                        </template>
+                    </el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="发票金额" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="totalAmount" label="价税合计" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" header-align="center" :formatter="dateFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="taxRate" label="税率(%)" align="center" header-align="center" :formatter="rateFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="venderid" label="供应商号" align="center" ></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="venderName" label="供应商名称" align="center" ></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center" >
+                        <template scope="scope">
+                            <a  @click="detail(scope.row)"><span class="column-span" style="color: black">明细</span></a>
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+            </div>
+        </div>
+        <div class="po">
+            <div class="headData">
+                <div style="float: left;margin-left:0.2rem;margin-top:1rem;font-weight: bolder;line-height: 0.15rem">订单信息</div>
+                <div style="clear: both"></div>
+            </div>
+            <div>
+                <el-table border fit :data="orderData" highlight-current-row style="width: 100%;font-size: 0.12rem;">
+                    <el-table-column :show-overflow-tooltip="true"  type="index" width="70" label="序号" align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="orderNo" label="订单号" :show-overflow-tooltip="true"  align="center" header-align="center"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="amount" label="订单金额" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="shamount" label="收货金额" align="center" header-align="center" :formatter="numberFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="orderDate" label="日期" align="center" header-align="center" :formatter="dateFormat"></el-table-column>
+                    <el-table-column :show-overflow-tooltip="true"  prop="venderid" label="供应商号" align="center" ></el-table-column>
+                </el-table>
+            </div>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="showDetailWin = false">关 闭</button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="上传问题单" :visible.sync="showFileDetailWin" :close-on-click-modal="false" :before-close="beforeCloseFileDetailWin" width="95%">
+        <el-form ref="fileForm" v-model="fileForm" enctype="multipart/form-data">
+            <el-row>
+                <el-col :span="14">
+                    <input id="fileId" type="file" style="margin-top: 0.1rem"/>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                    <el-button id="uploadBtn" class="btnexport"  @click="uploadFile()" :loading="uploadLoading">上传</el-button>
+                </el-col>
+            </el-row>
+        </el-form>
+        <el-table  border fit :data="fileData" highlight-current-row style="width: 100%;font-size: 12px;">
+            <el-table-column :show-overflow-tooltip="true"  type="index"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="fileName" label="文件名称" align="left" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="id" label="操作" class-name="noSpotSpotSpot" align="center" >
+                <template scope="scope">
+                    <a v-if="scope.row.fileType=='1'" @click="viewFile(scope.row)"><span class="column-span" style="color: black">查看</span></a>
+                    <a  @click="downloadFile(scope.row)"><span class="column-span" style="color: black">下载</span></a>
+                    <a  @click="deleteFile(fileData,scope.row)"><span class="column-span" style="color: black">删除</span></a>
+                </template>
+            </el-table-column>
+        </el-table>
+
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="fileConfirm">确 认</button>
+            <button class="btn btnexport" style="background-color: white" type="button" @click="showFileDetailWin = false">关 闭</button>
+        </span>
+    </el-dialog>
+
+    <el-dialog title="图片" :visible.sync="showImgWin" :close-on-click-modal="false" :before-close="beforeCloseImgWin">
+        <div class="image_content_area">
+            <img id="viewDetailImgId" style="width: 100%" src="">
+        </div>
+
+        <span slot="footer" class="dialog-footer">
+            <button class="btn btnexport" style="background-color: white" type="button" @click="showImgWin = false">关 闭</button>
+        </span>
+    </el-dialog>
+
+
+    <el-dialog width="95%" :visible.sync="detailDialogFormVisible" :before-close="detailFormCancel" :close-on-click-modal="false" id="printdiv1">
+        <el-dialog
+                width="95%"
+                :close-on-click-modal="false"
+                :visible.sync="detailDialogFormInnerVisible"
+                :before-close="detailInnerFormCancel"
+                append-to-body>
+            <div align="center" style="font-size: 0.2rem;color: #655aa6">销售货物或提供应税劳务清单</div>
+            <el-form :model="detailForm" class="formScroll" id="printdiv4">
+                <div width="95%">购买方名称:<span style="color: #655aa6">{{detailForm.gfName}}</span></div>
+                <div width="95%">销售方名称:<span style="color: #655aa6">{{detailForm.xfName}}</span></div>
+                <div width="95%">
+                    <span v-if="detailForm.invoiceType== 01" >增值税专用发票</span>
+                    <span v-if="detailForm.invoiceType== 04" >增值税普通发票</span>
+                    <span v-if="detailForm.invoiceType== 10" >增值税普通发票（电子普通发票）</span>
+                    <span v-if="detailForm.invoiceType== 11" >增值税普通发票（卷式发票）</span>
+                    <span style="color: #655aa6">{{detailForm.invoiceCode}}</span>
+                    <div style="display: inline-block;margin-left: 20%">
+                        <span>号码:</span><span style="color: #655aa6">{{detailForm.invoiceNo}}</span>
+                    </div>
+                </div>
+                <table border="1" align="center" width="95%" class="detailFormList" cellspacing="0">
+                    <tr>
+                        <td colspan="1" width="5%" align="left" valign="top">序号</td>
+                        <td colspan="2" width="20%" align="left" valign="top">货物或应税劳务、服务名称</td>
+                        <td colspan="1" width="10%" align="left" valign="top">规格型号</td>
+                        <td colspan="1" width="10%" align="left" valign="top">单位</td>
+                        <td colspan="1" width="10%" align="left" valign="top">数量</td>
+                        <td colspan="2" width="10%" align="left" valign="top">单价</td>
+                        <td colspan="1" width="10%" align="left" valign="top">金额</td>
+                        <td colspan="1" width="5%" align="left" valign="top">税率</td>
+                        <td colspan="1" width="10%" align="left" valign="top">税额</td>
+                    </tr>
+                    <tr v-for="(item,index) in tempDetailEntityList" style="color: #655aa6">
+                        <td colspan="1" align="left">{{index+1}}</td>
+                        <td colspan="2">{{item.goodsName}}</td>
+                        <td colspan="1">{{item.model}}</td>
+                        <td colspan="1">{{item.unit}}</td>
+                        <td colspan="1" align="right">{{item.num}}</td>
+                        <td colspan="2" align="right">{{item.unitPrice}}</td>
+                        <td colspan="1" align="right">{{item.detailAmount}}</td>
+                        <td colspan="1" align="right">{{item.taxRate}}%</td>
+                        <td colspan="1" align="right">{{item.taxAmount}}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" align="left" style="border-top: 0.01rem solid">合计</td>
+                        <td colspan="1" align="right" style="color: #655aa6;border-top: 0.01rem solid">￥{{detailForm.detailAmountTotal}}</td>
+                        <td colspan="1" style="border-top: 0.01rem solid"></td>
+                        <td colspan="1" align="right" style="color: #655aa6;border-top: 0.01rem solid">￥{{detailForm.taxAmountTotal}}</td>
+                    </tr>
+                </table>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button class="btnexport" @click="printform(4)">打印</el-button>
+                <el-button class="btnexport" @click="detailInnerFormCancel">关闭</el-button>
+            </span>
+        </el-dialog>
+        <div class="row">
+            <span style="display:block" class="col-xs-9">
+                <div class="formTitle">发票明细</div>
+                <div align="center" style="top: 0.1rem">
+                    <span v-if="detailForm.invoiceType== 01" style="color: #655aa6;font-size: 0.18rem">增值税专用发票</span>
+                    <span v-if="detailForm.invoiceType== 04" style="color: #655aa6;font-size: 0.18rem">增值税普通发票</span>
+                    <span v-if="detailForm.invoiceType== 10" style="color: #655aa6;font-size: 0.18rem">增值税普通发票（电子普通发票）</span>
+                    <span v-if="detailForm.invoiceType== 11" style="color: #655aa6;font-size: 0.18rem">增值税普通发票（卷式发票）</span>
+                </div>
+                <div style="clear: both"></div>
+                <div>
+                    <span style="width: 19%;display: inline-block;color: #655aa6;"><span style="color: #606266">发票代码:</span>{{detailForm.invoiceCode}}</span>
+                    <span style="width: 17%;display: inline-block;color: #655aa6;"><span style="color: #606266">发票号码:</span>{{detailForm.invoiceNo}}</span>
+                    <span style="width: 21%;display: inline-block;color: #655aa6;"><span style="color: #606266">开票日期:</span>{{detailForm.invoiceDate}}</span>
+                    <span style="width: 25%;display: inline-block;color: #655aa6;"><span style="color: #606266">校验码:</span>{{detailForm.checkCode}}</span>
+                    <span style="display: inline-block;color: #655aa6;"><span style="color: #606266">机器编号:</span>{{detailForm.machinecode}}</span>
+                </div>
+                <el-form :model="detailForm">
+                    <table width="100%" height="80%" border="1" align="center" cellspacing="0">
+                        <tr>
+                            <td colspan="1" width="5%" align="center">购<br>买<br>方</td>
+                            <td colspan="1" width="10%" height="120" align="left" style="border-right: none">
+                                名称:<br>
+                                纳税人识别号:<br>
+                                地址 、 电话:<br>
+                                开户行及帐号:
+                            </td>
+                            <td colspan="4" width="40%" height="120" align="left" style="border-left: none;color: #655aa6">
+                                <span>{{detailForm.gfName}}</span><br>
+                                <span>{{detailForm.gfTaxNo}}</span><br>
+                                <span>{{detailForm.gfAddressAndPhone}}</span><br>
+                                <span>{{detailForm.gfBankAndNo}}&nbsp;</span>
+                            </td>
+                            <td colspan="1" width="5%" align="center">密<br>码<br>区</td>
+                            <td colspan="3" width="40%" align="center"></td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2" width="20%" align="center" valign="top">货物或应税劳务、服务名称</td>
+                            <td colspan="1" width="10%" align="center" valign="top">规格型号</td>
+                            <td colspan="1" width="10%" align="center" valign="top">单位</td>
+                            <td colspan="1" width="10%" align="center" valign="top">数量</td>
+                            <td colspan="2" width="10%" align="center" valign="top">单价</td>
+                            <td colspan="1" width="10%" align="center" valign="top">金额</td>
+                            <td colspan="1" width="10%" align="center" valign="top">税率</td>
+                            <td colspan="1" width="10%" align="center" valign="top">税额</td>
+                        </tr>
+                        <tr v-for="(item,index) in detailEntityList" style="color: #655aa6" v-if="detailEntityList!=null">
+                            <td colspan="2" align="left">{{item.goodsName}}</td>
+
+                            <td colspan="1">{{item.model}}</td>
+                            <td colspan="1">{{item.unit}}</td>
+                            <td colspan="1">{{item.num}}</td>
+                            <td colspan="2" align="right">{{item.unitPrice}}</td>
+                            <td colspan="1" align="right">{{item.detailAmount}}</td>
+                            <td colspan="1" align="right">{{item.taxRate}}%</td>
+                            <td colspan="1" align="right">{{item.taxAmount}}</td>
+                        </tr>
+                        <tr  v-if="(tempDetailEntityList.length>8)">
+                            <td colspan="2" align="center" style="border-bottom: none" >
+                                <span >详见详情清单</span>
+                            </td>
+                            <td colspan="1" style="border-bottom: none"></td>
+                            <td colspan="1" style="border-bottom: none"></td>
+                            <td colspan="1" style="border-bottom: none"></td>
+                            <td colspan="2" style="border-bottom: none"></td>
+                            <td colspan="1" align="right" style="border-bottom: none">￥<span style="color: #655aa6">{{detailForm.detailAmountTotal}}</span></td>
+                            <td colspan="1" style="border-bottom: none"></td>
+                            <td colspan="1" align="right" style="border-bottom: none">￥<span  style="color: #655aa6">{{detailForm.taxAmountTotal}}</span></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"  style="border-bottom: none;border-top: none">
+                                <el-button class="btnexport" @click="showInner" style="color: black"
+                                           v-if="(tempDetailEntityList.length>8)">详情清单</el-button>
+                            </td>
+                            <td colspan="1" style="border-bottom: none;border-top: none"></td>
+                            <td colspan="1" style="border-bottom: none;border-top: none"></td>
+                            <td colspan="1" style="border-bottom: none;border-top: none"></td>
+                            <td colspan="2" style="border-bottom: none;border-top: none"></td>
+                            <td colspan="1" style="border-bottom: none;border-top: none"></td>
+                            <td colspan="1" style="border-bottom: none;border-top: none"></td>
+                            <td colspan="1" style="border-bottom: none;border-top: none"></td>
+                        </tr>
+                        <tr >
+                            <td colspan="2" align="center" style="border-top: none">合计</td>
+                            <td colspan="1" style="border-top: none"></td>
+                            <td colspan="1" style="border-top: none"></td>
+                            <td colspan="1" style="border-top: none"></td>
+                            <td colspan="2" style="border-top: none"></td>
+                            <td colspan="1" align="right" style="border-top: none"><span v-if="detailForm.detailAmountTotal=='—— ——'"></span><span v-else>￥</span><span style="color: #655aa6">{{detailForm.detailAmountTotal}}</span></td>
+                            <td colspan="1" style="border-top: none"></td>
+                            <td colspan="1" align="right" style="border-top: none"><span v-if="detailForm.taxAmountTotal=='—— ——'"></span><span v-else>￥</span><span  style="color: #655aa6">{{detailForm.taxAmountTotal}}</span></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" width="30%" align="center">价税合计（大写）</td>
+                            <td colspan="8" width="30%" align="left">
+                                <i style="display: inline-block;float: left"><span style="color: #655aa6">{{detailForm.stringTotalAmount}}</span></i>
+                                <i style="display: inline-block;float: right;margin-right: 25%"><span v-if="(detailForm.totalAmount!=null)">(小写)￥</span>  <span style="color: #655aa6">{{detailForm.totalAmount}}</span></i>
+                                <div style="clear: both"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" width="5%" align="center">销<br>售<br>方</td>
+                            <td colspan="1" width="10%" height="120" align="left" style="border-right: none">
+                                名称:<br>
+                                纳税人识别号:<br>
+                                地址 、 电话:<br>
+                                开户行及帐号:
+                            </td>
+                            <td colspan="4" width="40%" height="120" align="left" style="border-left: none;color: #655aa6">
+                                <span>{{detailForm.xfName}}</span><br>
+                                <span>{{detailForm.xfTaxNo}}</span><br>
+                                <span>{{detailForm.xfAddressAndPhone}}</span><br>
+                                <span>{{detailForm.xfBankAndNo}}&nbsp;</span><br>
+                            </td>
+                            <td colspan="1" width="5%" align="center">备<br>注</td>
+                            <td colspan="3" width="40%" align="left" valign="top">{{detailForm.remark}}</td>
+                        </tr>
+                    </table>
+                </el-form>
+            </span>
+            <span style="display:block;font-size: 0.13rem;" class="col-xs-3" name="invoiceLog">
+                <div class="formTitle">发票日志</div>
+                <table width="100%" height="80%" border="0" align="center" cellspacing="0">
+                    <tr>
+                        <td style="border: none"><em>发票生成:</em></td>
+                        <td style="border: none"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: none">发票状态:</td>
+                        <td style="border: none">{{detailForm.invoiceStatus}}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: none">生成方式:</td>
+                        <td style="border: none">{{detailForm.sourceSystem}}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: none">生成时间:</td>
+                        <td style="border: none">{{detailForm.createDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.invoiceStatus=='异常')">
+                        <td style="border: none">异常时间:</td>
+                        <td style="border: none">{{detailForm.statusUpdateDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.qsStatus==1)">
+                        <td style="border: none"><em>签收信息:</em></td>
+                        <td style="border: none"></td>
+                    </tr>
+                    <tr v-if="(detailForm.qsStatus==1)">
+                        <td style="border: none">签收方式:</td>
+                        <td style="border: none">{{detailForm.qsType}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.qsStatus==1)">
+                        <td style="border: none">签收人:</td>
+                        <td style="border: none">{{detailForm.qsBy}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.qsStatus==1)">
+                        <td style="border: none">签收时间:</td>
+                        <td style="border: none">{{detailForm.qsDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.rzhYesorno==1)">
+                        <td style="border: none"><em>认证信息:</em></td>
+                        <td style="border: none"></td>
+                    </tr>
+                    <tr v-if="(detailForm.rzhYesorno==1)">
+                        <td style="border: none">认证状态:</td>
+                        <td style="border: none">已认证</td>
+                    </tr>
+                    <tr v-if="(detailForm.rzhYesorno==1)">
+                        <td style="border: none">税款所属期:</td>
+                        <td style="border: none">{{detailForm.dqskssq}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.rzhYesorno==1)">
+                        <td style="border: none">认证时间:</td>
+                        <td style="border: none">{{detailForm.rzhDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.gxDate!=null)">
+                        <td style="border: none">勾选时间:</td>
+                        <td style="border: none">{{detailForm.gxDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.gxUserName!=null)">
+                        <td style="border: none">勾选人:</td>
+                        <td style="border: none">{{detailForm.gxUserName}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.confirmDate!=null)">
+                        <td style="border: none">确认时间:</td>
+                        <td style="border: none">{{detailForm.confirmDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.confirmUser!=null)">
+                        <td style="border: none">确认人:</td>
+                        <td style="border: none">{{detailForm.confirmUser}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.sendDate!=null)">
+                        <td style="border: none">发送认证时间:</td>
+                        <td style="border: none">{{detailForm.sendDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.authStatus!=null)">
+                        <td style="border: none">认证流程状态:</td>
+                        <td v-if="(detailForm.authStatus==0)" style="border: none">未认证</td>
+                        <td v-if="(detailForm.authStatus==1)" style="border: none">已勾选未确认</td>
+                        <td v-if="(detailForm.authStatus==2)" style="border: none">已确认</td>
+                        <td v-if="(detailForm.authStatus==3)" style="border: none">已发送认证</td>
+                        <td v-if="(detailForm.authStatus==4)" style="border: none">认证成功</td>
+                        <td v-if="(detailForm.authStatus==5)" style="border: none">认证失败</td>
+                    </tr>
+
+                    <!--新增匹配状态-->
+
+                   <tr>
+                        <td style="border: none" v-if="(detailForm.matchStatus!=null)"><em>匹配信息:</em></td>
+                        <td style="border: none" v-if="(detailForm.matchStatus!=null)"></td>
+                    </tr>
+
+                    <tr  v-if="(detailForm.matchStatus!=null)">
+                        <td style="border: none">匹配状态:</td>
+                        <td style="border: none" v-if="(detailForm.matchStatus==0)" >未匹配</td>
+                        <td style="border: none" v-if="(detailForm.matchStatus==1)" >匹配成功</td>
+                        <td style="border: none" v-if="(detailForm.matchStatus==2)" >匹配失败</td>
+                    </tr>
+
+                    <tr v-if="(detailForm.matchStatus!=null)">
+                        <td style="border: none">匹配时间:</td>
+                        <td style="border: none">{{detailForm.matchDate}}</td>
+                    </tr>
+                    <tr v-if="(detailForm.outStatus==1 || detailForm.outStatus==2)">
+                        <td style="border: none"><em>转出信息:</em></td>
+                        <td style="border: none"></td>
+                    </tr>
+                    <tbody v-for="(out,index) in detailForm.outList">
+                        <tr>
+                            <td style="border: none">{{index+1}}、转出日期:</td>
+                            <td style="border: none">{{out.outDate}}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;转出人:</td>
+                            <td style="border: none">{{out.outBy}}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;转出原因:</td>
+                            <td v-if="(out.outReason==1)" style="border: none">免税项目用</td>
+                            <td v-if="(out.outReason==2)" style="border: none">集体福利,个人消费</td>
+                            <td v-if="(out.outReason==3)" style="border: none">非正常损失</td>
+                            <td v-if="(out.outReason==4)" style="border: none">简易计税方法征税项目用</td>
+                            <td v-if="(out.outReason==5)" style="border: none">免抵退税办法不得抵扣的进项税额</td>
+                            <td v-if="(out.outReason==6)" style="border: none">纳税检查调减进项税额</td>
+                            <td v-if="(out.outReason==7)" style="border: none">红字专用发票通知单注明的进项税额</td>
+                            <td v-if="(out.outReason==8)" style="border: none">上期留抵税额抵减欠税</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;转出金额:</td>
+                            <td style="border: none">{{numberFormat(null, null, out.outInvoiceAmout)}}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;转出税额:</td>
+                            <td style="border: none">{{numberFormat(null, null, out.outTaxAmount)}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </span>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button class="btnexport" @click="printform(1)">打印</el-button>
+    <el-button class="btnexport" @click="detailFormCancel">关闭</el-button>
+  </span>
+    </el-dialog>
+
+    <el-dialog width="50%" :visible.sync="trackInvoiceStatusDialog" :before-close="trackInvoiceStatusClose" :close-on-click-modal="false"  height="100%"  title="跟踪发票状态">
+
+        <el-table height="4rem" border fit :data="tableData5" highlight-current-row style="width: 100%;font-size: 0.12rem;" class="table_scroll">
+
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="70"  label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="时间" align="center" header-align="center"  ></el-table-column>
+
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceStatus" label="状态" align="center" header-align="center"></el-table-column>
+
+        </el-table>
+    </el-dialog>
+</div>
+</body>
+    <script src="../../js/modules/fixed/questionnaire.js"></script>
+</html>

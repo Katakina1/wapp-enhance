@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+
+
+        [v-cloak] {
+            display: none;
+        }
+        .el-table .cell{
+            white-space: nowrap !important;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<style type="text/css">
+    .qsItem {
+    }
+
+    .rzhItem {
+    }
+    .btn-row2 {
+    }
+    .btn-row3 {
+    }
+    .btn-row4 {
+    }
+    .rzh-row3 {
+    }
+    .rzh-row4 {
+    }
+
+    .hideItem {
+        display: none;
+    }
+
+    .el-dialog__body {
+        padding: 0.45rem 0.2rem;
+    }
+    .showItem {
+        display: block;
+    }
+
+    .el-form-item__label {
+
+    }
+
+
+    .el-input__inner {
+        border-radius: 0;
+    }
+
+    .cycleorange {
+        position: relative;
+        color: #333333;
+        text-align: center;
+    }
+
+    .cycleorange > div {
+        width: 0.3rem;
+        height: 0.3rem;
+        font-weight: 700;
+        border-radius: 50%;
+        background-color: #ffaa00;
+        line-height: 0.3rem;
+        position: absolute;
+        top: -0.15rem;
+        left: 50%;
+        transform: rotate(90deg);
+        -ms-transform: rotate(90deg); /* IE 9 */
+        -moz-transform: rotate(90deg); /* Firefox */
+        -webkit-transform: rotate(90deg); /* Safari 和 Chrome */
+        -o-transform: rotate(90deg); /* Opera */
+        cursor: pointer;
+    }
+    td{
+        position: relative;
+    }
+    .col-xs-9, .col-xs-3 {
+
+    }
+    span[name*="invoiceLog"] table tr td{
+        display: inline;
+    }
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div >
+        <el-form ref="form" name="form" :model="form" :rules="rules" label-width="1.0rem">
+        
+        	 <el-row>
+                 <el-col :span="12">
+                     <el-form-item label="供应商类型:">
+                         <el-select v-model="form.usertype">
+                             <el-option label="全部" value="-1" selected></el-option>
+                             <el-option label="商品" value="0"></el-option>
+                             <el-option label="费用" value="1"></el-option>
+                         </el-select>
+                     </el-form-item>
+
+                 </el-col>
+                 <el-col :span="12">
+                     <el-form-item label="供应商级别:"  prop="supplierType">
+                         <el-select v-model="form.supplierType" >
+                             <el-option
+                                     v-for="item in supplierTypeLists"
+                                     :key="item.value"
+                                     :label="item.label"
+                                     :value="item.value">
+                             </el-option>
+                         </el-select>
+                     </el-form-item>
+                 </el-col>
+	            <el-col :span="12">
+	                <el-form-item label="供应商号:" prop="orgCode" >
+	                    <el-input v-model="form.orgCode" placeholder="请输入供应商号"></el-input>
+	                </el-form-item>
+	            </el-col>
+                 <el-col :span="12">
+                     <el-form-item label="供应商名称:" prop="userName" >
+                         <el-input v-model="form.userName" placeholder="请输入供应商名称"></el-input>
+                     </el-form-item>
+                 </el-col>
+                <el-col :span="1" :offset="1" class="btn-row2">
+                    <el-button class="btnexport" @click="onSubmit('form')">查询</el-button>
+                </el-col>
+                <el-col :span="1" :offset="1">
+                	<el-button class="btnexport" @click="exportData()" id="daochu"  disabled="true">导出</el-button>
+                </el-col>
+                 <el-col :span="1" :offset="1" class="btn-row2">
+                     <el-button id="bath_btn_update" disabled class="btnexport" @click="updateSupplierTypeBath()">批量修改供应商级别</el-button>
+                 </el-col>
+           </el-row>
+       </el-form>
+    </div>
+    <hr>
+    <div v-show="tableShow">
+    
+    <el-table height="4rem" border fit :data="tableData" class="tableData" highlight-current-row
+                 @selection-change="changeFunPO"
+                  style="width: 100%;font-size: 0.12rem;">
+        <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection" label="选择" align="center" @selection-change="changeFunPO"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  type="index" width="70" :index="mainIndex" label="序号" align="center"></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="usertype" label="供应商类型" align="center" header-align="center" :formatter="formatterUserType">
+        </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="userCode" label="供应商号" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="userName" label="供应商名称" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="taxno" label="供应商税号" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="finusername" label="联系人" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="phone" label="电话" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="fax" label="传真" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="email" label="邮箱地址" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="postType" label="邮寄方式" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="city" label="城市"  align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="postAddress" label="邮寄地址" width="200" align="left" header-align="center" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="orgLevel" label="供应商级别" align="left" header-align="center" :formatter="formatterOrgLevel" ></el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="usertype" label="供应商类型" align="center" header-align="center"> </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="extf0" label="冻结状态" align="center" header-align="center" :formatter="fromatextf0"> </el-table-column>
+        <el-table-column :show-overflow-tooltip="true"  prop="extf1" label="删除状态" align="center" header-align="center" :formatter="fromatextf1"> </el-table-column>
+
+
+
+    </el-table>
+    <el-col class="toolbar" style="padding:0.1rem;">
+        <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                       :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                       layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+            <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+        </el-pagination>
+    </el-col>
+
+        <el-dialog width="95%" :visible.sync="bathBtnUpdateDialog" :before-close="bathBtnUpdateCancel" :close-on-click-modal="false"  height="100%"  title="批量修改供应商级别">
+
+            <el-form ref="form1" :model="form1"  label-width="1.0rem">
+                <el-row>
+                    <!--<el-col :span="12">
+                        <el-form-item label="供应商类型:">
+                            <el-select v-model="form1.usertype">
+                                <el-option label="不修改" value="-1" selected></el-option>
+                                <el-option label="商品" value="0"></el-option>
+                                <el-option label="费用" value="1"></el-option>
+                            </el-select>
+                        </el-form-item>
+
+                    </el-col>-->
+                    <el-col :span="14">
+                        <el-form-item label="供应商级别:"  prop="supplierType">
+                            <el-select v-model="form1.supplierType" >
+                                <el-option
+                                        v-for="item in supplierTypeList"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+
+
+                    <el-col :span="1" :offset="1" class="btn-row2">
+                        <el-button class="btnexport" @click="submitForm()">确定</el-button>
+                    </el-col>
+                   <el-col :span="1" :offset="1" class="btn-row2">
+                        <el-button class="btnexport" @click="bathBtnUpdateCancel()">取消</el-button>
+                    </el-col>
+                </el-row>
+            </el-form>
+
+        </el-dialog>
+    </div>
+</div>
+<script src="../../js/modules/InformationInquiry/supplierInformationSearch.js"></script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../libs/customer/index.css">
+    <style type="text/css">
+
+
+        [v-cloak] {
+            display: none;
+        }
+        .el-table .cell{
+            white-space: nowrap !important;
+        }
+
+    </style>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+</head>
+<style type="text/css">
+    .el-icon-date{
+        font-size: 0.2rem;
+    }
+
+    .el-input__prefix{
+        right: 0;
+        padding-left: 0.07rem;
+        padding-right: 0.06rem;
+    }
+    <!--@media screen and (max-width: 11.8rem) {-->
+        <!--.el-input__prefix{-->
+            <!--right: 0;-->
+            <!--border:none;-->
+            <!--padding-left: 0;-->
+            <!--padding-right: 0.02rem;-->
+        <!--}-->
+    <!--}-->
+</style>
+<body>
+<iframe id="ifile" style="display:none"></iframe>
+<div id="rrapp" v-cloak>
+    <div id="query-form">
+        <div>
+            <el-form ref="form" :model="form" :rules="rules" label-width="1.0rem">
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="购方名称:">
+                            <el-select id="gf-select" v-model="form.gfName" filterable @change="gfNameChange" @focus="gfNameFocus" @blur="gfNameBlur">
+                                <el-option
+                                        v-for="item in gfs"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="税款所属期:" prop="rzhBelongDate" class="labelMid">
+                            <el-date-picker id="rzhBelongDate" :picker-options="rzhBelongDateOption" :clearable="false" :editable="false" @blur="blurpickerchange(1)" @focus="focuspickerchange(1)" type="month"  v-model="form.rzhBelongDate" format="yyyyMM" value-format="yyyyMM" @change="dqskssqDateChange"></el-date-picker>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="1" :offset="1">
+                        <el-button class="btnexport" @click="query('form')">查询</el-button>
+                    </el-col>
+                    <el-col :span="1" :offset="1">
+                        <el-button id="export_btn" disabled class="btn btnexport" @click="exportPdf">打印清单</el-button>
+                    </el-col>
+                </el-row>
+
+
+            </el-form>
+        </div>
+        <hr>
+        <div>
+            <div align="left" style="float:left; font-size: 0.18rem; margin-top: 0.09rem"><span id="totalStatistics"></span></div>
+        </div>
+        <el-table height="4rem" border fit :data="tableData" highlight-current-row style="width: 100%;font-size: 0.12rem;"
+                  v-loading="listLoading"
+                  element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="80" :index="mainIndex" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceCode" label="发票代码" align="left" header-align="center">
+                <template scope="scope">
+                    <span v-if="scope.row.invoiceCode=== null" >—— ——</span>
+                    <span v-else>{{scope.row.invoiceCode}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceNo" label="发票号码" align="left" header-align="center">
+                <template scope="scope">
+                    <span v-if="scope.row.invoiceNo=== null" >—— ——</span>
+                    <span v-else>{{scope.row.invoiceNo}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"   prop="invoiceType" label="发票类型" align="left" header-align="center" :show-overflow-tooltip="true">
+                <template scope="scope">
+                    <span v-if="scope.row.invoiceType=== null" >—— ——</span>
+                    <span v-if="scope.row.invoiceType=== ''" >—— ——</span>
+                    <span v-if="scope.row.invoiceType=== '01'" >增值税专用发票</span>
+                    <span v-if="scope.row.invoiceType=== '03'" >机动车销售统一发票</span>
+                    <span v-if="scope.row.invoiceType=== '04'" >增值税普通发票</span>
+                    <span v-if="scope.row.invoiceType=== '10'" >增值税电子普通发票</span>
+                    <span v-if="scope.row.invoiceType=== '11'" >增值税普通发票（卷票）</span>
+                    <span v-if="scope.row.invoiceType=== '14'" >增值税电子普通发票（通行费）</span>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceDate" label="开票日期" align="center" :formatter="dateFormat">
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="xfTaxNo" label="销方税号" align="left" header-align="center" :show-overflow-tooltip="true">
+                <template scope="scope">
+                    <span v-if="scope.row.xfTaxNo=== null" >—— ——</span>
+                    <span v-else>{{scope.row.xfTaxNo}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="xfName" label="销方名称" align="left" header-align="center" :show-overflow-tooltip="true">
+                <template scope="scope">
+                    <span v-if="scope.row.xfName=== null" >—— ——</span>
+                    <span v-else>{{scope.row.xfName}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="invoiceAmount" label="金额" align="right" header-align="center" :formatter="numberFormat">
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="taxAmount" label="税额" align="right"  header-align="center" :formatter="numberFormat">
+            </el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="rzhDate" label="认证日期" align="center" :formatter="dateFormat">
+            </el-table-column>
+        </el-table>
+        <el-col class="toolbar" style="padding:0.1rem;">
+            <el-pagination background @current-change="currentChange" @size-change="handleSizeChange"
+                           :current-page="currentPage" :page-size="pageSize" :page-sizes="pageList" :pager-count="pagerCount"
+                           layout="slot, sizes, prev, pager, next" :total="total" style="float:right">
+                <span>共{{total}}条记录，第{{currentPage}}页，共{{totalPage}}页</span>
+            </el-pagination>
+        </el-col>
+    </div>
+
+</div>
+</body>
+<script src="../../js/modules/report/authResultList.js"></script>
+</html>

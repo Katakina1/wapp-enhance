@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>票据分配管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="../../libs/vue.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../js/customer/resource.js"></script>
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+
+        .el-dialog__body {
+            padding: 15px 20px;
+            border: 1px solid #dcdfe6;
+        }
+        .el-dialog__header{
+            background: #333333;
+            color: white;
+        }
+        .el-dialog__header span,.el-dialog__header i{
+            color: white !important;
+        }
+        .el-col-16 {
+            width: 50%;
+        }
+        .el-col-17{
+            width: 40%;
+        }
+        .el-col-5{
+            width: 10%;
+        }
+    </style>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+    <el-row style="font-size:18px;color: #FFFFFF;background-color: #666666">
+        <el-col :span="12"
+                style="height: 60px;font-size: 18px;border-radius: 0; border: 0 solid #666666;width: 50%;!important">
+            <div class="grid-content bg-purple" style=" padding: 20px;">
+                <span style="text-align: left; ">用户列表</span>
+            </div>
+        </el-col>
+        <el-col :span="12"
+                style="height: 60px;font-size: 18px;border-radius: 0; border: 0 solid #666666;width: 50%;!important">
+            <div class="grid-content bg-purple" style=" padding: 20px;">
+                <span style="text-align: left; ">业务类型列表</span>
+            </div>
+        </el-col>
+    </el-row>
+    <el-row>
+        <el-col :span="17" style="width: 50%;!important">
+            <div v-show="showList" class="panel panel-default" style="padding-top: 15px">
+                <div>
+                    <el-form ref="userForm" :model="userForm" label-width="100px">
+                        <el-row>
+                            <el-col :span="17">
+                                <el-form-item label="用户名称:" class="form-item" prop="username">
+                                    <el-input maxlength="150" v-model.trim="userForm.username" placeholder="请输入用户名称"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="17">
+                                <el-form-item label="登录账户:" class="form-item" prop="loginname">
+                                    <el-input maxlength="40" v-model.trim="userForm.loginname" placeholder="请输入登录账户"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="4" :offset="1">
+                                <el-button class="btnexport" @click="query">查询</el-button>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <!--<el-col :span="4" :offset="1">
+                                    <el-button class="btnexport" @click="resetForm('userForm')">重置</el-button>
+                            </el-col>-->
+                        </el-row>
+                    </el-form>
+
+                    <hr>
+
+                    <el-table height="4rem" :data="userData" border fit tooltip-effect="light" highlight-current-row
+                              v-loading="userLoading" element-loading-text="正在拼命加载中"
+                              style="width: 100%;">
+
+                        <el-table-column :show-overflow-tooltip="true"  type="index" :index="userIndex" label="序号" width="60" align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="username" label="用户名称" min-width="100" align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="loginname" label="登录账号" min-width="100" align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="userid" label="操作" class-name="noSpotSpotSpot" width="120" align="center">
+                            <template slot-scope="scope">
+                                <span @click="authorization(scope.row)" style="cursor: pointer;">授权票据</span>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-col class="toolbar" style="padding:10px;">
+                        <el-pagination small layout="slot, sizes, prev, pager, next" background
+                                       :current-page.sync="userPage.currentPage" :page-size="userPage.pageSize"
+                                       :page-sizes="pageList"  @size-change="handleSizeChangeUser"
+                                       :total="userPage.total" @current-change="currentChange"
+                                       style="float:right">
+                            <span>共{{userPage.total}}条记录，第{{userPage.currentPage}}页，共{{userPage.totalPage}}页</span>
+                        </el-pagination>
+                    </el-col>
+                </div>
+            </div>
+        </el-col>
+
+        <div style="width: 49%;display:inline-block;">
+            <div v-show="rrappChild" class="panel panel-default" style="padding-top: 15px">
+                <div>
+                    <el-form ref="form" :model="form" label-width="100px">
+                        <el-row>
+                            <el-col :span="15">
+                                <el-form-item label="业务类型名称:" class="form-item" prop="billtypename">
+                                    <el-input maxlength="40" v-model.trim="form.billtypename" placeholder="请输入业务类型名称"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="15">
+                                <el-form-item label="业务类型编码:" class="labelLong form-item" prop="billtypecode">
+                                    <el-input maxlength="40" v-model="form.billtypecode" placeholder="请输入业务类型编码"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="queryChild">查询</el-button>
+                            </el-col>
+                            <el-col :span="5" :offset="1">
+                                <a class="btn btnexport" @click="addChild">新增</a>
+                            </el-col>
+                            <el-col :span="5" :offset="1">
+                                <a class="btn btnexport" @click="delChild">删除</a>
+                            </el-col>
+                             <el-col :span="5" :offset="1">
+                                <a class="btn btnexport" @click="defaultChild(1)">默认</a>
+                            </el-col>
+                             <el-col :span="5" :offset="1">
+                                <a class="btn btnexport" @click="defaultChild(2)">取消默认</a>
+                            </el-col>
+                            <!--<el-col :span="5" :offset="1">
+                                <el-button class="btnexport" @click="resetForm('form')">重置</el-button>
+                            </el-col>-->
+                        </el-row>
+                        <el-row>
+                        </el-row>
+                    </el-form>
+                    <hr>
+                    <el-table height="4rem" :data="userDataChild" border fit tooltip-effect="light" highlight-current-row
+                              @selection-change="changeFunBind" v-loading="orgLoading" element-loading-text="正在拼命加载中"
+                              style="width: 100%;">
+
+                        <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  type="index" :index="userChildIndex" label="序号" width="60"
+                                         align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  property="billtypename" label="业务类型名称" min-width="100" :show-overflow-tooltip="true"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  :formatter="formatterField" property="billtypecode" label="业务类型编码" min-width="50" :show-overflow-tooltip="true"
+                                         header-align="center"></el-table-column>
+                        <el-table-column :show-overflow-tooltip="true"  :formatter="formatterField" property=isdefault label="是否默认" min-width="50"
+                                         header-align="center"></el-table-column>
+                    </el-table>
+                    <el-col class="toolbar" style="padding:10px;">
+                        <el-pagination small layout="slot, sizes, prev, pager, next" background
+                                       :current-page.sync="userPageChild.currentPage"
+                                       :page-size="userPageChild.pageSize"
+                                       :page-sizes="pageList"  @size-change="handleSizeChangeUserChild"
+                                       :total="userPageChild.total" @current-change="currentChangeUserChild"
+                                       style="float:right">
+                            <span>共{{userPageChild.total}}条记录，第{{userPageChild.currentPage}}页，共{{userPageChild.totalPage}}页</span>
+                        </el-pagination>
+                    </el-col>
+                </div>
+            </div>
+        </div>
+    </el-row>
+
+
+    <el-dialog title="新增业务类型" :visible.sync="addOrUpdateWin"
+               :before-close="addOrUpdataWinClose" :close-on-click-modal="false">
+        <el-form ref="queryTaxCodeForm" :model="queryTaxCodeForm" label-width="105px">
+            <el-row>
+                    <el-col :span="15">
+                    <el-form-item label="业务类型名称:" prop="billtypename">
+                        <el-input maxlength="200" v-model="queryTaxCodeForm.billtypename" placeholder="请输入业务类型名称"></el-input>
+                    </el-form-item>
+                    </el-col>
+                <el-col :span="15">
+                    <el-form-item label="业务类型编码:" prop="billtypecode">
+                        <el-input maxlength="40" v-model="queryTaxCodeForm.billtypecode" placeholder="请输入机构税号"></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :span="5" :offset="1">
+                    <el-button class="btnexport" @click="queryOrg">查询</el-button>
+                </el-col>
+                <el-col :span="5" :offset="1">
+                    <el-button class="btnexport" @click="addAndSave">添加</el-button>
+                </el-col>
+            </el-row>
+            <el-row>
+                <!--<el-col :span="3" :offset="1">
+                        <el-button class="btnexport" @click="resetForm('queryTaxCodeForm')">重置</el-button>
+                </el-col>-->
+            </el-row>
+        </el-form>
+        <hr>
+
+        <el-table height="4rem" ref="singleTable" border fit :data="tableData" highlight-current-row height="300"
+                  style="width: 100%;" @selection-change="changeFun"
+                  v-loading="listLoading" element-loading-text="正在拼命加载中">
+            <el-table-column :show-overflow-tooltip="true"  type="selection" width="55" class="selection" prop='orgid'></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  type="index" width="60" :index="userPageChildNotIndex" label="序号" align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="billtypename" label="业务类型名称" header-align="center"></el-table-column>
+            <el-table-column :show-overflow-tooltip="true"  prop="billtypecode" label="业务类型编码" header-align="center"></el-table-column>
+        </el-table>
+
+        <el-footer>
+            <el-pagination small layout="slot, sizes, prev, pager, next" background
+                           :current-page.sync="userPageChildNot.currentPage"
+                           :page-size="userPageChildNot.pageSize"
+                           :page-sizes="pageList"  @size-change="handleSizeChangeChildNot"
+                           :total="userPageChildNot.total" @current-change="findAll"
+                           style="float:right">
+                <span>共{{userPageChildNot.total}}条记录，第{{userPageChildNot.currentPage}}页，共{{userPageChildNot.totalPage}}页</span>
+            </el-pagination>
+        </el-footer>
+    </el-dialog>
+</div>
+
+<script src="../../js/modules/base/billaccess.js"></script>
+</body>
+</html>
