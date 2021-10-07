@@ -8,7 +8,8 @@
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
     <modules>
-        <module>wapp-service</module>
+        <module>wapp-core</module>
+        <module>wapp-common</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
