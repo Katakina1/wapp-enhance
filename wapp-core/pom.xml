@@ -34,6 +34,32 @@
         <activemq.version>5.11.2</activemq.version>
     </properties>
     <dependencies>
+
+        <!-- 集成平台sdk -->
+        <dependency>
+            <groupId>apollo</groupId>
+            <artifactId>com.xforceplus.apollo.client</artifactId>
+            <version>4.5</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty-tcnative-boringssl-static</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>netty-all</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jna</artifactId>
+                    <groupId>net.java.dev.jna</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jna-platform</artifactId>
+                    <groupId>net.java.dev.jna</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
