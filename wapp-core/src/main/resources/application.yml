@@ -38,10 +38,10 @@ spring:
     resources:
         static-locations: classpath:/static/,classpath:/views/
 
-# Mybatis配置
-mybatis:
-    mapperLocations: classpath:mapper/**/*.xml
-    configLocation: classpath:mybatis.xml
+# Mybatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.xforceplus.wapp.entity
 
 # 日志
 logging:
