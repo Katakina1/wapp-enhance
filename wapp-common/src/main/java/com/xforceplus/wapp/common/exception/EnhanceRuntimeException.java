@@ -3,10 +3,15 @@ package com.xforceplus.wapp.common.exception;
 /**
  * @author malong@xforceplus.com
  * @program wapp-enhance
- * @description
+ * @description 业务统一异常，建议在此异常类的基础上细分业务异常扩展
  * @create 2021-09-29 11:06
  **/
-public class EnhanceRuntimeException extends RuntimeException{
+public class EnhanceRuntimeException extends RuntimeException {
+    /**
+     * 错误代码
+     */
+    private String code;
+
     /**
      * Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be
@@ -27,6 +32,11 @@ public class EnhanceRuntimeException extends RuntimeException{
         super(message);
     }
 
+    public EnhanceRuntimeException(String message, String code) {
+        super(message);
+        this.code = code;
+    }
+
     /**
      * Constructs a new runtime exception with the specified detail message and
      * cause.  <p>Note that the detail message associated with
@@ -43,6 +53,11 @@ public class EnhanceRuntimeException extends RuntimeException{
      */
     public EnhanceRuntimeException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public EnhanceRuntimeException(String message, Throwable cause, String code) {
+        super(message, cause);
+        this.code = code;
     }
 
     /**
@@ -78,5 +93,13 @@ public class EnhanceRuntimeException extends RuntimeException{
      */
     public EnhanceRuntimeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }
