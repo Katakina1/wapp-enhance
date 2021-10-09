@@ -38,6 +38,12 @@ public class MessageListener implements IMessageListener {
     public boolean onMessage(SealedMessage sealedMessage) {
         final SealedMessage.Header messageHeader = sealedMessage.getHeader();
         final String requestName = messageHeader.getRequestName();
-        return Optional.ofNullable(map.get(requestName)).map(x->x.handle(sealedMessage)).orElse(Boolean.FALSE);
+        return Optional.ofNullable(map.get(requestName)).map(x -> x.handle(sealedMessage)).orElseGet(
+                () ->
+                {
+                    log.info("requestName:[{}] not found", requestName);
+                    return Boolean.FALSE;
+                }
+        );
     }
 }
