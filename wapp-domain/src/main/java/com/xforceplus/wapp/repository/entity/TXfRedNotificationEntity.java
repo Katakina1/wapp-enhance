@@ -44,24 +44,6 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private String pid;
 
     /**
-     * 备注
-     */
-    @TableField("remark")
-    private String remark;
-
-    /**
-     * 流水号
-     */
-    @TableField("serial_no")
-    private String serialNo;
-
-    /**
-     * 单据类型
-     */
-    @TableField("bill_type")
-    private String billType;
-
-    /**
      * 1 销方 2购方
      */
     @TableField("user_role")
@@ -224,6 +206,12 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private Integer specialInvoiceFlag;
 
     /**
+     * 扣款时间
+     */
+    @TableField("payment_time")
+    private Date paymentTime;
+
+    /**
      * 客户编号
      */
     @TableField("customer_no")
@@ -253,11 +241,14 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
-    @TableField("terminal_type")
-    private Integer terminalType;
+    @TableField("remark")
+    private String remark;
 
     @TableField("user_id")
     private Long userId;
+
+    @TableField("terminal_type")
+    private Integer terminalType;
 
 
     public static final String ID = "id";
@@ -265,12 +256,6 @@ public class TXfRedNotificationEntity extends BaseEntity {
     public static final String INVOICE_DATE = "invoice_date";
 
     public static final String PID = "pid";
-
-    public static final String REMARK = "remark";
-
-    public static final String SERIAL_NO = "serial_no";
-
-    public static final String BILL_TYPE = "bill_type";
 
     public static final String USER_ROLE = "user_role";
 
@@ -326,6 +311,8 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String SPECIAL_INVOICE_FLAG = "special_invoice_flag";
 
+    public static final String PAYMENT_TIME = "payment_time";
+
     public static final String CUSTOMER_NO = "customer_no";
 
     public static final String CREATE_DATE = "create_date";
@@ -336,8 +323,10 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
-    public static final String TERMINAL_TYPE = "terminal_type";
+    public static final String REMARK = "remark";
 
     public static final String USER_ID = "user_id";
+
+    public static final String TERMINAL_TYPE = "terminal_type";
 
 }
