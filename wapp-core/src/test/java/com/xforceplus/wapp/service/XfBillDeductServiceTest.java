@@ -2,6 +2,7 @@ package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.WappApplication;
 import com.xforceplus.wapp.repository.dao.TXBillDeductDao;
+import com.xforceplus.wapp.repository.entity.TXBillDeductEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +21,7 @@ public class XfBillDeductServiceTest {
 
     @Test
     public void testXfBillDeductList(){
-       // List<XfBillDeductEntity> list = xfBillDeductDao.selectList();
-       // log.info("测试==="+JSON.toJSONString(list));
+        TXBillDeductEntity xfBillDeductEntity = xfBillDeductDao.selectById(1);
+        System.out.println(xfBillDeductEntity);
     }
 }
