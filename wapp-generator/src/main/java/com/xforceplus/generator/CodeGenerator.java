@@ -25,7 +25,7 @@ public class CodeGenerator {
 
 
     public static void main(String[] args) {
-        generateCode("com.xforceplus.wapp.entity.BaseEntity",
+        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
                 "t_xf_exception_report",
                 "t_xf_red_notification",
                 "t_xf_red_notification_detail",
@@ -89,7 +89,7 @@ public class CodeGenerator {
 
         // 包配置
         PackageConfig pc = new PackageConfig();
-        pc.setParent("com.xforceplus.wapp");
+        pc.setParent("com.xforceplus.wapp.repository");
         pc.setEntity("entity");
         pc.setMapper("dao");
         mpg.setPackageInfo(pc);

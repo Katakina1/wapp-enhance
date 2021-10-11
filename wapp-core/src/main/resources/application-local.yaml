@@ -1,0 +1,11 @@
+wapp:
+  xf:
+    authentication: Walmart-wapp-enhance-dev2021101114111213460599
+    client-id: T395054492021101114111213460567
+    customer-no: T395054492021101114111213460567
+    host:
+      tcp: janus-tcp-inte.xforceplus.com
+      http: https://janus-tcp-inte.xforceplus.com:443
+    port:
+      tcp: 443
+

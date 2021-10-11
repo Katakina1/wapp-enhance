@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.entity;
+package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

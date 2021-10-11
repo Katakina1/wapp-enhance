@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.WappApplication;
-import com.xforceplus.wapp.dao.TXBillDeductDao;
+import com.xforceplus.wapp.repository.dao.TXBillDeductDao;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;

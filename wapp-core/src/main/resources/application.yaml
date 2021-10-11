@@ -18,12 +18,9 @@ spring:
     username: testuser01
     password: aGSsdsJFWd_w_1
     devtools:
-            restart:
-                #热部署生效
-              enabled: true
-    # 环境 dev|test|pro|fast|mycat
-    profiles:
-        active: dev
+        restart:
+            #热部署生效
+          enabled: false
     # jackson时间格式化
     jackson:
         time-zone: GMT+0
@@ -41,7 +38,7 @@ spring:
 # Mybatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: com.xforceplus.wapp.entity
+#  type-aliases-package: com.xforceplus.wapp.repository.entity
 
 # 日志
 #logging:
