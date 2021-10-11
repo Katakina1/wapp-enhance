@@ -2,6 +2,7 @@ package com.xforceplus.wapp.repository.dao;
 
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationDetailEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
 
 /**
