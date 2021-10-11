@@ -112,8 +112,8 @@ public class TXfRedNotificationDetailEntity extends BaseEntity {
     /**
      * 不含税金额
      */
-    @TableField("detail_amount")
-    private Double detailAmount;
+    @TableField("amount_without_tax")
+    private Double amountWithoutTax;
 
     /**
      * 税额
@@ -124,8 +124,8 @@ public class TXfRedNotificationDetailEntity extends BaseEntity {
     /**
      * 含税金额
      */
-    @TableField("total_amount")
-    private Double totalAmount;
+    @TableField("amount_with_tax")
+    private Double amountWithTax;
 
     /**
      * 扣除额
@@ -177,11 +177,11 @@ public class TXfRedNotificationDetailEntity extends BaseEntity {
 
     public static final String UNIT_PRICE = "unit_price";
 
-    public static final String DETAIL_AMOUNT = "detail_amount";
+    public static final String AMOUNT_WITHOUT_TAX = "amount_without_tax";
 
     public static final String TAX_AMOUNT = "tax_amount";
 
-    public static final String TOTAL_AMOUNT = "total_amount";
+    public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
     public static final String DEDUCTION = "deduction";
 

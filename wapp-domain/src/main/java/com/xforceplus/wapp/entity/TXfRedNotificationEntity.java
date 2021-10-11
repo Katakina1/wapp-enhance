@@ -44,24 +44,6 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private String pid;
 
     /**
-     * 备注
-     */
-    @TableField("remark")
-    private String remark;
-
-    /**
-     * 流水号
-     */
-    @TableField("serial_no")
-    private String serialNo;
-
-    /**
-     * 单据类型
-     */
-    @TableField("bill_type")
-    private String billType;
-
-    /**
      * 1 销方 2购方
      */
     @TableField("user_role")
@@ -259,18 +241,15 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_id")
     private Long userId;
 
+    @TableField("remark")
+    private String remark;
+
 
     public static final String ID = "id";
 
     public static final String INVOICE_DATE = "invoice_date";
 
     public static final String PID = "pid";
-
-    public static final String REMARK = "remark";
-
-    public static final String SERIAL_NO = "serial_no";
-
-    public static final String BILL_TYPE = "bill_type";
 
     public static final String USER_ROLE = "user_role";
 
@@ -339,5 +318,7 @@ public class TXfRedNotificationEntity extends BaseEntity {
     public static final String TERMINAL_TYPE = "terminal_type";
 
     public static final String USER_ID = "user_id";
+
+    public static final String REMARK = "remark";
 
 }
