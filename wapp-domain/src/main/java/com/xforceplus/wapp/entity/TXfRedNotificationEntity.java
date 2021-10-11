@@ -206,6 +206,12 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private Integer specialInvoiceFlag;
 
     /**
+     * 扣款时间
+     */
+    @TableField("payment_time")
+    private Date paymentTime;
+
+    /**
      * 客户编号
      */
     @TableField("customer_no")
@@ -235,14 +241,14 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
-    @TableField("terminal_type")
-    private Integer terminalType;
+    @TableField("remark")
+    private String remark;
 
     @TableField("user_id")
     private Long userId;
 
-    @TableField("remark")
-    private String remark;
+    @TableField("terminal_type")
+    private Integer terminalType;
 
 
     public static final String ID = "id";
@@ -305,6 +311,8 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String SPECIAL_INVOICE_FLAG = "special_invoice_flag";
 
+    public static final String PAYMENT_TIME = "payment_time";
+
     public static final String CUSTOMER_NO = "customer_no";
 
     public static final String CREATE_DATE = "create_date";
@@ -315,10 +323,10 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
-    public static final String TERMINAL_TYPE = "terminal_type";
+    public static final String REMARK = "remark";
 
     public static final String USER_ID = "user_id";
 
-    public static final String REMARK = "remark";
+    public static final String TERMINAL_TYPE = "terminal_type";
 
 }
