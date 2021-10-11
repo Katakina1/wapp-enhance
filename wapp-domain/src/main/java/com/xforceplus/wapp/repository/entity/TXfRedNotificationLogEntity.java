@@ -1,6 +1,6 @@
-package com.xforceplus.wapp.entity;
+package com.xforceplus.wapp.repository.entity;
 
-import com.xforceplus.wapp.entity.BaseEntity;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;

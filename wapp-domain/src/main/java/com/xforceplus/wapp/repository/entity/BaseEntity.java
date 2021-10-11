@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.entity;
+package com.xforceplus.wapp.repository.entity;
 
 /**
  * @author malong@xforceplus.com
