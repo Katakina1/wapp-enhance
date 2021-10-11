@@ -2,7 +2,7 @@ package com.xforceplus.wapp.service;
 
 import com.alibaba.fastjson.JSON;
 import com.xforceplus.wapp.WappApplication;
-import com.xforceplus.wapp.entity.XfBillDeductDO;
+import com.xforceplus.wapp.repository.entity.XfBillDeductDO;
 import com.xforceplus.wapp.mapper.XfBillDeductMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;

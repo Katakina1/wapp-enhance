@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.mapper;
 
-import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.xforceplus.wapp.entity.XfBillDeductDO;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xforceplus.wapp.repository.entity.XfBillDeductDO;
 import org.mapstruct.Mapper;
 
 import java.util.List;

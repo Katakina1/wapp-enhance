@@ -1,6 +1,6 @@
-package com.xforceplus.wapp.dao;
+package com.xforceplus.wapp.repository.dao;
 
-import com.xforceplus.wapp.entity.TXfRedNotificationDetailEntity;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationDetailEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 
