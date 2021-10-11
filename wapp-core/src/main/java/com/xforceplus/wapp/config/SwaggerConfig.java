@@ -25,6 +25,7 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.xforceplus.wapp.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.xforceplus.wapp.modules"))
                 .paths(PathSelectors.any())
                 .build();
     }
