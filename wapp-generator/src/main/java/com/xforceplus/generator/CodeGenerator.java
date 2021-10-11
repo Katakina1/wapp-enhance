@@ -26,8 +26,10 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.entity.BaseEntity",
-                "t_xf_exception_report"
-
+                "t_xf_exception_report",
+                "t_xf_red_notification",
+                "t_xf_red_notification_detail",
+                "t_xf_red_notification_log"
         );
 //         generateMainCode();
         // generateItemCode();
