@@ -10,8 +10,7 @@
     <modules>
         <module>wapp-core</module>
         <module>wapp-common</module>
-        <module>wapp-red-notification</module>
-        <module>wapp-integration</module>
+        <module>wapp-domain</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 

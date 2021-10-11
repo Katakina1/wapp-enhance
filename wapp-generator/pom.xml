@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.xforceplus</groupId>
+    <artifactId>wapp-generator</artifactId>
+    <version>4.0.10-SNAPSHOT</version>
+
+<!--    <parent>-->
+<!--        <groupId>com.xforceplus</groupId>-->
+<!--        <artifactId>xplat-parent</artifactId>-->
+<!--        <version>4.0.0-SNAPSHOT</version>-->
+<!--        <relativePath />-->
+<!--    </parent>-->
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <mybatis-plus>3.3.1</mybatis-plus>
+    </properties>
+
+    <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>com.xforceplus</groupId>-->
+<!--            <artifactId>xplat-data</artifactId>-->
+<!--        </dependency>-->
+        <!--mybatis -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis-plus}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>${mybatis-plus}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.29</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xforceplus</groupId>
+            <artifactId>mybatis-generator-plugin</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>mysql</groupId>-->
+<!--            <artifactId>mysql-connector-java</artifactId>-->
+<!--            <version>8.0.19</version>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>7.4.1.jre8</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.mybatis.generator</groupId>-->
+<!--                <artifactId>mybatis-generator-maven-plugin</artifactId>-->
+<!--                <version>1.3.7</version>-->
+<!--                <configuration>-->
+<!--                    <configurationFile>src/main/resources/generator/generatorConfig.xml</configurationFile>-->
+<!--                    <verbose>true</verbose>-->
+<!--                    <overwrite>true</overwrite>-->
+<!--                </configuration>-->
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>org.mybatis.generator</groupId>-->
+<!--                        <artifactId>mybatis-generator-core</artifactId>-->
+<!--                        <version>1.3.7</version>-->
+<!--                    </dependency>-->
+<!--                    <dependency>-->
+<!--                        <groupId>com.xforceplus</groupId>-->
+<!--                        <artifactId>xplat-data</artifactId>-->
+<!--                        <version>4.0.6-SNAPSHOT</version>-->
+<!--                    </dependency>-->
+<!--                    <dependency>-->
+<!--                        <groupId>com.xforceplus</groupId>-->
+<!--                        <artifactId>mybatis-generator-plugin</artifactId>-->
+<!--                        <version>4.0.0-SNAPSHOT</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+<!--            </plugin>-->
+
+        </plugins>
+    </build>
+
+
+  <scm>
+    <tag>4.0.0-20190131</tag>
+  </scm>
+</project>
