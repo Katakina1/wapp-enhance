@@ -2,6 +2,7 @@ package com.xforceplus.wapp.dao;
 
 import com.xforceplus.wapp.entity.TXfExceptionReportEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
 
 /**
