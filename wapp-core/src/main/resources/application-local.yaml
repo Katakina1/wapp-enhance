@@ -3,6 +3,17 @@ wapp:
     authentication: Walmart-wapp-enhance-dev2021101114111213460599
     client-id: T395054492021101114111213460567
     customer-no: T395054492021101114111213460567
+    action:
+      # ofd解析 验签
+      ofd: 0E707DB76E9B55CA069263CE911E36A5
+      # 发票验真
+      verification: 3A0ED452A8386C3B04B1F9C3F6C76A42
+      # pdf云识别
+      pdf: 043F1FF00631D5E8F0261CD532D2F477
+      # 申请红字信息表
+      rednotification: C4EB9D5C3138304AE2C671E24C320F3E
+      # 红字信息表结果推送
+      rednotification-result: 470E44098FDCCAF27029BEE97B4E1826
     host:
       tcp: janus-tcp-inte.xforceplus.com
       http: https://janus-tcp-inte.xforceplus.com:443

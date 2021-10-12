@@ -1,10 +1,10 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -80,10 +80,10 @@ public class TXfExceptionReportEntity extends BaseEntity {
     private String taxCode;
 
     /**
-     * 协议号
+     * 单据号：索赔单号，协议单号，EPD单号
      */
-    @TableField("agreement_reference")
-    private String agreementReference;
+    @TableField("bill_no")
+    private String billNo;
 
     /**
      * 协议类型编码
@@ -146,7 +146,7 @@ public class TXfExceptionReportEntity extends BaseEntity {
     private String updateUser;
 
     /**
-     * 例外报告类型：1 索赔单，2 协议单，3 EPD单
+     * 例外报告类型:1 索赔单，2 协议单，3 EPD
      */
     @TableField("type")
     private Integer type;
@@ -170,7 +170,7 @@ public class TXfExceptionReportEntity extends BaseEntity {
 
     public static final String TAX_CODE = "tax_code";
 
-    public static final String AGREEMENT_REFERENCE = "agreement_reference";
+    public static final String BILL_NO = "bill_no";
 
     public static final String AGREEMENT_TYPE_CODE = "agreement_type_code";
 
