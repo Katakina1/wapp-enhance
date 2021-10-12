@@ -43,15 +43,15 @@ public class R<T> {
         return r;
     }
 
-    public static  R<?> fail(String message) {
-        R<?> r = new R<>();
+    public static <T> R<T> fail(String message) {
+        R<T> r = new R<>();
         r.code = FAIL;
         r.message = message;
         return r;
     }
 
-    public static  R<?> fail(String message, String code) {
-        R<?> r = new R<>();
+    public static <T> R<T> fail(String message, String code) {
+        R<T> r = new R<>();
         r.message = message;
         r.code = StringUtils.isBlank(code) ? FAIL : code;
         return r;
