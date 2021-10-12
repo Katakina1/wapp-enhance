@@ -22,8 +22,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/apply")
     public Response applyByPage(@RequestBody RedNotificationApplyReverseRequest request){
-
-        return Response.ok("成功","");
+        return rednotificationService.applyByPage(request);
     }
 
     @ApiOperation(value = "红字信息申请表新增待申请", notes = "", response = Response.class, tags = {"red-notification",})
@@ -127,8 +126,8 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/getTerminals")
     public Response<GetTerminalResult> getTerminals(@RequestBody QueryModel queryModel){
-        GetTerminalResult getTerminalResult = rednotificationService.getTerminals(queryModel);
-        return Response.ok("成功",getTerminalResult);
+        return rednotificationService.getTerminals(queryModel);
+//        Response.ok("成功",getTerminalResult);
     }
 
 

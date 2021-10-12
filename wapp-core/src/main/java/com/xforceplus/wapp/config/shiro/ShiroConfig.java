@@ -91,7 +91,7 @@ public class ShiroConfig {
         filterMap.put("/core/ftp/download", "anon");
         filterMap.put("/swagger-ui.html", "anon");
         filterMap.put("/", "anon");
-        filterMap.put("/**", "oauth2");
+//        filterMap.put("/**", "oauth2");
 
         shiroFilter.setFilterChainDefinitionMap(filterMap);
 
