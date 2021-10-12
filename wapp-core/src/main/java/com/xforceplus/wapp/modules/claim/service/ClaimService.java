@@ -1,5 +1,6 @@
-package com.xforceplus.wapp.service;
+package com.xforceplus.wapp.modules.claim.service;
 
+import com.xforceplus.wapp.enums.XfPreInvoiceEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,5 +61,33 @@ public class ClaimService {
         return true;
     }
 
+
+    /**
+     * 申请红字信息
+     * @return
+     */
+    public boolean applyClaimRedNotification(){
+        return true;
+    }
+
+    /**
+     * 撤销红字信息
+     * @return
+     */
+    public boolean repealClaimRedNotification(){
+        return true;
+    }
+
+
+    /**
+     * 修改预制发票状态
+     * 撤销预制发票需要撤销红字信息
+     * @param xfPreInvoiceId
+     * @param xfPreInvoiceEnum
+     * @return
+     */
+    public boolean updateClaimPreInvoice(Long xfPreInvoiceId, XfPreInvoiceEnum xfPreInvoiceEnum){
+        return true;
+    }
 
 }

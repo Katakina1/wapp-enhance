@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.service;
+package com.xforceplus.wapp.modules.agreement.service;
 
 /**
  * 协议单相关逻辑操作
