@@ -10,6 +10,7 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class CommSettlementService {
      * @param settlementId
      * @return
      */
+    @Transactional
     public void applyCancelSettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -67,6 +69,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
+    @Transactional
     public void rejectCancelSettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -93,6 +96,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
+    @Transactional
     public void agreeCancelSettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -124,6 +128,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
+    @Transactional
     public void againSplitSettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);

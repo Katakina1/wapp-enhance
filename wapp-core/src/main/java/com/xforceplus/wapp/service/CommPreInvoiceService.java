@@ -5,6 +5,7 @@ import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 公共的预制发票逻辑操作
@@ -22,6 +23,7 @@ public class CommPreInvoiceService {
      * @param redNotification
      * @return
      */
+    @Transactional
     public void fillPreInvoiceClaimRedNotification(Long proInvoiceId, String redNotification) {
         //修改预制发票表
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
