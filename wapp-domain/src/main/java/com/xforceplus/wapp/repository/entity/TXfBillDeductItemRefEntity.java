@@ -2,6 +2,8 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -41,19 +43,19 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
      * 使用额度
      */
     @TableField("use_amount")
-    private Double useAmount;
+    private BigDecimal useAmount;
 
     /**
      * 单价
      */
     @TableField("price")
-    private Double price;
+    private BigDecimal price;
 
     /**
      * 数量
      */
     @TableField("quantity")
-    private Double quantity;
+    private BigDecimal quantity;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
