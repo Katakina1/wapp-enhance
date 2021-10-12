@@ -2,6 +2,8 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -161,19 +163,19 @@ public class TXfPreInvoiceEntity extends BaseEntity {
      * 不含税金额
      */
     @TableField("amount_without_tax")
-    private Double amountWithoutTax;
+    private BigDecimal amountWithoutTax;
 
     /**
      * 税额
      */
     @TableField("tax_amount")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * 含税金额
      */
     @TableField("amount_with_tax")
-    private Double amountWithTax;
+    private BigDecimal amountWithTax;
 
     /**
      * 税率 目前整数存储，需要程序单独处理
@@ -182,7 +184,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 备注

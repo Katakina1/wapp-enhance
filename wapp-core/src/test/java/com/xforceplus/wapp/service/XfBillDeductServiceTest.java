@@ -1,8 +1,8 @@
 package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.WappApplication;
-import com.xforceplus.wapp.repository.dao.TXBillDeductDao;
-import com.xforceplus.wapp.repository.entity.TXBillDeductEntity;
+import com.xforceplus.wapp.repository.dao.TXfBillDeductDao;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,11 +17,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class XfBillDeductServiceTest {
 
     @Autowired
-    private TXBillDeductDao xfBillDeductDao;
+    private TXfBillDeductDao xfBillDeductDao;
 
     @Test
     public void testXfBillDeductList(){
-        TXBillDeductEntity xfBillDeductEntity = xfBillDeductDao.selectById(1);
+        TXfBillDeductEntity xfBillDeductEntity = xfBillDeductDao.selectById(1);
         System.out.println(xfBillDeductEntity);
     }
 }
