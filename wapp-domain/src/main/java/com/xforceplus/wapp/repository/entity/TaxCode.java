@@ -28,17 +28,7 @@ public class TaxCode {
     /**
      * 税编转换代码
      */
-    private String taxConvertCode;
-
-    /**
-     * 租户代码
-     */
-    private String tenantCode;
-
-    /**
-     * 租户名称
-     */
-    private String tenantName;
+    private String itemNo;
 
     /**
      * 税收分类编码
@@ -108,7 +98,7 @@ public class TaxCode {
     /**
      * 创建用户
      */
-    private String createUserId;
+    private Long createUser;
 
     /**
      * 创建时间
@@ -119,7 +109,7 @@ public class TaxCode {
     /**
      * 更新用户
      */
-    private String updateUserId;
+    private Long updateUser;
 
     /**
      * 更新时间
@@ -136,6 +126,16 @@ public class TaxCode {
      * 税率
      */
     private BigDecimal taxRate;
+
+    /**
+     * 规格型号
+     */
+    private String itemSpec;
+
+    /**
+     * 单位
+     */
+    private String quantityUnit;
 
     /**
      * 扩展字段1,所属分类，门店号
@@ -161,16 +161,6 @@ public class TaxCode {
      * 扩展字段5，税号
      */
     private String ext5;
-
-    /**
-     * 规格型号
-     */
-    private String itemSpec;
-
-    /**
-     * 单位
-     */
-    private String quantityUnit;
 
     private static final long serialVersionUID = 1L;
 }
