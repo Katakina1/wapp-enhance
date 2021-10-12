@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * 预制发票与红字信息申请撤销 相关操作
  */
 @Service
-public class ProInvoiceToRedNotificationService {
+public class CommRedNotificationService {
 
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
@@ -28,8 +28,8 @@ public class ProInvoiceToRedNotificationService {
      * @param applyProInvoiceRedNotificationDTO 预制发票信息
      * @return
      */
-    public boolean applyProInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO){
-        RedNotificationInfo redNotificationInfo = convertApplyProInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
+    public boolean applyPreInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO){
+        RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
         //TODO 调用外部接口申请
 
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
@@ -45,7 +45,7 @@ public class ProInvoiceToRedNotificationService {
      * @param proInvoiceId 预制发票id
      * @return
      */
-    public boolean repealProInvoiceClaimRedNotification(Long proInvoiceId){
+    public boolean repealPreInvoiceClaimRedNotification(Long proInvoiceId){
         //TODO 调用外部接口撤销
 
         return true;
@@ -57,7 +57,7 @@ public class ProInvoiceToRedNotificationService {
      * @param redNotification
      * @return
      */
-    public boolean fillProInvoiceClaimRedNotification(Long proInvoiceId,String redNotification){
+    public boolean fillPreInvoiceClaimRedNotification(Long proInvoiceId,String redNotification){
         //修改预制发票表
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         tXfPreInvoiceEntity.setId(proInvoiceId);
@@ -68,7 +68,7 @@ public class ProInvoiceToRedNotificationService {
         return true;
     }
 
-    private RedNotificationInfo convertApplyProInvoiceRedNotificationDTOToRedNotificationInfo(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO){
+    private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO){
 
         TXfPreInvoiceEntity preInvoice = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity();
         List<TXfPreInvoiceItemEntity> preInvoiceItemList = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceItemEntityList();

@@ -1,6 +1,8 @@
 package com.xforceplus.wapp.modules.claim.service;
 
 import com.xforceplus.wapp.enums.XfPreInvoiceEnum;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,6 +13,9 @@ import java.util.List;
 @Service
 public class ClaimService {
 
+    @Autowired
+    private TXfPreInvoiceDao tXfPreInvoiceDao;
+
 
     /**
      * 申请索赔单不定案
@@ -19,6 +24,9 @@ public class ClaimService {
      * @return
      */
     public boolean applyClaimVerdict(Long settlementId, List<Long> billDeductIdList){
+
+
+
         return true;
     }
 
@@ -63,15 +71,5 @@ public class ClaimService {
     }
 
 
-    /**
-     * 修改预制发票状态
-     * 撤销预制发票需要撤销红字信息
-     * @param xfPreInvoiceId
-     * @param xfPreInvoiceEnum
-     * @return
-     */
-    public boolean updateClaimPreInvoice(Long xfPreInvoiceId, XfPreInvoiceEnum xfPreInvoiceEnum){
-        return true;
-    }
 
 }
