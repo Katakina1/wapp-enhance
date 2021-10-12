@@ -83,6 +83,10 @@ public class ClaimService {
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
+
+        //TODO 需要将数据放入到问题列表清单(关联一期)
+
+
         return true;
     }
 

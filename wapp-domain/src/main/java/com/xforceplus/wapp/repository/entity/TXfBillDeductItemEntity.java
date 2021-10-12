@@ -119,20 +119,41 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("remaining_amount")
     private BigDecimal remainingAmount;
 
+    /**
+     * 税收分类编码
+     */
     @TableField("goods_tax_no")
     private String goodsTaxNo;
 
+    /**
+     * 是否享受税收优惠政策 0 否 1 是
+     */
     @TableField("tax_pre")
     private String taxPre;
 
+    /**
+     * 优惠政策内容
+     */
     @TableField("tax_pre_con")
     private String taxPreCon;
 
+    /**
+     * 零税率
+     */
     @TableField("zero_tax")
     private String zeroTax;
 
+    /**
+     * 税编简称
+     */
     @TableField("item_short_name")
     private String itemShortName;
+
+    /**
+     * 税编版本
+     */
+    @TableField("goods_no_ver")
+    private String goodsNoVer;
 
     @TableField("create_date")
     private Date createDate;
@@ -189,5 +210,7 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     public static final String ZERO_TAX = "zero_tax";
 
     public static final String ITEM_SHORT_NAME = "item_short_name";
+
+    public static final String GOODS_NO_VER = "goods_no_ver";
 
 }
