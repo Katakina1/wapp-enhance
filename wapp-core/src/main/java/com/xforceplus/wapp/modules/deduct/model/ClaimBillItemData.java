@@ -29,7 +29,7 @@ public class ClaimBillItemData {
     /**
      *供应商编码
      */
-    private String supplierCode;
+    private String sellerNo;
     /**
      *中文品名
      */
