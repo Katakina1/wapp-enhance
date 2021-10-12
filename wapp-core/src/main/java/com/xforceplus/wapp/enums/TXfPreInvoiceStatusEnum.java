@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 预制发票状态
  */
-public enum XfPreInvoiceStatusEnum {
+public enum TXfPreInvoiceStatusEnum {
 
     NO_APPLY_RED_NOTIFICATION(1,"待申请红字信息"),
     NO_UPLOAD_RED_INVOICE(2,"待开红票"),
@@ -19,7 +19,7 @@ public enum XfPreInvoiceStatusEnum {
     @Getter
     private String desc;
 
-    XfPreInvoiceStatusEnum(Integer code, String desc){
+    TXfPreInvoiceStatusEnum(Integer code, String desc){
         this.code = code;
         this.desc = desc;
     }
