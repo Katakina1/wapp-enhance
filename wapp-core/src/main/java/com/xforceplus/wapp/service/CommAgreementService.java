@@ -12,6 +12,7 @@ import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class CommAgreementService {
      * @param settlementId 结算单id
      * @return
      */
+    @Transactional
     public void repealAgreementSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
