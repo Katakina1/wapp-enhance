@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 结算单状态
  */
-public enum XfSettlementStatusEnum {
+public enum TXfSettlementStatusEnum {
 
     WAIT_CONFIRM(1,"待确认"),
     NO_UPLOAD_RED_INVOICE(2,"待开红票"),
@@ -20,7 +20,7 @@ public enum XfSettlementStatusEnum {
     @Getter
     private String desc;
 
-    XfSettlementStatusEnum(Integer code, String desc){
+    TXfSettlementStatusEnum(Integer code, String desc){
         this.code = code;
         this.desc = desc;
     }

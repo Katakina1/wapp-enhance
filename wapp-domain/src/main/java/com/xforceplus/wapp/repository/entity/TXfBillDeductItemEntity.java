@@ -5,24 +5,26 @@ import com.baomidou.mybatisplus.annotation.IdType;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
 /**
  * <p>
-    * 业务单据明细信息
-    * </p>
+ * 业务单据明细信息
+ * </p>
  *
  * @author malong@xforceplus.com
  * @since 2021-10-12
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper=true)
-@TableName(value="t_xf_bill_deduct_item")
+@ToString(callSuper = true)
+@TableName(value = "t_xf_bill_deduct_item")
 public class TXfBillDeductItemEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -117,6 +119,21 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("remaining_amount")
     private BigDecimal remainingAmount;
 
+    @TableField("goods_tax_no")
+    private String goodsTaxNo;
+
+    @TableField("tax_pre")
+    private String taxPre;
+
+    @TableField("tax_pre_con")
+    private String taxPreCon;
+
+    @TableField("zero_tax")
+    private String zeroTax;
+
+    @TableField("item_short_name")
+    private String itemShortName;
+
     @TableField("create_date")
     private Date createDate;
 
@@ -162,5 +179,15 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     public static final String UPDATE_DATE = "update_date";
 
     public static final String ID = "id";
+
+    public static final String GOODS_TAX_NO = "goods_tax_no";
+
+    public static final String TAX_PRE = "tax_pre";
+
+    public static final String TAX_PRE_CON = "tax_pre_con";
+
+    public static final String ZERO_TAX = "zero_tax";
+
+    public static final String ITEM_SHORT_NAME = "item_short_name";
 
 }

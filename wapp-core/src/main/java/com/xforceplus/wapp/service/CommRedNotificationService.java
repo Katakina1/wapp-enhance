@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.dto.ApplyProInvoiceRedNotificationDTO;
-import com.xforceplus.wapp.enums.XfPreInvoiceStatusEnum;
+import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationInfo;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationItem;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
@@ -34,7 +34,7 @@ public class CommRedNotificationService {
 
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         tXfPreInvoiceEntity.setId(applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity().getId());
-        tXfPreInvoiceEntity.setPreInvoiceStatus(XfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
+        tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
         tXfPreInvoiceEntity.setRedNotificationFlag(1);
         tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
         return true;
@@ -62,7 +62,7 @@ public class CommRedNotificationService {
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         tXfPreInvoiceEntity.setId(proInvoiceId);
         tXfPreInvoiceEntity.setRedNotificationNo(redNotification);
-        tXfPreInvoiceEntity.setPreInvoiceStatus(XfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+        tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         tXfPreInvoiceEntity.setRedNotificationFlag(2);
         tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
         return true;
