@@ -8,6 +8,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+
 /**
  * <p>
     * 
@@ -86,19 +89,19 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
      * 不含税金额
      */
     @TableField("amount_without_tax")
-    private Double amountWithoutTax;
+    private BigDecimal amountWithoutTax;
 
     /**
      * 税额
      */
     @TableField("tax_amount")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * 含税金额
      */
     @TableField("amount_with_tax")
-    private Double amountWithTax;
+    private BigDecimal amountWithTax;
 
     /**
      * 编码版本号
