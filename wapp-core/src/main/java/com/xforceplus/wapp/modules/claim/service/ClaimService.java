@@ -11,6 +11,7 @@ import java.util.List;
 @Service
 public class ClaimService {
 
+
     /**
      * 申请索赔单不定案
      * @param settlementId 结算单id
@@ -58,23 +59,6 @@ public class ClaimService {
      * @return
      */
     public boolean backOutClaimSettlement(Long settlementId, List<Long> billDeductIdList){
-        return true;
-    }
-
-
-    /**
-     * 申请红字信息
-     * @return
-     */
-    public boolean applyClaimRedNotification(){
-        return true;
-    }
-
-    /**
-     * 撤销红字信息
-     * @return
-     */
-    public boolean repealClaimRedNotification(){
         return true;
     }
 
