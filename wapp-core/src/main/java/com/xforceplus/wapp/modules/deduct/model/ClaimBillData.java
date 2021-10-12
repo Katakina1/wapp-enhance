@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.deduct.service;
+package com.xforceplus.wapp.modules.deduct.model;
 
 import lombok.Data;
 

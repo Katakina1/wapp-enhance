@@ -1,6 +1,8 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
 import com.xforceplus.wapp.enums.XFDeductionEnum;
+import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -12,6 +14,7 @@ import java.util.List;
  * @Author ZZW
  * @Date 2021/10/12 11:38
  */
+@Service
 public class DeductService {
 
     /**
@@ -30,5 +33,9 @@ public class DeductService {
      */
     public boolean receiveDone(String batchNo) {
         return true;
+    }
+
+    public boolean unlockAndCancel(String businessNo,XFDeductionEnum deductionEnum) {
+        return false;
     }
 }

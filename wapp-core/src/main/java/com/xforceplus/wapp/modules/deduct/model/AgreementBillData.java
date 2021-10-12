@@ -1,9 +1,9 @@
-package com.xforceplus.wapp.modules.deduct.service;
+package com.xforceplus.wapp.modules.deduct.model;
 
 import lombok.Data;
 
 /**
- * 类描述：接收数据清洗EPD单数据结构
+ * 类描述：接收数据清洗协议单数据结构
  *
  * @ClassName AgreementBillData
  * @Description TODO
@@ -11,7 +11,7 @@ import lombok.Data;
  * @Date 2021/10/12 10:26
  */
 @Data
-public class EPDBillData extends DeductBillBaseData {
+public class AgreementBillData extends  DeductBillBaseData {
     /**
      * 文档类型
      */
@@ -24,4 +24,9 @@ public class EPDBillData extends DeductBillBaseData {
      * 税码
      */
     private String taxCode;
+
+    /**
+     * 协议类型编码
+     */
+    private String reasonCode;
 }
