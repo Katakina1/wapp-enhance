@@ -26,11 +26,10 @@ public class CommRedNotificationService {
      * @param applyProInvoiceRedNotificationDTO 预制发票信息
      * @return
      */
-    public boolean applyPreInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
+    public void applyPreInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
         //TODO 调用外部接口申请
 
-        return true;
     }
 
     /**
@@ -39,10 +38,9 @@ public class CommRedNotificationService {
      * @param proInvoiceId 预制发票id
      * @return
      */
-    public boolean repealPreInvoiceClaimRedNotification(Long proInvoiceId) {
+    public void repealPreInvoiceClaimRedNotification(Long proInvoiceId) {
         //TODO 调用外部接口撤销
 
-        return true;
     }
 
 

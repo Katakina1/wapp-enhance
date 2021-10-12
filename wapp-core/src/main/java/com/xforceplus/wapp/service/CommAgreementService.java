@@ -40,7 +40,7 @@ public class CommAgreementService {
      * @param settlementId 结算单id
      * @return
      */
-    public boolean repealAgreementSettlement(Long settlementId) {
+    public void repealAgreementSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -93,7 +93,6 @@ public class CommAgreementService {
         //TODO
         //还原蓝票额度
         //删除蓝票关系
-        return true;
     }
 
 }

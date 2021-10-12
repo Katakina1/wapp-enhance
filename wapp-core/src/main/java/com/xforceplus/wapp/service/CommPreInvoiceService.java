@@ -22,7 +22,7 @@ public class CommPreInvoiceService {
      * @param redNotification
      * @return
      */
-    public boolean fillPreInvoiceClaimRedNotification(Long proInvoiceId, String redNotification) {
+    public void fillPreInvoiceClaimRedNotification(Long proInvoiceId, String redNotification) {
         //修改预制发票表
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         tXfPreInvoiceEntity.setId(proInvoiceId);
@@ -30,7 +30,6 @@ public class CommPreInvoiceService {
         tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         tXfPreInvoiceEntity.setRedNotificationFlag(2);
         tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
-        return true;
     }
 
 }
