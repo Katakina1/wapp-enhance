@@ -33,7 +33,7 @@ public class PageResult<T> {
     public static class Summary{
         private long total;
         private long pages;
-        private int size;
+        private long size;
     }
 
     public static <T> PageResult<T> of(long total, List<T> rows) {
