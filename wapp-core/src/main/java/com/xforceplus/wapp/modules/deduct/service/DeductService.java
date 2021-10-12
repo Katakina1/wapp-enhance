@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.deduct;
+package com.xforceplus.wapp.modules.deduct.service;
 
 import com.xforceplus.wapp.enums.XFDeductionEnum;
 
