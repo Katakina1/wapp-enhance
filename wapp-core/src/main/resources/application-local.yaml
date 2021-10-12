@@ -11,9 +11,9 @@ wapp:
       # pdf云识别
       pdf: 043F1FF00631D5E8F0261CD532D2F477
       # 申请红字信息表
-      rednotification: C4EB9D5C3138304AE2C671E24C320F3E
-      # 红字信息表结果推送
-      rednotification-result: 470E44098FDCCAF27029BEE97B4E1826
+      rednotification: FECD0B7724B239B3C5950FDBDB1D09E0
+      # 获取终端
+      terminals: 816A43875B12DE4B50EBEC29E4DA56E2
     host:
       tcp: janus-tcp-inte.xforceplus.com
       http: https://janus-tcp-inte.xforceplus.com:443
