@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.converter;
+package com.xforceplus.wapp.converters;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;

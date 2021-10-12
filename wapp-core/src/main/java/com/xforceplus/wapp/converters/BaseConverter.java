@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.overdue.converters;
+package com.xforceplus.wapp.converters;
 
 import org.mapstruct.Mapper;
 
