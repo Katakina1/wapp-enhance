@@ -4,7 +4,6 @@ import com.xforceplus.wapp.modules.claim.dto.AgreeApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.dto.ApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.dto.RejectApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
-import com.xforceplus.wapp.modules.rednotification.model.RedNotificationApplyReverseRequest;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
