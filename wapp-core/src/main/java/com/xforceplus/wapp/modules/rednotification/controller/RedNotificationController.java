@@ -1,10 +1,11 @@
 package com.xforceplus.wapp.modules.rednotification.controller;
 
 import com.xforceplus.wapp.modules.rednotification.model.*;
-import io.swagger.annotations.Api;
+import com.xforceplus.wapp.modules.rednotification.service.RedNotificationMainService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -13,6 +14,8 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/red-notification")
 public class RedNotificationController {
+    @Autowired
+    RedNotificationMainService rednotificationService;
 
     @ApiOperation(value = "红字信息申请(页面申请)", notes = "", response = Response.class, tags = {"red-notification",})
     @ApiResponses(value = {
@@ -28,8 +31,8 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/add")
     public Response<String> add(@RequestBody AddRedNotificationRequest request){
-
-        return Response.ok("成功","");
+        String taskId = rednotificationService.add(request);
+        return Response.ok("成功",taskId);
     }
 
     @ApiOperation(value = "红字信息表列表统计", notes = "", response = Response.class, tags = {"red-notification",})
@@ -124,7 +127,8 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/getTerminals")
     public Response<GetTerminalResult> getTerminals(@RequestBody QueryModel queryModel){
-        return Response.ok("成功");
+        GetTerminalResult getTerminalResult = rednotificationService.getTerminals(queryModel);
+        return Response.ok("成功",getTerminalResult);
     }
 
 
