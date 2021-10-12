@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableTransactionManagement
 @Configuration
-@MapperScan("com.xforceplus.wapp.repository")
+@MapperScan({"com.xforceplus.wapp.repository","com.xforceplus.wapp.modules.sys.dao"})
 public class MybatisPlusConfig {
 
     @Bean
