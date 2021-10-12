@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.agreement.service;
+package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -10,17 +10,16 @@ import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
-import com.xforceplus.wapp.service.CommRedNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * 协议单相关逻辑操作
+ * 协议单相关公共逻辑操作
  */
 @Service
-public class AgreementService {
+public class CommAgreementService {
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
     @Autowired
@@ -41,7 +40,7 @@ public class AgreementService {
      * @param settlementId 结算单id
      * @return
      */
-    public boolean repealAgreementSettlement(Long settlementId) {
+    public void repealAgreementSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -68,7 +67,7 @@ public class AgreementService {
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.CANCEL.getCode());
 
         //修改协议单状态
-        billDeductList.forEach(billDeduct->{
+        billDeductList.forEach(billDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
@@ -76,7 +75,7 @@ public class AgreementService {
         });
 
         //撤销预制发票
-        pPreInvoiceList.forEach(tXfPreInvoiceEntity->{
+        pPreInvoiceList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.CANCEL.getCode());
@@ -88,13 +87,12 @@ public class AgreementService {
 
         //释放结算单蓝票
         QueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new QueryWrapper();
-        tXfBillDeductInvoiceWrapper.in(TXfBillDeductInvoiceEntity.BUSINESS_NO,tXfSettlementEntity.getSettlementNo());
-        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE,2);
+        tXfBillDeductInvoiceWrapper.in(TXfBillDeductInvoiceEntity.BUSINESS_NO, tXfSettlementEntity.getSettlementNo());
+        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, 2);
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
         //TODO
         //还原蓝票额度
         //删除蓝票关系
-        return true;
     }
 
 }
