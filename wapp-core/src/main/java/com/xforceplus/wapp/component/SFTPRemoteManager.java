@@ -21,7 +21,7 @@ import static com.xforceplus.wapp.util.LocalFileSystemManager.createFolderIfNonE
  */
 @Slf4j
 @Component
-public class SFTPRemoter {
+public class SFTPRemoteManager {
     /**
      * sftp操作对象
      */
@@ -78,8 +78,9 @@ public class SFTPRemoter {
     public void openChannel() throws JSchException {
         if (isChannelConnected()) {
             return;
+        } else {
+            closeChannel();
         }
-        closeChannel();
         // 初始化端口
         if (0 > port) {
             port = 22;
@@ -147,7 +148,6 @@ public class SFTPRemoter {
             sftp.cd(path);
         } catch (SftpException e) {
             if (ChannelSftp.SSH_FX_NO_SUCH_FILE == e.id) {
-                //TODO 进入根目录了还未进入税号文件夹+年份文件夹
                 sftp.mkdir(path);
                 sftp.cd(path);
             } else {

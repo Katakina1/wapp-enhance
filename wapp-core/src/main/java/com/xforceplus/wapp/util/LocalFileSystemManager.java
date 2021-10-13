@@ -40,8 +40,7 @@ public class LocalFileSystemManager {
             }
         }
         String[] fileNames = directory.list((dir, name) -> name.contains(fileNameKeyWords));
-        Optional<String[]> fileNamesOptional = Optional.ofNullable(fileNames);
-        return fileNamesOptional.map(Arrays::asList).orElseGet(Collections::emptyList);
+        return Optional.ofNullable(fileNames).map(Arrays::asList).orElseGet(Collections::emptyList);
     }
 
     /**
