@@ -44,8 +44,8 @@ public class TXfBillDeductEntity extends BaseEntity {
     /**
      * 关联结算单编码
      */
-    @TableField("ref_sales_bill_code")
-    private String refSalesBillCode;
+    @TableField("ref_settlement_no")
+    private String refSettlementNo;
 
     /**
      * 定案、入账日期
@@ -172,7 +172,7 @@ public class TXfBillDeductEntity extends BaseEntity {
 
     public static final String BUSINESS_TYPE = "business_type";
 
-    public static final String REF_SALES_BILL_CODE = "ref_sales_bill_code";
+    public static final String REF_SETTLEMENT_NO = "ref_settlement_no";
 
     public static final String VERDICT_DATE = "verdict_date";
 
