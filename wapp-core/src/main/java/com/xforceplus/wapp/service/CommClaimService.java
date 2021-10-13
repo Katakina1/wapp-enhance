@@ -52,13 +52,13 @@ public class CommClaimService {
         }
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper1 = new QueryWrapper<>();
-        billDeductEntityWrapper1.eq(TXfBillDeductEntity.REF_SALES_BILL_CODE, tXfSettlementEntity.getSettlementNo());
+        billDeductEntityWrapper1.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         billDeductEntityWrapper1.eq(TXfBillDeductEntity.STATUS, TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
         List<TXfBillDeductEntity> billDeductList1 = tXfBillDeductDao.selectList(billDeductEntityWrapper1);
 
         //索赔单 查询已生成结算单状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper2 = new QueryWrapper<>();
-        billDeductEntityWrapper2.eq(TXfBillDeductEntity.REF_SALES_BILL_CODE, tXfSettlementEntity.getSettlementNo());
+        billDeductEntityWrapper2.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         billDeductEntityWrapper2.eq(TXfBillDeductEntity.STATUS, TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
         List<TXfBillDeductEntity> billDeductList2 = tXfBillDeductDao.selectList(billDeductEntityWrapper2);
 
@@ -96,7 +96,7 @@ public class CommClaimService {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
-            updateTXfBillDeductEntity.setRefSalesBillCode("");
+            updateTXfBillDeductEntity.setRefSettlementNo("");
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
