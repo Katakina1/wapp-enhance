@@ -20,55 +20,31 @@ import java.util.stream.Collectors;
 @Service
 public class CommRedNotificationService {
 
-    @Autowired
-    private TXfPreInvoiceDao tXfPreInvoiceDao;
-
     /**
      * 申请红字信息
+     *
      * @param applyProInvoiceRedNotificationDTO 预制发票信息
      * @return
      */
-    public boolean applyPreInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO){
+    public void applyPreInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
         //TODO 调用外部接口申请
 
-        TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
-        tXfPreInvoiceEntity.setId(applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity().getId());
-        tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
-        tXfPreInvoiceEntity.setRedNotificationFlag(1);
-        tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
-        return true;
     }
 
     /**
      * 撤销红字信息
+     *
      * @param proInvoiceId 预制发票id
      * @return
      */
-    public boolean repealPreInvoiceClaimRedNotification(Long proInvoiceId){
+    public void repealPreInvoiceClaimRedNotification(Long proInvoiceId) {
         //TODO 调用外部接口撤销
 
-        return true;
     }
 
-    /**
-     * 回填红字信息 回填红字信息
-     * @param proInvoiceId
-     * @param redNotification
-     * @return
-     */
-    public boolean fillPreInvoiceClaimRedNotification(Long proInvoiceId,String redNotification){
-        //修改预制发票表
-        TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
-        tXfPreInvoiceEntity.setId(proInvoiceId);
-        tXfPreInvoiceEntity.setRedNotificationNo(redNotification);
-        tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
-        tXfPreInvoiceEntity.setRedNotificationFlag(2);
-        tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
-        return true;
-    }
 
-    private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO){
+    private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
 
         TXfPreInvoiceEntity preInvoice = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity();
         List<TXfPreInvoiceItemEntity> preInvoiceItemList = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceItemEntityList();
@@ -98,7 +74,7 @@ public class CommRedNotificationService {
         //redNotificationMain.setPaymentTime();
         //redNotificationMain.setApplyReason();
         //redNotificationMain.setCustomerNo();
-        List<RedNotificationItem> redNotificationItemList = preInvoiceItemList.stream().map(preInvoiceItem->{
+        List<RedNotificationItem> redNotificationItemList = preInvoiceItemList.stream().map(preInvoiceItem -> {
             RedNotificationItem redNotificationItem = new RedNotificationItem();
             //TODO
             //redNotificationItem.setDetailNo();
