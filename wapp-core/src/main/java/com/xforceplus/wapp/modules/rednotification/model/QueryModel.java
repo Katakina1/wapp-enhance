@@ -45,5 +45,10 @@ public class QueryModel {
     @ApiModelProperty("红字信息表编号")
     private String redNotificationNo;
 
+    @ApiModelProperty("分页码 最小1")
+    int pageNo ;
+
+    @ApiModelProperty("分页大小")
+    int pageSize ;
 
 }
