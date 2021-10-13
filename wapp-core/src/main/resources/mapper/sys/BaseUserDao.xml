@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.modules.sys.dao.BaseUserDao">
+    <sql id="condition">
+        <if test="entity.userid != null">and u.userid = #{entity.userid}</if>
+        <if test="entity.username != null and entity.username.trim() != ''">and u.username like
+            concat(concat('%',#{entity.username}),'%')
+        </if>
+        <if test="entity.usercode != null and entity.usercode.trim() != ''">and u.usercode like
+            concat(concat('%',#{entity.usercode}),'%')
+        </if>
+        <if test="entity.password != null">and u.password = #{entity.password}</if>
+        <if test="entity.loginname != null and entity.loginname != ''">and u.loginname = #{entity.loginname}</if>
+        <if test="entity.sex != null">and u.sex = #{entity.sex}</if>
+        <if test="entity.birthday != null">and u.birthday = #{entity.birthday}</if>
+        <if test="entity.orgid != null">and u.orgid = #{entity.orgid}</if>
+        <if test="entity.email != null">and u.email = #{entity.email}</if>
+        <if test="entity.phone != null">and u.phone = #{entity.phone}</if>
+        <if test="entity.cellphone != null">and u.cellphone = #{entity.cellphone}</if>
+        <if test="entity.address != null">and u.address = #{entity.address}</if>
+        <if test="entity.usertype != null">and u.usertype = #{entity.usertype}</if>
+        <if test="entity.createTime != null">and u.create_time = #{entity.createTime}</if>
+        <if test="entity.createBy != null">and u.create_by = #{entity.createBy}</if>
+        <if test="entity.lastModifyTime != null">and u.last_modify_time = #{entity.lastModifyTime}</if>
+        <if test="entity.lastModifyBy != null">and u.last_modify_by = #{entity.lastModifyBy}</if>
+        <if test="entity.status != null">and u.status = #{entity.status}</if>
+        <if test="entity.plainpassword != null">and u.plainpassword = #{entity.plainpassword}</if>
+        <if test="entity.bankName != null">and u.bank_name = #{entity.bankName}</if>
+        <if test="entity.bankAccount != null">and u.bank_account = #{entity.bankAccount}</if>
+        <if test="entity.invoiceAgingDate != null">and u.invoice_aging_date = #{entity.invoiceAgingDate}</if>
+        <if test="entity.depno != null">and u.depno = #{entity.depno}</if>
+        <if test="entity.pwdModifyTime != null">and u.pwd_modify_time = #{entity.pwdModifyTime}</if>
+        <if test="entity.pwdWrongCount != null">and u.pwd_wrong_count = #{entity.pwdWrongCount}</if>
+        <if test="entity.lockTime != null">and u.lock_time = #{entity.lockTime}</if>
+        <if test="entity.depname != null">and u.depname = #{entity.depname}</if>
+        <if test="entity.regionno != null">and u.regionno = #{entity.regionno}</if>
+        <if test="entity.postcode != null">and u.postcode = #{entity.postcode}</if>
+        <if test="entity.fax != null">and u.fax = #{entity.fax}</if>
+        <if test="entity.orgtype != null">and u.orgtype = #{entity.orgtype}</if>
+        <if test="entity.bankCode != null">and u.bank_code = #{entity.bankCode}</if>
+        <if test="entity.bususername != null">and u.bususername = #{entity.bususername}</if>
+        <if test="entity.busphone != null">and u.busphone = #{entity.busphone}</if>
+        <if test="entity.busemail != null">and u.busemail = #{entity.busemail}</if>
+        <if test="entity.finusername != null">and u.finusername = #{entity.finusername}</if>
+        <if test="entity.finphone != null">and u.finphone = #{entity.finphone}</if>
+        <if test="entity.finemail != null">and u.finemail = #{entity.finemail}</if>
+        <if test="entity.discount != null">and u.discount = #{entity.discount}</if>
+        <if test="entity.extf0 != null">and u.extf0 = #{entity.extf0}</if>
+        <if test="entity.extf1 != null">and u.extf1 = #{entity.extf1}</if>
+        <if test="entity.extf2 != null">and u.extf2 = #{entity.extf2}</if>
+        <if test="entity.extf3 != null">and u.extf3 = #{entity.extf3}</if>
+        <if test="entity.extf4 != null">and u.extf4 = #{entity.extf4}</if>
+        <if test="entity.bind==1">
+            and u.userid IN (SELECT DISTINCT ur.userid FROM t_ac_user_role ur WHERE ur.roleid=#{entity.roleId})
+        </if>
+        <if test="entity.bind==0">
+            and u.userid NOT IN (SELECT DISTINCT ur.userid FROM t_ac_user_role ur WHERE ur.roleid=#{entity.roleId})
+        </if>
+        <if test="entity.ids != null">
+            and u.orgid IN
+            <foreach item="items" collection="entity.ids" open="(" separator="," close=")">
+                #{items}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="queryObject" resultType="com.xforceplus.wapp.modules.sys.entity.UserEntity">
+		/**mycat:schema=${schemaLabel}*/select u.*,o.link_name schemaLabel,o.company company
+		from t_ac_user u WITH(NOLOCK)
+		left join t_ac_org o WITH(NOLOCK) on o.orgid=u.orgid
+		where userid = #{userId}
+	</select>
+
+    <select id="queryList" resultType="com.xforceplus.wapp.modules.sys.entity.UserEntity">
+        /**mycat:schema=${schemaLabel}*/
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.userid asc) AS rownumber, o.*
+            FROM(
+        </if>
+        select u.*, (select d.orgname from t_ac_org d WITH(NOLOCK) where d.orgid = u.orgid) as
+        orgName
+        FROM t_ac_user u WITH(NOLOCK)
+        <where>
+            <include refid="condition"/>
+        </where>
+        <if test="entity.offset == null and entity.limit == null">
+        order by u.userid asc
+        </if>
+        <if test="entity.offset != null and entity.limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{entity.offset}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_user u WITH(NOLOCK)
+        <where>
+            <include refid="condition"/>
+        </where>
+    </select>
+
+    <select id="userTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*) from t_ac_user WITH(NOLOCK)
+        <where>
+            <if test="orgIds != null">
+                orgid IN
+                <foreach item="items" collection="orgIds" open="(" separator="," close=")">
+                    #{items}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--数据权限管理，查询用户汇总信息-->
+    <select id="queryDataAccessList" resultType="com.xforceplus.wapp.modules.sys.entity.UserEntity">
+        <if test="entity.offset != null and entity.limit != null">
+            SELECT
+            TOP (#{entity.limit}) A.*
+            FROM
+            (
+            SELECT
+            row_number() OVER (ORDER BY o.userid asc) AS rownumber, o.*
+            FROM(
+        </if>
+        select u.*, (select d.orgname from t_ac_org d WITH(NOLOCK) where d.orgid = u.orgid) as
+        orgName,
+        (select d.company from t_ac_org d WITH(NOLOCK) where d.orgid = u.orgid) as company
+        FROM t_ac_user u WITH(NOLOCK) LEFT JOIN t_ac_org t WITH(NOLOCK) ON u.orgid=t.orgid
+        WHERE t.orgtype!=#{entity.orgtype}
+        <if test="entity.orgIdStr != null and entity.orgIdStr != ''">
+            and CHARINDEX( convert(varchar(7),u.orgid),#{entity.orgIdStr})>0
+        </if>
+        <if test="entity.username!=null and entity.username.trim()!=''">
+            AND u.username like concat(concat('%',#{entity.username}),'%')
+        </if>
+        <if test="entity.loginname!=null and entity.loginname.trim()!=''">
+            AND u.loginname like concat(concat('%',#{entity.loginname}),'%')
+        </if>
+        <if test="entity.offset == null and entity.limit == null">
+        order by u.userid asc
+        </if>
+        <if test="entity.offset != null and entity.limit != null">
+            )as o)as A
+            WHERE
+            rownumber > #{entity.offset}
+        </if>
+    </select>
+
+    <select id="queryDataAccessTotal" resultType="int">
+        /**mycat:schema=${schemaLabel}*/ select count(*)
+        FROM t_ac_user u WITH(NOLOCK) LEFT JOIN t_ac_org t WITH(NOLOCK) ON u.orgid=t.orgid
+        WHERE t.orgtype!=#{entity.orgtype}
+        <if test="entity.orgIdStr != null and entity.orgIdStr != ''">
+            and CHARINDEX( convert(varchar(7),u.orgid),#{entity.orgIdStr})>0
+        </if>
+        <if test="entity.username!=null and entity.username.trim()!=''">
+            AND u.username like concat(concat('%',#{entity.username}),'%')
+        </if>
+        <if test="entity.loginname!=null and entity.loginname.trim()!=''">
+            AND u.loginname like concat(concat('%',#{entity.loginname}),'%')
+        </if>
+    </select>
+
+    <!-- 查询用户的所有菜单ID -->
+    <select id="queryAllMenuId" resultType="long">
+		/**mycat:schema=${schemaLabel}*/ select distinct rm.menuid from t_ac_user_role ur
+		LEFT JOIN t_ac_role_menu rm on ur.roleid = rm.roleid
+		where ur.userid = #{userId}
+	</select>
+
+    <select id="queryByUserName" resultType="com.xforceplus.wapp.modules.sys.entity.UserEntity">
+		/**mycat:schema=${schemaLabel}*/ select * from t_ac_user WITH(NOLOCK) where loginname = #{username}
+	</select>
+
+    <insert id="save" parameterType="com.xforceplus.wapp.modules.sys.entity.UserEntity" useGeneratedKeys="true"
+            keyProperty="entity.userid">
+		/**mycat:schema=${schemaLabel}*/ insert into t_ac_user WITH(ROWLOCK)
+		(
+		<if test="entity.userid !=null">
+		userid,
+        </if>
+		username,
+		usercode,
+		password,
+		loginname,
+		sex,
+		birthday,
+		email,
+		orgid,
+		phone,
+		cellphone,
+		address,
+		usertype,
+		create_time,
+		create_by,
+		last_modify_time,
+		last_modify_by,
+		status,
+		plainpassword,
+		bank_name,
+		bank_account,
+		invoice_aging_date,
+		depno,
+		pwd_modify_time,
+		pwd_wrong_count,
+		lock_time,
+		depname,
+		regionno,
+		postcode,
+		fax,
+		orgtype,
+		bank_code,
+		bususername,
+		busphone,
+		busemail,
+		finusername,
+		finphone,
+		finemail,
+		discount,
+		extf0,
+		extf1,
+		extf2,
+		extf3,
+		extf4
+		)
+		values
+		(
+        <if test="entity.userid !=null">
+		#{entity.userid},
+        </if>
+		#{entity.username},
+		#{entity.usercode},
+		#{entity.password},
+		#{entity.loginname},
+		#{entity.sex},
+		#{entity.birthday},
+		#{entity.email},
+		#{entity.orgid},
+		#{entity.phone},
+		#{entity.cellphone},
+		#{entity.address},
+		#{entity.usertype},
+		CONVERT(datetime,#{entity.createTime}),
+		#{entity.createBy},
+		CONVERT(datetime,#{entity.lastModifyTime}),
+		#{entity.lastModifyBy},
+		#{entity.status},
+		#{entity.plainpassword},
+		#{entity.bankName},
+		#{entity.bankAccount},
+		#{entity.invoiceAgingDate},
+		#{entity.depno},
+		CONVERT(datetime,#{entity.pwdModifyTime}),
+		#{entity.pwdWrongCount},
+		CONVERT(datetime,#{entity.lockTime}),
+		#{entity.depname},
+		#{entity.regionno},
+		#{entity.postcode},
+		#{entity.fax},
+		#{entity.orgtype},
+		#{entity.bankCode},
+		#{entity.bususername},
+		#{entity.busphone},
+		#{entity.busemail},
+		#{entity.finusername},
+		#{entity.finphone},
+		#{entity.finemail},
+		#{entity.discount},
+		#{entity.extf0},
+		#{entity.extf1},
+		#{entity.extf2},
+		#{entity.extf3},
+		#{entity.extf4}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.xforceplus.wapp.modules.sys.entity.UserEntity">
+        /**mycat:schema=${schemaLabel}*/ update t_ac_user WITH(ROWLOCK)
+        <set>
+
+            <if test="entity.username != null and entity.username != ''">username = #{entity.username},</if>
+            <if test="entity.usercode != null and entity.usercode != ''">usercode = #{entity.usercode},</if>
+            <if test="entity.password != null and entity.password != ''">password = #{entity.password},</if>
+            <if test="entity.plainpassword != null and entity.plainpassword != ''">plainpassword = #{entity.plainpassword},</if>
+            <if test="entity.loginname != null">loginname = #{entity.loginname},</if>
+            <if test="entity.sex != null">sex = #{entity.sex},</if>
+            <if test="entity.birthday != null">birthday = #{entity.birthday},</if>
+            <if test="entity.email != null">email = #{entity.email},</if>
+            <if test="entity.orgid != null">orgid = #{entity.orgid},</if>
+            <if test="entity.phone != null">phone = #{entity.phone},</if>
+            <if test="entity.cellphone != null">cellphone = #{entity.cellphone},</if>
+            <if test="entity.address != null">address = #{entity.address},</if>
+            <if test="entity.usertype != null">usertype = #{entity.usertype},</if>
+            <if test="entity.lastModifyTime != null">last_modify_time = #{entity.lastModifyTime},</if>
+            <if test="entity.lastModifyBy != null">last_modify_by = #{entity.lastModifyBy},</if>
+            <if test="entity.status != null">status = #{entity.status},</if>
+            <if test="entity.bankName != null">bank_name = #{entity.bankName},</if>
+            <if test="entity.bankAccount != null">bank_account = #{entity.bankAccount},</if>
+            <if test="entity.invoiceAgingDate != null">invoice_aging_date = #{entity.invoiceAgingDate},</if>
+            <if test="entity.depno != null">depno = #{entity.depno},</if>
+            <if test="entity.pwdWrongCount != null">pwd_wrong_count = #{entity.pwdWrongCount},</if>
+            <if test="entity.lockTime != null">lock_time = #{entity.lockTime},</if>
+            <if test="entity.depname != null">depname = #{entity.depname},</if>
+            <if test="entity.regionno != null">regionno = #{entity.regionno},</if>
+            <if test="entity.postcode != null">postcode = #{entity.postcode},</if>
+            <if test="entity.fax != null">fax = #{entity.fax},</if>
+            <if test="entity.orgtype != null">orgtype = #{entity.orgtype},</if>
+            <if test="entity.bankCode != null">bank_code = #{entity.bankCode},</if>
+            <if test="entity.bususername != null">bususername = #{entity.bususername},</if>
+            <if test="entity.busphone != null">busphone = #{entity.busphone},</if>
+            <if test="entity.busemail != null">busemail = #{entity.busemail},</if>
+            <if test="entity.finusername != null">finusername = #{entity.finusername},</if>
+            <if test="entity.finphone != null">finphone = #{entity.finphone},</if>
+            <if test="entity.finemail != null">finemail = #{entity.finemail},</if>
+            <if test="entity.discount != null">discount = #{entity.discount},</if>
+            <if test="entity.extf0 != null">extf0 = #{entity.extf0},</if>
+            <if test="entity.extf1 != null">extf1 = #{entity.extf1},</if>
+            <if test="entity.extf2 != null">extf2 = #{entity.extf2},</if>
+            <if test="entity.extf3 != null">extf3 = #{entity.extf3},</if>
+            <if test="entity.extf4 != null">extf4 = #{entity.extf4},</if>
+        </set>
+        where userid = #{entity.userid}
+    </update>
+
+    <update id="delete">
+		/**mycat:schema=${schemaLabel}*/ delete from  t_ac_user WITH(ROWLOCK) where userid = #{userId}
+	</update>
+
+    <update id="updatePassword" parameterType="map">
+		/**mycat:schema=${schemaLabel}*/ update t_ac_user WITH(ROWLOCK) set plainpassword = #{newPassword} ,  password = #{encodePassword} , pwd_modify_time = CONVERT(datetime,GETDATE())
+		where userid = #{userId} and plainpassword = #{password}
+	</update>
+
+    <delete id="deleteBatch" parameterType="int">
+        /**mycat:schema=${schemaLabel}*/ delete from t_ac_user WITH(ROWLOCK) where userid in
+        <foreach item="id" collection="userids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getOrgtype" resultType="java.lang.String">
+        select orgtype from t_ac_org WITH(NOLOCK) where orgid=(select orgid from t_ac_user WITH(NOLOCK) where userid=#{userid})
+    </select>
+
+    <select id="getOrgtypes" resultType="java.lang.String">
+        select orgcode from t_ac_org WITH(NOLOCK) where orgid=(select orgid from t_ac_user WITH(NOLOCK) where userid=#{userid})
+    </select>
+
+</mapper>

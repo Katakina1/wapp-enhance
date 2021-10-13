@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 /**
- * @author masp mashaopeng@xforceplus.com
+ * @author mashaopeng@xforceplus.com
  */
 @Component
 public class MybatisObjectHandler implements MetaObjectHandler {

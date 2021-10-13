@@ -2,25 +2,29 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
 /**
  * <p>
-    * 业务单据信息
-    * </p>
+ * 业务单据信息
+ * </p>
  *
  * @author malong@xforceplus.com
  * @since 2021-10-12
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper=true)
-@TableName(value="t_xf_bill_deduct")
+@ToString(callSuper = true)
+@TableName(value = "t_xf_bill_deduct")
 public class TXfBillDeductEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -59,13 +63,13 @@ public class TXfBillDeductEntity extends BaseEntity {
      * 所扣发票
      */
     @TableField("deduct_invoice")
-    private Double deductInvoice;
+    private String deductInvoice;
 
     /**
      * 税率
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 协议类型编码
@@ -116,10 +120,10 @@ public class TXfBillDeductEntity extends BaseEntity {
     private String remark;
 
     /**
-     * 状态
-11待匹配明细;12待确认税编;13待确认税差;14待匹配蓝票;15已匹配;16待审核;17已撤销
-21待匹配;22已匹配;23已锁定;24已取消
-31待匹配;32已匹配
+     * 业务单状态
+     * 索赔单:101待匹配明细;102待确认税编;103待确认税差;104待匹配蓝票;105:待匹配结算单;106已匹配结算单;107待审核;108已撤销
+     * 协议单:201待匹配结算单;202已匹配结算单;203已锁定;204已取消
+     * EPD单:301待匹配结算单;302已匹配结算单
      */
     @TableField("status")
     private Integer status;
@@ -146,13 +150,13 @@ public class TXfBillDeductEntity extends BaseEntity {
      * 不含税金额
      */
     @TableField("amount_without_tax")
-    private Double amountWithoutTax;
+    private BigDecimal amountWithoutTax;
 
     /**
      * 含税金额
      */
     @TableField("amount_with_tax")
-    private Double amountWithTax;
+    private BigDecimal amountWithTax;
 
     @TableField("update_date")
     private Date updateDate;
