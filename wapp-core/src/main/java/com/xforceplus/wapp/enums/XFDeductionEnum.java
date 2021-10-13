@@ -9,7 +9,7 @@ package com.xforceplus.wapp.enums;
  * @Date 2021/10/12 11:47
  */
 public enum  XFDeductionEnum {
-    CLAIM_BILL(1,"") ,AGREEMENT_BILL(2,""),EPD_BILL(3,"");
+    CLAIM_BILL(1,"索赔单") ,AGREEMENT_BILL(2,""),EPD_BILL(3,"");
     private Integer type;
     private String des;
 

@@ -12,16 +12,23 @@ import lombok.Data;
  */
 @Data
 public class EPDBillData extends DeductBillBaseData {
-    /**
-     * 文档类型
-     */
-    private String documentType;
-    /**
-     * 文档编码
-     */
-    private String documentNo;
+
     /**
      * 税码
      */
     private String taxCode;
+
+    /**
+     * 供应商6D
+     */
+    private String memo;
+
+    /**
+     *协议类型编码
+     */
+    private String reasonCode;
+    /**
+     * 协议号
+     */
+    private String reference;
 }

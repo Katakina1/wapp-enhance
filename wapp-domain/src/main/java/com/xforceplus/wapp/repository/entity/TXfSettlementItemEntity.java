@@ -154,11 +154,11 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
-    @TableField("create_time")
-    private Date createTime;
-
     @TableField("update_user")
     private Long updateUser;
+
+    @TableField("create_time")
+    private Date createTime;
 
     @TableField("remark")
     private String remark;
@@ -211,9 +211,9 @@ public class TXfSettlementItemEntity extends BaseEntity {
 
     public static final String ID = "id";
 
-    public static final String CREATE_TIME = "create_time";
-
     public static final String UPDATE_USER = "update_user";
+
+    public static final String CREATE_TIME = "create_time";
 
     public static final String REMARK = "remark";
 

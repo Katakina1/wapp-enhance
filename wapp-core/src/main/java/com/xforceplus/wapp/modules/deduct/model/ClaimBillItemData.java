@@ -71,7 +71,7 @@ public class ClaimBillItemData {
      */
     private String gategoryNbr;
     /**
-     *剩余额度
+     *不含税金额
      */
-    private BigDecimal remainingAmount;
+    private BigDecimal amountWithoutTax;
 }

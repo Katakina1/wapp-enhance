@@ -20,13 +20,17 @@ public class AgreementBillData extends  DeductBillBaseData {
      * 文档编码
      */
     private String documentNo;
-    /**
-     * 税码
-     */
-    private String taxCode;
 
     /**
      * 协议类型编码
      */
     private String reasonCode;
+    /**
+     * 供应商6D
+     */
+    private String memo;
+    /**
+     * 协议号
+     */
+    private String reference;
 }

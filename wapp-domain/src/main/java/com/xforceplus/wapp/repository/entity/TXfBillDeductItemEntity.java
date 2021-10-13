@@ -2,6 +2,8 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -77,13 +79,13 @@ public class TXfBillDeductItemEntity extends BaseEntity {
      * 单位
      */
     @TableField("unit")
-    private Double unit;
+    private String unit;
 
     /**
      * 税率
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 项目数量
@@ -113,7 +115,7 @@ public class TXfBillDeductItemEntity extends BaseEntity {
      * 剩余额度
      */
     @TableField("remaining_amount")
-    private Double remainingAmount;
+    private BigDecimal remainingAmount;
 
     @TableField("create_date")
     private Date createDate;
