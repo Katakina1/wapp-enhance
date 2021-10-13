@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import static java.util.Comparator.comparing;
 
 /**
- * @author masp mashaopeng@xforceplus.com
+ * @author mashaopeng@xforceplus.com
  */
 @Slf4j
 @Service

@@ -10,15 +10,14 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * t_xf_taxcode_config
- * @author 
+ * @author mashaopeng@xforceplus.com
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName(value="t_xf_tax_code")
-public class TaxCode {
+@TableName(value = "t_xf_tax_code")
+public class TaxCodeEntity {
     /**
      * 主键
      */
@@ -96,28 +95,6 @@ public class TaxCode {
     private String smallCategoryCode;
 
     /**
-     * 创建用户
-     */
-    private Long createUser;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private String createTime;
-
-    /**
-     * 更新用户
-     */
-    private Long updateUser;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
      * 0:待处理 1:待确认 2:已生效
      */
     private String status;
@@ -161,6 +138,28 @@ public class TaxCode {
      * 扩展字段5，税号
      */
     private String ext5;
+
+    /**
+     * 创建用户
+     */
+    private Long createUser;
+
+    /**
+     * 创建时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private String createTime;
+
+    /**
+     * 更新用户
+     */
+    private Long updateUser;
+
+    /**
+     * 更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 
     private static final long serialVersionUID = 1L;
 }

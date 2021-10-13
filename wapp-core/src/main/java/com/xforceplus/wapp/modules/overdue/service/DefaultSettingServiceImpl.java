@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
- * @author masp mashaopeng@xforceplus.com
+ * @author mashaopeng@xforceplus.com
  */
 @Slf4j
 @Service
