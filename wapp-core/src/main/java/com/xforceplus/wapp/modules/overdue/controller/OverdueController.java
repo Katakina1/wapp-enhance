@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * @author masp mashaopeng@xforceplus.com
+ * @author mashaopeng@xforceplus.com
  */
 @Slf4j
 @RestController
