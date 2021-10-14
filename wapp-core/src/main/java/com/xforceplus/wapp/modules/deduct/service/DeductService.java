@@ -37,7 +37,7 @@ import java.util.function.Function;
  */
 @Service
 @Slf4j
-public class DeductService extends ServiceImpl {
+public class DeductService  {
     @Autowired
     private TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
