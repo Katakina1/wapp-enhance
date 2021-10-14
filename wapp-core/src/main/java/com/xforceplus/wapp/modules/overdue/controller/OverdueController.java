@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.overdue.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.overdue.converters.OverdueConverter;
@@ -13,22 +15,21 @@ import com.xforceplus.wapp.repository.entity.OverdueEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.vavr.Tuple2;
 import io.vavr.control.Either;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 /**
  * @author mashaopeng@xforceplus.com
  */
+@Api(tags = "超期配置")
 @Slf4j
 @RestController
-@Api(tags = "超期配置")
+@RequestMapping(EnhanceApi.BASE_PATH + "/v1")
 public class OverdueController {
     private final DefaultSettingServiceImpl defaultSettingService;
     private final OverdueServiceImpl overdueService;
@@ -47,9 +48,9 @@ public class OverdueController {
                                              @ApiParam("供应商名称") @RequestParam(required = false) String sellerName,
                                              @ApiParam("供应商税号") @RequestParam(required = false) String sellerTaxNo) {
         long start = System.currentTimeMillis();
-        Tuple2<List<Overdue>, Long> page = overdueService.page(current, size, sellerName, sellerTaxNo);
+        val page = overdueService.page(current, size, sellerName, sellerTaxNo);
         log.info("超期配置查询,耗时:{}ms", System.currentTimeMillis() - start);
-        return R.ok(PageResult.of(page._2, page._1));
+        return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
     }
 
     @ApiOperation("更新超期配置")

@@ -12,7 +12,8 @@ import org.apache.ibatis.annotations.Mapper;
 *
 * @author malong@xforceplus.com
 * @since 2021-10-11
-*/
+ */
+@Mapper
 public interface TXfRedNotificationDetailDao extends BaseMapper<TXfRedNotificationDetailEntity> {
 
 }

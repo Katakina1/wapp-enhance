@@ -36,6 +36,9 @@ public class R<T> {
         r.result = result;
         return r;
     }
+    public static <T> R<T> ok() {
+        return ok(null);
+    }
 
     public static <T> R<T> ok(T result, String message) {
         R<T> r = ok(result);

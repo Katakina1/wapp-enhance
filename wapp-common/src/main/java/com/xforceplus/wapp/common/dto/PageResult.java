@@ -48,4 +48,18 @@ public class PageResult<T> {
         pageResp.setSummary(summary);
         return pageResp;
     }
+    public static <T> PageResult<T> of(List<T> rows, long total,long pages,long size) {
+        PageResult<T> pageResp = new PageResult<>();
+        Summary summary = new Summary();
+        summary.setTotal(total);
+        summary.setPages(pages);
+        summary.setSize(size);
+        if (rows == null) {
+            pageResp.setRows(Collections.emptyList());
+        } else {
+            pageResp.setRows(rows);
+        }
+        pageResp.setSummary(summary);
+        return pageResp;
+    }
 }
