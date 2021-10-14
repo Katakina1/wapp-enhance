@@ -15,8 +15,17 @@ public interface RedNotificationMainMapper {
 
     TXfRedNotificationEntity mainInfoToEntity(RedNotificationMain rednotificationMain);
 
+    @InheritInverseConfiguration(name = "mainInfoToEntity")
+    RedNotificationMain entityToMainInfo(TXfRedNotificationEntity redNotificationEntity);
+
+    List<RedNotificationMain> entityToMainInfoList(List<TXfRedNotificationEntity> redNotificationEntityList);
+
     TXfRedNotificationDetailEntity itemInfoToEntity(RedNotificationItem redNotificationItem);
 
     List<TXfRedNotificationDetailEntity> itemInfoToEntityList(List<RedNotificationItem> redNotificationItemList);
+
+    @InheritInverseConfiguration(name = "itemInfoToEntityList")
+    List<RedNotificationItem> entityToItemInfoList(List<TXfRedNotificationDetailEntity> redNotificationEntityList);
+
 
 }
