@@ -1,7 +1,10 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
 
+import com.xforceplus.phoenix.split.model.PreInvoiceMain;
 import com.xforceplus.phoenix.split.model.SplitPreInvoiceInfo;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,7 @@ import java.util.List;
  * @Date 2021/10/12 13:58
  */
 @Service
+@Slf4j
 public class PreinvoiceService {
 
     /**
@@ -35,7 +39,7 @@ public class PreinvoiceService {
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo,String items, String sellerNo) {
+    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, String sellerNo, List<TXfPreInvoiceItemEntity> items) {
         return null;
     }
 
