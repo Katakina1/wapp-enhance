@@ -21,7 +21,7 @@ import java.util.List;
 * @author malong@xforceplus.com
 * @since 2021-10-12
 */
-public interface TXfBillDeductItemExtDao extends TXfBillDeductItemDao {
+public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEntity> {
 
     /**
      * 查询折扣明细（）
