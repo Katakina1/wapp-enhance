@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.overdue.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.overdue.converters.OverdueConverter;
@@ -13,7 +15,6 @@ import com.xforceplus.wapp.repository.entity.OverdueEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.vavr.Tuple2;
 import io.vavr.control.Either;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,14 +23,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
 /**
  * @author mashaopeng@xforceplus.com
  */
+@Api(tags = "超期配置")
 @Slf4j
 @RestController
-@Api(tags = "超期配置")
+@RequestMapping(EnhanceApi.BASE_PATH + "/v1")
 public class OverdueController {
     private final DefaultSettingServiceImpl defaultSettingService;
     private final OverdueServiceImpl overdueService;

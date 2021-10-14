@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.taxcode.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
  * @author mashaopeng@xforceplus.com
  */
 @Slf4j
-@RestController
+@RestController(EnhanceApi.BASE_PATH + "/v1")
 @Api(tags = "进项税编管理")
 public class TaxCodeController {
     private final TaxCodeServiceImpl taxCodeService;
