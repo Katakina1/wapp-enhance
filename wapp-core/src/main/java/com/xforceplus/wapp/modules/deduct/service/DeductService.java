@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xforceplus.wapp.enums.XFDeductionEnum;
+import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.ClaimBillItemData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
@@ -65,7 +65,7 @@ public class DeductService extends ServiceImpl {
      * @param deductionEnum
      * @return
      */
-    public boolean receiveData(List<DeductBillBaseData> deductBillBaseDataList, String batchNo, XFDeductionEnum deductionEnum) {
+    public boolean receiveData(List<DeductBillBaseData> deductBillBaseDataList, String batchNo, XFDeductionBusinessTypeEnum deductionEnum) {
         Optional<DeductionHandleEnum> optionalDedcutionHandleEnum = DeductionHandleEnum.getHandleEnum( deductionEnum);
         if (!optionalDedcutionHandleEnum.isPresent()) {
             //TODO 异常抛出
@@ -84,7 +84,7 @@ public class DeductService extends ServiceImpl {
      * @param batchNo
      * @return
      */
-    public boolean receiveDone(String batchNo,XFDeductionEnum deductionEnum) {
+    public boolean receiveDone(String batchNo, XFDeductionBusinessTypeEnum deductionEnum) {
         return true;
     }
 
@@ -94,7 +94,7 @@ public class DeductService extends ServiceImpl {
      * @param deductionEnum
      * @return
      */
-    public boolean unlockAndCancel(String businessNo,XFDeductionEnum deductionEnum) {
+    public boolean unlockAndCancel(String businessNo, XFDeductionBusinessTypeEnum deductionEnum) {
         return false;
     }
 
@@ -105,7 +105,7 @@ public class DeductService extends ServiceImpl {
      * @param itemNo 商品编码
      * @return
      */
-    public boolean matchClaimBill(String businessNo, XFDeductionEnum deductionEnum, String itemNo) {
+    public boolean matchClaimBill(String businessNo, XFDeductionBusinessTypeEnum deductionEnum, String itemNo) {
         return false;
     }
 
@@ -116,7 +116,7 @@ public class DeductService extends ServiceImpl {
      * @param itemNo 商品编码
      * @return
      */
-    public boolean matchTaxCode(String businessNo, XFDeductionEnum deductionEnum, String itemNo) {
+    public boolean matchTaxCode(String businessNo, XFDeductionBusinessTypeEnum deductionEnum, String itemNo) {
         return false;
     }
 
@@ -135,7 +135,7 @@ public class DeductService extends ServiceImpl {
      *  合并协议单、EPD
      * @return
      */
-    public boolean mergeBill(XFDeductionEnum deductionEnum) {
+    public boolean mergeBill(XFDeductionBusinessTypeEnum deductionEnum) {
         return false;
     }
 
@@ -143,16 +143,16 @@ public class DeductService extends ServiceImpl {
      *  协议单、EPD 索赔单 合并结算单, 合并2年内的未匹配的单子
      * @return
      */
-    public boolean mergeSettlement(XFDeductionEnum deductionEnum) {
+    public boolean mergeSettlement(XFDeductionBusinessTypeEnum deductionEnum) {
         return false;
     }
 
     enum DeductionHandleEnum {
-        CLAIM_BILL(XFDeductionEnum.CLAIM_BILL, x -> {
+        CLAIM_BILL(XFDeductionBusinessTypeEnum.CLAIM_BILL, x -> {
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(  x);
             return tXfBillDeductEntity;
         }) ,
-        AGREEMENT_BILL(XFDeductionEnum.AGREEMENT_BILL,x -> {
+        AGREEMENT_BILL(XFDeductionBusinessTypeEnum.AGREEMENT_BILL, x -> {
             AgreementBillData tmp = (AgreementBillData) x;
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(  tmp);
             tXfBillDeductEntity.setAgreementDocumentNumber(tmp.getDocumentNo());
@@ -162,7 +162,7 @@ public class DeductService extends ServiceImpl {
             tXfBillDeductEntity.setAgreementReference(tmp.getReference());
              return tXfBillDeductEntity;
         }),
-        EPD_BILL(XFDeductionEnum.EPD_BILL,x -> {
+        EPD_BILL(XFDeductionBusinessTypeEnum.EPD_BILL, x -> {
             EPDBillData tmp = (EPDBillData) x;
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(  tmp);
             tXfBillDeductEntity.setAgreementMemo(tmp.getMemo());
@@ -172,18 +172,18 @@ public class DeductService extends ServiceImpl {
             return tXfBillDeductEntity;
         });
 
-        private XFDeductionEnum deductionEnum;
+        private XFDeductionBusinessTypeEnum deductionEnum;
         private Function<DeductBillBaseData,   TXfBillDeductEntity> function;
 
-        DeductionHandleEnum(XFDeductionEnum deductionEnum, Function<DeductBillBaseData,   TXfBillDeductEntity> function) {
+        DeductionHandleEnum(XFDeductionBusinessTypeEnum deductionEnum, Function<DeductBillBaseData,   TXfBillDeductEntity> function) {
             this.deductionEnum = deductionEnum;
             this.function = function;
         }
 
-        public static Optional <DeductionHandleEnum> getHandleEnum(XFDeductionEnum xfDeductionEnum) {
+        public static Optional <DeductionHandleEnum> getHandleEnum(XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
             DeductionHandleEnum[] dedcutionHandleEnums = DeductionHandleEnum.values();
             for (DeductionHandleEnum tmp : dedcutionHandleEnums) {
-                if (tmp.deductionEnum == xfDeductionEnum) {
+                if (tmp.deductionEnum == xfDeductionBusinessTypeEnum) {
                     return Optional.of(tmp);
                 }
             }
