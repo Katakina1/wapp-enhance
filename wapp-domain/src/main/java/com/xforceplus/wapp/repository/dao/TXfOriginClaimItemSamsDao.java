@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-10-13
+* @since 2021-10-14
 */
 public interface TXfOriginClaimItemSamsDao extends BaseMapper<TXfOriginClaimItemSamsEntity> {
 
