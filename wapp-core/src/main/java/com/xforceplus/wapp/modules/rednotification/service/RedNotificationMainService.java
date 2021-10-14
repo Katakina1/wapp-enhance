@@ -33,6 +33,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     TaxWareService taxWareService;
 
 
+
     public String add(AddRedNotificationRequest request) {
 
        // 保存红字信息 进入待审核
@@ -63,6 +64,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      */
     public Response<GetTerminalResult> getTerminals(QueryModel queryModel) {
         List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        if (CollectionUtils.isEmpty(filterData)){
+            return Response.failed("未筛选到数据");
+        }
         List<String> collect = filterData.stream().map(TXfRedNotificationEntity::getPurchaserTaxNo).distinct().collect(Collectors.toList());
         if (collect.size()>1){
             return Response.failed("所选购方税号不唯一,无法获取唯一终端");
@@ -122,6 +126,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
         if (queryModel.getPaymentTime()!=null){
             queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime, queryModel.getPaymentTime());
+        }
+        if (queryModel.getPid() !=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getPid,queryModel.getPid());
         }
         return queryWrapper;
     }

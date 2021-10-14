@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.google.gson.Gson;
+import com.xforceplus.wapp.BaseUnitTest;
 import com.xforceplus.wapp.WappApplication;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.ApplyRequest;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
@@ -9,15 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = WappApplication.class)
-@Slf4j
-@ActiveProfiles("local")
-public class TaxWareServiceTest {
+
+
+public class TaxWareServiceTest extends BaseUnitTest {
     @Autowired
     TaxWareService taxWareService;
 
