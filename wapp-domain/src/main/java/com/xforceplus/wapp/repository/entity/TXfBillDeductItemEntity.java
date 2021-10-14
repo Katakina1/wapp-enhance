@@ -5,26 +5,24 @@ import com.baomidou.mybatisplus.annotation.IdType;
 
 import java.math.BigDecimal;
 import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
 /**
  * <p>
- * 业务单据明细信息
- * </p>
+    * 业务单据明细信息
+    * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-@TableName(value = "t_xf_bill_deduct_item")
+@ToString(callSuper=true)
+@TableName(value="t_xf_bill_deduct_item")
 public class TXfBillDeductItemEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -36,10 +34,10 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     private Date verdictDate;
 
     /**
-     * 门店编码
+     * 门店编码,对应购方编码
      */
-    @TableField("store_nbr")
-    private String storeNbr;
+    @TableField("purchaser_no")
+    private String purchaserNo;
 
     /**
      * 部门编码
@@ -48,10 +46,10 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     private String deptNbr;
 
     /**
-     * 供应商编码
+     * 供应商编码 对应销方编码
      */
-    @TableField("supplier_code")
-    private String supplierCode;
+    @TableField("seller_no")
+    private String sellerNo;
 
     /**
      * 中文品名
@@ -75,13 +73,13 @@ public class TXfBillDeductItemEntity extends BaseEntity {
      * 单价
      */
     @TableField("price")
-    private Double price;
+    private BigDecimal price;
 
     /**
      * 单位
      */
     @TableField("unit")
-    private String unit;
+    private BigDecimal unit;
 
     /**
      * 税率
@@ -99,7 +97,7 @@ public class TXfBillDeductItemEntity extends BaseEntity {
      * vnpk成本
      */
     @TableField("vnpk_cost")
-    private Double vnpkCost;
+    private BigDecimal vnpkCost;
 
     /**
      * vnpk数量
@@ -132,7 +130,7 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     private String taxPre;
 
     /**
-     * 优惠政策内容
+     * 优惠政策内容 
      */
     @TableField("tax_pre_con")
     private String taxPreCon;
@@ -155,6 +153,12 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("goods_no_ver")
     private String goodsNoVer;
 
+    /**
+     * 不含税金额
+     */
+    @TableField("amount_without_tax")
+    private BigDecimal amountWithoutTax;
+
     @TableField("create_date")
     private Date createDate;
 
@@ -167,11 +171,11 @@ public class TXfBillDeductItemEntity extends BaseEntity {
 
     public static final String VERDICT_DATE = "verdict_date";
 
-    public static final String STORE_NBR = "store_nbr";
+    public static final String PURCHASER_NO = "purchaser_no";
 
     public static final String DEPT_NBR = "dept_nbr";
 
-    public static final String SUPPLIER_CODE = "supplier_code";
+    public static final String SELLER_NO = "seller_no";
 
     public static final String CN_DESC = "cn_desc";
 
@@ -195,12 +199,6 @@ public class TXfBillDeductItemEntity extends BaseEntity {
 
     public static final String REMAINING_AMOUNT = "remaining_amount";
 
-    public static final String CREATE_DATE = "create_date";
-
-    public static final String UPDATE_DATE = "update_date";
-
-    public static final String ID = "id";
-
     public static final String GOODS_TAX_NO = "goods_tax_no";
 
     public static final String TAX_PRE = "tax_pre";
@@ -212,5 +210,13 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     public static final String ITEM_SHORT_NAME = "item_short_name";
 
     public static final String GOODS_NO_VER = "goods_no_ver";
+
+    public static final String AMOUNT_WITHOUT_TAX = "amount_without_tax";
+
+    public static final String CREATE_DATE = "create_date";
+
+    public static final String UPDATE_DATE = "update_date";
+
+    public static final String ID = "id";
 
 }

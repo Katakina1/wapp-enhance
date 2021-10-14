@@ -2,6 +2,8 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -15,7 +17,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -65,19 +67,19 @@ public class TXfSettlementItemEntity extends BaseEntity {
      * 含税单价
      */
     @TableField("unit_price_with_tax")
-    private Double unitPriceWithTax;
+    private BigDecimal unitPriceWithTax;
 
     /**
      * 单价
      */
     @TableField("unit_price")
-    private Double unitPrice;
+    private BigDecimal unitPrice;
 
     /**
      * 数量
      */
     @TableField("quantity")
-    private Double quantity;
+    private BigDecimal quantity;
 
     /**
      * 单位
@@ -89,19 +91,19 @@ public class TXfSettlementItemEntity extends BaseEntity {
      * 含税金额
      */
     @TableField("amount_with_tax")
-    private Double amountWithTax;
+    private BigDecimal amountWithTax;
 
     /**
      * 不含税金额
      */
     @TableField("amount_without_tax")
-    private Double amountWithoutTax;
+    private BigDecimal amountWithoutTax;
 
     /**
      * 税额
      */
     @TableField("tax_amount")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * 税率 目前整数存储，需要程序单独处理
@@ -110,7 +112,7 @@ public class TXfSettlementItemEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 是否享受税收优惠政策 0 - 不 1- 是
