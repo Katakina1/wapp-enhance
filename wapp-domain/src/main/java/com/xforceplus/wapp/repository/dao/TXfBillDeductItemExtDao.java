@@ -24,8 +24,8 @@ import java.util.List;
 public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEntity> {
 
     /**
-     * 查询折扣明细（）
-     * @param date
+     * 查询索赔明细（未匹配到税编明细的不能进行匹配）
+     * @param startDate
      * @param purchaserNo
      * @param sellerNo
      * @param taxRate
@@ -33,8 +33,14 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
      * @param limit
      * @return
      */
-    @Select("select * from t_xf_bill_deduct_item  where create_date=>#{date} and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate}  order by id limit ${start} ,${limit} ")
-    public List<TXfBillDeductItemEntity > queryMatchBillItem(@Param("date")Date date, @Param("purchaserNo")String purchaserNo,@Param("sellerNo")String sellerNo,@Param("taxRate") BigDecimal taxRate, @Param("start") int start, @Param("limit") int limit );
+    @Select("select * from t_xf_bill_deduct_item  where create_date => #{startDate} and create_date <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate} and goods_tax_no <>'' order by id limit ${start} ,${limit} ")
+    public List<TXfBillDeductItemEntity > queryMatchBillItem(@Param("startDate") Date startDate,
+                                                             @Param("endDate") Date endDate,
+                                                             @Param("purchaserNo")String purchaserNo,
+                                                             @Param("sellerNo")String sellerNo,
+                                                             @Param("taxRate") BigDecimal taxRate,
+                                                             @Param("start") int start,
+                                                             @Param("limit") int limit );
 
     /**
      * 更新折扣明细金额
@@ -44,4 +50,7 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
      */
    @Update("update t_xf_bill_deduct_item  where id = #{id} and remaining_amount = remaining_amount - ${amount}  where remaining_amount >= ${amount}  ")
     public int updateBillItem(@Param("id") Long id, @Param("amount") BigDecimal amount);
+
+
+
 }

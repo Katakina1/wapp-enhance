@@ -20,3 +20,4 @@ wapp:
     port:
       tcp: 443
 
+taxRateSet: 9,6,5,4
