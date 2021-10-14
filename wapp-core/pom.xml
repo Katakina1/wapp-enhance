@@ -422,6 +422,16 @@
             <version>${org.mapstruct.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-jdk8</artifactId>
+            <version>${org.mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>${org.mapstruct.version}</version>
+        </dependency>
+        <dependency>
             <groupId>xf-bm-xplat-msg</groupId>
             <artifactId>split-client-api</artifactId>
             <version>1.1.19-SNAPSHOT</version>
@@ -443,52 +453,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>default-testCompile</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${org.mapstruct.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-configuration-processor</artifactId>
-                            <version>2.4.1</version>
-                        </path>
-                    </annotationProcessorPaths>
-                    <!-- due to problem in maven-compiler-plugin, for verbose mode addshowWarnings -->
-                    <showWarnings>true</showWarnings>
-                    <compilerArgs>
-                        <compilerArg>-Amapstruct.suppressGeneratorTimestamp=false</compilerArg>
-                        <compilerArg>-Amapstruct.suppressGeneratorVersionInfoComment=false</compilerArg>
-                        <compilerArg>-Amapstruct.verbose=true</compilerArg>
-                        <compilerArg>-Amapstruct.defaultComponentModel=spring</compilerArg>
-                        <compilerArg>-Amapstruct.defaultInjectionStrategy=constructor</compilerArg>
-                        <compilerArg>-Amapstruct.unmappedTargetPolicy=WARN</compilerArg>
-                    </compilerArgs>
-                </configuration>
             </plugin>
         </plugins>
     </build>
