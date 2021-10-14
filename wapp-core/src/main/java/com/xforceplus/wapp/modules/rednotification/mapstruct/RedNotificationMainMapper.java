@@ -20,6 +20,7 @@ public interface RedNotificationMainMapper {
 
     List<RedNotificationMain> entityToMainInfoList(List<TXfRedNotificationEntity> redNotificationEntityList);
 
+    @Mapping(target = "id", expression = "java(IdGenerator.generate())")
     TXfRedNotificationDetailEntity itemInfoToEntity(RedNotificationItem redNotificationItem);
 
     List<TXfRedNotificationDetailEntity> itemInfoToEntityList(List<RedNotificationItem> redNotificationItemList);

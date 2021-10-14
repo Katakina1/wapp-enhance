@@ -11,6 +11,7 @@ import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.sequence.IDSequence;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     RedNotificationItemService redNotificationItemService;
     @Autowired
     TaxWareService taxWareService;
+    @Autowired
+    IDSequence iDSequence;
 
 
 
@@ -44,6 +47,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             TXfRedNotificationEntity tXfRedNotificationEntity = redNotificationMainMapper.mainInfoToEntity(info.getRednotificationMain());
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationMainMapper.itemInfoToEntityList(info.getRedNotificationItemList());
 
+            tXfRedNotificationEntity.setId(iDSequence.nextId());
             listMain.add(tXfRedNotificationEntity);
             listItem.addAll(tXfRedNotificationDetailEntities);
         });
