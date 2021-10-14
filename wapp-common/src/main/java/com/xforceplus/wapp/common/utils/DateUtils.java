@@ -228,6 +228,17 @@ public class DateUtils {
     }
 
     /**
+     * 提取一个月中的第一天
+     * @return
+     */
+    public static Date getFristDate() {
+        Calendar   cal_1=Calendar.getInstance();//获取当前日期
+        cal_1.add(Calendar.MONTH, -1);
+        cal_1.set(Calendar.DAY_OF_MONTH,1);//设置为1号,当前日期既为本月第一天
+        return cal_1.getTime();
+    }
+
+    /**
      * 得到现在时间
      *
      * @return 字符串 yyyyMMdd HHmmss

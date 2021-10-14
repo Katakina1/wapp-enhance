@@ -2,8 +2,10 @@ package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
@@ -60,14 +62,14 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      * @return
      */
     public Response<GetTerminalResult> getTerminals(QueryModel queryModel) {
-//        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
-//        List<String> collect = filterData.stream().map(TXfRedNotificationEntity::getPurchaserTaxNo).distinct().collect(Collectors.toList());
-//        if (collect.size()>1){
-//            return Response.failed("所选购方税号不唯一,无法获取唯一终端");
-//        }
+        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        List<String> collect = filterData.stream().map(TXfRedNotificationEntity::getPurchaserTaxNo).distinct().collect(Collectors.toList());
+        if (collect.size()>1){
+            return Response.failed("所选购方税号不唯一,无法获取唯一终端");
+        }
         GetTerminalResult getTerminalResult = new GetTerminalResult();
 
-        GetTerminalResponse terminal = taxWareService.getTerminal("91420111271850146W");
+        GetTerminalResponse terminal = taxWareService.getTerminal(collect.get(0));
         List<TerminalDTO> terminalList = Lists.newLinkedList();
         if (Objects.equals("TXWR000000",terminal.getCode())){
             terminal.getResult().getTerminalList().forEach(item->{
@@ -92,32 +94,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     List<TXfRedNotificationEntity> getFilterData(QueryModel queryModel){
         //全选
         if (queryModel.getIsAllSelected()){
-            LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
-            if (queryModel.getInvoiceOrigin()!=null){
-                queryWrapper.eq(TXfRedNotificationEntity::getInvoiceOrigin,queryModel.getInvoiceOrigin());
-            }
-            if (StringUtils.isEmpty(queryModel.getCompanyCode())){
-                queryWrapper.eq(TXfRedNotificationEntity::getCompanyCode,queryModel.getCompanyCode());
-            }
-            if (StringUtils.isEmpty(queryModel.getPurchaserName())){
-                queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName,queryModel.getPurchaserName());
-            }
-
-            if (StringUtils.isEmpty(queryModel.getRedNotificationNo())){
-                queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo,queryModel.getRedNotificationNo());
-            }
-            if (StringUtils.isEmpty(queryModel.getBillNo())){
-                queryWrapper.eq(TXfRedNotificationEntity::getBillNo,queryModel.getBillNo());
-            }
-            if (queryModel.getPaymentTime()!=null){
-                queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime,queryModel.getPaymentTime());
-            }
-
-//            if (queryModel.getPageNo() == null){
-//
-//            }
-
-//            getBaseMapper().se
+            LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
             return getBaseMapper().selectList(queryWrapper);
         }else {
             // id 勾选
@@ -125,8 +102,33 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
     }
 
+    private LambdaQueryWrapper<TXfRedNotificationEntity> getNotificationEntityLambdaQueryWrapper(QueryModel queryModel) {
+        LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+        if (queryModel.getInvoiceOrigin()!=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getInvoiceOrigin, queryModel.getInvoiceOrigin());
+        }
+        if (StringUtils.isEmpty(queryModel.getCompanyCode())){
+            queryWrapper.eq(TXfRedNotificationEntity::getCompanyCode, queryModel.getCompanyCode());
+        }
+        if (StringUtils.isEmpty(queryModel.getPurchaserName())){
+            queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName, queryModel.getPurchaserName());
+        }
+
+        if (StringUtils.isEmpty(queryModel.getRedNotificationNo())){
+            queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo, queryModel.getRedNotificationNo());
+        }
+        if (StringUtils.isEmpty(queryModel.getBillNo())){
+            queryWrapper.eq(TXfRedNotificationEntity::getBillNo, queryModel.getBillNo());
+        }
+        if (queryModel.getPaymentTime()!=null){
+            queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime, queryModel.getPaymentTime());
+        }
+        return queryWrapper;
+    }
+
     public Response applyByPage(RedNotificationApplyReverseRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+
         return  Response.ok("");
     }
 
@@ -157,11 +159,38 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
        return Response.ok("成功",summaryResult);
     }
 
-    public Response<RedNotificationMain> listData(QueryModel queryModel) {
-        return null;
+    public Response<PageResult<RedNotificationMain>> listData(QueryModel queryModel) {
+        if (queryModel.getPageNo()==null){
+            queryModel.setPageNo(1);
+            queryModel.setPageSize(20);
+        }
+        LambdaQueryWrapper<TXfRedNotificationEntity> notificationEntityLambdaQueryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
+        Page<TXfRedNotificationEntity> page = new Page<>(queryModel.getPageNo(), queryModel.getPageSize());
+        Page<TXfRedNotificationEntity> tXfRedNotificationEntityPage = getBaseMapper().selectPage(page, notificationEntityLambdaQueryWrapper);
+        List<RedNotificationMain> redNotificationMains = redNotificationMainMapper.entityToMainInfoList(tXfRedNotificationEntityPage.getRecords());
+        PageResult<RedNotificationMain> pageResult = PageResult.of(tXfRedNotificationEntityPage.getTotal(),redNotificationMains);
+        return Response.ok("成功",pageResult);
     }
 
-    public Response<List<RedNotificationInfo>> detail(Long id) {
+    public Response<RedNotificationInfo> detail(Long id) {
+        TXfRedNotificationEntity tXfRedNotificationEntity = getBaseMapper().selectById(id);
+
+        RedNotificationInfo redNotificationInfo = null;
+        if (tXfRedNotificationEntity!=null){
+            redNotificationInfo = new RedNotificationInfo();
+            RedNotificationMain redNotificationMain = redNotificationMainMapper.entityToMainInfo(tXfRedNotificationEntity);
+            LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TXfRedNotificationDetailEntity::getApplyId,id);
+            List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
+            List<RedNotificationItem> redNotificationItems = redNotificationMainMapper.entityToItemInfoList(tXfRedNotificationDetailEntities);
+            redNotificationInfo.setRedNotificationItemList(redNotificationItems);
+            redNotificationInfo.setRednotificationMain(redNotificationMain);
+        }
+        return Response.ok("成功",redNotificationInfo);
+    }
+
+    public Response rollback(RedNotificationApplyReverseRequest request) {
+
         return null;
     }
 }

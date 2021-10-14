@@ -2,12 +2,14 @@ package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,11 +28,15 @@ public class CommSettlementService {
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
     @Autowired
+    private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
+    @Autowired
     private TXfSettlementDao tXfSettlementDao;
     @Autowired
     private TXfSettlementItemDao tXfSettlementItemDao;
     @Autowired
     private CommRedNotificationService commRedNotificationService;
+    @Autowired
+    private PreinvoiceService preinvoiceService;
 
     /**
      * 申请-撤销结算单预制发票
@@ -170,19 +176,26 @@ public class CommSettlementService {
             //如果正常发票没有红字信息
             boolean hasNoApplyRedSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
                     .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
-            //TODO 需要判断结算单是否在沃尔玛有待审核状态
+            //TODO 需要判断结算单是否在沃尔玛有待申请状态
             boolean hasApplyWappRed = false;
             if (!hasNoApplyRedSettlementPreInvoice && !hasApplyWappRed) {
                 throw new EnhanceRuntimeException("不能拆票");
             }
         }
-        //结算单明细
-        QueryWrapper<TXfSettlementItemEntity> settlementItemEntityWrapper = new QueryWrapper<>();
-        settlementItemEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        List<TXfSettlementItemEntity> tXfSettlementItemEntityList = tXfSettlementItemDao.selectList(settlementItemEntityWrapper);
-        //TODO 拆票
+        //拆票
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getSellerNo());
 
-        //TODO 申请红字信息
+        //申请预制发票红字信息
+        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+            QueryWrapper<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityQueryWrapper = new QueryWrapper();
+            tXfPreInvoiceItemEntityQueryWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID,tXfPreInvoiceEntity.getId());
+            List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(tXfPreInvoiceItemEntityQueryWrapper);
+            PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
+            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
+            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntityList);
+            commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
+        });
+
     }
 
     /**
@@ -220,7 +233,7 @@ public class CommSettlementService {
      * @param preInvoiceIdList 预制发票id
      */
     @Transactional
-    public void confirmRejectSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
+    public void confirmRejectCancelSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
         }

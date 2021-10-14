@@ -1,7 +1,9 @@
 package com.xforceplus.wapp.modules.rednotification.controller;
 
+import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationMainService;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -47,7 +49,7 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/list")
-    public Response<RedNotificationMain> list(@RequestBody QueryModel queryModel){
+    public Response<PageResult<RedNotificationMain>> list(@RequestBody QueryModel queryModel){
         return rednotificationService.listData(queryModel);
     }
 
@@ -56,7 +58,7 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @GetMapping(value = "/detail")
-    public Response<List<RedNotificationInfo>> detail(@RequestParam(value="id") Long id){
+    public Response<RedNotificationInfo> detail(@RequestParam(value="id") Long id){
         return rednotificationService.detail(id);
     }
 
@@ -75,8 +77,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/roll-back")
     public Response rollback(@RequestBody RedNotificationApplyReverseRequest request){
-
-        return Response.ok("成功");
+        return  rednotificationService.rollback(request);
     }
 
     /**
