@@ -140,3 +140,16 @@ management:
       exposure:
         include:
           - health
+
+path:
+  agreementBill:
+    remote: /tmp/agrementBill/
+    local: /tmp/agrementBill/
+  claimBill:
+    remote: /tmp/claimBill/
+    local: /tmp/claimBill/
+  epdBill:
+    remote: /tmp/epdBill/
+    local: /tmp/epdBill/
+
+

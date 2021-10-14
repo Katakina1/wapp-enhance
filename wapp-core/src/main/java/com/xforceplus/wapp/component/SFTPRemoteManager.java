@@ -142,7 +142,6 @@ public class SFTPRemoteManager {
         if (!isChannelConnected()) {
             throw new JSchException("SFTP连接故障，请重新连接");
         }
-        List<String> fileNames = new ArrayList<>();
         // 进入目录
         try {
             sftp.cd(path);
@@ -154,13 +153,12 @@ public class SFTPRemoteManager {
                 throw e;
             }
         }
-
+        List<String> fileNames = new ArrayList<>();
         // 根据名称关键字查询所有文件名
         Vector<LsEntry> vector = sftp.ls(fileNameKeyWords);
         for (LsEntry lsEntry : vector) {
             fileNames.add(lsEntry.getFilename());
         }
-
         return fileNames;
     }
 
