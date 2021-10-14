@@ -22,24 +22,34 @@ public class CommRedNotificationService {
 
     /**
      * 申请红字信息
-     *
+     * 调用沃尔玛接口 申请
      * @param applyProInvoiceRedNotificationDTO 预制发票信息
      * @return
      */
-    public void applyPreInvoiceRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
+    public void applyAddRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
-        //TODO 调用外部接口申请
+        //TODO 申请调用沃尔玛接口申请
 
     }
 
     /**
      * 撤销红字信息
+     * 调用沃尔玛接口 审核中
      *
      * @param proInvoiceId 预制发票id
      * @return
      */
-    public void repealPreInvoiceClaimRedNotification(Long proInvoiceId) {
-        //TODO 调用外部接口撤销
+    public void applyCancelRedNotification(Long proInvoiceId) {
+        //TODO 申请调用沃尔玛接口撤销
+
+    }
+
+    /**
+     * 直接调用撤销红字信息
+     * @param proInvoiceId
+     */
+    public void confirmCancelRedNotification(Long proInvoiceId) {
+        //TODO 直接调用沃尔玛接口撤销
 
     }
 

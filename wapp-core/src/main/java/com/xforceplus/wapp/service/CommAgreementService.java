@@ -54,7 +54,7 @@ public class CommAgreementService {
 
         //协议单
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
-        billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SALES_BILL_CODE, tXfSettlementEntity.getSettlementNo());
+        billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
 
         //预制发票
@@ -84,7 +84,7 @@ public class CommAgreementService {
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             // 撤销红字信息
-            commRedNotificationService.repealPreInvoiceClaimRedNotification(tXfPreInvoiceEntity.getId());
+            commRedNotificationService.confirmCancelRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //释放结算单蓝票

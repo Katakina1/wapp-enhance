@@ -5,26 +5,24 @@ import com.baomidou.mybatisplus.annotation.IdType;
 
 import java.math.BigDecimal;
 import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
 /**
  * <p>
- * 业务单据信息
- * </p>
+    * 业务单据信息
+    * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-@TableName(value = "t_xf_bill_deduct")
+@ToString(callSuper=true)
+@TableName(value="t_xf_bill_deduct")
 public class TXfBillDeductEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -44,8 +42,8 @@ public class TXfBillDeductEntity extends BaseEntity {
     /**
      * 关联结算单编码
      */
-    @TableField("ref_sales_bill_code")
-    private String refSalesBillCode;
+    @TableField("ref_settlement_no")
+    private String refSettlementNo;
 
     /**
      * 定案、入账日期
@@ -111,7 +109,7 @@ public class TXfBillDeductEntity extends BaseEntity {
      * 税额
      */
     @TableField("tax_amount")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * 备注
@@ -121,9 +119,9 @@ public class TXfBillDeductEntity extends BaseEntity {
 
     /**
      * 业务单状态
-     * 索赔单:101待匹配明细;102待确认税编;103待确认税差;104待匹配蓝票;105:待匹配结算单;106已匹配结算单;107待审核;108已撤销
-     * 协议单:201待匹配结算单;202已匹配结算单;203已锁定;204已取消
-     * EPD单:301待匹配结算单;302已匹配结算单
+索赔单:101待匹配明细;102待确认税编;103待确认税差;104待匹配蓝票;105:待匹配结算单;106已匹配结算单;107待审核;108已撤销
+协议单:201待匹配结算单;202已匹配结算单;203已锁定;204已取消
+EPD单:301待匹配结算单;302已匹配结算单
      */
     @TableField("status")
     private Integer status;
@@ -158,21 +156,21 @@ public class TXfBillDeductEntity extends BaseEntity {
     @TableField("amount_with_tax")
     private BigDecimal amountWithTax;
 
-    @TableField("update_date")
-    private Date updateDate;
-
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @TableField("create_date")
     private Date createDate;
 
+    @TableField("update_date")
+    private Date updateDate;
+
 
     public static final String BUSINESS_NO = "business_no";
 
     public static final String BUSINESS_TYPE = "business_type";
 
-    public static final String REF_SALES_BILL_CODE = "ref_sales_bill_code";
+    public static final String REF_SETTLEMENT_NO = "ref_settlement_no";
 
     public static final String VERDICT_DATE = "verdict_date";
 
@@ -210,10 +208,10 @@ public class TXfBillDeductEntity extends BaseEntity {
 
     public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
-    public static final String UPDATE_DATE = "update_date";
-
     public static final String ID = "id";
 
     public static final String CREATE_DATE = "create_date";
+
+    public static final String UPDATE_DATE = "update_date";
 
 }

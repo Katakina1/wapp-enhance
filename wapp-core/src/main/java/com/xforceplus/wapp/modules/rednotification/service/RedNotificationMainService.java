@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -98,8 +99,25 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             if (StringUtils.isEmpty(queryModel.getCompanyCode())){
                 queryWrapper.eq(TXfRedNotificationEntity::getCompanyCode,queryModel.getCompanyCode());
             }
-            //todo 其他条件
+            if (StringUtils.isEmpty(queryModel.getPurchaserName())){
+                queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName,queryModel.getPurchaserName());
+            }
 
+            if (StringUtils.isEmpty(queryModel.getRedNotificationNo())){
+                queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo,queryModel.getRedNotificationNo());
+            }
+            if (StringUtils.isEmpty(queryModel.getBillNo())){
+                queryWrapper.eq(TXfRedNotificationEntity::getBillNo,queryModel.getBillNo());
+            }
+            if (queryModel.getPaymentTime()!=null){
+                queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime,queryModel.getPaymentTime());
+            }
+
+//            if (queryModel.getPageNo() == null){
+//
+//            }
+
+//            getBaseMapper().se
             return getBaseMapper().selectList(queryWrapper);
         }else {
             // id 勾选
@@ -110,5 +128,40 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     public Response applyByPage(RedNotificationApplyReverseRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         return  Response.ok("");
+    }
+
+    public Response<SummaryResult> summary(QueryModel queryModel) {
+        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        Map<Integer, List<TXfRedNotificationEntity>> listMap = filterData.stream().collect(Collectors.groupingBy(TXfRedNotificationEntity::getApplyingStatus));
+        //默认为0  1.未申请 2.申请中 3.已申请 4.撤销待审核
+        SummaryResult summaryResult = new SummaryResult(0,0,0,0,0);
+        listMap.entrySet().forEach(entry->{
+            switch (entry.getKey()){
+                case 1:
+                    summaryResult.setApplyPending(entry.getValue().size());
+                    break;
+                case 2:
+                    summaryResult.setApplying(entry.getValue().size());
+                    break;
+                case 3:
+                    summaryResult.setApplied(entry.getValue().size());
+                    break;
+                case 4:
+                    summaryResult.setWaitApprove(entry.getValue().size());
+                    break;
+            }
+
+        });
+       int total = summaryResult.getApplyPending()+summaryResult.getApplying()+summaryResult.getApplied()+summaryResult.getWaitApprove();
+       summaryResult.setTotal(total);
+       return Response.ok("成功",summaryResult);
+    }
+
+    public Response<RedNotificationMain> listData(QueryModel queryModel) {
+        return null;
+    }
+
+    public Response<List<RedNotificationInfo>> detail(Long id) {
+        return null;
     }
 }

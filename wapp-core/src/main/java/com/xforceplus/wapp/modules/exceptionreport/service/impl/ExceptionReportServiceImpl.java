@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.exceptionreport.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
@@ -36,7 +38,9 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         Page<TXfExceptionReportEntity> page=new Page<>();
         page.setSize(request.getSize());
         page.setCurrent(request.getPage());
-
+        TXfExceptionReportEntity entity=new TXfExceptionReportEntity();
+//        entity.setAgreementMemo();
+        Wrapper<TXfExceptionReportEntity> wrapper= Wrappers.lambdaQuery();
         final Page<TXfExceptionReportEntity> result = this.page(page);
         return null;
     }

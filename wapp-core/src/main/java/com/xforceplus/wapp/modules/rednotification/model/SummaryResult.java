@@ -17,4 +17,12 @@ public class SummaryResult {
     private Integer waitApprove;
     @ApiModelProperty("全部")
     private Integer total;
+
+    public SummaryResult(Integer applyPending, Integer applying, Integer applied, Integer waitApprove, Integer total) {
+        this.applyPending = applyPending;
+        this.applying = applying;
+        this.applied = applied;
+        this.waitApprove = waitApprove;
+        this.total = total;
+    }
 }

@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.exceptionreport.controller;
 
 import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,18 +23,20 @@ public class ExceptionReportController {
     private ExceptionReportService exceptionReportService;
 
     @GetMapping("claim")
-    public String getClaim(ExceptionReportRequest request){
+    public R getClaim(ExceptionReportRequest request){
         exceptionReportService.getPage(request);
-        return "hello";
+        return R.ok();
     }
+
     @GetMapping("epd")
-    public String getEPD(ExceptionReportRequest request){
+    public R getEPD(ExceptionReportRequest request){
         exceptionReportService.getPage(request);
-        return "hello";
+        return R.ok();
     }
+
     @GetMapping("agreement")
-    public String getAgreement(ExceptionReportRequest request){
+    public R getAgreement(ExceptionReportRequest request){
         exceptionReportService.getPage(request);
-        return "hello";
+        return R.ok();
     }
 }
