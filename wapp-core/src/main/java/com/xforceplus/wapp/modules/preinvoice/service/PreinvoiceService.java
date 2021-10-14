@@ -39,7 +39,7 @@ public class PreinvoiceService {
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, List<TXfPreInvoiceItemEntity> items, String sellerNo) {
+    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, String sellerNo, List<TXfPreInvoiceItemEntity> items) {
         return null;
     }
 

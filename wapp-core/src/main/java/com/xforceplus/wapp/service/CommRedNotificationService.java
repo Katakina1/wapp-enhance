@@ -1,14 +1,11 @@
 package com.xforceplus.wapp.service;
 
-import com.xforceplus.wapp.dto.ApplyProInvoiceRedNotificationDTO;
-import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
+import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationInfo;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationItem;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
-import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +23,7 @@ public class CommRedNotificationService {
      * @param applyProInvoiceRedNotificationDTO 预制发票信息
      * @return
      */
-    public void applyAddRedNotification(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
+    public void applyAddRedNotification(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
         //TODO 申请调用沃尔玛接口申请
 
@@ -54,7 +51,7 @@ public class CommRedNotificationService {
     }
 
 
-    private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(ApplyProInvoiceRedNotificationDTO applyProInvoiceRedNotificationDTO) {
+    private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {
 
         TXfPreInvoiceEntity preInvoice = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity();
         List<TXfPreInvoiceItemEntity> preInvoiceItemList = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceItemEntityList();

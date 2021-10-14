@@ -2,10 +2,12 @@ package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ public class CommAgreementService {
     private CommRedNotificationService commRedNotificationService;
     @Autowired
     private TDxInvoiceDao tDxInvoiceDao;
+    @Autowired
+    private PreinvoiceService preinvoiceService;
 
     /**
      * 撤销协议单 撤销结算单 蓝票释放额度 如果有预制发票 撤销预制发票
@@ -107,6 +111,21 @@ public class CommAgreementService {
         });
         //删除结算单蓝票关系
         tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
+    }
+
+    /**
+     * 修改后的接单的中的部门预制发票明细重新去拆票
+     *
+     * @param settlementId
+     * @param preInvoiceItemList
+     */
+    public void againSplitPreInvoice(Long settlementId, List<TXfPreInvoiceItemEntity> preInvoiceItemList) {
+        //结算单
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
+        if (tXfSettlementEntity == null) {
+            throw new EnhanceRuntimeException("结算单不存在");
+        }
+        preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), preInvoiceItemList);
     }
 
 }

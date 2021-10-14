@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class ApplyProInvoiceRedNotificationDTO implements Serializable {
+public class PreInvoiceDTO implements Serializable {
 
     /**
      * 预制发票主信息
