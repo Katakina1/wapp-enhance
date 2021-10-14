@@ -15,6 +15,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillDeductItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemRefEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -136,7 +137,7 @@ public class DeductService extends ServiceImpl {
 
 
     /**
-     * 全局
+     * 匹配索赔单 索赔单明细
      * @return
      */
     public boolean matchClaimBill() {
@@ -155,6 +156,10 @@ public class DeductService extends ServiceImpl {
                 String sellerNo = tXfBillDeductEntity.getSellerNo();
                 String purcharseNo = tXfBillDeductEntity.getPurchaserNo();
                 BigDecimal taxRate = tXfBillDeductEntity.getTaxRate();
+                if (StringUtils.isEmpty(sellerNo) || StringUtils.isEmpty(purcharseNo) || Objects.isNull(taxRate)) {
+                    log.warn("索赔单{}主信息 不符合要求，sellerNo:{},purcharseNo:{},taxRate:{}",sellerNo,purcharseNo,taxRate);
+                    continue;
+                }
                 TXfBillDeductEntity tmp = new TXfBillDeductEntity();
                 BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
                 tmp.setId(tXfBillDeductEntity.getId());
@@ -169,7 +174,7 @@ public class DeductService extends ServiceImpl {
                         try {
                             billAmount = doItemMatch(tXfBillDeductEntity.getId(), tXfBillDeductItemEntity, billAmount);
                         } catch (Exception e) {
-                            log.error("匹配索赔的明细 异常：{},{}",tXfBillDeductEntity.getId().toString(),tXfBillDeductItemEntity.getId().toString());
+                            log.error("匹配索赔的明细 异常：{},{}",tXfBillDeductEntity.getId(),tXfBillDeductItemEntity.getId());
                         }
                     }
                     itemStartIndex = (itemStartIndex + 1) * batchAcount;
