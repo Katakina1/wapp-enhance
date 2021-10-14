@@ -1,7 +1,9 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
 
+import com.xforceplus.phoenix.split.model.PreInvoiceMain;
 import com.xforceplus.phoenix.split.model.SplitPreInvoiceInfo;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +37,7 @@ public class PreinvoiceService {
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo,String items, String sellerNo) {
+    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, List<TXfPreInvoiceItemEntity> items, String sellerNo) {
         return null;
     }
 
