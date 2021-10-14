@@ -2,6 +2,8 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -15,7 +17,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -53,7 +55,7 @@ public class TXfBillDeductInvoiceEntity extends BaseEntity {
      * 使用额度
      */
     @TableField("use_amount")
-    private Double useAmount;
+    private BigDecimal useAmount;
 
     /**
      * 状态;0正常;1撤销

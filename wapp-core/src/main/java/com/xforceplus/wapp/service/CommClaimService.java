@@ -75,7 +75,7 @@ public class CommClaimService {
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             // 撤销红字信息
-            commRedNotificationService.repealPreInvoiceClaimRedNotification(tXfPreInvoiceEntity.getId());
+            commRedNotificationService.confirmCancelRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //修改结算单状态

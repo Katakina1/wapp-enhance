@@ -64,6 +64,8 @@ public class CommSettlementService {
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
                 tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
+                //调用沃尔玛 需要沃尔玛审核
+                commRedNotificationService.applyCancelRedNotification(tXfPreInvoiceEntity.getId());
             });
         } else {
             //2、当预制发票没有红字信息编码时，直接撤销发票
@@ -73,9 +75,7 @@ public class CommSettlementService {
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.CANCEL.getCode());
                 tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             });
-            //TODO 撤销红字信息
         }
-
     }
 
     /**
@@ -186,28 +186,58 @@ public class CommSettlementService {
     }
 
     /**
-     * 通过预制发票id查询结算单 然后撤销结算单下面的预制发票
-     * 沃尔玛调用
+     * 通过预制发票id查询结算单 然后同意撤销结算单下面的预制发票
+     * 沃尔玛调用 同意撤销红字的时候
+     *
      * @param preInvoiceIdList 预制发票id
      */
-    public void cancelSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
-        if(CollectionUtils.isEmpty(preInvoiceIdList)){
+    @Transactional
+    public void confirmCancelSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
+        if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
         }
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectBatchIds(preInvoiceIdList);
-        if(CollectionUtils.isEmpty(tXfPreInvoiceEntityList)){
+        if (CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
             throw new EnhanceRuntimeException("预制发票不存在");
         }
         List<String> settlementNoList = tXfPreInvoiceEntityList.stream().map(TXfPreInvoiceEntity::getSettlementNo).distinct().collect(Collectors.toList());
         QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO,settlementNoList);
-        List<TXfSettlementEntity>  tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
-        if(CollectionUtils.isEmpty(tXfSettlementEntityList)){
+        queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
+        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //撤销结算单
         tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
             agreeCancelSettlementPreInvoice(tXfSettlementEntity.getId());
+        });
+    }
+
+    /**
+     * 通过预制发票id查询结算单 然后驳回撤销结算单下面的预制发票
+     * 沃尔玛调用 驳回撤销红字的时候
+     *
+     * @param preInvoiceIdList 预制发票id
+     */
+    @Transactional
+    public void confirmRejectSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
+        if (CollectionUtils.isEmpty(preInvoiceIdList)) {
+            throw new EnhanceRuntimeException("参数异常");
+        }
+        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectBatchIds(preInvoiceIdList);
+        if (CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
+            throw new EnhanceRuntimeException("预制发票不存在");
+        }
+        List<String> settlementNoList = tXfPreInvoiceEntityList.stream().map(TXfPreInvoiceEntity::getSettlementNo).distinct().collect(Collectors.toList());
+        QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
+        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
+            throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
+        }
+        //撤销结算单
+        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
+            rejectCancelSettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
 
