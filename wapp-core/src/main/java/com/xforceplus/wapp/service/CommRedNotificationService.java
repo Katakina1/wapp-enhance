@@ -1,13 +1,17 @@
 package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
+import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationInfo;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationItem;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
+import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,39 +21,44 @@ import java.util.stream.Collectors;
 @Service
 public class CommRedNotificationService {
 
+    @Autowired
+    private RedNotificationOuterService redNotificationOuterService;
+
     /**
      * 申请红字信息
      * 调用沃尔玛接口 申请
+     *
      * @param applyProInvoiceRedNotificationDTO 预制发票信息
      * @return
      */
     public void applyAddRedNotification(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
-        //TODO 申请调用沃尔玛接口申请
-
+        // 申请调用沃尔玛接口申请
+        AddRedNotificationRequest request = new AddRedNotificationRequest();
+        request.setAutoApplyFlag(2);
+        request.setRedNotificationInfoList(Collections.singletonList(redNotificationInfo));
+        redNotificationOuterService.add(request);
     }
 
     /**
-     * 撤销红字信息
+     * 申请调用沃尔玛接口撤销
      * 调用沃尔玛接口 审核中
      *
-     * @param proInvoiceId 预制发票id
+     * @param preInvoiceId 预制发票id
      * @return
      */
-    public void applyCancelRedNotification(Long proInvoiceId) {
-        //TODO 申请调用沃尔玛接口撤销
-
+    public void applyCancelRedNotification(Long preInvoiceId) {
+        redNotificationOuterService.updateAppliedToWaitAppproveByPid(preInvoiceId);
     }
 
     /**
-     * 直接调用撤销红字信息
-     * @param proInvoiceId
+     * 直接调用沃尔玛接口撤销
+     *
+     * @param preInvoiceId
      */
-    public void confirmCancelRedNotification(Long proInvoiceId) {
-        //TODO 直接调用沃尔玛接口撤销
-
+    public void confirmCancelRedNotification(Long preInvoiceId) {
+        redNotificationOuterService.rollback(preInvoiceId);
     }
-
 
     private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {
 

@@ -6,6 +6,7 @@ import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
+import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
@@ -37,6 +38,8 @@ public class CommSettlementService {
     private CommRedNotificationService commRedNotificationService;
     @Autowired
     private PreinvoiceService preinvoiceService;
+    @Autowired
+    private RedNotificationOuterService redNotificationOuterService;
 
     /**
      * 申请-撤销结算单预制发票
@@ -176,9 +179,9 @@ public class CommSettlementService {
             //是否存在没有红字信息的预制发票
             boolean hasNoApplyRedSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
                     .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
-            //TODO 需要判断结算单是否在沃尔玛有待申请状态(如果没有待申请状态的红字信息说明税件神奇失败了，这个时候可以重新申请预制发票的红字信息)
+            //需要判断结算单是否在沃尔玛有待申请状态(如果没有待申请状态的红字信息说明税件神奇失败了，这个时候可以重新申请预制发票的红字信息)
             //是否有申请中的红字信息
-            boolean hasApplyWappRed = false;
+            boolean hasApplyWappRed = redNotificationOuterService.isWaitingApplyBySettlementNo(tXfSettlementEntity.getSettlementNo());
             if (!hasNoApplyRedSettlementPreInvoice && !hasApplyWappRed) {
                 throw new EnhanceRuntimeException("不能重新申请预制发票与红字信息");
             }
