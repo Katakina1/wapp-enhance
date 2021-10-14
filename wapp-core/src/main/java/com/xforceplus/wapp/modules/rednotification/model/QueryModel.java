@@ -45,10 +45,13 @@ public class QueryModel {
     @ApiModelProperty("红字信息表编号")
     private String redNotificationNo;
 
+    @ApiModelProperty("预制发票id")
+    private Long pid;
+
     @ApiModelProperty("分页码 最小1")
-    int pageNo ;
+    Integer pageNo ;
 
     @ApiModelProperty("分页大小")
-    int pageSize ;
+    Integer pageSize ;
 
 }

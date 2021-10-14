@@ -1,6 +1,4 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
-
-import com.xforceplus.phoenix.split.model.PreInvoiceMain;
 import com.xforceplus.phoenix.split.model.SplitPreInvoiceInfo;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
