@@ -13,7 +13,7 @@ public enum TXfSettlementStatusEnum {
     UPLOAD_RED_INVOICE(4,"已开票"),
     FINISH(5,"已完成"),
     WAIT_CHECK(6,"待审核"),
-    CANCEL(7,"已撤销"),
+    DESTROY(7,"已撤销"),
     ;
 
     @Getter
