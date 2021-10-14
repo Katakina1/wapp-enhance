@@ -19,4 +19,6 @@ wapp:
       http: https://janus-inte.xforceplus.com
     port:
       tcp: 443
-
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

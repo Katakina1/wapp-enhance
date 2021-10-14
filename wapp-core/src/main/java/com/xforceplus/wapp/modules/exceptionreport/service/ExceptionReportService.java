@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.exceptionreport.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
 
@@ -27,5 +28,5 @@ public interface ExceptionReportService {
      */
     void add4EPD(TXfExceptionReportEntity entity);
 
-    Page<TXfExceptionReportEntity> getPage(ExceptionReportRequest request);
+    Page<TXfExceptionReportEntity> getPage(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
 }
