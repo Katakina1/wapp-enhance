@@ -173,16 +173,20 @@ public class CommSettlementService {
         boolean hasCancelSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
                 .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.DESTROY.getCode());
         if (!hasCancelSettlementPreInvoice) {
-            //如果正常发票没有红字信息
+            //是否存在没有红字信息的预制发票
             boolean hasNoApplyRedSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
                     .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
-            //TODO 需要判断结算单是否在沃尔玛有待申请状态
+            //TODO 需要判断结算单是否在沃尔玛有待申请状态(如果没有待申请状态的红字信息说明税件神奇失败了，这个时候可以重新申请预制发票的红字信息)
+            //是否有申请中的红字信息
             boolean hasApplyWappRed = false;
             if (!hasNoApplyRedSettlementPreInvoice && !hasApplyWappRed) {
-                throw new EnhanceRuntimeException("不能拆票");
+                throw new EnhanceRuntimeException("不能重新申请预制发票与红字信息");
             }
         }
-        //拆票
+        //拆票（针对已撤销的预制发票明细重新拆票）
+        QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
         preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
 
         //申请预制发票红字信息
@@ -197,16 +201,12 @@ public class CommSettlementService {
         });
 
         //删除结算单之前已撤销的预制发票（作废了）避免申请逻辑状态判断问题
-        QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
-        preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
         List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
-        tXfPreInvoiceDao.delete(preInvoiceWrapper);
-        tXfPreInvoiceList.forEach(tXfPreInvoice -> {
-            QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
-            preInvoiceItemWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, tXfPreInvoice.getId());
-            tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
-        });
+        List<Long> preInvoiceIdList = tXfPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
+        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
+        QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
+        preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
+        tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
     }
 
     /**
