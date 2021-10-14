@@ -40,7 +40,7 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         this.overdueConverter = overdueConverter;
     }
 
-    public Tuple2<List<Overdue>, Long> page(long current, long size, String sellerName, String sellerTaxNo) {
+    public Tuple2<List<Overdue>, Page<OverdueEntity>> page(long current, long size, String sellerName, String sellerTaxNo) {
         log.info("超期配置分页查询,入参：{}，{}，{}，{}", current, size, sellerName, sellerTaxNo);
         LambdaQueryChainWrapper<OverdueEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag);
@@ -52,7 +52,7 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         }
         Page<OverdueEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("超期配置分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
-        return Tuple.of(overdueConverter.map(page.getRecords()), page.getTotal());
+        return Tuple.of(overdueConverter.map(page.getRecords()), page);
     }
 
     public Either<String, Integer> export(InputStream is) {
