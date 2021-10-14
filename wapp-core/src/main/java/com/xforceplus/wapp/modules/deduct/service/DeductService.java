@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @Date 2021/10/12 11:38
  */
 @Service
-public class DeductService extends ServiceImpl {
+public class DeductService {
     @Autowired
     private TXfBillDeductDao tXfBillDeductDao;
     @Autowired

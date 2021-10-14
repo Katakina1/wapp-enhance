@@ -25,5 +25,7 @@ public interface OverdueConverter {
     @Mapping(target = "updateUser", expression = "java(user)")
     OverdueEntity map(OverdueDto overdue, @Context Long user);
 
+    @Mapping(target = "sellerName", ignore = true)
+    @Mapping(target = "sellerTaxNo", ignore = true)
     OverdueEntity map(OverdueDto overdue);
 }
