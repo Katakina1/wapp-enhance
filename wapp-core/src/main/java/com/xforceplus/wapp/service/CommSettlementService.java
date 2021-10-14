@@ -48,7 +48,7 @@ public class CommSettlementService {
      * @return
      */
     @Transactional
-    public void applyCancelSettlementPreInvoice(Long settlementId) {
+    public void applyDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -78,7 +78,7 @@ public class CommSettlementService {
             tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
-                updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.CANCEL.getCode());
+                updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
                 tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             });
         }
@@ -93,7 +93,7 @@ public class CommSettlementService {
      * @param settlementId
      */
     @Transactional
-    public void rejectCancelSettlementPreInvoice(Long settlementId) {
+    public void rejectDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -121,7 +121,7 @@ public class CommSettlementService {
      * @param settlementId
      */
     @Transactional
-    public void agreeCancelSettlementPreInvoice(Long settlementId) {
+    public void agreeDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -135,7 +135,7 @@ public class CommSettlementService {
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
-            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.CANCEL.getCode());
+            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         });
@@ -143,7 +143,7 @@ public class CommSettlementService {
 
 
     /**
-     * 重新拆分结算订单下面的预制发票
+     * 结算单重新申请预制发票（拆分结算订单下面的预制发票）
      * 针对结算单下所有已撤销的预制发票发起重新申请，
      * 如果结算单下没有已撤销的预制发票，
      * 进一步判断正常状态（非待审核、非已撤销）的预制发票是否存在红字信息编码，
@@ -171,7 +171,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         boolean hasCancelSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
-                .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.CANCEL.getCode());
+                .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.DESTROY.getCode());
         if (!hasCancelSettlementPreInvoice) {
             //如果正常发票没有红字信息
             boolean hasNoApplyRedSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
@@ -183,12 +183,12 @@ public class CommSettlementService {
             }
         }
         //拆票
-        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getSellerNo());
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
 
         //申请预制发票红字信息
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             QueryWrapper<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityQueryWrapper = new QueryWrapper();
-            tXfPreInvoiceItemEntityQueryWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID,tXfPreInvoiceEntity.getId());
+            tXfPreInvoiceItemEntityQueryWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, tXfPreInvoiceEntity.getId());
             List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(tXfPreInvoiceItemEntityQueryWrapper);
             PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
@@ -196,16 +196,28 @@ public class CommSettlementService {
             commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
         });
 
+        //删除结算单之前已撤销的预制发票（作废了）避免申请逻辑状态判断问题
+        QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
+        List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
+        tXfPreInvoiceDao.delete(preInvoiceWrapper);
+        tXfPreInvoiceList.forEach(tXfPreInvoice -> {
+            QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
+            preInvoiceItemWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, tXfPreInvoice.getId());
+            tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
+        });
     }
 
     /**
      * 通过预制发票id查询结算单 然后同意撤销结算单下面的预制发票
+     * 多选预制发票去撤销
      * 沃尔玛调用 同意撤销红字的时候
      *
      * @param preInvoiceIdList 预制发票id
      */
     @Transactional
-    public void confirmCancelSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
+    public void agreeDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -222,18 +234,19 @@ public class CommSettlementService {
         }
         //撤销结算单
         tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
-            agreeCancelSettlementPreInvoice(tXfSettlementEntity.getId());
+            agreeDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
 
     /**
      * 通过预制发票id查询结算单 然后驳回撤销结算单下面的预制发票
+     * 多选预制发票 拒绝撤销
      * 沃尔玛调用 驳回撤销红字的时候
      *
      * @param preInvoiceIdList 预制发票id
      */
     @Transactional
-    public void confirmRejectCancelSettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
+    public void rejectDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -250,7 +263,7 @@ public class CommSettlementService {
         }
         //撤销结算单
         tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
-            rejectCancelSettlementPreInvoice(tXfSettlementEntity.getId());
+            rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
 

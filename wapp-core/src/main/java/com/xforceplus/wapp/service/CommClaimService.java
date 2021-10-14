@@ -47,7 +47,7 @@ public class CommClaimService {
      * @return
      */
     @Transactional
-    public void cancelClaimSettlement(Long settlementId) {
+    public void destroyClaimSettlement(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -74,7 +74,7 @@ public class CommClaimService {
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
-            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.CANCEL.getCode());
+            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             // 撤销红字信息
@@ -84,14 +84,14 @@ public class CommClaimService {
         //修改结算单状态
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
-        updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.CANCEL.getCode());
+        updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
 
         //修改索赔单状态
         //撤销
         billDeductList1.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_CANCEL.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
         //待生成结算单 清空结算单编号
