@@ -39,11 +39,11 @@ public class TaxWareService {
     private static final String VERIFICATION_LEVEL = "1";
 
 
-    public TaxWareService(@Value("${wapp.xf.tenant-id:123}")
+    public TaxWareService(@Value("${wapp.xf.tenant-id:1203939049971830784}")
                                            String tenantId) {
         defaultHeader =  new HashMap<>();
         defaultHeader.put("rpcType", "http");
-        defaultHeader.put("x-app-client", "janus");
+//        defaultHeader.put("x-app-client", "janus");
         defaultHeader.put("tenant-id", tenantId);
         defaultHeader.put("tenantCode", tenantId);
         defaultHeader.put("accept-encoding","");
@@ -66,7 +66,8 @@ public class TaxWareService {
 
     public TaxWareResponse applyRedInfo(ApplyRequest applyRequest) {
         try {
-            final String post = httpClientFactory.post(applyRedAction,defaultHeader,applyRedAction,"");
+            String reqJson = gson.toJson(applyRequest);
+            final String post = httpClientFactory.post(applyRedAction,defaultHeader,reqJson,"");
             log.info("申请结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
         } catch (IOException e) {

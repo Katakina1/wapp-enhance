@@ -1,0 +1,139 @@
+# Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+    max-http-post-size: -1
+  port: 8071
+  max-http-header-size: 1024000
+  servlet:
+    context-path: /
+
+# mysql
+spring:
+  datasource:
+    url: jdbc:sqlserver://10.100.20.5:1433;DatabaseName=testdb01
+    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: testuser01
+    password: aGSsdsJFWd_w_1
+    devtools:
+        restart:
+            #热部署生效
+          enabled: false
+    # jackson时间格式化
+    jackson:
+        time-zone: GMT+0
+        date-format: yyyy-MM-dd HH:mm:ss
+    http:
+        multipart:
+            max-file-size: 100MB
+            max-request-size: 100MB
+            enabled: true
+            location: /tmp/tomcat
+    # 指定静态资源的路径
+    resources:
+        static-locations: classpath:/static/,classpath:/views/
+
+# Mybatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+#  type-aliases-package: com.xforceplus.wapp.repository.entity
+
+# 日志
+#logging:
+#  path: /home/vn03qsx/logs/
+#  file: ${logging.path}dxhy_jxpt
+
+# 定时器配置
+schedule:
+    open: false  # 是否开启定时任务功能  true开启   false关闭
+
+#图片存储路径
+filePathConstan:
+  remoteImageRootPath: /home/wapp/jxfp/image/
+  remoteCostFileRootPath: /home/wapp/jxfp/cost/
+  remoteKnowFileRootPath: /home/wapp/jxfp/knowCenter/
+  remoteAnnouncementRootPath: /home/wapp/jxfp/announcement/
+  remoteQuestionPaperFileRootPath: /home/wapp/jxfp/question/
+  remoteQuestionPaperFileTempRootPath: /home/wapp/jxfp/temp/question/
+  remoteCostFileTempRootPath: /home/wapp/jxfp/temp/cost/
+  remoteExcelFileRootPath: /home/dxhy1/wapp/excel/
+  remoteFixedRootPath: /jxfp/fixed/ #供应商红票remoteFixedRootPath
+  remoteFixedTempRootPath: /jxfp/temp/fixed/ #供应商红票远程文件临时存放路径
+  localImageRootPath: /home/vn03qsx/jxfp/image/
+  tempPath: /home/vn03qsx/jxfp/temp/zip/      # 文件暂存路径
+  depositPath: /home/vn03qsx/jxfp/zipto/ # 文件存储路
+  tempImgPath: /home/vn03qsx/jxfp/temp/imgzip/      # 图片临时存储路径
+  signInImgPath: /home/vn03qsx/jxfp/temp/image/     #扫码签收图片暂存路径
+  tempDir: /home/vn03qsx/jxfp/temp/excelZip/
+  sapRemoteRootPath: /jxfp/sap/source/   #sap源文件目录
+  sapRemoteBakPath: /jxfp/sap/bak/       #sap备份目录
+  sapLocalTempPath: /home/vn03qsx/jxfp/sap/temp/         #sap本地临时目录
+  aribatempPath: /usr/users/dxhy152/wapp/jxfp/temp/zip/      # 文件暂存路径
+  aribadepositPath: /usr/users/dxhy152/wapp/jxfp/zipto/ # 文件存储路
+  erweimaPath: /usr/users/dxhy152/wapp/jxfp/QRCode/image/
+  orderSapRemoteRootPath: /jxfp/order/sap/source/   #sap源文件目录（订单获取）
+  orderSapRemoteBakPath: /jxfp/order/sap/bak/       #sap备份目录（订单获取）
+  orderSapLocalTempPath: /usr/users/dxhy152/wapp/jxfp/order/sap/temp/
+  vendorRemoteRootPath: /jxfp/vendor/source/   #vendor源文件目录(导入10位供应商号)
+  vendorRemoteBakPath: /jxfp/vendor/bak/       #vendor备份目录
+  vendorLocalTempPath: /usr/users/dxhy152/wapp/jxfp/vendor/temp/         #vendor本地临时目录
+  localFixedRootPath: /usr/users/dxhy152/wapp/jxfp/fixed/temp/ #供应商红票本地文件存放路径
+  sso: d:/sso/sso.txt
+#sftp配置
+pro:
+  sftp:
+    host: 10.233.68.155  #10.44.100.123
+    username: VN03QSX
+    password: Dxhy@2019!
+    default:
+      port: 22
+      timeout: 60000
+      privateKey: /home/svcaccttomcat/.ssh/id_rsa
+      passphrase:
+
+# token配置
+token:
+    expire_time: 18000 #过期时间，单位秒
+
+# 税款所属期判断值
+currentTaxPeriod: 15
+#扫描修改处理http://10.233.50.33:8385/dxhy_yxgl_api
+scanEditUrl: http://127.0.0.1:8385/dxhy_yxgl_api/onlineUpload/updateInvoice
+
+#查验
+aribaCheck: http://127.0.0.1:8385/dxhy_yxgl_api/onlineUpload/check
+
+#电票上传
+scanElUploadUrl: http://127.0.0.1:8385/dxhy_yxgl_api/onlineUpload/elUpload
+
+
+getTaxInformation: https://dx301.wal-mart.com/RESTAdapter/WALMART/FapiaoDetails
+
+sso:
+  loginUrl: https://pfedprod.wal-mart.com/idp/startSSO.ping?PartnerSpId=CNWAPP
+  idp_metadata_url: 
+  WMIDP_Metadata_Dev: d:\sso\WMIDP_Metadata_Dev.xml
+export:
+  websocketUrl: ws://101.124.15.152:8071/b2bportal/dxhy-gylpt/websocket
+basicAuth:
+  ariba: dxhy:dxhy@123
+  getTaxInformation: PISNOW_DEV:Profit10
+  loginName: gf999
+  userName: gf999
+  userId: 123941
+  scheduled: 0 0/5 * * * ?
+
+ofd:
+  httpUrl: http://jxfpapi.ele-cloud.com/OFDParse
+  ofdPreviewUrl: http://jxfpapi.ele-cloud.com/OFDPreview
+  ofdPngUrl: http://jxfpapi.ele-cloud.com/image
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include:
+          - health

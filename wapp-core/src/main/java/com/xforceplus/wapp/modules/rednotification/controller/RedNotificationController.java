@@ -39,8 +39,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/summary")
     public Response<SummaryResult> summary(@RequestBody QueryModel queryModel){
-
-        return Response.ok("成功",null);
+        return rednotificationService.summary(queryModel);
     }
 
 
@@ -49,8 +48,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/list")
     public Response<RedNotificationMain> list(@RequestBody QueryModel queryModel){
-
-        return Response.ok("成功",null);
+        return rednotificationService.listData(queryModel);
     }
 
 
@@ -59,8 +57,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @GetMapping(value = "/detail")
     public Response<List<RedNotificationInfo>> detail(@RequestParam(value="id") Long id){
-
-        return Response.ok("成功");
+        return rednotificationService.detail(id);
     }
 
 

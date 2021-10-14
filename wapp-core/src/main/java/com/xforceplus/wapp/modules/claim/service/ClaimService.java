@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.claim.service;
 
-import com.aisinopdf.text.pdf.S;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -111,7 +111,7 @@ public class ClaimService {
         }
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
-        billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SALES_BILL_CODE, tXfSettlementEntity.getSettlementNo());
+        billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         billDeductEntityWrapper.eq(TXfBillDeductEntity.STATUS, TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
         //预制发票
@@ -151,6 +151,44 @@ public class ClaimService {
     @Transactional
     public void agreeClaimVerdict(Long settlementId) {
         commClaimService.cancelClaimSettlement(settlementId);
+    }
+
+    /**
+     * 通过索赔单id申请不定案 需要将所理赔单分组（根据结算单分组）
+     * 供应商调用
+     *
+     * @param billDeductIdList 预制发票id
+     */
+    public void applyClaimVerdictByBillDeductId(List<Long> billDeductIdList) {
+        if (CollectionUtils.isEmpty(billDeductIdList)) {
+            throw new EnhanceRuntimeException("参数异常");
+        }
+        List<TXfBillDeductEntity> tXfBillDeductEntityList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
+        if (CollectionUtils.isEmpty(tXfBillDeductEntityList)) {
+            throw new EnhanceRuntimeException("索赔单不存在");
+        }
+        List<String> settlementNoList = tXfBillDeductEntityList.stream().map(TXfBillDeductEntity::getRefSettlementNo).distinct().collect(Collectors.toList());
+        QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
+        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
+            throw new EnhanceRuntimeException("索赔单没有对应的结算单数据");
+        }
+        //分组处理不定案
+        Map<String, List<TXfBillDeductEntity>> settlementIdToBillDeductMap = tXfBillDeductEntityList.stream().collect(Collectors.groupingBy(TXfBillDeductEntity::getRefSettlementNo));
+        //<结算单编号,结算单id>
+        Map<String, Long> settlementIdToNoMap = tXfSettlementEntityList.stream().collect(Collectors.toMap(TXfSettlementEntity::getSettlementNo, TXfSettlementEntity::getId));
+        //<结算单id,Array<索赔单id列表>>
+        Map<Long, List<Long>> settlementIdToBillDeductIdMap = Maps.newHashMap();
+        settlementIdToBillDeductMap.entrySet().forEach(entry -> {
+            Long settlementId = settlementIdToNoMap.get(entry.getKey());
+            settlementIdToBillDeductIdMap.put(settlementId, entry.getValue().stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList()));
+        });
+        settlementIdToBillDeductIdMap.entrySet().forEach(entry -> {
+            applyClaimVerdict(entry.getKey(), entry.getValue());
+        });
+
+
     }
 
 

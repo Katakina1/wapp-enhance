@@ -54,7 +54,7 @@ public class CommAgreementService {
 
         //协议单
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
-        billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SALES_BILL_CODE, tXfSettlementEntity.getSettlementNo());
+        billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
 
         //预制发票
