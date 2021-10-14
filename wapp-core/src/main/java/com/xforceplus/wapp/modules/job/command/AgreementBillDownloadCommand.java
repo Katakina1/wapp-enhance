@@ -32,15 +32,15 @@ public class AgreementBillDownloadCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {
+        String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         String jobStatus = String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS));
         if (Objects.equals(String.valueOf(BillJobStatusEnum.INIT.getJobStatus()), jobStatus)) {
-            String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
             sftpRemoteManager.openChannel();
             sftpRemoteManager.downloadFile(remotePath, fileName, localPath);
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DOWNLOAD_COMPLETE.getJobStatus());
             saveContext(context);
         } else {
-            log.info("跳过文件下载步骤，当前任务状态={}", jobStatus);
+            log.info("跳过文件下载步骤，当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
     }
