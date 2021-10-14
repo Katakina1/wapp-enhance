@@ -25,7 +25,7 @@ public class CodeGenerator {
 
 
     public static void main(String[] args) {
-        generateCode("com.xforceplus.wapp.entity.BaseEntity",
+        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
                 "t_xf_origin_epd_bill",
                 "t_xf_origin_epd_log_item",
                 "t_xf_origin_agreement_bill",
@@ -33,7 +33,7 @@ public class CodeGenerator {
                 "t_xf_origin_claim_bill",
                 "t_xf_origin_claim_item_hyper",
                 "t_xf_origin_claim_item_sams"
-        );
+                );
 //         generateMainCode();
         // generateItemCode();
     }
@@ -92,7 +92,7 @@ public class CodeGenerator {
 
         // 包配置
         PackageConfig pc = new PackageConfig();
-        pc.setParent("com.xforceplus.wapp");
+        pc.setParent("com.xforceplus.wapp.repository");
         pc.setEntity("entity");
         pc.setMapper("dao");
         mpg.setPackageInfo(pc);

@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.common.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -10,45 +12,49 @@ import org.apache.commons.lang3.StringUtils;
  * @create 2021-10-09 15:09
  **/
 @Data
-public class R {
+@ApiModel("返回结果")
+public class R<T> {
 
     public static final String OK = "XFWAPP0000";
     public static final String FAIL = "XFWAPP0000";
 
-    private Object result;
-    private String message;
-    private String code;
+    @ApiModelProperty("错误码") private String code;
+    @ApiModelProperty("错误信息") private String message;
+    @ApiModelProperty("结果集") private T result;
 
     public R(){}
 
-    public R(Object result, String message, String code) {
+    public R(T result, String message, String code) {
         this.result = result;
         this.message = message;
         this.code = code;
     }
 
-    public static R ok(Object result) {
-        R r = new R();
+    public static <T> R<T> ok(T result) {
+        R<T> r = new R<>();
         r.code = OK;
         r.result = result;
         return r;
     }
+    public static <T> R<T> ok() {
+        return ok(null);
+    }
 
-    public static R ok(Object result, String message) {
-        R r = ok(result);
+    public static <T> R<T> ok(T result, String message) {
+        R<T> r = ok(result);
         r.message = message;
         return r;
     }
 
-    public static R fail(String message) {
-        R r = new R();
+    public static <T> R<T> fail(String message) {
+        R<T> r = new R<>();
         r.code = FAIL;
         r.message = message;
         return r;
     }
 
-    public static R fail(String message, String code) {
-        R r = new R();
+    public static <T> R<T> fail(String message, String code) {
+        R<T> r = new R<>();
         r.message = message;
         r.code = StringUtils.isBlank(code) ? FAIL : code;
         return r;
