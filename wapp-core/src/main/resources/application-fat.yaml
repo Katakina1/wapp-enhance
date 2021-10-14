@@ -19,4 +19,8 @@ wapp:
       http: https://janus-inte.xforceplus.com:443
     port:
       tcp: 443
-
+spring:
+  redis:
+    host: wapp-redis
+server:
+  port: 6060

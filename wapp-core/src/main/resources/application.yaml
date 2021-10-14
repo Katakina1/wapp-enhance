@@ -136,3 +136,6 @@ management:
       exposure:
         include:
           - health
+  endpoint:
+    health:
+      show-details: always
