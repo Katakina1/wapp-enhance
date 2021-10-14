@@ -27,16 +27,22 @@ public class BaseUnitTest {
         System.out.println(request);
     }
 
-    public String readJsonFromFile(String fileName) throws IOException {
-        InputStreamReader read = new InputStreamReader(this.getClass().getResourceAsStream("/"+fileName)) ;
-        BufferedReader bufferedReader = new BufferedReader(read);
-        String lineTxt ;
-        StringBuilder stringBuilder = new StringBuilder();
-        while((lineTxt = bufferedReader.readLine()) != null){
-            stringBuilder.append(lineTxt);
+    public String readJsonFromFile(String fileName)  {
+        try {
+            InputStreamReader read = new InputStreamReader(this.getClass().getResourceAsStream("/"+fileName)) ;
+            BufferedReader bufferedReader = new BufferedReader(read);
+            String lineTxt ;
+            StringBuilder stringBuilder = new StringBuilder();
+            while((lineTxt = bufferedReader.readLine()) != null){
+                stringBuilder.append(lineTxt);
+            }
+            read.close();
+            return stringBuilder.toString();
+        }catch ( IOException e){
+            log.error("json序列化异常",e);
         }
-        read.close();
-        return stringBuilder.toString();
+        return null;
+
     }
 
 }

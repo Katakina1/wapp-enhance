@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
@@ -48,6 +49,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationMainMapper.itemInfoToEntityList(info.getRedNotificationItemList());
 
             tXfRedNotificationEntity.setId(iDSequence.nextId());
+            tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPLY.getValue());
+            tXfRedNotificationEntity.setStatus(1);
             listMain.add(tXfRedNotificationEntity);
             listItem.addAll(tXfRedNotificationDetailEntities);
         });
@@ -115,17 +118,17 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (queryModel.getInvoiceOrigin()!=null){
             queryWrapper.eq(TXfRedNotificationEntity::getInvoiceOrigin, queryModel.getInvoiceOrigin());
         }
-        if (StringUtils.isEmpty(queryModel.getCompanyCode())){
+        if (!StringUtils.isEmpty(queryModel.getCompanyCode())){
             queryWrapper.eq(TXfRedNotificationEntity::getCompanyCode, queryModel.getCompanyCode());
         }
-        if (StringUtils.isEmpty(queryModel.getPurchaserName())){
+        if (!StringUtils.isEmpty(queryModel.getPurchaserName())){
             queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName, queryModel.getPurchaserName());
         }
 
-        if (StringUtils.isEmpty(queryModel.getRedNotificationNo())){
+        if (!StringUtils.isEmpty(queryModel.getRedNotificationNo())){
             queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo, queryModel.getRedNotificationNo());
         }
-        if (StringUtils.isEmpty(queryModel.getBillNo())){
+        if (!StringUtils.isEmpty(queryModel.getBillNo())){
             queryWrapper.eq(TXfRedNotificationEntity::getBillNo, queryModel.getBillNo());
         }
         if (queryModel.getPaymentTime()!=null){
