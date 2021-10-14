@@ -42,8 +42,7 @@ public class DeductService extends ServiceImpl {
     private TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
     private TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
-    @Autowired
-    private TXfBillDeductItemDao tXfBillDeductItemDao;
+
     @Autowired
     private TXfBillDeductItemRefDao tXfBillDeductItemRefDao;
     @Autowired
@@ -60,7 +59,7 @@ public class DeductService extends ServiceImpl {
     public boolean receiveItemData(List<ClaimBillItemData> claimBillItemDataList ,String batchNo ) {
         List<TXfBillDeductItemEntity> list =  transferBillItemData(claimBillItemDataList,batchNo);
         for (TXfBillDeductItemEntity tXfBillDeductItemEntity : list) {
-            tXfBillDeductItemDao.insert(tXfBillDeductItemEntity);
+            tXfBillDeductItemExtDao.insert(tXfBillDeductItemEntity);
         }
         return true;
     }
