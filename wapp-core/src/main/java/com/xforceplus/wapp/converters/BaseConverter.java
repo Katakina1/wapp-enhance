@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * @author mashaopeng@xforceplus.com
  */
-@Mapper
+@Mapper(componentModel = "spring")
 public interface BaseConverter {
     default Long mapDateToLong(Date date) {
         return date.getTime();

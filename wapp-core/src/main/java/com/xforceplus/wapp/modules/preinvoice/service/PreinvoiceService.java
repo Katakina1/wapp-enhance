@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.preinvoice.service;
 import com.xforceplus.phoenix.split.model.SplitPreInvoiceInfo;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * @Author ZZW
  * @Date 2021/10/12 13:58
  */
+@Service
 public class PreinvoiceService {
 
     /**
