@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.job.generator;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
@@ -11,9 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
-import static com.xforceplus.wapp.component.BillJobTypeEnum.AGREEMENT_BILL_JOB;
+import static com.xforceplus.wapp.enums.BillJobTypeEnum.CLAIM_BILL_JOB;
 
 /**
  * @program: wapp-enhance
@@ -31,31 +33,50 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Autowired
     private TXfBillJobDao tXfBillJobDao;
 
-    @Value("path.agreementBill.remote")
+    @Value("claimBill.remote.path")
     private String remotePath;
 
+    @Value("claimBill.remote.fileNameKeyWords")
+    private String fileNameKeyWords;
+
+    // TODO 添加定时任务
+    // TODO 添加异步处理
     @Override
     public void generate() {
-        List<String> fileNames = scanFiles(remotePath);
-        createJob(AGREEMENT_BILL_JOB.getJobType(), fileNames);
+        List<String> fileNames = scanFiles(remotePath, fileNameKeyWords);
+        createJob(CLAIM_BILL_JOB.getJobType(), fileNames);
     }
 
     @Override
-    public List<String> scanFiles(String remotePath) {
+    public List<String> scanFiles(String remotePath, String fileNameKeyWords) {
         try {
             sftpRemoteManager.openChannel();
-            return sftpRemoteManager.getFileNames(remotePath, "");
+            return sftpRemoteManager.getFileNames(remotePath, fileNameKeyWords);
         } catch (JSchException | SftpException e) {
-            log.error("获取远程协议单文件列表故障", e);
+            log.error("获取远程索赔单文件列表故障", e);
         }
         return Collections.emptyList();
     }
 
     @Override
     public void createJob(int jobType, List<String> fileNames) {
-        TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
-        // fileNames.forEach(
-        // fileName -> tXfBillJobDao.insert(tXfBillJobEntity)
-        // );
+        log.info("待创建的索赔单任务数={}", fileNames.size());
+        fileNames.forEach(
+                fileName -> {
+                    Date now = new Date();
+                    TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
+                    tXfBillJobEntity.setJobName(fileName);
+                    tXfBillJobEntity.setJobType(jobType);
+                    tXfBillJobEntity.setCreateTime(now);
+                    tXfBillJobEntity.setUpdateTime(now);
+                    // 如果数据不存在则插入
+                    if (tXfBillJobDao.selectCount(new QueryWrapper<TXfBillJobEntity>().lambda().eq(TXfBillJobEntity::getJobName, fileName)) == 0) {
+                        log.info("创建新索赔单任务={}", fileName);
+                        tXfBillJobDao.insert(tXfBillJobEntity);
+                    } else {
+                        log.info("跳过已存在的索赔单任务={}", fileName);
+                    }
+                }
+        );
     }
 }

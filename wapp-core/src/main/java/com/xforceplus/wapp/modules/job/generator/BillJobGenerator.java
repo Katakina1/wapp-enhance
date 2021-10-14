@@ -10,10 +10,26 @@ import java.util.List;
  **/
 public interface BillJobGenerator {
 
+    /**
+     * 生成单据任务的主方法
+     */
     void generate();
 
-    List<String> scanFiles(String remotePath);
+    /**
+     * 扫描单据的文件列表
+     *
+     * @param remotePath
+     * @param fileNameKeyWords
+     * @return
+     */
+    List<String> scanFiles(String remotePath, String fileNameKeyWords);
 
+    /**
+     * 创建单据任务
+     *
+     * @param jobType
+     * @param fileNames
+     */
     void createJob(int jobType, List<String> fileNames);
 
 }

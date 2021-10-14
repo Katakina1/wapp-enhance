@@ -138,15 +138,25 @@ management:
         include:
           - health
 
-path:
-  agreementBill:
-    remote: /tmp/agrementBill/
-    local: /tmp/agrementBill/
-  claimBill:
-    remote: /tmp/claimBill/
-    local: /tmp/claimBill/
-  epdBill:
-    remote: /tmp/epdBill/
-    local: /tmp/epdBill/
+# 注意事项
+# 1、请获取标准的EXCEL模板
+agreementBill:
+  remote:
+    path: /tmp/agrementBill/
+    fileNameKeyWords:
+  local:
+    path: /tmp/agrementBill/
+claimBill:
+  remote:
+    path: /tmp/claimBill/
+    fileNameKeyWords:
+  local:
+    path: /tmp/claimBill/
+epdBill:
+  remote:
+    path: /tmp/epdBill/
+    fileNameKeyWords:
+  local:
+    path: /tmp/epdBill/
 
 

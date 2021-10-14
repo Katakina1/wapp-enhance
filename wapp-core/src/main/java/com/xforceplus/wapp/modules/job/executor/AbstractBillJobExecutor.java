@@ -6,7 +6,6 @@ package com.xforceplus.wapp.modules.job.executor;
  * @author: Kenny Wong
  * @create: 2021-10-12 17:29
  **/
-public interface BillJobExecutor {
+public abstract class AbstractBillJobExecutor implements BillJobExecutor {
 
-    void execute();
 }

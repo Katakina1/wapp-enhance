@@ -1,7 +1,13 @@
-package com.xforceplus.wapp.component;
+package com.xforceplus.wapp.enums;
 
 import lombok.Getter;
 
+/**
+ * @program: wapp-generator
+ * @description: 单据任务类型
+ * @author: Kenny Wong
+ * @create: 2021-10-14 14:20
+ **/
 public enum BillJobTypeEnum {
 
     /**
@@ -18,7 +24,7 @@ public enum BillJobTypeEnum {
     EPD_BILL_JOB(3);
 
     @Getter
-    private int jobType;
+    private final int jobType;
 
     BillJobTypeEnum(int jobType) {
         this.jobType = jobType;

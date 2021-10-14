@@ -1,10 +1,10 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.xforceplus.wapp.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-13
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -64,8 +64,8 @@ public class TXfBillJobEntity extends BaseEntity {
     /**
      * 当前处理的提示信息 用于出现异常时指导用户操作
      */
-    @TableField("job_descripiton")
-    private String jobDescripiton;
+    @TableField("remark")
+    private String remark;
 
     /**
      * 创建人
@@ -113,7 +113,7 @@ public class TXfBillJobEntity extends BaseEntity {
 
     public static final String JOB_ENTRY_PROGRESS = "job_entry_progress";
 
-    public static final String JOB_DESCRIPITON = "job_descripiton";
+    public static final String REMARK = "remark";
 
     public static final String CREATE_USER = "create_user";
 
