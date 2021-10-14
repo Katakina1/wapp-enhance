@@ -7,10 +7,7 @@ import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.repository.dao.*;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import com.xforceplus.wapp.repository.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +31,8 @@ public class CommAgreementService {
     private TXfBillDeductInvoiceDao tXfBillDeductInvoiceDao;
     @Autowired
     private CommRedNotificationService commRedNotificationService;
+    @Autowired
+    private TDxInvoiceDao tDxInvoiceDao;
 
     /**
      * 撤销协议单 撤销结算单 蓝票释放额度 如果有预制发票 撤销预制发票
@@ -93,9 +92,19 @@ public class CommAgreementService {
         tXfBillDeductInvoiceWrapper.in(TXfBillDeductInvoiceEntity.BUSINESS_NO, tXfSettlementEntity.getSettlementNo());
         tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, TXfBillDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
 
-        //TODO 还原蓝票额度
+        //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
+        tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
+            QueryWrapper<TDxInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
+            tDxInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
+            tDxInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
+            TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
 
+            TDxInvoiceEntity updateTDxInvoiceEntity = new TDxInvoiceEntity();
+            updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
+            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+            tDxInvoiceDao.updateById(updateTDxInvoiceEntity);
+        });
         //删除结算单蓝票关系
         tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
     }

@@ -91,7 +91,7 @@ public class TXfBillDeductItemEntity extends BaseEntity {
      * 项目数量
      */
     @TableField("quantity")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     /**
      * vnpk成本
