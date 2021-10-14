@@ -13,6 +13,7 @@ import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemRefEntity;
+import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,13 +41,17 @@ public class DeductService extends ServiceImpl {
     @Autowired
     private TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
-    private TXfBillDeductItemExtDao tXfBillDeductItemDao;
+    private TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
+    @Autowired
+    private TXfBillDeductItemDao tXfBillDeductItemDao;
     @Autowired
     private TXfBillDeductItemRefDao tXfBillDeductItemRefDao;
     @Autowired
     private TXfSettlementDao tXfSettlementDao;
     @Autowired
     private TXfSettlementItemDao tXfSettlementItemDao;
+    @Autowired
+    private  IDSequence idSequence;
     /**
      * 接收索赔明细
      * @param
@@ -70,6 +75,7 @@ public class DeductService extends ServiceImpl {
             }
             BeanUtils.copyProperties(claimBillItemData, tmp);
             tmp.setCreateDate(date);
+            tmp.setId(idSequence.nextId());
             tmp.setRemainingAmount(claimBillItemData.getAmountWithoutTax());
             //todo 调用匹配方法 补充明细信息
             list.add(tmp);
@@ -110,6 +116,7 @@ public class DeductService extends ServiceImpl {
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
             TXfBillDeductEntity tmp = dedcutionHandleEnum.function.apply(deductBillBaseData);
             tmp.setCreateDate(date);
+            tmp.setId(idSequence.nextId());
             list.add(tmp);
          }
         return list;
@@ -168,7 +175,7 @@ public class DeductService extends ServiceImpl {
                  * 更新索赔单状态，无事务包含，后续已更改状态，单匹配未完成的，通过定时器，进行补偿
                  */
                 tXfBillDeductExtDao.updateById(tmp);
-                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemDao.queryMatchBillItem(date, purcharseNo, sellerNo, taxRate, itemStartIndex, limit);
+                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao  .queryMatchBillItem(date, purcharseNo, sellerNo, taxRate, itemStartIndex, limit);
                 while (billAmount.compareTo(BigDecimal.ZERO) == 0) {
                     for (TXfBillDeductItemEntity tXfBillDeductItemEntity : tXfBillDeductItemEntities) {
                         try {
@@ -178,7 +185,7 @@ public class DeductService extends ServiceImpl {
                         }
                     }
                     itemStartIndex = (itemStartIndex + 1) * batchAcount;
-                    tXfBillDeductItemEntities = tXfBillDeductItemDao.queryMatchBillItem(date, purcharseNo, sellerNo, taxRate, itemStartIndex, limit);
+                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(date, purcharseNo, sellerNo, taxRate, itemStartIndex, limit);
                 }
             }
             billStartIndex = (billStartIndex + 1) * batchAcount;
@@ -198,12 +205,12 @@ public class DeductService extends ServiceImpl {
         BigDecimal amount = tXfBillDeductItemEntity.getRemainingAmount();
         amount = billAmount .compareTo(amount) > 0 ? amount : billAmount;
         billAmount = billAmount.subtract(amount);
-        int res = tXfBillDeductItemDao.updateBillItem(tXfBillDeductItemEntity.getId(), amount);
+        int res = tXfBillDeductItemExtDao.updateBillItem(tXfBillDeductItemEntity.getId(), amount);
         if (res == 0) {
             return billAmount;
         }
         TXfBillDeductItemRefEntity tXfBillDeductItemRefEntity = new TXfBillDeductItemRefEntity();
-        //tXfBillDeductItemRefEntity.setId();
+        tXfBillDeductItemRefEntity.setId(idSequence.nextId());
         tXfBillDeductItemRefEntity.setCreateDate(DateUtils.getNowDate());
         tXfBillDeductItemRefEntity.setDeductId(billId);
         tXfBillDeductItemRefEntity.setUseAmount(amount);
