@@ -26,12 +26,16 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
-                "t_xf_settlement",
-                "t_xf_settlement_item",
-                "t_xf_bill_deduct",
-                "t_xf_bill_deduct_item",
-                "t_xf_bill_deduct_invoice",
-                "t_xf_bill_deduct_item_ref"
+//                "t_xf_settlement",
+//                "t_xf_settlement_item",
+//                "t_xf_bill_deduct",
+//                "t_xf_bill_deduct_item",
+//                "t_xf_bill_deduct_invoice",
+//                "t_xf_bill_deduct_item_ref",
+                "t_xf_red_notification",
+                "t_xf_red_notification_detail",
+                "t_xf_red_notification_log"
+
                 );
 //         generateMainCode();
         // generateItemCode();
