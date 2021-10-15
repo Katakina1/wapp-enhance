@@ -22,10 +22,6 @@ public interface ValueEnum<T> {
                 .filter(p -> p.ordinal() == ordinal).findFirst();
     }
 
-    static <E extends Enum<E> & ValueEnum<T>, T> T getValueByOrdinal(@NonNull Class<E> clazz, Integer ordinal) {
-        return ValueEnum.getEnumByOrdinal(clazz, ordinal).map(E::getValue).orElse(null);
-    }
-
     static <E extends Enum<E> & ValueEnum<T>, T> Integer getOrdinalByValue(@NonNull Class<E> clazz, T value) {
         return ValueEnum.getEnumByValue(clazz, value).map(Enum::ordinal).orElse(null);
     }

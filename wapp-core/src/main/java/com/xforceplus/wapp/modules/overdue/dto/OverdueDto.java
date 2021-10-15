@@ -11,6 +11,7 @@ import lombok.Data;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -23,10 +24,21 @@ public class OverdueDto {
     @NotNull(message = "ID不能为空", groups = OverdueUpdateValidGroup.class)
     private Long id;
 
+    @ExcelIgnore
+    @ApiModelProperty("超期配置类型 1.索赔、2.协议、3.EPD")
+    @NotNull(message = "超期配置类型不能为空", groups = {OverdueUpdateValidGroup.class, OverdueCreateValidGroup.class})
+    @Pattern(regexp = "[123]", message = "超期配置类型不正确")
+    private Integer type;
+
     @ApiModelProperty("供应商名称")
     @ExcelProperty(value = "供应商名称")
     @NotEmpty(message = "供应商名称不能为空", groups = OverdueCreateValidGroup.class)
     private String sellerName;
+
+    @ApiModelProperty("供应商编号")
+    @ExcelProperty(value = "供应商编号")
+    @NotEmpty(message = "供应商编号不能为空", groups = OverdueCreateValidGroup.class)
+    private String sellerNo;
 
     @ApiModelProperty("供应商税号")
     @ExcelProperty(value = "供应商税号")

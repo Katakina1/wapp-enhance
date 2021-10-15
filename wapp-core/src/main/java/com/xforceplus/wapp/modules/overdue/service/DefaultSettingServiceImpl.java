@@ -16,16 +16,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class DefaultSettingServiceImpl extends ServiceImpl<DefaultSettingDao, DefaultSettingEntity> {
-    public String getOverdueDay() {
+    public String getOverdueDay(DefaultSettingEnum settingEnum) {
         return new LambdaQueryChainWrapper<>(getBaseMapper())
-                .eq(DefaultSettingEntity::getCode, DefaultSettingEnum.OVERDUE_DEFAULT_DAY.code)
+                .eq(DefaultSettingEntity::getCode, settingEnum.getValue())
                 .select(DefaultSettingEntity::getValue).oneOpt().map(DefaultSettingEntity::getValue)
                 .orElse("30");
     }
 
-    public Boolean updateOverdueDay(String day) {
+    public Boolean updateOverdueDay(DefaultSettingEnum settingEnum, String day) {
         return new LambdaQueryChainWrapper<>(getBaseMapper())
-                .eq(DefaultSettingEntity::getCode, DefaultSettingEnum.OVERDUE_DEFAULT_DAY.code)
+                .eq(DefaultSettingEntity::getCode, settingEnum.getValue())
                 .oneOpt().map(it -> new LambdaUpdateChainWrapper<>(getBaseMapper())
                         .set(DefaultSettingEntity::getValue, day)
                         .eq(DefaultSettingEntity::getId, it.getId()).update())
