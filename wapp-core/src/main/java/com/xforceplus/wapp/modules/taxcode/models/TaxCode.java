@@ -1,5 +1,8 @@
 package com.xforceplus.wapp.modules.taxcode.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,106 +18,70 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ApiModel("税编信息")
 public class TaxCode {
-    /**
-     * 主键
-     */
+    @ApiModelProperty("唯一id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
-    /**
-     * 税编转换代码
-     */
+    @ApiModelProperty("税编转换代码")
     private String itemNo;
 
-    /**
-     * 税收分类编码
-     */
+    @ApiModelProperty("税收分类编码")
     private String goodsTaxNo;
 
-    /**
-     * 税局货物名称
-     */
+    @ApiModelProperty("税局货物名称")
     private String standardItemName;
 
-    /**
-     * 货物及服务代码
-     */
+    @ApiModelProperty("货物及服务代码")
     private String itemCode;
 
-    /**
-     * 商品和服务名称
-     */
+    @ApiModelProperty("商品和服务名称")
     private String itemName;
 
-    /**
-     * 是否享受税收优惠政策0-不1-享受
-     */
+    @ApiModelProperty("是否享受税收优惠政策0-不1-享受")
     private String taxPre;
 
-    /**
-     * 享受税收优惠政策内容
-     */
+    @ApiModelProperty("享受税收优惠政策内容")
     private String taxPreCon;
 
-    /**
-     * 零税率标志空-非0税率；0-出口退税1-免税2-不征税3-普通0税率
-     */
+    @ApiModelProperty("零税率标志空-非0税率；0-出口退税1-免税2-不征税3-普通0税率")
     private String zeroTax;
 
-    /**
-     * 大类名称
-     */
+    @ApiModelProperty("大类名称")
     private String largeCategoryName;
 
-    /**
-     * 大类编码
-     */
+    @ApiModelProperty("大类编码")
     private String largeCategoryCode;
 
-    /**
-     * 中类名称
-     */
+    @ApiModelProperty("中类名称")
     private String medianCategoryName;
 
-    /**
-     * 中类编码
-     */
+    @ApiModelProperty("中类编码")
     private String medianCategoryCode;
 
-    /**
-     * 小类名称
-     */
+    @ApiModelProperty("小类名称")
     private String smallCategoryName;
 
-    /**
-     * 小类编码
-     */
+    @ApiModelProperty("小类编码")
     private String smallCategoryCode;
 
-    /**
-     * 0:待处理 1:待确认 2:已生效
-     */
+    @ApiModelProperty("0:待处理 1:待确认 2:已生效")
     private String status;
 
-    /**
-     * 税率
-     */
+    @ApiModelProperty("税率")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal taxRate;
 
-    /**
-     * 规格型号
-     */
+    @ApiModelProperty("规格型号")
     private String itemSpec;
 
-    /**
-     * 单位
-     */
+    @ApiModelProperty("单位")
     private String quantityUnit;
 
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
+    @ApiModelProperty("更新时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private Long updateTime;
 
     private static final long serialVersionUID = 1L;
 }
