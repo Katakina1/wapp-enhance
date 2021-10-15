@@ -1,9 +1,7 @@
 package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Date;
 
@@ -11,6 +9,9 @@ import java.util.Date;
  * @author mashaopeng@xforceplus.com
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName(value="t_xf_default_setting")
 public class DefaultSettingEntity {
     private static final long serialVersionUID = 1L;

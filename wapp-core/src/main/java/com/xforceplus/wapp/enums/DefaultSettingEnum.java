@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.enums;
 
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,12 +9,15 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum DefaultSettingEnum {
+public enum DefaultSettingEnum implements ValueEnum<Integer> {
     /**
      *
      */
-    OVERDUE_DEFAULT_DAY("OVERDUE_DEFAULT_DAY", "默认超期时间配置")
+    CLAIM_OVERDUE_DEFAULT_DAY(1, "CLAIM_OVERDUE_DEFAULT_DAY", "默认超期时间配置(索赔)"),
+    AGREEMENT_OVERDUE_DEFAULT_DAY(2, "AGREEMENT_OVERDUE_DEFAULT_DAY", "默认超期时间配置(协议)"),
+    EPD_OVERDUE_DEFAULT_DAY(3, "EPD_OVERDUE_DEFAULT_DAY", "默认超期时间配置(EPD)"),
     ;
+    public final Integer value;
     public final String code;
     public final String message;
 }

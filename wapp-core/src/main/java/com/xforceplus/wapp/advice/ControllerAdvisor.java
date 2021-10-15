@@ -2,8 +2,10 @@ package com.xforceplus.wapp.advice;
 
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -14,12 +16,24 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  * @create 2021-10-09 15:04
  **/
 
+@Slf4j
 @ControllerAdvice
 public class ControllerAdvisor {
 
     @ExceptionHandler(EnhanceRuntimeException.class)
-    public ResponseEntity handleEnhanceRuntimeException(EnhanceRuntimeException e){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getMessage(),e.getCode()));
+    public ResponseEntity<R<?>> handleEnhanceRuntimeException(EnhanceRuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getMessage(), e.getCode()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<R<?>> handleEnhanceRuntimeException(MethodArgumentNotValidException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<R<?>> handleEnhanceRuntimeException(Exception e) {
+        log.error("系统异常。", e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getMessage()));
     }
 
 }

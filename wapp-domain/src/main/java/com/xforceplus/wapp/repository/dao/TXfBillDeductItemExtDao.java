@@ -51,6 +51,9 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
    @Update("update t_xf_bill_deduct_item  where id = #{id} and remaining_amount = remaining_amount - ${amount}  where remaining_amount >= ${amount}  ")
     public int updateBillItem(@Param("id") Long id, @Param("amount") BigDecimal amount);
 
+    @Select("select item.goods_tax_no,item.tax_rate,item.item_short_name,item.unit,item.tax_pre,item.tax_pre_con,ref.price,ref.quantity,ref.use_amount from t_xf_bill_deduct_item_ref ref, t_xf_bill_deduct_item item\n" +
+            "where ref.deduct_id = #{billId} and ref.deduct_item_id = item.id")
+    public List<TXfBillDeductItemEntity> queryItemsByBillId(@Param("billId")Long billId);
 
 
 }

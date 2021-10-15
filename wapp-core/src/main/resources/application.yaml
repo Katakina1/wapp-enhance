@@ -38,7 +38,8 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
 #  type-aliases-package: com.xforceplus.wapp.repository.entity
-
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 # 日志
 #logging:
 #  path: /home/vn03qsx/logs/

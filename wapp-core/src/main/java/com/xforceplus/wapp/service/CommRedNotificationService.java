@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 预制发票与红字信息申请撤销 相关操作
+ * 预制发票与红字信息申请作废 相关操作
  */
 @Service
 public class CommRedNotificationService {
@@ -41,22 +41,22 @@ public class CommRedNotificationService {
     }
 
     /**
-     * 申请调用沃尔玛接口撤销
+     * 申请调用沃尔玛接口作废
      * 调用沃尔玛接口 审核中
      *
      * @param preInvoiceId 预制发票id
      * @return
      */
-    public void applyCancelRedNotification(Long preInvoiceId) {
+    public void applyDestroyRedNotification(Long preInvoiceId) {
         redNotificationOuterService.updateAppliedToWaitAppproveByPid(preInvoiceId);
     }
 
     /**
-     * 直接调用沃尔玛接口撤销
+     * 直接调用沃尔玛接口作废
      *
      * @param preInvoiceId
      */
-    public void confirmCancelRedNotification(Long preInvoiceId) {
+    public void confirmDestroyRedNotification(Long preInvoiceId) {
         redNotificationOuterService.rollback(preInvoiceId);
     }
 
