@@ -2,25 +2,28 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
 import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
 /**
  * <p>
-    * 机构表
-    * </p>
+ * 机构表
+ * </p>
  *
  * @author malong@xforceplus.com
  * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper=true)
-@TableName(value="t_ac_org")
+@ToString(callSuper = true)
+@TableName(value = "t_ac_org")
 public class TAcOrgEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -29,43 +32,43 @@ public class TAcOrgEntity extends BaseEntity {
      * 机构编码
      */
     @TableField("orgcode")
-    private String orgcode;
+    private String orgCode;
 
     /**
      * 机构名称
      */
     @TableField("orgname")
-    private String orgname;
+    private String orgNme;
 
     /**
      * 纳税人识别号
      */
     @TableField("taxno")
-    private String taxno;
+    private String taxNo;
 
     /**
      * 纳税人名称
      */
     @TableField("taxname")
-    private String taxname;
+    private String taxName;
 
     /**
      * 上级机构id
      */
     @TableField("parentid")
-    private Integer parentid;
+    private Integer parentId;
 
     /**
      * 机构类型机构类型(0-大象慧云;1-中心企业;2-购方虚机构;3-销方虚机构;4-管理机构;5-购方企业;6-购销双方;7-门店;8-销方企业)
      */
     @TableField("orgtype")
-    private String orgtype;
+    private String orgType;
 
     /**
      * 联系人
      */
     @TableField("linkman")
-    private String linkman;
+    private String linkMan;
 
     /**
      * 联系电话
@@ -89,7 +92,7 @@ public class TAcOrgEntity extends BaseEntity {
      * 邮政编码
      */
     @TableField("postcode")
-    private String postcode;
+    private String postCode;
 
     /**
      * 开户行
@@ -107,19 +110,19 @@ public class TAcOrgEntity extends BaseEntity {
      * 是否有下级[０－无；１－有]
      */
     @TableField("isbottom")
-    private String isbottom;
+    private String isBottom;
 
     /**
      * 机构级别
      */
     @TableField("orglevel")
-    private Double orglevel;
+    private Double orgLevel;
 
     /**
      * 机构层级代码
      */
     @TableField("orglayer")
-    private String orglayer;
+    private String orgLayer;
 
     /**
      * 所属中心企业
@@ -137,7 +140,7 @@ public class TAcOrgEntity extends BaseEntity {
      * 排序字段
      */
     @TableField("sortno")
-    private String sortno;
+    private String sortNo;
 
     /**
      * 创建时间
@@ -188,37 +191,37 @@ public class TAcOrgEntity extends BaseEntity {
     private String extf3;
 
     /**
-     * 扩展字段5(extension field) 
+     * 扩展字段5(extension field)
      */
     @TableField("extf4")
     private String extf4;
 
     /**
-     * 扩展字段6(extension field)    
+     * 扩展字段6(extension field)
      */
     @TableField("extf5")
     private String extf5;
 
     /**
-     * 扩展字段7(extension field)   
+     * 扩展字段7(extension field)
      */
     @TableField("extf6")
     private String extf6;
 
     /**
-     * 扩展字段8(extension field)    
+     * 扩展字段8(extension field)
      */
     @TableField("extf7")
     private String extf7;
 
     /**
-     * 扩展字段9(extension field) 
+     * 扩展字段9(extension field)
      */
     @TableField("extf8")
     private String extf8;
 
     /**
-     * 扩展字段10(extension field)  
+     * 扩展字段10(extension field)
      */
     @TableField("extf9")
     private String extf9;
@@ -242,7 +245,7 @@ public class TAcOrgEntity extends BaseEntity {
     private Double quota;
 
     @TableField("orgid")
-    private Integer orgid;
+    private Integer orgId;
 
     @TableField("is_mm")
     private String isMm;
@@ -262,91 +265,5 @@ public class TAcOrgEntity extends BaseEntity {
     @TableField("dq_code")
     private String dqCode;
 
-
-    public static final String ORGCODE = "orgcode";
-
-    public static final String ORGNAME = "orgname";
-
-    public static final String TAXNO = "taxno";
-
-    public static final String TAXNAME = "taxname";
-
-    public static final String PARENTID = "parentid";
-
-    public static final String ORGTYPE = "orgtype";
-
-    public static final String LINKMAN = "linkman";
-
-    public static final String PHONE = "phone";
-
-    public static final String ADDRESS = "address";
-
-    public static final String EMAIL = "email";
-
-    public static final String POSTCODE = "postcode";
-
-    public static final String BANK = "bank";
-
-    public static final String ACCOUNT = "account";
-
-    public static final String ISBOTTOM = "isbottom";
-
-    public static final String ORGLEVEL = "orglevel";
-
-    public static final String ORGLAYER = "orglayer";
-
-    public static final String COMPANY = "company";
-
-    public static final String REMARK = "remark";
-
-    public static final String SORTNO = "sortno";
-
-    public static final String CREATE_TIME = "create_time";
-
-    public static final String CREATE_BY = "create_by";
-
-    public static final String LAST_MODIFY_TIME = "last_modify_time";
-
-    public static final String LAST_MODIFY_BY = "last_modify_by";
-
-    public static final String EXTF0 = "extf0";
-
-    public static final String EXTF1 = "extf1";
-
-    public static final String EXTF2 = "extf2";
-
-    public static final String EXTF3 = "extf3";
-
-    public static final String EXTF4 = "extf4";
-
-    public static final String EXTF5 = "extf5";
-
-    public static final String EXTF6 = "extf6";
-
-    public static final String EXTF7 = "extf7";
-
-    public static final String EXTF8 = "extf8";
-
-    public static final String EXTF9 = "extf9";
-
-    public static final String COM_TYPE = "com_type";
-
-    public static final String IS_BLACK = "is_black";
-
-    public static final String QUOTA = "quota";
-
-    public static final String ORGID = "orgid";
-
-    public static final String IS_MM = "is_mm";
-
-    public static final String STORE_NUMBER = "store_number";
-
-    public static final String LINK_NAME = "link_name";
-
-    public static final String IS_UPDATE = "is_update";
-
-    public static final String COMPANY_CODE = "company_code";
-
-    public static final String DQ_CODE = "dq_code";
 
 }

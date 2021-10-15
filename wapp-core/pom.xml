@@ -225,19 +225,19 @@
             <version>${joda-time-version}</version>
         </dependency>
         <!-- activeMq客户端 -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
-            <version>${activemq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-activemq</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.activemq</groupId>-->
+<!--            <artifactId>activemq-all</artifactId>-->
+<!--            <version>${activemq.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-activemq</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework</groupId>-->
+<!--            <artifactId>spring-jms</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.aisino.pdf</groupId>
             <artifactId>check</artifactId>
@@ -435,6 +435,21 @@
             <groupId>xf-bm-xplat-msg</groupId>
             <artifactId>split-client-api</artifactId>
             <version>1.1.19-SNAPSHOT</version>
+        </dependency>
+        <!-- activeMq客户端 -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+            <version>5.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-activemq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+            <version>4.2.4.RELEASE</version>
         </dependency>
     </dependencies>
     <build>

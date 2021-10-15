@@ -21,3 +21,6 @@ wapp:
       tcp: 443
 
 taxRateSet: 9,6,5,4
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
