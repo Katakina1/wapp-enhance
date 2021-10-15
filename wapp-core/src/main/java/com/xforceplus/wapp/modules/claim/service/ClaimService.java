@@ -183,13 +183,11 @@ public class ClaimService {
         //<结算单编号,结算单id>
         Map<String, Long> settlementIdToNoMap = tXfSettlementEntityList.stream().collect(Collectors.toMap(TXfSettlementEntity::getSettlementNo, TXfSettlementEntity::getId));
         //<结算单id,Array<索赔单id列表>>
-        Map<Long, List<Long>> settlementIdToBillDeductIdMap = Maps.newHashMap();
         settlementIdToBillDeductMap.entrySet().forEach(entry -> {
             Long settlementId = settlementIdToNoMap.get(entry.getKey());
-            settlementIdToBillDeductIdMap.put(settlementId, entry.getValue().stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList()));
-        });
-        settlementIdToBillDeductIdMap.entrySet().forEach(entry -> {
-            applyClaimVerdict(entry.getKey(), entry.getValue());
+            List<Long> settlementDeductIdList = entry.getValue().stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
+            applyClaimVerdict(settlementId, settlementDeductIdList);
+
         });
     }
 
