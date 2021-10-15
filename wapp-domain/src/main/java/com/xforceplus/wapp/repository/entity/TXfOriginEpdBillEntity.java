@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-15
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -76,8 +76,8 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
     @TableField("clearing_date")
     private String clearingDate;
 
-    @TableField("amount_in_local")
-    private String amountInLocal;
+    @TableField("amount_in_local_currency")
+    private String amountInLocalCurrency;
 
     @TableField("reference_key_2")
     private String referenceKey2;
@@ -90,9 +90,6 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
 
     @TableField("payment_block")
     private String paymentBlock;
-
-    @TableField("currency")
-    private String currency;
 
     @TableField("posting_date")
     private String postingDate;
@@ -134,7 +131,7 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
 
     public static final String CLEARING_DATE = "clearing_date";
 
-    public static final String AMOUNT_IN_LOCAL = "amount_in_local";
+    public static final String AMOUNT_IN_LOCAL_CURRENCY = "amount_in_local_currency";
 
     public static final String REFERENCE_KEY_2 = "reference_key_2";
 
@@ -143,8 +140,6 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
     public static final String REFERENCE = "reference";
 
     public static final String PAYMENT_BLOCK = "payment_block";
-
-    public static final String CURRENCY = "currency";
 
     public static final String POSTING_DATE = "posting_date";
 
