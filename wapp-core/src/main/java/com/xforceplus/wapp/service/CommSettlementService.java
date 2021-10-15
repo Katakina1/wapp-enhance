@@ -173,6 +173,49 @@ public class CommSettlementService {
      */
     @Transactional
     public void againSplitSettlementPreInvoice(Long settlementId) {
+        //检查结算单是否能重新拆票
+        checkAgainSplitSettlementPreInvoice(settlementId);
+        //结算单
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
+        if (tXfSettlementEntity == null) {
+            throw new EnhanceRuntimeException("结算单不存在");
+        }
+        QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
+        //拆票（针对已作废的预制发票明细重新拆票）
+        QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
+
+        //申请预制发票红字信息
+        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+            QueryWrapper<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityQueryWrapper = new QueryWrapper();
+            tXfPreInvoiceItemEntityQueryWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, tXfPreInvoiceEntity.getId());
+            List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(tXfPreInvoiceItemEntityQueryWrapper);
+            PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
+            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
+            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntityList);
+            commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
+        });
+
+        //删除结算单之前已作废的预制发票（作废了）避免申请逻辑状态判断问题
+        List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
+        List<Long> preInvoiceIdList = tXfPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
+        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
+        QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
+        preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
+        tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
+    }
+
+    /**
+     * 检查结算单是否能重新拆票
+     * 如果不能则会抛出异常提示 调用方捕获异常处理相关后续逻辑
+     * @param settlementId
+     * @return
+     */
+    public void checkAgainSplitSettlementPreInvoice(Long settlementId){
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -198,30 +241,6 @@ public class CommSettlementService {
                 throw new EnhanceRuntimeException("不能重新申请预制发票与红字信息");
             }
         }
-        //拆票（针对已作废的预制发票明细重新拆票）
-        QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
-        preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
-        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
-
-        //申请预制发票红字信息
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
-            QueryWrapper<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityQueryWrapper = new QueryWrapper();
-            tXfPreInvoiceItemEntityQueryWrapper.eq(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, tXfPreInvoiceEntity.getId());
-            List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(tXfPreInvoiceItemEntityQueryWrapper);
-            PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
-            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
-            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntityList);
-            commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
-        });
-
-        //删除结算单之前已作废的预制发票（作废了）避免申请逻辑状态判断问题
-        List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
-        List<Long> preInvoiceIdList = tXfPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
-        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
-        QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
-        preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
-        tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
     }
 
     /**
