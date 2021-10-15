@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.claim.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -8,7 +9,10 @@ import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.repository.dao.*;
-import com.xforceplus.wapp.repository.entity.*;
+import com.xforceplus.wapp.repository.entity.TDxQuestionPaperEntity;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommClaimService;
 import com.xforceplus.wapp.service.CommRedNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,7 @@ import java.util.stream.Collectors;
  * 索赔的结算单相关逻辑操作
  */
 @Service
-public class ClaimService {
+public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEntity> {
 
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;

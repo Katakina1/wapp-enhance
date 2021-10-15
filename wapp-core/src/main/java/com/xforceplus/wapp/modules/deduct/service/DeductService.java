@@ -1,10 +1,14 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.ClaimBillItemData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
@@ -37,7 +41,7 @@ import java.util.function.Function;
  */
 @Service
 @Slf4j
-public class DeductService  {
+public class DeductService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEntity>  {
     @Autowired
     private TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
@@ -310,6 +314,21 @@ public class DeductService  {
         TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
         BeanUtils.copyProperties(deductBillBaseData, tXfBillDeductEntity);
         return tXfBillDeductEntity;
+    }
+
+
+    /**
+     * @param request 列表单参数
+     * @return
+     */
+    public Page<TXfBillDeductEntity> deductByPage(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum){
+        TXfBillDeductEntity deductEntity=new TXfBillDeductEntity();
+        deductEntity.setBusinessNo(request.getBillNo());
+        deductEntity.setPurchaserNo(request.getPurchaserNo());
+        deductEntity.setBusinessType(typeEnum.getType());
+        LambdaQueryWrapper<TXfBillDeductEntity> wrapper= Wrappers.lambdaQuery(deductEntity);
+        Page<TXfBillDeductEntity> page=new Page<>(request.getPage(),request.getSize());
+        return tXfBillDeductExtDao.selectPage(page,wrapper);
     }
 
 }
