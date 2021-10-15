@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-15
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -35,7 +35,7 @@ public class TXfRedNotificationEntity extends BaseEntity {
      * 开票日期
      */
     @TableField("invoice_date")
-    private Date invoiceDate;
+    private String invoiceDate;
 
     /**
      * 红字信息唯一标识
@@ -62,13 +62,13 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private String applyRemark;
 
     /**
-     * 1.未申请 2.申请中 3.已申请 4.撤销待审核
+     * 1.未申请 2.申请中 3.已申请 4.撤销待审核 
      */
     @TableField("applying_status")
     private Integer applyingStatus;
 
     /**
-     * 审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销
+     * 审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批
      */
     @TableField("approve_status")
     private Integer approveStatus;
@@ -94,14 +94,14 @@ public class TXfRedNotificationEntity extends BaseEntity {
     /**
      * 发票号码
      */
-    @TableField("invoice_no")
-    private String invoiceNo;
+    @TableField("origin_invoice_no")
+    private String originInvoiceNo;
 
     /**
      * 发票代码
      */
-    @TableField("invoice_code")
-    private String invoiceCode;
+    @TableField("origin_invoice_code")
+    private String originInvoiceCode;
 
     /**
      * 原发票类型
@@ -241,14 +241,14 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
-    @TableField("remark")
-    private String remark;
-
     @TableField("terminal_type")
     private Integer terminalType;
 
     @TableField("user_id")
     private Long userId;
+
+    @TableField("remark")
+    private String remark;
 
 
     public static final String ID = "id";
@@ -273,9 +273,9 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String INVOICE_TYPE = "invoice_type";
 
-    public static final String INVOICE_NO = "invoice_no";
+    public static final String ORIGIN_INVOICE_NO = "origin_invoice_no";
 
-    public static final String INVOICE_CODE = "invoice_code";
+    public static final String ORIGIN_INVOICE_CODE = "origin_invoice_code";
 
     public static final String ORIGIN_INVOICE_TYPE = "origin_invoice_type";
 
@@ -323,10 +323,10 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
-    public static final String REMARK = "remark";
-
     public static final String TERMINAL_TYPE = "terminal_type";
 
     public static final String USER_ID = "user_id";
+
+    public static final String REMARK = "remark";
 
 }

@@ -140,3 +140,13 @@ management:
   endpoint:
     health:
       show-details: always
+
+    # Activemq
+
+activemq:
+  url: failover:(tcp://10.100.2.17:61616)?randomize=false&jms.useAsyncSend=true&jms.sendTimeout=3000
+  url_one: tcp://10.100.2.17:61616
+  url_two: tcp://10.100.2.17:61616
+  user: admin
+  password: admin
+  enhance_claim_verdict_queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理

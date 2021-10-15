@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
 import com.xforceplus.wapp.modules.rednotification.model.QueryModel;
@@ -50,7 +51,7 @@ public class RedNotificationOuterService {
     }
 
     /**
-     * 修改已申请的红字信息为撤销待审核
+     * 修改已申请的红字信息为撤销待审核,进入审批页面
      * @param pid 预制发id
      * @return
      */
@@ -62,7 +63,7 @@ public class RedNotificationOuterService {
           return   Response.failed(String.format("pid[%s]未找到已申请的记录",pid));
         }
 
-        tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPROVE.getValue());
+        tXfRedNotificationEntity.setApproveStatus(ApproveStatus.WAIT_TO_APPROVE.getValue());
         tXfRedNotificationEntity.setUpdateDate(new Date());
         redNotificationService.getBaseMapper().updateById(tXfRedNotificationEntity);
         return Response.ok("修改成功");
