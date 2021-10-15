@@ -253,7 +253,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private String redNotificationNo;
 
     /**
-     * 红字信息编号申请状态  1-发起申请 2-已申请
+     * 红字信息编号申请状态0未申请  1-发起申请 2-已申请
      */
     @TableField("red_notification_flag")
     private Integer redNotificationFlag;

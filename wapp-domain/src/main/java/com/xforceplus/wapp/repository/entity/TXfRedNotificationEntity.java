@@ -1,10 +1,10 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-11
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -28,7 +28,7 @@ public class TXfRedNotificationEntity extends BaseEntity {
     /**
      * 业务主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -244,11 +244,11 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("remark")
     private String remark;
 
-    @TableField("user_id")
-    private Long userId;
-
     @TableField("terminal_type")
     private Integer terminalType;
+
+    @TableField("user_id")
+    private Long userId;
 
 
     public static final String ID = "id";
@@ -325,8 +325,8 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String REMARK = "remark";
 
-    public static final String USER_ID = "user_id";
-
     public static final String TERMINAL_TYPE = "terminal_type";
+
+    public static final String USER_ID = "user_id";
 
 }

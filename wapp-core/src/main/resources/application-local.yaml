@@ -21,3 +21,6 @@ wapp:
       tcp: 443
   db2:
     base-url: 127.0.0.1
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

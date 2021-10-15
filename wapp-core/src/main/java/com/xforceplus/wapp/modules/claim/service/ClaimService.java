@@ -150,7 +150,7 @@ public class ClaimService {
      */
     @Transactional
     public void agreeClaimVerdict(Long settlementId) {
-        commClaimService.cancelClaimSettlement(settlementId);
+        commClaimService.destroyClaimSettlement(settlementId);
     }
 
     /**

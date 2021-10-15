@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.sequence.IDSequence;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     RedNotificationItemService redNotificationItemService;
     @Autowired
     TaxWareService taxWareService;
+    @Autowired
+    IDSequence iDSequence;
+
 
 
     public String add(AddRedNotificationRequest request) {
@@ -43,6 +48,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             TXfRedNotificationEntity tXfRedNotificationEntity = redNotificationMainMapper.mainInfoToEntity(info.getRednotificationMain());
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationMainMapper.itemInfoToEntityList(info.getRedNotificationItemList());
 
+            tXfRedNotificationEntity.setId(iDSequence.nextId());
+            tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPLY.getValue());
+            tXfRedNotificationEntity.setStatus(1);
             listMain.add(tXfRedNotificationEntity);
             listItem.addAll(tXfRedNotificationDetailEntities);
         });
@@ -63,6 +71,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      */
     public Response<GetTerminalResult> getTerminals(QueryModel queryModel) {
         List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        if (CollectionUtils.isEmpty(filterData)){
+            return Response.failed("未筛选到数据");
+        }
         List<String> collect = filterData.stream().map(TXfRedNotificationEntity::getPurchaserTaxNo).distinct().collect(Collectors.toList());
         if (collect.size()>1){
             return Response.failed("所选购方税号不唯一,无法获取唯一终端");
@@ -107,21 +118,24 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (queryModel.getInvoiceOrigin()!=null){
             queryWrapper.eq(TXfRedNotificationEntity::getInvoiceOrigin, queryModel.getInvoiceOrigin());
         }
-        if (StringUtils.isEmpty(queryModel.getCompanyCode())){
+        if (!StringUtils.isEmpty(queryModel.getCompanyCode())){
             queryWrapper.eq(TXfRedNotificationEntity::getCompanyCode, queryModel.getCompanyCode());
         }
-        if (StringUtils.isEmpty(queryModel.getPurchaserName())){
+        if (!StringUtils.isEmpty(queryModel.getPurchaserName())){
             queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName, queryModel.getPurchaserName());
         }
 
-        if (StringUtils.isEmpty(queryModel.getRedNotificationNo())){
+        if (!StringUtils.isEmpty(queryModel.getRedNotificationNo())){
             queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo, queryModel.getRedNotificationNo());
         }
-        if (StringUtils.isEmpty(queryModel.getBillNo())){
+        if (!StringUtils.isEmpty(queryModel.getBillNo())){
             queryWrapper.eq(TXfRedNotificationEntity::getBillNo, queryModel.getBillNo());
         }
         if (queryModel.getPaymentTime()!=null){
             queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime, queryModel.getPaymentTime());
+        }
+        if (queryModel.getPid() !=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getPid,queryModel.getPid());
         }
         return queryWrapper;
     }

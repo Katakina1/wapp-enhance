@@ -21,3 +21,8 @@ wapp:
       tcp: 443
   db2:
     base-url: 127.0.0.1
+spring:
+  redis:
+    host: wapp-redis
+server:
+  port: 6060
