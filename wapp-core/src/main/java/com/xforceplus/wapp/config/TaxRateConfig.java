@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class TaxRateConfig {
-    @Value("${taxRateSet}")
+    @Value("${taxRateSet:''}")
     private String taxRateStr;
     private Map<BigDecimal, BigDecimal> taxRateMap = Maps.newHashMap();
 
