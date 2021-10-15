@@ -16,4 +16,13 @@ public class DeductListRequest {
     private String billNo;
     private long page = 1;
     private long size = 50;
+
+    private String deductDateBegin;
+    private String deductDateEnd;
+    private String verdictDateBegin;
+    private String verdictDateEnd;
+
+    private String invoiceNo;
+    private String taxRate;
+    private Integer status;
 }
