@@ -38,7 +38,7 @@ public class CommAgreementService {
     private PreinvoiceService preinvoiceService;
 
     /**
-     * 撤销协议单 撤销结算单 蓝票释放额度 如果有预制发票 撤销预制发票
+     * 作废协议单 作废结算单 蓝票释放额度 如果有预制发票 作废预制发票
      * 协议单还可以再次使用
      *
      * @param settlementId 结算单id
@@ -65,7 +65,7 @@ public class CommAgreementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         List<TXfPreInvoiceEntity> pPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
-        //修改撤销状态====
+        //修改作废状态====
         //修改结算单状态
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
@@ -79,15 +79,15 @@ public class CommAgreementService {
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
-        //撤销预制发票
+        //作废预制发票
         pPreInvoiceList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-            // 撤销红字信息
-            commRedNotificationService.confirmCancelRedNotification(tXfPreInvoiceEntity.getId());
+            // 作废红字信息
+            commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //释放结算单蓝票

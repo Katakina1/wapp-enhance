@@ -41,7 +41,7 @@ public class CommClaimService {
     private TDxInvoiceDao tDxInvoiceDao;
 
     /**
-     * 撤销整个索赔单流程
+     * 作废整个索赔单流程
      *
      * @param settlementId 结算单id
      * @return
@@ -77,8 +77,8 @@ public class CommClaimService {
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-            // 撤销红字信息
-            commRedNotificationService.confirmCancelRedNotification(tXfPreInvoiceEntity.getId());
+            // 作废红字信息
+            commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //修改结算单状态
@@ -87,7 +87,7 @@ public class CommClaimService {
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
 
         //修改索赔单状态
-        //撤销
+        //作废
         billDeductList1.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
@@ -103,7 +103,7 @@ public class CommClaimService {
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
-        //释放索赔单明细额度（撤销的索赔单）
+        //释放索赔单明细额度（作废的索赔单）
         List<Long> billDeductIdList = billDeductList1.stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
         QueryWrapper<TXfBillDeductItemRefEntity> billDeductItemRefEntityWrapper = new QueryWrapper<>();
         billDeductItemRefEntityWrapper.in(TXfBillDeductItemRefEntity.DEDUCT_ID, billDeductIdList);
@@ -119,7 +119,7 @@ public class CommClaimService {
             tXfBillDeductItemRefDao.deleteById(tXfBillDeductItemRefEntity.getId());
         });
 
-        //释放索赔单蓝票（撤销的索赔单）
+        //释放索赔单蓝票（作废的索赔单）
         List<String> billDeductBusinessNoList = billDeductList1.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList());
         QueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new QueryWrapper();
         tXfBillDeductInvoiceWrapper.in(TXfBillDeductInvoiceEntity.BUSINESS_NO, billDeductBusinessNoList);
@@ -140,7 +140,7 @@ public class CommClaimService {
         });
 
         //删除蓝票关系
-        //释放索赔单蓝票额度（撤销的索赔单）
+        //释放索赔单蓝票额度（作废的索赔单）
         tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
     }
 }
