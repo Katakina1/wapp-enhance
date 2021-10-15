@@ -9,8 +9,17 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
 
 @RestController
@@ -96,16 +105,56 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @GetMapping(value = "/template")
-    public Response template(){
-        return Response.ok("成功");
+    public void template(HttpServletResponse res, HttpServletRequest req){
+        try {
+            String name = "客商信息导入模板";
+            String fileName = name+".xlsx";
+            ServletOutputStream out;
+            res.setContentType("multipart/form-data");
+            res.setCharacterEncoding("UTF-8");
+            res.setContentType("text/html");
+            String filePath = getClass().getResource("/excl/" + fileName).getPath();
+            String userAgent = req.getHeader("User-Agent");
+            if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
+            fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
+            } else {
+            // 非IE浏览器的处理：
+            fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
+            }
+            filePath = URLDecoder.decode(filePath, "UTF-8");
+            res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
+            FileInputStream inputStream = null;
+
+                inputStream = new FileInputStream(filePath);
+
+            out = res.getOutputStream();
+            int b = 0;
+            byte[] buffer = new byte[1024];
+            while ((b = inputStream.read(buffer)) != -1) {
+            // 4.写到输出流(out)中
+            out.write(buffer, 0, b);
+            }
+            inputStream.close();
+
+            if (out != null) {
+            out.flush();
+            out.close();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @ApiOperation(value = "红字信息表导入", notes = "", response = Response.class, tags = {"red-notification",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/import")
-    public Response importNotification(MultipartHttpServletRequest multipartRequest){
-
+    public Response importNotification(@RequestParam("file") MultipartFile file){
+        rednotificationService.importNotification(file);
         return Response.ok("成功");
     }
 
