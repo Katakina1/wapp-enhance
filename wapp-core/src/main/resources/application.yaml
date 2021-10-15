@@ -139,7 +139,7 @@ management:
           - health
 
 # 注意事项
-# 1、请获取标准的EXCEL模板
+# 1、请从研发团队获取标准的EXCEL模板
 agreementBill:
   remote:
     path: /tmp/agrementBill/
@@ -158,5 +158,3 @@ epdBill:
     fileNameKeyWords:
   local:
     path: /tmp/epdBill/
-
-

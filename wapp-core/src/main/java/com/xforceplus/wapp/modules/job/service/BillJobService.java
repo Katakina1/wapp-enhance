@@ -45,6 +45,10 @@ public class BillJobService {
         TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
         tXfBillJobEntity.setId(id);
         tXfBillJobEntity.setJobStatus(status);
+        return updateById(tXfBillJobEntity);
+    }
+
+    public int updateById(TXfBillJobEntity tXfBillJobEntity) {
         tXfBillJobEntity.setUpdateTime(new Date());
         return tXfBillJobDao.updateById(tXfBillJobEntity);
     }

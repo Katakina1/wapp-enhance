@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static com.xforceplus.wapp.enums.BillJobStatusEnum.INIT;
 import static com.xforceplus.wapp.enums.BillJobTypeEnum.EPD_BILL_JOB;
 
 /**
@@ -67,6 +68,7 @@ public class EpdBillJobGenerator extends AbstractBillJobGenerator {
                     TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
                     tXfBillJobEntity.setJobName(fileName);
                     tXfBillJobEntity.setJobType(jobType);
+                    tXfBillJobEntity.setJobStatus(INIT.getJobStatus());
                     tXfBillJobEntity.setCreateTime(now);
                     tXfBillJobEntity.setUpdateTime(now);
                     // 如果数据不存在则插入

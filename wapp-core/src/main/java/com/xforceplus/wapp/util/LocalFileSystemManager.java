@@ -63,4 +63,16 @@ public class LocalFileSystemManager {
             }
         }
     }
+
+    /**
+     * 文件是否存在
+     *
+     * @param path
+     * @param fileName
+     * @return
+     */
+    public static boolean isFileExists(String path, String fileName) {
+        File file = new File(path, fileName);
+        return file.exists();
+    }
 }

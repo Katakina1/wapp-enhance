@@ -13,6 +13,6 @@ public class EPDBillFilterCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {
-        return false;
+        return true;
     }
 }

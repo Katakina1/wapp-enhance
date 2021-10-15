@@ -13,6 +13,6 @@ public class ClaimBillFilterCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {
-        return false;
+        return true;
     }
 }

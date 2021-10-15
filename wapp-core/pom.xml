@@ -432,6 +432,11 @@
             <artifactId>commons-chain</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>2.2.11</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>app</finalName>
