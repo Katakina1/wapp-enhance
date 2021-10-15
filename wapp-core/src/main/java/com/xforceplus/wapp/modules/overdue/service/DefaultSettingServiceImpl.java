@@ -18,17 +18,18 @@ import org.springframework.stereotype.Service;
 public class DefaultSettingServiceImpl extends ServiceImpl<DefaultSettingDao, DefaultSettingEntity> {
     public String getOverdueDay(DefaultSettingEnum settingEnum) {
         return new LambdaQueryChainWrapper<>(getBaseMapper())
-                .eq(DefaultSettingEntity::getCode, settingEnum.getValue())
+                .eq(DefaultSettingEntity::getCode, settingEnum.getCode())
                 .select(DefaultSettingEntity::getValue).oneOpt().map(DefaultSettingEntity::getValue)
                 .orElse("30");
     }
 
-    public Boolean updateOverdueDay(DefaultSettingEnum settingEnum, String day) {
+    public Boolean updateOverdueDay(DefaultSettingEnum settingEnum, Integer day) {
         return new LambdaQueryChainWrapper<>(getBaseMapper())
-                .eq(DefaultSettingEntity::getCode, settingEnum.getValue())
+                .eq(DefaultSettingEntity::getCode, settingEnum.getCode())
                 .oneOpt().map(it -> new LambdaUpdateChainWrapper<>(getBaseMapper())
                         .set(DefaultSettingEntity::getValue, day)
                         .eq(DefaultSettingEntity::getId, it.getId()).update())
-                .orElse(Boolean.FALSE);
+                .orElseGet(() -> save(DefaultSettingEntity.builder().code(settingEnum.getCode())
+                        .meaning(settingEnum.getMessage()).value(day.toString()).createUser(111L).updateUser(111L).build()));
     }
 }

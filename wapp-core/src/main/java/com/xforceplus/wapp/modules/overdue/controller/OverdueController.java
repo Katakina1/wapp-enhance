@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.overdue.controller;
 
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
@@ -24,6 +25,9 @@ import lombok.val;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.constraints.Min;
+import java.util.Optional;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -88,9 +92,15 @@ public class OverdueController {
     @PostMapping("/overdue")
     public R<Boolean> addOverdue(@RequestBody @Validated(OverdueCreateValidGroup.class) OverdueDto overdue) {
         long start = System.currentTimeMillis();
-        OverdueEntity map = overdueConverter.map(overdue);
-        map.setCreateUser(111L);
-        map.setUpdateUser(111L);
+        val hasExist = new LambdaQueryChainWrapper<>(overdueService.getBaseMapper())
+                .isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getSellerTaxNo, overdue.getSellerTaxNo())
+                .eq(OverdueEntity::getType, overdue.getType())
+                .oneOpt();
+        if (hasExist.isPresent()) {
+            return R.fail("配置已存在");
+        }
+        OverdueEntity map = overdueConverter.map(overdue, 111L);
         boolean update = overdueService.save(map);
         log.info("超期配置新增,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(update);
@@ -99,7 +109,8 @@ public class OverdueController {
     @SneakyThrows
     @ApiOperation("导入超期配置")
     @PutMapping("/overdue/{type}")
-    public R<Integer> exportOverdue(@ApiParam(value = "超期配置类型", required = true) @PathVariable Integer type, @RequestParam("file") MultipartFile file) {
+    public R<Integer> exportOverdue(@ApiParam(value = "超期配置类型", required = true) @PathVariable Integer type,
+                                    @RequestParam("file") MultipartFile file) {
         OverdueTypeEnum typeEnum = ValueEnum.getEnumByValue(OverdueTypeEnum.class, type).orElseThrow(() -> new RuntimeException("超期配置类型不正确"));
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
@@ -114,25 +125,30 @@ public class OverdueController {
 
     @ApiOperation("查询默认超期时间")
     @GetMapping("/overdue/{type}/day")
-    public R<String> getOverdueDay(@ApiParam(value = "超期配置类型", required = true) @PathVariable String type) {
+    public R<String> getOverdueDay(@ApiParam(value = "超期配置类型 1.索赔、2.协议、3.EPD", required = true)
+                                   @PathVariable Integer type) {
         long start = System.currentTimeMillis();
         R<String> r = ValueEnum.getEnumByValue(DefaultSettingEnum.class, type).map(it -> {
             String result = defaultSettingService.getOverdueDay(it);
             return R.ok(result);
-        }).orElse(R.fail("参数不正确"));
+        }).orElse(R.fail("超期配置类型不正确"));
         log.info("默认超期时间查询,耗时:{}ms", System.currentTimeMillis() - start);
         return r;
     }
 
     @ApiOperation("修改默认超期时间")
     @PatchMapping("/overdue/{type}/day/{day}")
-    public R<Boolean> updateOverdueDay(@ApiParam(value = "超期类型", required = true) @PathVariable String type,
-                                       @ApiParam(value = "超期时间（天）", required = true) @PathVariable String day) {
+    public R<Boolean> updateOverdueDay(@ApiParam(value = "超期配置类型 1.索赔、2.协议、3.EPD", required = true)
+                                       @PathVariable Integer type,
+                                       @ApiParam(value = "超期时间（天）", required = true) @PathVariable Integer day) {
         long start = System.currentTimeMillis();
+        if (day <= 0) {
+            return R.fail("超期时间必须大于等于0");
+        }
         R<Boolean> r = ValueEnum.getEnumByValue(DefaultSettingEnum.class, type).map(it -> {
             Boolean result = defaultSettingService.updateOverdueDay(it, day);
             return R.ok(result);
-        }).orElse(R.fail("参数不正确"));
+        }).orElse(R.fail("超期配置类型不正确"));
         log.info("默认超期时间修改,耗时:{}ms", System.currentTimeMillis() - start);
         return r;
     }

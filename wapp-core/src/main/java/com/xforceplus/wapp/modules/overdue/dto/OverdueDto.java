@@ -7,11 +7,11 @@ import com.xforceplus.wapp.modules.overdue.valid.OverdueUpdateValidGroup;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -27,7 +27,7 @@ public class OverdueDto {
     @ExcelIgnore
     @ApiModelProperty("超期配置类型 1.索赔、2.协议、3.EPD")
     @NotNull(message = "超期配置类型不能为空", groups = {OverdueUpdateValidGroup.class, OverdueCreateValidGroup.class})
-    @Pattern(regexp = "[123]", message = "超期配置类型不正确")
+    @Range.List(value = {@Range(min = 1, max = 3, message = "超期配置类型不正确", groups = {OverdueUpdateValidGroup.class, OverdueCreateValidGroup.class})})
     private Integer type;
 
     @ApiModelProperty("供应商名称")
@@ -35,15 +35,15 @@ public class OverdueDto {
     @NotEmpty(message = "供应商名称不能为空", groups = OverdueCreateValidGroup.class)
     private String sellerName;
 
-    @ApiModelProperty("供应商编号")
-    @ExcelProperty(value = "供应商编号")
-    @NotEmpty(message = "供应商编号不能为空", groups = OverdueCreateValidGroup.class)
-    private String sellerNo;
-
     @ApiModelProperty("供应商税号")
     @ExcelProperty(value = "供应商税号")
     @NotEmpty(message = "供应商税号不能为空", groups = OverdueCreateValidGroup.class)
     private String sellerTaxNo;
+
+    @ApiModelProperty("供应商编号")
+    @ExcelProperty(value = "供应商编号")
+    @NotEmpty(message = "供应商编号不能为空", groups = OverdueCreateValidGroup.class)
+    private String sellerNo;
 
     @ApiModelProperty("超期时间（天）")
     @ExcelProperty(value = "超期时间（天）")
