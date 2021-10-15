@@ -10,6 +10,7 @@ import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapp
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.repository.dao.TXfExceptionReportDao;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
+import com.xforceplus.wapp.sequence.IDSequence;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,21 +37,34 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     private static final SimpleDateFormat sdf = new SimpleDateFormat(YYYY_MM_DD);
 
     @Autowired
+    private IDSequence idSequence;
+
+    @Autowired
     private ExceptionReportMapper exceptionReportMapper;
 
 
     @Override
     public void add4Claim(TXfExceptionReportEntity entity) {
-
+        entity.setType(ExceptionReportTypeEnum.CLAIM.getType());
+        saveExceptionReport(entity);
     }
 
     @Override
     public void add4Agreement(TXfExceptionReportEntity entity) {
-
+        entity.setType(ExceptionReportTypeEnum.AGREEMENT.getType());
+        saveExceptionReport(entity);
     }
 
     @Override
     public void add4EPD(TXfExceptionReportEntity entity) {
+        entity.setType(ExceptionReportTypeEnum.EPD.getType());
+        saveExceptionReport(entity);
+    }
+
+    private void saveExceptionReport(TXfExceptionReportEntity entity) {
+
+        entity.setId(idSequence.nextId());
+        this.save(entity);
 
     }
 
