@@ -5,6 +5,7 @@ import com.xforceplus.wapp.BaseUnitTest;
 import com.xforceplus.wapp.WappApplication;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.ApplyRequest;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
+import com.xforceplus.wapp.modules.rednotification.model.taxware.RedMessage;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.TaxWareResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -34,5 +35,15 @@ public class TaxWareServiceTest extends BaseUnitTest {
         ApplyRequest applyRequest = gson.fromJson(reqJson, ApplyRequest.class);
         TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
         assertTrue(Objects.equals(taxWareResponse.getCode(),"TXWR000000"));
+    }
+
+    /**
+     * 处理红字信息结果
+     */
+    @Test
+    public void handle() {
+        String reqJson = readJsonFromFile("data/applyResult.json");
+        RedMessage redMessage = gson.fromJson(reqJson, RedMessage.class);
+        taxWareService.handle(redMessage);
     }
 }

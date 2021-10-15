@@ -23,4 +23,5 @@ public class TaxWareResponse {
         @JsonProperty("serialNo")
         private String serialNo;
     }
+
 }
