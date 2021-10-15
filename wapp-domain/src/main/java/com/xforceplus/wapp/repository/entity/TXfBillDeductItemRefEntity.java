@@ -49,7 +49,7 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
      * 单价
      */
     @TableField("price")
-    private String price;
+    private BigDecimal price;
 
     /**
      * 数量
