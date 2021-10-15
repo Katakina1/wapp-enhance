@@ -14,6 +14,7 @@ public enum TXfSettlementStatusEnum {
     FINISH(5,"已完成"),
     WAIT_CHECK(6,"待审核"),
     DESTROY(7,"已作废"),
+    WAIT_MATCH_BLUE_INVOICE(8,"待匹配蓝票"),
     ;
 
     @Getter
