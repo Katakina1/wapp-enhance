@@ -61,6 +61,7 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         if (CollectionUtils.isEmpty(listener.getValidInvoices())) {
             return Either.left("未解析到数据");
         }
+        log.debug("导入数据解析条数:{}", listener.getRows());
         Set<String> taxNos = listener.getValidInvoices().stream().map(OverdueDto::getSellerTaxNo).collect(Collectors.toSet());
         Set<String> exist = new LambdaQueryChainWrapper<>(getBaseMapper()).in(OverdueEntity::getSellerTaxNo, taxNos)
                 .isNull(OverdueEntity::getDeleteFlag).select(OverdueEntity::getSellerTaxNo)

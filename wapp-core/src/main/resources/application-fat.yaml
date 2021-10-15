@@ -19,4 +19,5 @@ wapp:
       http: https://janus-inte.xforceplus.com:443
     port:
       tcp: 443
-
+  db2:
+    base-url: 127.0.0.1

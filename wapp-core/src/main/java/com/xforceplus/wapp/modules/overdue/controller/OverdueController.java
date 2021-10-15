@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.modules.overdue.controller;
 
-import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
@@ -26,10 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * @author mashaopeng@xforceplus.com
  */
-@Api(tags = "超期配置")
+@Api(tags = "超期配置管理")
 @Slf4j
 @RestController
-@RequestMapping(EnhanceApi.BASE_PATH + "/v1")
+@RequestMapping(EnhanceApiV1.BASE_PATH)
 public class OverdueController {
     private final DefaultSettingServiceImpl defaultSettingService;
     private final OverdueServiceImpl overdueService;
