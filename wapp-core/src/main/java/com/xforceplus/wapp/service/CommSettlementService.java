@@ -192,7 +192,7 @@ public class CommSettlementService {
             boolean hasNoApplyRedSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
                     .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
             //需要判断结算单是否在沃尔玛有待申请状态(如果没有待申请状态的红字信息说明税件神奇失败了，这个时候可以重新申请预制发票的红字信息)
-            //是否有申请中的红字信息
+            //是否有申请中的红字信息 或者 是否有审核通过
             boolean hasApplyWappRed = redNotificationOuterService.isWaitingApplyBySettlementNo(tXfSettlementEntity.getSettlementNo());
             if (!hasNoApplyRedSettlementPreInvoice && !hasApplyWappRed) {
                 throw new EnhanceRuntimeException("不能重新申请预制发票与红字信息");
