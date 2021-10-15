@@ -1,0 +1,43 @@
+{
+  "deviceUn": "ZAFUU9ZG",
+  "redInfoList": [{
+    "amount": {
+      "amountWithoutTax": -100,
+      "amountWithTax": -103,
+      "taxAmount": -3
+    },
+    "sellerTaxCode": "91420111271850146W",
+    "originalInvoiceType": "s",
+    "sellerName": "武汉市丰业电器有限公司",
+    "pid": "5854698276003504133",
+    "originalInvoiceNo": "12345678",
+    "purchaserTaxCode": "91652900761142134X",
+    "purchaserName": "中国电信股份有限公司阿克苏分公司",
+    "dupTaxFlag": "0",
+    "details": [{
+      "production": {
+        "productionCode": "1030204010000000000",
+        "unitName": "水泥",
+        "specification": "水泥",
+        "productionName": "*乳制品*水泥"
+      },
+      "detailAmount": {
+        "amountWithoutTax": -100,
+        "taxAmount": -3
+      },
+      "tax": {
+        "taxRate": 0.03,
+        "preferentialTax": false,
+        "zeroTax": "",
+        "taxPolicy": ""
+      }
+    }],
+    "oilMemo": "",
+    "originalInvoiceDate": "20200903",
+    "taxCodeVersion": "39.0",
+    "applicationReason": "2",
+    "originalInvoiceCode": "1236547887"
+  }],
+  "terminalUn": "AZCB8UWK",
+  "serialNo": "5854698276003504131"
+}
