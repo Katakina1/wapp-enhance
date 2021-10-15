@@ -335,7 +335,7 @@ public class DeductService  {
             TXfBillDeductEntity negativeBill = tXfBillDeductExtDao.querySpecialNegativeBill(tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(), deductionEnum.getType(), tXfBillDeductStatusEnum.getCode());
             if (negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) > 0) {
                 try {
-                    batchUpdateMergeBill(tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
+                    batchUpdateMergeBill(deductionEnum,tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
                 } catch (Exception e) {
                     log.error("{}单合并异常 购方:{}，购方:{}，税率:{}", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate());
                 }
@@ -355,17 +355,17 @@ public class DeductService  {
      * @return
      */
     @Transactional
-    public boolean batchUpdateMergeBill(TXfBillDeductEntity tmp,TXfBillDeductEntity negativeBill, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfBillDeductStatusEnum targetSatus) {
+    public boolean batchUpdateMergeBill(XFDeductionBusinessTypeEnum deductionEnum,TXfBillDeductEntity tmp,TXfBillDeductEntity negativeBill, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfBillDeductStatusEnum targetSatus) {
         String purchaserNo = tmp.getPurchaserNo();
         String sellerNo = tmp.getSellerNo();
         BigDecimal taxRate = tmp.getTaxRate();
         Integer type = tmp.getBusinessType();
         Integer status = tXfBillDeductStatusEnum.getCode();
-        Integer targetStatus = TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT.getCode();
+        Integer targetStatus = targetSatus.getCode();
         List<TXfBillDeductEntity> tXfBillDeductEntities = new ArrayList<>();
         tXfBillDeductEntities.add(tmp);
         tXfBillDeductEntities.add(negativeBill);
-        TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities);
+        TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities,deductionEnum);
         tXfBillDeductExtDao.updateMergeNegativeBill(tXfSettlementEntity.getSettlementNo(),purchaserNo, sellerNo, taxRate, type, status, targetStatus);
         tXfBillDeductExtDao.updateMergePositiveBill(tXfSettlementEntity.getSettlementNo(),purchaserNo, sellerNo, taxRate, referenceDate, type, status, targetStatus);
         tXfSettlementDao.insert(tXfSettlementEntity);
@@ -385,14 +385,14 @@ public class DeductService  {
      * @param tXfBillDeductEntities
      * @return
      */
-    public TXfSettlementEntity trans2Settlement(List<TXfBillDeductEntity> tXfBillDeductEntities) {
+    public TXfSettlementEntity trans2Settlement(List<TXfBillDeductEntity> tXfBillDeductEntities,XFDeductionBusinessTypeEnum deductionBusinessTypeEnum) {
         if (CollectionUtils.isEmpty(tXfBillDeductEntities)) {
             return null;
         }
         String purchaserNo = tXfBillDeductEntities.get(0).getPurchaserNo();
         String sellerNo = tXfBillDeductEntities.get(0).getSellerNo();
         BigDecimal taxRate = tXfBillDeductEntities.get(0).getTaxRate();
-
+        Long id = tXfBillDeductEntities.get(0).getId();
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
         TAcOrgEntity purchaserOrgEntity = queryOrgInfo(purchaserNo);
         TAcOrgEntity sellerOrgEntity = queryOrgInfo(sellerNo);
@@ -432,6 +432,13 @@ public class DeductService  {
         tXfSettlementEntity.setUpdateTime(tXfSettlementEntity.getCreateTime());
         tXfSettlementEntity.setUpdateUser(0L);
         tXfSettlementEntity.setCreateUser(0L);
+        if (deductionBusinessTypeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+            List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBillId(id);
+            for (TXfBillDeductItemEntity tXfBillDeductItemEntity : tXfBillDeductItemEntities) {
+                TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
+                tXfSettlementItemEntity.setAmountWithoutTax(tXfBillDeductItemEntity.getAmountWithoutTax());
+            }
+        }
         return tXfSettlementEntity;
     }
 
@@ -449,10 +456,13 @@ public class DeductService  {
          * 查询符合条件的索赔单，购销一致维度，状态为待生成结算单
          */
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableClaimBill(XFDeductionBusinessTypeEnum.CLAIM_BILL.getType(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
-        TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities);
-        /**
+         /**
          * 查询索赔单明细，组装结算单明细信息
          */
+        for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
+
+        }
+
         return false;
     }
 
