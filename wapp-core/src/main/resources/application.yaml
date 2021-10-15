@@ -113,7 +113,7 @@ getTaxInformation: https://dx301.wal-mart.com/RESTAdapter/WALMART/FapiaoDetails
 
 sso:
   loginUrl: https://pfedprod.wal-mart.com/idp/startSSO.ping?PartnerSpId=CNWAPP
-  idp_metadata_url: 
+  idp_metadata_url:
   WMIDP_Metadata_Dev: d:\sso\WMIDP_Metadata_Dev.xml
 export:
   websocketUrl: ws://101.124.15.152:8071/b2bportal/dxhy-gylpt/websocket
@@ -146,15 +146,26 @@ agreementBill:
     fileNameKeyWords:
   local:
     path: /tmp/agrementBill/
+  sheetName: 2 SAP-FBL5N
+  item:
+    sheetName: 1 SAP-ZARR0355原稿
 claimBill:
   remote:
     path: /tmp/claimBill/
     fileNameKeyWords:
   local:
     path: /tmp/claimBill/
+  sheetName: 原始索赔单
+  Item:
+    hyperSheetName: 原始索赔单Hyper明细
+    samsSheetName: 原始索赔单Sams明细
 epdBill:
   remote:
     path: /tmp/epdBill/
     fileNameKeyWords:
   local:
     path: /tmp/epdBill/
+  sheetName: 原始EPD单
+  item:
+    sheetName: 原始EPD单LOG明细
+

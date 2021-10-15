@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.job.executor;
 
 import com.xforceplus.wapp.modules.job.chain.AgreementBillJobChain;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
+import com.xforceplus.wapp.modules.job.service.impl.BillJobServiceImpl;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Chain;
@@ -24,25 +24,25 @@ import java.util.Map;
 public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
 
     @Autowired
-    private BillJobService billJobService;
+    private BillJobServiceImpl billJobServiceImpl;
 
     // TODO 添加定时任务
     // TODO 添加异步处理
     @Override
     public void execute() {
-        List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs();
+        List<Map<String, Object>> availableJobs = billJobServiceImpl.obtainAvailableJobs();
         Chain chain = new AgreementBillJobChain();
         availableJobs.forEach(
                 availableJob -> {
                     Integer id = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));
                     Context context = new ContextBase(availableJob);
                     try {
-                        billJobService.lockJob(id);
+                        billJobServiceImpl.lockJob(id);
                         chain.execute(context);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     } finally {
-                        billJobService.unlockJob(id);
+                        billJobServiceImpl.unlockJob(id);
                     }
                 }
         );

@@ -1,11 +1,15 @@
 package com.xforceplus.wapp.modules.job.command;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
+import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillDataListener;
+import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
+import com.xforceplus.wapp.modules.job.service.impl.BillJobServiceImpl;
+import com.xforceplus.wapp.repository.dao.TXfOriginAgreementItemDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +18,7 @@ import org.apache.commons.chain.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,11 +37,21 @@ public class AgreementBillSaveCommand implements Command {
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private BillJobService billJobService;
+    private BillJobServiceImpl billJobServiceImpl;
+    @Autowired
+    private OriginAgreementBillService originAgreementBillService;
+    @Autowired
+    private TXfOriginAgreementItemDao tXfOriginAgreementItemDao;
     @Value("agreementBill.remote.path")
     private String remotePath;
     @Value("agreementBill.local.path")
     private String localPath;
+    @Value("agreementBill.sheetName")
+    private String sheetName;
+    @Value("agreementBill.item.hyperSheetName")
+    private String hyperItemSheetName;
+    @Value("agreementBill.item.samsSheetName")
+    private String samsItemSheetName;
 
     @Override
     public boolean execute(Context context) throws Exception {
@@ -104,7 +119,6 @@ public class AgreementBillSaveCommand implements Command {
      * @param fileName
      * @param context
      */
-    @SuppressWarnings("")
     private void process(String localPath, String fileName, Context context) {
         // 获取当前进度
         Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
@@ -146,13 +160,19 @@ public class AgreementBillSaveCommand implements Command {
      * @param context
      */
     private void processBillObject(String localPath, String fileName, Context context) {
-        long jap = Optional
+        int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Long.parseLong(String.valueOf(v)))
-                .orElse(0L);
-
+                .map(v -> Integer.parseInt(String.valueOf(v)))
+                .orElse(1);
+        int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
+        File file = new File(localPath, fileName);
+        OriginAgreementBillDataListener readListener = new OriginAgreementBillDataListener(jobId, cursor, originAgreementBillService);
+        EasyExcel.read(file, readListener)
+                .sheet(sheetName)
+                .headRowNumber(cursor)
+                .doRead();
         context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
-        context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 0);
+        context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
     }
 
     /**
@@ -163,10 +183,10 @@ public class AgreementBillSaveCommand implements Command {
      * @param context
      */
     private void processBillItemObject(String localPath, String fileName, Context context) {
-        long jap = Optional
+        int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Long.parseLong(String.valueOf(v)))
-                .orElse(0L);
+                .map(v -> Integer.parseInt(String.valueOf(v)))
+                .orElse(1);
 
         context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM_SAMS);
         context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 0);
@@ -180,10 +200,10 @@ public class AgreementBillSaveCommand implements Command {
      * @param context
      */
     private void processBillItemSamsObject(String localPath, String fileName, Context context) {
-        long jap = Optional
+        int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Long.parseLong(String.valueOf(v)))
-                .orElse(0L);
+                .map(v -> Integer.parseInt(String.valueOf(v)))
+                .orElse(1);
 
         context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 0);
     }
@@ -196,7 +216,7 @@ public class AgreementBillSaveCommand implements Command {
      */
     private int saveContext(Context context) {
         TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
+        return billJobServiceImpl.updateById(tXfBillJobEntity);
     }
 
 }
