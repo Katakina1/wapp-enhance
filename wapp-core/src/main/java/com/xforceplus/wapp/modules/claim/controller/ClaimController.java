@@ -3,7 +3,6 @@ package com.xforceplus.wapp.modules.claim.controller;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.ApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
@@ -28,6 +27,8 @@ public class ClaimController {
 
     @Autowired
     private ClaimService claimService;
+    @Autowired
+    private DeductViewService deductViewService;
 
     @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
     @ApiResponses(value = {
@@ -40,8 +41,9 @@ public class ClaimController {
 
 
     @GetMapping
+    @ApiOperation(value = "索赔单列表")
     public R claims(DeductListRequest request){
-        final PageResult<DeductListResponse> page = claimService.deductByPage(request, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        final PageResult<DeductListResponse> page = deductViewService.deductClaimByPage(request);
         return R.ok(page);
     }
 }

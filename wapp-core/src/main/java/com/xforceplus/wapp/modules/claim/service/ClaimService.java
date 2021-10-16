@@ -253,67 +253,6 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEnti
         }
     }
 
-    /**
-     * @param request 列表单参数
-     * @return
-     */
-    public PageResult<DeductListResponse> deductByPage(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum){
-        TXfBillDeductEntity deductEntity=new TXfBillDeductEntity();
-        deductEntity.setBusinessNo(request.getBillNo());
-        deductEntity.setPurchaserNo(request.getPurchaserNo());
-        deductEntity.setBusinessType(typeEnum.getType());
-
-
-
-        LambdaQueryWrapper<TXfBillDeductEntity> wrapper= Wrappers.lambdaQuery(deductEntity);
-        //扣款日期>>Begin
-        final String deductDateBegin = request.getDeductDateBegin();
-        if (StringUtils.isNotBlank(deductDateBegin)){
-            wrapper.gt(TXfBillDeductEntity::getDeductDate,deductDateBegin);
-        }
-
-        //扣款日期>>End
-        String deductDateEnd = request.getDeductDateEnd();
-        if (StringUtils.isNotBlank(deductDateEnd)){
-            final String format = DateUtils.addDayToYYYYMMDD(deductDateEnd, 1);
-            wrapper.lt(TXfBillDeductEntity::getDeductDate,format);
-        }
-        // ===============================
-        //定案、入账日期 >> begin
-        final String verdictDateBegin = request.getVerdictDateBegin();
-        if (StringUtils.isNotBlank(verdictDateBegin)){
-            wrapper.gt(TXfBillDeductEntity::getVerdictDate,deductDateBegin);
-        }
-
-        //定案、入账日期 >> end
-        String verdictDateEnd = request.getVerdictDateEnd();
-        if (StringUtils.isNotBlank(verdictDateEnd)){
-            final String format = DateUtils.addDayToYYYYMMDD(verdictDateEnd, 1);
-            wrapper.lt(TXfBillDeductEntity::getVerdictDate,format);
-        }
-
-
-        Page<TXfBillDeductEntity> page=new Page<>(request.getPage(),request.getSize());
-        final Page<TXfBillDeductEntity> pageResult = this.page(page, wrapper);
-        final List<DeductListResponse> responses = deductMapper.toResponse(pageResult.getRecords());
-        if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(responses)){
-            final List<String> settlementNos = responses.stream().map(DeductListResponse::getRefSettlementNo).distinct().collect(Collectors.toList());
-            final Map<String, Integer> invoiceCount = getInvoiceCountBySettlement(settlementNos);
-            responses.forEach(x->{
-                final Integer count = Optional.ofNullable(invoiceCount.get(x.getRefSettlementNo())).orElse(0);
-                x.setInvoiceCount(count);
-            });
-        }
-        return PageResult.of(responses,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
-    }
-
-    private Map<String,Integer> getInvoiceCountBySettlement(List<String> settlementNos){
-
-
-
-
-        return Collections.emptyMap();
-    }
 
 
 }
