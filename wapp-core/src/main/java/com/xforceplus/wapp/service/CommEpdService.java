@@ -17,10 +17,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 协议单相关公共逻辑操作
+ * epd 通用逻辑操作
  */
 @Service
-public class CommAgreementService {
+public class CommEpdService {
+
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
     @Autowired
@@ -41,14 +42,14 @@ public class CommAgreementService {
     private PreinvoiceService preinvoiceService;
 
     /**
-     * 作废协议单 作废结算单 蓝票释放额度 如果有预制发票 作废预制发票
-     * 协议单还可以再次使用
+     * 作废EPD单 作废结算单 蓝票释放额度 如果有预制发票 作废预制发票
+     * EPD单还可以再次使用
      *
      * @param settlementId 结算单id
      * @return
      */
     @Transactional
-    public void destroyAgreementSettlement(Long settlementId) {
+    public void destroyEpdSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -58,7 +59,7 @@ public class CommAgreementService {
             throw new EnhanceRuntimeException("结算单不存在");
         }
 
-        //协议单
+        //EPD单
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
         billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
@@ -75,11 +76,11 @@ public class CommAgreementService {
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
-        //修改协议单状态
+        //修改EPD单状态
         billDeductList.forEach(billDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
@@ -136,7 +137,5 @@ public class CommAgreementService {
         QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
         preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
         tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
-
     }
-
 }
