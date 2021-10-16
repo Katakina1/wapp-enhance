@@ -11,10 +11,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
 
     TXfOriginAgreementBillEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginAgreementBillEntityConvertor.class);
 
-    /**
-     * @param tXfOriginAgreementBillEntity
-     * @return
-     */
+    // 业务单据类型;1:索赔;2:协议;3:EPD
     @Mapping(target = "businessType", constant = "2")
     // 客户编码
     @Mapping(source = "customerNumber", target = "sellerNo")
@@ -46,6 +43,12 @@ public interface TXfOriginAgreementBillEntityConvertor {
     @Mapping(source = "postingDate", target = "postingDate")
     // 税额
     @Mapping(source = "taxAmount", target = "taxAmount")
+    /**
+     * 转换成AgreementBillData
+     *
+     * @param tXfOriginAgreementBillEntity
+     * @return
+     */
     AgreementBillData toAgreementBillData(TXfOriginAgreementBillEntity tXfOriginAgreementBillEntity);
 
 }

@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+import static com.xforceplus.wapp.enums.BillJobTypeEnum.AGREEMENT_BILL_JOB;
+
 /**
  * @program: wapp-enhance
  * @description: 执行协议单任务
@@ -36,21 +38,21 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     // TODO 添加异步处理
     @Override
     public void execute() {
-        List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs();
+        List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(AGREEMENT_BILL_JOB.getJobType());
         Chain chain = new AgreementBillJobChain();
         availableJobs.forEach(
                 availableJob -> {
-                    Integer id = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));
+                    Integer jobId = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));
                     Context context = new ContextBase(availableJob);
                     try {
-                        billJobService.lockJob(id);
+                        billJobService.lockJob(jobId);
                         if (chain.execute(context)) {
                             executePostAction(context);
                         }
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     } finally {
-                        billJobService.unlockJob(id);
+                        billJobService.unlockJob(jobId);
                     }
                 }
         );
@@ -59,6 +61,7 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     private void executePostAction(Context context) {
         context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DONE.getJobStatus());
         saveContext(context);
+        // 触发下游任务
         deductService.receiveDone(null, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
     }
 
