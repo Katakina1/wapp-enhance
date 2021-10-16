@@ -36,9 +36,10 @@ spring:
 
 # Mybatis-Plus配置
 mybatis-plus:
-  mapper-locations: classpath:mapper/**/*.xml
+  mapper-locations: classpath:mapper/daoext/*.xml
 #  type-aliases-package: com.xforceplus.wapp.repository.entity
-
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 # 日志
 #logging:
 #  path: /home/vn03qsx/logs/
@@ -149,3 +150,8 @@ activemq:
   user: admin
   password: admin
   enhance_claim_verdict_queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+
+Esb:
+  url:
+    upload: http://10.100.2.17:8083/object/upload
+    downLoad: http://10.100.2.17:8083/object/downLoad/

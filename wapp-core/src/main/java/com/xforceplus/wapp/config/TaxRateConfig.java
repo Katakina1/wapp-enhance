@@ -32,7 +32,7 @@ public class TaxRateConfig {
         return taxRateMap.get(taxRate);
     }
 
-    @PostConstruct
+    //@PostConstruct
     public void init() {
         if (StringUtils.isEmpty(taxRateStr)) {
             taxRateStr = "13,11,9,6,5,3,1,0";
