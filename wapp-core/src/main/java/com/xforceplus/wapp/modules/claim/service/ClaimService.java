@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.claim.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,6 +46,8 @@ public class ClaimService {
     private CommRedNotificationService commRedNotificationService;
     @Autowired
     private CommClaimService commClaimService;
+    @Autowired
+    private TDxQuestionPaperDao tDxQuestionPaperDao;
 
     /**
      * 申请索赔单不定案
@@ -91,9 +96,8 @@ public class ClaimService {
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
-
-        //TODO 需要将数据放入到问题列表清单(关联一期)
-
+        // 需要将数据放入到问题列表清单(关联一期)
+        saveQuestionPaper(tXfSettlementEntity, billDeductList);
     }
 
     /**
@@ -150,7 +154,7 @@ public class ClaimService {
      */
     @Transactional
     public void agreeClaimVerdict(Long settlementId) {
-        commClaimService.cancelClaimSettlement(settlementId);
+        commClaimService.destroyClaimSettlement(settlementId);
     }
 
     /**
@@ -179,16 +183,60 @@ public class ClaimService {
         //<结算单编号,结算单id>
         Map<String, Long> settlementIdToNoMap = tXfSettlementEntityList.stream().collect(Collectors.toMap(TXfSettlementEntity::getSettlementNo, TXfSettlementEntity::getId));
         //<结算单id,Array<索赔单id列表>>
-        Map<Long, List<Long>> settlementIdToBillDeductIdMap = Maps.newHashMap();
         settlementIdToBillDeductMap.entrySet().forEach(entry -> {
             Long settlementId = settlementIdToNoMap.get(entry.getKey());
-            settlementIdToBillDeductIdMap.put(settlementId, entry.getValue().stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList()));
+            List<Long> settlementDeductIdList = entry.getValue().stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
+            applyClaimVerdict(settlementId, settlementDeductIdList);
+
         });
-        settlementIdToBillDeductIdMap.entrySet().forEach(entry -> {
-            applyClaimVerdict(entry.getKey(), entry.getValue());
-        });
+    }
 
 
+    private void saveQuestionPaper(TXfSettlementEntity tXfSettlementEntity, List<TXfBillDeductEntity> billDeductList) {
+        TDxQuestionPaperEntity tDxQuestionPaperEntity = new TDxQuestionPaperEntity();
+        tDxQuestionPaperEntity.setQuestionType("8001");
+        tDxQuestionPaperEntity.setPurchaser(tXfSettlementEntity.getPurchaserName());
+        tDxQuestionPaperEntity.setJvcode(tXfSettlementEntity.getPurchaserNo());
+        tDxQuestionPaperEntity.setUsercode(tXfSettlementEntity.getSellerNo());
+        tDxQuestionPaperEntity.setUsername(tXfSettlementEntity.getSellerName());
+        tDxQuestionPaperEntity.setInvoiceNo(String.valueOf(tXfSettlementEntity.getId()));//用来存储结算单id
+        tDxQuestionPaperEntity.setProblemCause("索赔单申请不定单");
+        tDxQuestionPaperEntity.setDescription("索赔单号：" + Joiner.on(",").join(billDeductList.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList())));
+        tDxQuestionPaperEntity.setCheckstatus("0");
+        tDxQuestionPaperEntity.setProblemStream(generateProblemStream(tXfSettlementEntity.getSellerNo()));//流水号
+        tDxQuestionPaperDao.insert(tDxQuestionPaperEntity);
+    }
+
+    private String generateProblemStream(String usercode) {
+        Date de = new Date();
+        TDxQuestionPaperEntity querymaxstream = tDxQuestionPaperDao.queryMaxProblemStream(usercode);
+        if (querymaxstream != null) {
+            String str2 = querymaxstream.getProblemStream();
+            if (!str2.equals(null) && !str2.equals("")) {
+                str2 = str2.substring(6, 14);
+                SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                String str = df.format(de);
+                if (str.equals(str2)) {
+                    String str3 = querymaxstream.getProblemStream();
+                    Long b = Long.valueOf(str3);
+                    b = b + 1;
+                    str3 = String.valueOf(b);
+                    return str3;
+                } else {
+                    SimpleDateFormat df2 = new SimpleDateFormat("yyyyMMdd");
+                    String str4 = usercode + df2.format(de) + "0000";
+                    return str4;
+                }
+            } else {
+                SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                String str = usercode + df.format(de) + "0000";
+                return str;
+            }
+        } else {
+            SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+            String str = usercode + df.format(de) + "0000";
+            return str;
+        }
     }
 
 

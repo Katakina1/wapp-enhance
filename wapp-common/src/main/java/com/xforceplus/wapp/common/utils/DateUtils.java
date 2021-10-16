@@ -80,6 +80,7 @@ public class DateUtils {
         return currentTime_2;
     }
 
+
     /**
      * 获取现在时间
      *
@@ -225,6 +226,44 @@ public class DateUtils {
         long date_3_hm = date.getTime() - 3600000 * 34 * day;
         Date date_3_hm_date = new Date(date_3_hm);
         return date_3_hm_date;
+    }
+
+    /**
+     * 提取一个月中的第一天
+     * @return
+     */
+    public static Date getFristDate() {
+        Calendar   cal_1=Calendar.getInstance();//获取当前日期
+        cal_1.set(Calendar.DAY_OF_MONTH,1);//设置为1号,当前日期既为本月第一天
+        cal_1.set(Calendar.SECOND,0);//设置为1号,当前日期既为本月第一天
+        cal_1.set(Calendar.MINUTE,0);//设置为1号,当前日期既为本月第一天
+        cal_1.set(Calendar.HOUR_OF_DAY,0);//设置为1号,当前日期既为本月第一天
+        return cal_1.getTime();
+    }
+
+
+    /**
+     * 时间加减
+     *
+     * @return返回长时间格式 yyyy-MM-dd HH:mm:ss
+     */
+    public static Date addDate(Date date,int interval) {
+        Calendar   cal_1=Calendar.getInstance();//获取当前日期
+        cal_1.setTime(date);
+        cal_1.add(Calendar.DATE, interval);
+         return cal_1.getTime();
+    }
+    /**
+     * 提取一个月中的第一天
+     * @return
+     */
+    public static Date getLastDate() {
+        Calendar   cal_1=Calendar.getInstance();//获取当前日期
+        cal_1.set(Calendar.DAY_OF_MONTH,cal_1.getActualMaximum(Calendar.DAY_OF_MONTH));//设置为1号,当前日期既为本月第一天
+        cal_1.set(Calendar.HOUR_OF_DAY,23);//设置为1号,当前日期既为本月第一天
+        cal_1.set(Calendar.MINUTE,59);//设置为1号,当前日期既为本月第一天
+        cal_1.set(Calendar.SECOND,59);//设置为1号,当前日期既为本月第一天
+        return cal_1.getTime();
     }
 
     /**
@@ -863,8 +902,10 @@ public class DateUtils {
 
     public static void main(String[] args) throws Exception {
         try {
-            // System.out.print(Integer.valueOf(getTwoDay("2006-11-03 12:22:10",
-            // "2006-11-02 11:22:09")));
+            System.out.println(addDate(new Date(),1));
+            System.out.println(getFristDate());
+            System.out.println(getLastDate());
+
         } catch (Exception e) {
             throw new Exception();
         }

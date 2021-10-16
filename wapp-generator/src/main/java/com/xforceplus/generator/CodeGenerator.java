@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
+import com.baomidou.mybatisplus.generator.config.converts.SqlServerTypeConvert;
 import com.baomidou.mybatisplus.generator.config.po.TableFill;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
+import com.baomidou.mybatisplus.generator.config.rules.DbColumnType;
 import com.baomidou.mybatisplus.generator.config.rules.IColumnType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
@@ -26,6 +28,9 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
+                "t_xf_bill_deduct_item_ref",
+                "t_xf_elec_upload_record_detail",
+                // by kenny start
                 "t_xf_bill_job",
                 "t_xf_origin_epd_bill",
                 "t_xf_origin_epd_log_item",
@@ -33,8 +38,7 @@ public class CodeGenerator {
                 "t_xf_origin_agreement_item",
                 "t_xf_origin_claim_bill",
                 "t_xf_origin_claim_item_hyper",
-                "t_xf_origin_claim_item_sams"
-                );
+                "t_xf_origin_claim_item_sams"                );
 //         generateMainCode();
         // generateItemCode();
     }
@@ -48,7 +52,7 @@ public class CodeGenerator {
         GlobalConfig gc = new GlobalConfig();
         String projectPath = System.getProperty("user.dir");
         if (projectPath.contains("wapp-generator")){
-            projectPath=projectPath.substring(0,projectPath.indexOf("/wapp-generator"));
+            projectPath=projectPath.substring(0,projectPath.indexOf("\\wapp-generator"));
         }
         gc.setOutputDir(projectPath + "/wapp-domain/src/main/java/");
         gc.setAuthor("malong@xforceplus.com");
@@ -68,26 +72,15 @@ public class CodeGenerator {
         dsc.setUsername("testuser01");
         dsc.setPassword("aGSsdsJFWd_w_1");
         dsc.setDriverName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-//        dsc.setTypeConvert(new MySqlTypeConvert() {
-//            @Override
-//            public IColumnType processTypeConvert(GlobalConfig globalConfig, String fieldType) {
-//                if (fieldType.toLowerCase().contains("json")) {
-//                    return new IColumnType() {
-//                        @Override
-//                        public String getType() {
-////                              泛型栗子  return "Map<String,Object>";
-//                            return "BillExtendMap";
-//                        }
-//
-//                        @Override
-//                        public String getPkg() {
-//                            return "com.xforceplus.receipt.typehandler.BillExtendMap";
-//                        }
-//                    };
-//                }
-//                return super.processTypeConvert(globalConfig, fieldType);
-//            }
-//        });
+        dsc.setTypeConvert(new SqlServerTypeConvert() {
+            @Override
+            public IColumnType processTypeConvert(GlobalConfig globalConfig, String fieldType) {
+                if ( fieldType.toLowerCase().contains( "decimal" ) ) {
+                    return DbColumnType.BIG_DECIMAL;
+                }
+                return super.processTypeConvert(globalConfig, fieldType);
+            }
+        });
 
         mpg.setDataSource(dsc);
 

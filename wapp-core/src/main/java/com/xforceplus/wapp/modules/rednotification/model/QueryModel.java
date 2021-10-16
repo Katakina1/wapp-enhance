@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.xforceplus.wapp.common.enums.ApproveStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -45,10 +46,18 @@ public class QueryModel {
     @ApiModelProperty("红字信息表编号")
     private String redNotificationNo;
 
+    @ApiModelProperty("预制发票id")
+    private Long pid;
+
+
+    @ApiModelProperty("审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批")
+    private Integer approveStatus;
+
+
     @ApiModelProperty("分页码 最小1")
-    int pageNo ;
+    Integer pageNo ;
 
     @ApiModelProperty("分页大小")
-    int pageSize ;
+    Integer pageSize ;
 
 }

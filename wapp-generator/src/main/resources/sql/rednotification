@@ -1,0 +1,233 @@
+CREATE TABLE
+    "testdb01"."dbo".t_xf_red_notification
+(
+    id  bigint,
+    invoice_date nvarchar(30),
+    pid nvarchar(50),
+    remark nvarchar(50),
+    user_role smallint,
+    apply_type smallint,
+    apply_remark nvarchar(255),
+    applying_status smallint,
+    approve_status smallint,
+    red_notification_no nvarchar(20),
+    apply_reason nvarchar(100),
+    invoice_type nvarchar(2),
+    origin_invoice_no varchar(20),
+    origin_invoice_code varchar(20),
+    origin_invoice_type nvarchar(2),
+    purchaser_tax_no              nvarchar(20),
+    purchaser_name                nvarchar(255),
+    seller_tax_no              nvarchar(20),
+    seller_name                nvarchar(255),
+    amount_without_tax         decimal(18, 4),
+    tax_amount             decimal(18, 4),
+    amount_with_tax           decimal(18, 4),
+    deduction              decimal(18, 4),
+    price_method  smallint,
+    bill_no nvarchar(50),
+    status smallint,
+    invoice_origin smallint,
+    company_code nvarchar(255),
+    device_un varchar(30),
+    terminal_un varchar(30),
+    terminal_type smallint,
+    special_invoice_flag   smallint,
+    payment_time datetime,
+    customer_no nvarchar(50),
+    create_date datetime,
+    update_date datetime,
+    user_account nvarchar(50),
+    user_name nvarchar(50),
+    user_id   bigint
+    PRIMARY KEY (id)
+);
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息表', 'SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification';
+go
+exec sp_addextendedproperty 'MS_Description', '业务主键','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'id';
+go
+exec sp_addextendedproperty 'MS_Description', '开票日期','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_date';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息唯一标识','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'pid';
+
+go
+exec sp_addextendedproperty 'MS_Description', '1 销方 2购方','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'user_role';
+go
+exec sp_addextendedproperty 'MS_Description', '申请类型 购方发起:0-已抵扣1-未抵扣 销方发起:2-开票有误','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'apply_type';
+go
+exec sp_addextendedproperty 'MS_Description', '申请失败原因','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'apply_remark';
+go
+exec sp_addextendedproperty 'MS_Description', '1.未申请 2.申请中 3.已申请 4.撤销待审核 ','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'applying_status';
+go
+exec sp_addextendedproperty 'MS_Description', '审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'approve_status';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息表编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'red_notification_no';
+go
+exec sp_addextendedproperty 'MS_Description', '申请原因','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'apply_reason';
+go
+exec sp_addextendedproperty 'MS_Description', '发票类型 （01-增值税专用发票 03-机动车销售统一发票 04-增值税普通发票 10-电子发票 11-卷票 14-通行费发票）','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_type';
+go
+exec sp_addextendedproperty 'MS_Description', '发票号码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'origin_invoice_no';
+go
+exec sp_addextendedproperty 'MS_Description', '发票代码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'origin_invoice_code';
+go
+exec sp_addextendedproperty 'MS_Description', '原发票类型','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'origin_invoice_type';
+go
+exec sp_addextendedproperty 'MS_Description', '购方税号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'purchaser_tax_no';
+go
+exec sp_addextendedproperty 'MS_Description', '购方名称','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'purchaser_name';
+go
+exec sp_addextendedproperty 'MS_Description', '销方税号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'seller_tax_no';
+go
+exec sp_addextendedproperty 'MS_Description', '销方名称','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'seller_name';
+go
+exec sp_addextendedproperty 'MS_Description', '不含税金额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'amount_without_tax';
+go
+exec sp_addextendedproperty 'MS_Description', '税额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'tax_amount';
+go
+exec sp_addextendedproperty 'MS_Description', '含税金额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'amount_with_tax';
+go
+exec sp_addextendedproperty 'MS_Description', '扣除额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'deduction';
+go
+exec sp_addextendedproperty 'MS_Description', '计价方式','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'price_method';
+go
+exec sp_addextendedproperty 'MS_Description', '单号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'bill_no';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息状态0 删除 1 正常','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'status';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息来源1.索赔单，2协议单，3.EPD','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_origin';
+
+go
+exec sp_addextendedproperty 'MS_Description', '公司编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'company_code';
+go
+exec sp_addextendedproperty 'MS_Description', '设备唯一码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'device_un';
+go
+exec sp_addextendedproperty 'MS_Description', '终端唯一码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'terminal_un';
+go
+exec sp_addextendedproperty 'MS_Description', '特殊发票标记 0-默认  1-通行费   2-成品油','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'special_invoice_flag';
+go
+exec sp_addextendedproperty 'MS_Description', '客户编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'customer_no';
+
+go
+exec sp_addextendedproperty 'MS_Description', '扣款时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'payment_time';
+
+go
+exec sp_addextendedproperty 'MS_Description', '创建日期','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'create_date';
+go
+exec sp_addextendedproperty 'MS_Description', '更新日期','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'update_date';
+go
+exec sp_addextendedproperty 'MS_Description', '用户账号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'user_account';
+go
+exec sp_addextendedproperty 'MS_Description', '用户名','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'user_name';
+
+
+CREATE TABLE
+    "testdb01"."dbo".t_xf_red_notification_detail
+(
+    id               bigint ,
+    apply_id         bigint,
+    goods_no_ver     nvarchar(5),
+    detail_no        nvarchar(50),
+    goods_name       nvarchar(200),
+    goods_tax_no     nvarchar(30),
+    tax_convert_code nvarchar(30),
+    tax_pre          smallint,
+    tax_pre_con      nvarchar(50),
+    zero_tax         smallint,
+    model            nvarchar(50),
+    unit             nvarchar(20),
+    num              decimal(18, 6),
+    tax_rate         decimal(4, 2),
+    unit_price       decimal(27, 15),
+    amount_without_tax         decimal(18, 4),
+    tax_amount             decimal(18, 4),
+    amount_with_tax           decimal(18, 4),
+    deduction        decimal(18, 4),
+    create_date      datetime,
+    update_date      datetime
+    PRIMARY KEY (id)
+)
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息明细表', 'SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息表id','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'apply_id';
+go
+exec sp_addextendedproperty 'MS_Description', '税编版本号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'goods_no_ver';
+go
+exec sp_addextendedproperty 'MS_Description', '订单号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'detail_no';
+go
+exec sp_addextendedproperty 'MS_Description', '劳务货物名称','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'goods_name';
+go
+exec sp_addextendedproperty 'MS_Description', '税收分类编码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'goods_tax_no';
+go
+exec sp_addextendedproperty 'MS_Description', '税编转换代码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'tax_convert_code';
+go
+exec sp_addextendedproperty 'MS_Description', '是否享受优惠政策','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'tax_pre';
+go
+exec sp_addextendedproperty 'MS_Description', '优惠内容','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'tax_pre_con';
+go
+exec sp_addextendedproperty 'MS_Description', '零税率标识','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'zero_tax';
+go
+exec sp_addextendedproperty 'MS_Description', '规格型号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'model';
+go
+exec sp_addextendedproperty 'MS_Description', '单位','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'unit';
+go
+exec sp_addextendedproperty 'MS_Description', '数量','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'num';
+go
+exec sp_addextendedproperty 'MS_Description', '税率','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'tax_rate';
+go
+exec sp_addextendedproperty 'MS_Description', '单价','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'unit_price';
+go
+exec sp_addextendedproperty 'MS_Description', '不含税金额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'amount_without_tax';
+go
+exec sp_addextendedproperty 'MS_Description', '税额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'tax_amount';
+go
+exec sp_addextendedproperty 'MS_Description', '含税金额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'amount_with_tax';
+go
+exec sp_addextendedproperty 'MS_Description', '扣除额','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'deduction';
+go
+exec sp_addextendedproperty 'MS_Description', '创建时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'create_date';
+go
+exec sp_addextendedproperty 'MS_Description', '更新时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_detail', 'COLUMN', 'update_date';
+
+
+CREATE TABLE
+    "testdb01"."dbo".t_xf_red_notification_log
+(
+    id               bigint,
+    apply_id         bigint,
+    status           smallint ,
+    process_remark   nvarchar(200),
+    device_un        nvarchar(30),
+    terminal_un      nvarchar(30),
+    apply_type       smallint,
+    serial_no        nvarchar(30),
+    create_user_id   bigint,
+    create_date      datetime,
+    update_date      datetime
+    PRIMARY KEY (id)
+)
+
+go
+exec sp_addextendedproperty 'MS_Description', '操作流水表', 'SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息表id','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'apply_id';
+go
+exec sp_addextendedproperty 'MS_Description', '操作流水状态 1处理中，2，处理成功，3处理失败','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'status';
+go
+exec sp_addextendedproperty 'MS_Description', '操作流水备注','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'process_remark';
+go
+exec sp_addextendedproperty 'MS_Description', '设备唯一编码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'device_un';
+go
+exec sp_addextendedproperty 'MS_Description', '终端唯一编码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'terminal_un';
+go
+exec sp_addextendedproperty 'MS_Description', '操作类型  1 申请 2 同步 3 撤销 4 删除','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'apply_type';
+go
+exec sp_addextendedproperty 'MS_Description', '请求流水号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'serial_no';
+go
+exec sp_addextendedproperty 'MS_Description', '操作人id','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'create_user_id';
+go
+exec sp_addextendedproperty 'MS_Description', '创建时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'create_date';
+go
+exec sp_addextendedproperty 'MS_Description', '更新时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'update_date';

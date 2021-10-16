@@ -1,1 +1,208 @@
-include: 'http://gitlab4.0.xforceplus.com/common/gitlabci4/raw/devops-gitlabci/ci/.gitlab-ci.yml'
+# include: 'http://gitlab4.0.xforceplus.com/common/gitlabci4/raw/devops-gitlabci/ci/.gitlab-ci.yml'
+
+image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/cibase:0.5.0
+stages:
+  - mvn-package
+  - docker-build
+
+maven-test-branches:
+  stage: mvn-package
+  script:
+    - git_merge master
+  only:
+    - /^bugfix-.*$/
+    - /^feature-.*$/
+
+maven-build:
+  stage: mvn-package
+  script:
+    #- update_pom_version
+    - export MAVEN_OPTS="-Xms512m -Xmx1024m"
+    #- mvn package -U -DskipTests=true
+    - maven_sonar
+    - mkdir -p /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    - find -name app.jar | xargs -i cp -f {} /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}/app.jar
+    - copy_source
+
+
+docker-build:
+  stage: docker-build
+  script:
+    - chart_init
+    - docker_build .
+    - chart_build
+  only:
+    - master
+    - tags
+    - develop
+    - crclocal
+    - selftest
+    - /^hotfix.*$/
+    - /^release.*$/
+    - /^prod.*$/
+    - /^dev.*$/
+    - /^demo.*$/
+    - /^uat.*$/
+    - /^sit.*$/
+
+docker-compose-build:
+  stage: docker-build
+  script:
+    - docker_compose_build .
+    - docker_compose_push
+  only:
+    - docker-compose
+
+.auto_devops: &auto_devops |
+  printenv
+  curl -o .auto_devops.sh \
+      "http://gitlab4.0.xforceplus.com/tower/gitlabci4/raw/walmart-wapp/ci/.auto_devops"
+
+  if [ $? -ne 0 ];then
+    cat .auto_devops.sh
+    exit 1
+  fi
+
+  source .auto_devops.sh
+
+
+
+  function maven_sonar(){
+    if [[ ${CI_COMMIT_REF_NAME} == develop* ]];then
+      mvn --batch-mode clean install -U -DskipTests=true  -Dsonar.exclusions=**/swagger-codegen/**/*,**/*Entity*.java,**/*Dao*.java,**/*Example*.java,**/*Dto.java,**/dto/*.java  -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.password=$SONAR_PWD -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA
+     else
+       mvn --batch-mode package -DskipTests=true
+     fi
+  }
+
+  function env_app_version(){
+      echo 'enter env_app_version'
+      MVN_VERSION=$(mvn -q \
+          -Dexec.executable=echo \
+          -Dexec.args='${project.version}' \
+          --non-recursive \
+          exec:exec)
+      echo $MVN_VERSION
+      echo ${1}
+      sed -i 's/{APP_VERSION}/'$MVN_VERSION'/g' ci/run-app.sh
+  }
+
+  function docker_build(){
+      env_app_version
+
+      echo "enter ci dir"
+      cd ci
+
+      get_source
+
+      DockerFileName="dockerfile"
+      if [[ ${CI_COMMIT_REF_NAME} == release* ]];then
+        DockerFileName="dockerfile"
+      elif [[ ${CI_COMMIT_REF_NAME} == dev* ]];then
+        DockerFileName="dockerfile"
+      elif [[ ${CI_COMMIT_REF_NAME} == master* ]];then
+        DockerFileName="dockerfile"
+      elif [[ ${CI_COMMIT_REF_NAME} == prod* ]];then
+        DockerFileName="dockerfile"
+      elif [[ ${CI_COMMIT_REF_NAME} == hotfix* ]];then
+              DockerFileName="dockerfile"
+      fi
+      docker login -u ${DOCKER_USER} -p ${DOCKER_PWD} ${DOCKER_REGISTRY}
+      docker build -f ${DockerFileName} --pull -t ${DOCKER_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"src/main/docker"}
+      docker push ${DOCKER_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_COMMIT_TAG}
+      rm -rf /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+  }
+
+  function docker_compose_build(){
+      env_app_version
+
+      echo "enter ci dir"
+      cd ci
+
+      get_source
+
+      DockerFileName="dockerfile_compose"
+      docker login -u ${DOCKER_USER} -p ${DOCKER_PWD} ${DOCKER_REGISTRY}
+      docker build -f ${DockerFileName} --pull -t ${DOCKER_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"src/main/docker"}
+      docker push ${DOCKER_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:${CI_COMMIT_TAG}
+      rm -rf /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+  }
+
+  function docker_compose_push(){
+      git config --global user.email "gitlab-runner@example.com"
+      git config --global user.name "gitlab-runner"
+      git clone http://gitlab-devops.xforceplus.com/devops/territory-box.git
+      cd territory-box
+      cat docker-compose-apps.yml | grep "${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}:" > /tmp/check || true
+
+      if
+        [[ ! -s /tmp/check  ]]
+      then
+        sed -i '/services:/ r config/docker-compose_template' docker-compose-apps.yml
+        sed -i 's#appname_tpl#'${CI_PROJECT_NAME}'#' docker-compose-apps.yml
+        sed -i 's#image_tpl#'${DOCKER_REGISTRY}'/'${CI_PROJECT_NAMESPACE}'/'${CI_PROJECT_NAME}':'${CI_COMMIT_TAG}'#' docker-compose-apps.yml
+        git add -A ; git commit -m 'update'; git push http://${GIT_USER}:${GIT_PW}@gitlab-devops.xforceplus.com/devops/territory-box.git
+      else
+        sed -i 's#'${CI_PROJECT_NAMESPACE}'/'${CI_PROJECT_NAME}':.*#'${CI_PROJECT_NAMESPACE}'/'${CI_PROJECT_NAME}':'${CI_COMMIT_TAG}'#' docker-compose-apps.yml
+        git add -A ; git commit -m 'update'; git push http://${GIT_USER}:${GIT_PW}@gitlab-devops.xforceplus.com/devops/territory-box.git
+      fi
+
+  }
+  function copy_source(){
+    echo "Enter copy source"
+    echo "COMMIT branch is ${CI_COMMIT_REF_NAME}"
+    if [[ ${CI_COMMIT_REF_NAME} == release* ]];then
+        cp -r * /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}/
+    fi
+  }
+
+  function get_source(){
+    pwd
+    ls
+    echo "Get source"
+    if [[ ${CI_COMMIT_REF_NAME} == release* ]];then
+      echo "Condition is ok"
+      mkdir -p dist
+      cp -r /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}/* dist/ || true
+    fi
+
+    cp /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}/app.jar ${1:-"."}/app.jar || true
+  }
+
+  function chart_init(){
+          PROJECT_PATH=$PWD
+          echo $PROJECT_PATH
+          PROJECT_NAME=${PROJECT_PATH##*/}
+          echo $PROJECT_NAME
+          CHART_PATH=`find . -maxdepth 4 -name Chart.yaml`
+          echo $CHART_PATH
+          sed -i 's/^name:.*/name: '"$PROJECT_NAME"'/g' $CHART_PATH
+
+          VALUES_PATH=`find . -maxdepth 4 -name values.yaml`
+          echo $VALUES_PATH
+          sed -i 's/{PROJECT_CODE}/'$PROJECT_NAME'/g' $VALUES_PATH
+          sed -i 's/branch_tpl/'$CI_COMMIT_REF_NAME'/g' $VALUES_PATH
+          cat $VALUES_PATH
+
+          CHART_PATH_FROM=${CHART_PATH%/*}
+          echo $CHART_PATH_FROM
+          CHART_PATH_PARENT=${CHART_PATH_FROM%/*}
+          echo $CHART_PATH_PARENT
+          CHART_PATH_TO=$CHART_PATH_PARENT/$PROJECT_NAME
+          echo $CHART_PATH_TO
+          if [ "$CHART_PATH_FROM"x != "$CHART_PATH_TO"x ]; then
+            mv $CHART_PATH_FROM $CHART_PATH_TO -f
+          fi
+  }
+.xforceplus40_ci: &xforceplus40_ci |
+  curl -o gitlabci4-devops-gitlabci.zip \
+      "http://gitlab4.0.xforceplus.com/tower/gitlabci4/-/archive/walmart-wapp/gitlabci4-walmart-wapp.zip"
+  echo 1111
+  ls
+  rm ci -rf
+  unzip -o gitlabci4-devops-gitlabci.zip && rm gitlabci4-devops-gitlabci.zip -f
+  cp gitlabci4-walmart-wapp/ci . -Rf && rm gitlabci4-walmart-wapp -Rf
+
+before_script:
+  - *auto_devops
+  - *xforceplus40_ci

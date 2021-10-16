@@ -17,7 +17,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -184,7 +184,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private BigDecimal taxRate;
+    private Double taxRate;
 
     /**
      * 备注
@@ -253,7 +253,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private String redNotificationNo;
 
     /**
-     * 红字信息编号申请状态  1-发起申请 2-已申请
+     * 红字信息编号申请状态0未申请  1-发起申请 2-已申请
      */
     @TableField("red_notification_flag")
     private Integer redNotificationFlag;

@@ -2,6 +2,7 @@ package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
@@ -36,15 +37,17 @@ public class CommClaimService {
     private TXfBillDeductInvoiceDao tXfBillDeductInvoiceDao;
     @Autowired
     private CommRedNotificationService commRedNotificationService;
+    @Autowired
+    private TDxInvoiceDao tDxInvoiceDao;
 
     /**
-     * 撤销整个索赔单流程
+     * 作废整个索赔单流程
      *
      * @param settlementId 结算单id
      * @return
      */
     @Transactional
-    public void cancelClaimSettlement(Long settlementId) {
+    public void destroyClaimSettlement(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -71,24 +74,24 @@ public class CommClaimService {
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
-            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.CANCEL.getCode());
+            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-            // 撤销红字信息
-            commRedNotificationService.confirmCancelRedNotification(tXfPreInvoiceEntity.getId());
+            // 作废红字信息
+            commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //修改结算单状态
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
-        updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.CANCEL.getCode());
+        updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
 
         //修改索赔单状态
-        //撤销
+        //作废
         billDeductList1.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_CANCEL.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
         //待生成结算单 清空结算单编号
@@ -100,7 +103,7 @@ public class CommClaimService {
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
-        //释放索赔单明细额度（撤销的索赔单）
+        //释放索赔单明细额度（作废的索赔单）
         List<Long> billDeductIdList = billDeductList1.stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
         QueryWrapper<TXfBillDeductItemRefEntity> billDeductItemRefEntityWrapper = new QueryWrapper<>();
         billDeductItemRefEntityWrapper.in(TXfBillDeductItemRefEntity.DEDUCT_ID, billDeductIdList);
@@ -116,14 +119,28 @@ public class CommClaimService {
             tXfBillDeductItemRefDao.deleteById(tXfBillDeductItemRefEntity.getId());
         });
 
-        //释放索赔单蓝票（撤销的索赔单）
+        //释放索赔单蓝票（作废的索赔单）
         List<String> billDeductBusinessNoList = billDeductList1.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList());
         QueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new QueryWrapper();
         tXfBillDeductInvoiceWrapper.in(TXfBillDeductInvoiceEntity.BUSINESS_NO, billDeductBusinessNoList);
-        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, 1);
-        List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
-        //TODO
+        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, TXfBillDeductInvoiceBusinessTypeEnum.CLAIM_BILL.getType());
+
         //还原蓝票额度
+        List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
+        tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
+            QueryWrapper<TDxInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
+            tDxInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_CODE,tXfBillDeductInvoiceEntity.getInvoiceCode());
+            tDxInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_NO,tXfBillDeductInvoiceEntity.getInvoiceNo());
+            TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
+
+            TDxInvoiceEntity updateTDxInvoiceEntity = new TDxInvoiceEntity();
+            updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
+            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+            tDxInvoiceDao.updateById(updateTDxInvoiceEntity);
+        });
+
         //删除蓝票关系
+        //释放索赔单蓝票额度（作废的索赔单）
+        tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
     }
 }

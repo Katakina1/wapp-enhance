@@ -17,29 +17,29 @@ spring:
     driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: testuser01
     password: aGSsdsJFWd_w_1
-    devtools:
-        restart:
-            #热部署生效
-          enabled: false
+  devtools:
+      restart:
+          #热部署生效
+        enabled: false
     # jackson时间格式化
-    jackson:
-        time-zone: GMT+0
-        date-format: yyyy-MM-dd HH:mm:ss
-    http:
-        multipart:
-            max-file-size: 100MB
-            max-request-size: 100MB
-            enabled: true
-            location: /tmp/tomcat
-    # 指定静态资源的路径
-    resources:
-        static-locations: classpath:/static/,classpath:/views/
+  jackson:
+      time-zone: GMT+0
+      date-format: yyyy-MM-dd HH:mm:ss
+  resources:
+      static-locations: classpath:/static/,classpath:/views/
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 100MB
+      enabled: true
+      location: /tmp/tomcat
 
 # Mybatis-Plus配置
 mybatis-plus:
-  mapper-locations: classpath:mapper/**/*.xml
+  mapper-locations: classpath:mapper/daoext/*.xml
 #  type-aliases-package: com.xforceplus.wapp.repository.entity
-
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 # 日志
 #logging:
 #  path: /home/vn03qsx/logs/
@@ -137,7 +137,24 @@ management:
       exposure:
         include:
           - health
+  endpoint:
+    health:
+      show-details: always
 
+    # Activemq
+
+activemq:
+  url: failover:(tcp://10.100.2.17:61616)?randomize=false&jms.useAsyncSend=true&jms.sendTimeout=3000
+  url_one: tcp://10.100.2.17:61616
+  url_two: tcp://10.100.2.17:61616
+  user: admin
+  password: admin
+  enhance_claim_verdict_queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+
+Esb:
+  url:
+    upload: http://10.100.2.17:8083/object/upload
+    downLoad: http://10.100.2.17:8083/object/downLoad/
 # 注意事项
 # 1、请从研发团队获取标准的EXCEL模板
 agreementBill:
@@ -168,4 +185,3 @@ epdBill:
   sheetName: 原始EPD单
   item:
     sheetName: 原始EPD单LOG明细
-

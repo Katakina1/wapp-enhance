@@ -1,10 +1,10 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-11
+ * @since 2021-10-15
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -145,7 +145,7 @@ public class TXfRedNotificationDetailEntity extends BaseEntity {
     @TableField("update_date")
     private Date updateDate;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
 

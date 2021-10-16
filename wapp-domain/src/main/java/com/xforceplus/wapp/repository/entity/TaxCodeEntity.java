@@ -115,31 +115,6 @@ public class TaxCodeEntity {
     private String quantityUnit;
 
     /**
-     * 扩展字段1,所属分类，门店号
-     */
-    private String ext1;
-
-    /**
-     * 扩展字段2
-     */
-    private String ext2;
-
-    /**
-     * 扩展字段3
-     */
-    private String ext3;
-
-    /**
-     * 扩展字段4
-     */
-    private String ext4;
-
-    /**
-     * 扩展字段5，税号
-     */
-    private String ext5;
-
-    /**
      * 创建用户
      */
     private Long createUser;
@@ -160,6 +135,8 @@ public class TaxCodeEntity {
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
+
+    private String deleteFlag;
 
     private static final long serialVersionUID = 1L;
 }
