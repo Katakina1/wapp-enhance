@@ -33,13 +33,13 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
      * @param limit
      * @return
      */
-    @Select("select * from t_xf_bill_deduct_item  where create_date => #{startDate} and create_date <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate} and goods_tax_no <>'' order by id limit ${start} ,${limit} ")
+    @Select("select top ${limit} * from t_xf_bill_deduct_item  where id > #{id}  and  create_date => #{startDate} and create_date <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate} and goods_tax_no <>'' order by id   ")
     public List<TXfBillDeductItemEntity > queryMatchBillItem(@Param("startDate") Date startDate,
                                                              @Param("endDate") Date endDate,
                                                              @Param("purchaserNo")String purchaserNo,
                                                              @Param("sellerNo")String sellerNo,
                                                              @Param("taxRate") BigDecimal taxRate,
-                                                             @Param("start") int start,
+                                                             @Param("id") Long id,
                                                              @Param("limit") int limit );
 
     /**

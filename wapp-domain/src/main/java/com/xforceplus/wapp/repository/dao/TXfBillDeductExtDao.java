@@ -24,18 +24,17 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     /**
      *查询折扣单列表
      * @param startDate
-     * @param start
      * @param limit
      * @param billType
      * @param status
      * @return
      */
-       @Select("select * from t_xf_bill_deduct " +
-            "where create_date => #{startDate} and create_date <= #{endDate} and business_type = #{billType} and status = #{status}  " +
-            "order by id limit ${start} ,${limit} ")
-    List<TXfBillDeductEntity> queryUnMatchBill(@Param("startDate") Date startDate,
+       @Select("select top ${limit} * from t_xf_bill_deduct " +
+            "where id> #{id} and create_date => #{startDate} and create_date <= #{endDate} and business_type = #{billType} and status = #{status}  " +
+            "order by id  ")
+    List<TXfBillDeductEntity> queryUnMatchBill(@Param("id") Long id,
+                                               @Param("startDate") Date startDate,
                                                @Param("endDate") Date endDate,
-                                               @Param("start") Integer start,
                                                @Param("limit") Integer limit,
                                                @Param("billType") Integer billType,
                                                @Param("status") Integer status);
