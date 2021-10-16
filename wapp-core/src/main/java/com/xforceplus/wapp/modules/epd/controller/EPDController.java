@@ -1,13 +1,13 @@
 package com.xforceplus.wapp.modules.epd.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
-import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
+import com.xforceplus.wapp.modules.claim.service.ClaimService;
+import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,13 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class EPDController {
 
     @Autowired
-    private DeductService deductService;
+    private DeductViewService deductService;
 
 
     @GetMapping
+    public R summary(DeductListRequest request){
+        deductService.summary(request,XFDeductionBusinessTypeEnum.EPD_BILL);
+        return R.ok();
+    }
+
+    @GetMapping
     public R epds(DeductListRequest request) {
-        final Page<TXfBillDeductEntity> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.EPD_BILL);
-        final PageResult<TXfBillDeductEntity> of = PageResult.of(page.getRecords(), page.getTotal(), page.getPages(), page.getSize());
-        return R.ok(of);
+//        final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        return R.ok();
     }
 }
