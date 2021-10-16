@@ -6,15 +6,13 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-public class CommAgreementServiceTest extends BaseUnitTest {
+public class CommEpdServiceTest extends BaseUnitTest {
 
     @Autowired
-    private CommAgreementService commAgreementService;
+    private CommEpdService commEpdService;
 
     @Test
-    public void testDestroyAgreementSettlement() {
-
-      //  commAgreementService.destroyAgreementSettlement();
+    public void testDestroyEpdSettlement() {
     }
 
     @Test

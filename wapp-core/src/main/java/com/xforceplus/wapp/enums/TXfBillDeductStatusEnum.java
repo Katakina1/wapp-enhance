@@ -17,7 +17,7 @@ public enum TXfBillDeductStatusEnum {
     CLAIM_NO_MATCH_SETTLEMENT(105, "索赔单:待生成结算单"),
     CLAIM_MATCH_SETTLEMENT(106, "索赔单:已生成结算单"),
     CLAIM_WAIT_CHECK(107, "索赔单:待审核"),
-    CLAIM_DESTROY(108, "索赔单:已撤销"),
+    CLAIM_DESTROY(108, "索赔单:已作废"),
 
     AGREEMENT_NO_MATCH_SETTLEMENT(201, "协议单:待匹配结算单"),
     AGREEMENT_MATCH_SETTLEMENT(202, "协议单:已匹配结算单"),

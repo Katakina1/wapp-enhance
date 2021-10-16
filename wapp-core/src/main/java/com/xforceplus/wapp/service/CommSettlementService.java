@@ -61,13 +61,12 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("已经开具红票");
         }
         //预制发票
+        //1、当预制发票有红字信息编码时，申请作废红字信息编码，需要沃尔玛审核
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
-
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
-            //1、当预制发票有红字信息编码时，申请作废红字信息编码
             tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
@@ -76,9 +75,16 @@ public class CommSettlementService {
                 //调用沃尔玛 需要沃尔玛审核
                 commRedNotificationService.applyDestroyRedNotification(tXfPreInvoiceEntity.getId());
             });
-        } else {
-            //2、当预制发票没有红字信息编码时，直接作废发票
-            tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+            return;
+        }
+        //预制发票
+        ////2、当预制发票没有红字信息编码时，直接作废发票
+        QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper2 = new QueryWrapper<>();
+        preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
+        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList2 = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper2);
+        if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList2)) {
+            tXfPreInvoiceEntityList2.forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
@@ -105,6 +111,7 @@ public class CommSettlementService {
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
@@ -116,7 +123,7 @@ public class CommSettlementService {
     }
 
     /**
-     * 通过-作废结算单预制发票
+     * 通过-作废结算单待审核的预制发票
      * 1、结算单状态不变
      * 2、预制发票状态改为已作废，清空红字信息字段
      * 沃尔玛调用
@@ -133,6 +140,7 @@ public class CommSettlementService {
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
@@ -142,11 +150,12 @@ public class CommSettlementService {
 
     /**
      * 作废预制发票，但是不能作废红字信息（这个时候主要给蓝冲使用的）
+     *
      * @param preInvoiceId
      */
     @Transactional
-    public void destroyPreInvoice(Long preInvoiceId){
-        if(preInvoiceId == null){
+    public void destroyPreInvoice(Long preInvoiceId) {
+        if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
         TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
@@ -155,6 +164,23 @@ public class CommSettlementService {
         tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
     }
 
+    /**
+     * TODO 申请作废预制发票,废红字信息
+     * （这个时候主要给删除红票后 再删除红字信息使用）
+     *
+     * @param preInvoiceId
+     */
+//    @Transactional
+//    public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
+//        if (preInvoiceId == null) {
+//            throw new EnhanceRuntimeException("参数异常");
+//        }
+//        TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+//        updateTXfPreInvoiceEntity.setId(preInvoiceId);
+//        updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
+//        tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
+//        commRedNotificationService.applyDestroyRedNotification(preInvoiceId);
+//    }
 
 
     /**
@@ -212,10 +238,11 @@ public class CommSettlementService {
     /**
      * 检查结算单是否能重新拆票
      * 如果不能则会抛出异常提示 调用方捕获异常处理相关后续逻辑
+     *
      * @param settlementId
      * @return
      */
-    public void checkAgainSplitSettlementPreInvoice(Long settlementId){
+    public void checkAgainSplitSettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -266,7 +293,7 @@ public class CommSettlementService {
         if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
-        //作废结算单
+        //作废待审核的预制发票
         tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
             agreeDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
