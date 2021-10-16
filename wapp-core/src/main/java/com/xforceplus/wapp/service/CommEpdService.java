@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * epd 通用逻辑操作
@@ -23,6 +24,8 @@ public class CommEpdService {
 
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
+    @Autowired
+    private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
     @Autowired
     private TXfBillDeductDao tXfBillDeductDao;
     @Autowired
@@ -85,7 +88,6 @@ public class CommEpdService {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
-            updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             // 作废红字信息
             commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
@@ -115,6 +117,7 @@ public class CommEpdService {
 
     /**
      * 修改后的结算单的中的部门预制发票明细重新去拆票
+     * 删除之前的预制发票
      *
      * @param settlementId
      * @param preInvoiceItemList
@@ -126,5 +129,11 @@ public class CommEpdService {
             throw new EnhanceRuntimeException("结算单不存在");
         }
         preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), preInvoiceItemList);
+        //删除之前的预制发票，避免申请逻辑状态判断问题
+        List<Long> preInvoiceIdList = preInvoiceItemList.stream().map(TXfPreInvoiceItemEntity::getPreInvoiceId).collect(Collectors.toList());
+        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
+        QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
+        preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
+        tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
     }
 }
