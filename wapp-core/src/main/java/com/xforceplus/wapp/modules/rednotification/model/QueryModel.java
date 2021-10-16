@@ -53,6 +53,12 @@ public class QueryModel {
     @ApiModelProperty("审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批")
     private Integer approveStatus;
 
+    @ApiModelProperty(" 1.未申请 2.申请中 3.已申请 4.撤销待审核 ")
+    private Integer applyingStatus;
+
+    @ApiModelProperty("1正常，2申请锁定中，3撤销锁定中")
+    private Integer lockFlag;
+
 
     @ApiModelProperty("分页码 最小1")
     Integer pageNo ;

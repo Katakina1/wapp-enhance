@@ -3,10 +3,13 @@ package com.xforceplus.wapp.modules.rednotification.service;
 import com.alibaba.excel.ExcelReader;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.enums.ApplyType;
+import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.listener.ExcelListener;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
@@ -15,6 +18,8 @@ import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.sequence.IDSequence;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.sl.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +40,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     RedNotificationMainMapper redNotificationMainMapper;
     @Autowired
     RedNotificationItemService redNotificationItemService;
+    @Autowired
+    RedNotificationLogService redNotificationLogService;
     @Autowired
     TaxWareService taxWareService;
     @Autowired
@@ -69,6 +73,57 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         redNotificationItemService.saveBatch(listItem);
 
         return "" ;
+    }
+
+    public Response applyByPage(RedNotificationApplyReverseRequest request) {
+        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        //构建税件请求
+        if (!CollectionUtils.isEmpty(filterData)){
+            ApplyRequest applyRequest = new ApplyRequest();
+            applyRequest.setDeviceUn(request.getDeviceUn());
+            applyRequest.setTerminalUn(request.getTerminalUn());
+            applyRequest.setSerialNo(String.valueOf(iDSequence.nextId()));
+            List<RedInfo> redInfoList = buildRedInfoList(filterData,applyRequest);
+            applyRequest.setRedInfoList(redInfoList);
+            TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
+            if (Objects.equals(TaxWareCode.SUCCESS,taxWareResponse.getCode())){
+                return  Response.ok("请求成功" , applyRequest.getSerialNo());
+            }else {
+                //更新流水.全部失败
+                updateRequestFail(applyRequest.getSerialNo(), taxWareResponse);
+                return  Response.failed(taxWareResponse.getMessage());
+            }
+        }else {
+            return  Response.ok("未找到申请数据");
+        }
+
+    }
+
+    public Response rollback(RedNotificationApplyReverseRequest request) {
+        QueryModel queryModel = request.getQueryModel();
+//        queryModel.setLockFlag(1);
+//        queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
+//        queryModel.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
+        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        List<TXfRedNotificationEntity> entityList = filterData.stream().filter(item ->
+                item.getLockFlag() == 0
+                        && item.getApplyingStatus() == RedNoApplyingStatus.APPLIED.getValue()
+                        && item.getApproveStatus() == ApproveStatus.APPROVE_PASS.getValue()
+        ).collect(Collectors.toList());
+        if (filterData.size()>0 && entityList.size() != filterData.size()){
+            return Response.failed("锁定中或未审核通过 不允许撤销");
+        }
+        RevokeRequest revokeRequest = buildRevokeRequestAndLogs(entityList,request);
+        TaxWareResponse rollbackResponse = taxWareService.rollback(revokeRequest);
+
+        if (Objects.equals(TaxWareCode.SUCCESS,rollbackResponse.getCode())){
+            return  Response.ok("请求成功" , revokeRequest.getSerialNo());
+        }else {
+            //更新流水.全部失败
+            updateRequestFail(revokeRequest.getSerialNo(), rollbackResponse);
+            return  Response.failed(rollbackResponse.getMessage());
+        }
+
     }
 
 
@@ -148,35 +203,38 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             queryWrapper.eq(TXfRedNotificationEntity::getPid,queryModel.getPid());
         }
         if (queryModel.getApproveStatus()!=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getApplyingStatus,queryModel.getApproveStatus());
+            queryWrapper.eq(TXfRedNotificationEntity::getApproveStatus,queryModel.getApproveStatus());
         }
+        if (queryModel.getApplyingStatus()!=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getApplyingStatus,queryModel.getApplyingStatus());
+        }
+        if (queryModel.getLockFlag()!=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getLockFlag,queryModel.getLockFlag());
+        }
+
         return queryWrapper;
     }
 
-    public Response applyByPage(RedNotificationApplyReverseRequest request) {
-        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
-        //构建税件请求
-        if (!CollectionUtils.isEmpty(filterData)){
-            ApplyRequest applyRequest = new ApplyRequest();
-            applyRequest.setDeviceUn(request.getDeviceUn());
-            applyRequest.setTerminalUn(request.getTerminalUn());
-            applyRequest.setSerialNo(String.valueOf(iDSequence.nextId()));
-            List<RedInfo> redInfoList = buildRedInfoList(filterData);
-            applyRequest.setRedInfoList(redInfoList);
-            TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
-            if (Objects.equals(TaxWareCode.SUCCESS,taxWareResponse.getCode())){
-                return  Response.ok("请求成功" , applyRequest.getSerialNo());
-            }else {
-                return  Response.failed(taxWareResponse.getMessage());
-            }
-        }else {
-            return  Response.ok("未找到申请数据");
-        }
 
+
+    /**
+     * 更新流失失败
+     * @param  serialNo
+     * @param taxWareResponse
+     */
+    private void updateRequestFail(String serialNo, TaxWareResponse taxWareResponse) {
+        LambdaUpdateWrapper<TXfRedNotificationLogEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(TXfRedNotificationLogEntity::getSerialNo, serialNo);
+        TXfRedNotificationLogEntity record = new TXfRedNotificationLogEntity();
+        record.setStatus(3);
+        record.setProcessRemark(taxWareResponse.getMessage());
+        redNotificationLogService.update(record,updateWrapper);
     }
 
-    private List<RedInfo> buildRedInfoList(List<TXfRedNotificationEntity> filterData) {
+    private List<RedInfo> buildRedInfoList(List<TXfRedNotificationEntity> filterData,ApplyRequest applyRequest) {
         ArrayList<RedInfo> redInfoList = Lists.newArrayList();
+        ArrayList<TXfRedNotificationLogEntity> logList = Lists.newArrayList();
+
         for (TXfRedNotificationEntity notificationEntity : filterData) {
             RedInfo redInfo = new RedInfo();
             redInfo.setPid(String.valueOf(notificationEntity.getId()));
@@ -188,8 +246,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             redInfo.setPurchaserTaxCode(notificationEntity.getPurchaserTaxNo());
             redInfo.setSellerName(notificationEntity.getSellerName());
             redInfo.setSellerTaxCode(notificationEntity.getSellerTaxNo());
-            //明细字段
-//           redInfo.setTaxCodeVersion();
+
             redInfo.setOriginalInvoiceType(notificationEntity.getOriginInvoiceType());
             redInfo.setOriginalInvoiceCode(notificationEntity.getOriginInvoiceCode());
             redInfo.setOriginalInvoiceNo(notificationEntity.getOriginInvoiceNo());
@@ -197,13 +254,70 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             redInfo.setApplicationReason(String.valueOf(notificationEntity.getApplyType()));
 
             Amount amount = new Amount();
-//            amount.setTaxAmount(notificationEntity.getTaxAmount());
-//            redInfo.setAmount();
-//            redInfo.setDetails();
+            amount.setTaxAmount(notificationEntity.getTaxAmount());
+            amount.setAmountWithoutTax(notificationEntity.getAmountWithoutTax());
+            amount.setAmountWithTax(notificationEntity.getAmountWithTax());
+            redInfo.setAmount(amount);
 
+
+            Tuple2<List<RedDetailInfo>,String> result= buildDetails(notificationEntity.getId());
+            List<RedDetailInfo> details = result._1;
+            //明细字段
+            redInfo.setTaxCodeVersion(result._2);
+            redInfo.setDetails(details);
             redInfoList.add(redInfo);
+            // ================ 插入申请流水=============
+            TXfRedNotificationLogEntity logEntity = new TXfRedNotificationLogEntity();
+            logEntity.setApplyId(notificationEntity.getId());
+            logEntity.setStatus(1);
+            logEntity.setProcessRemark("处理中");
+            logEntity.setRedNotificationNo("");
+            logEntity.setDeviceUn(applyRequest.getDeviceUn());
+            logEntity.setTerminalUn(applyRequest.getTerminalUn());
+            logEntity.setApplyType(ApplyType.APPLY.getValue());
+            logEntity.setSerialNo(applyRequest.getSerialNo());
+//            logEntity.setCreateUserId();
+            logEntity.setCreateDate(new Date());
+            logEntity.setUpdateDate(new Date());
+            logEntity.setId(iDSequence.nextId());
+            logList.add(logEntity);
         }
+        redNotificationLogService.saveBatch(logList);
         return redInfoList;
+    }
+
+    private Tuple2<List<RedDetailInfo>,String> buildDetails(Long id) {
+        ArrayList<RedDetailInfo> redItemInfoList = Lists.newArrayList();
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> detailMapper = new LambdaQueryWrapper<>();
+        detailMapper.eq(TXfRedNotificationDetailEntity::getApplyId, id);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(detailMapper);
+        for (TXfRedNotificationDetailEntity detailEntity : tXfRedNotificationDetailEntities) {
+            RedDetailInfo redDetailInfo = new RedDetailInfo();
+
+            DetailAmount detailAmount = new DetailAmount();
+            detailAmount.setTaxAmount(detailEntity.getTaxAmount());
+            detailAmount.setAmountWithoutTax(detailEntity.getAmountWithoutTax());
+            detailAmount.setUnitPrice(detailEntity.getUnitPrice());
+            detailAmount.setTaxDeduction(detailEntity.getDeduction());
+            redDetailInfo.setDetailAmount(detailAmount);
+
+            Production production = new Production();
+            production.setProductionCode(detailEntity.getGoodsTaxNo());
+            production.setProductionName(detailEntity.getGoodsName());
+            redDetailInfo.setProduction(production);
+
+            Tax tax = new Tax();
+            tax.setPreferentialTax(detailEntity.getTaxPre()==1?true:false);
+            tax.setTaxPolicy(detailEntity.getTaxPreCon());
+            tax.setTaxRate(detailEntity.getTaxRate());
+            tax.setZeroTax(String.valueOf(detailEntity.getZeroTax()));
+            tax.setTaxCodeVersion(detailEntity.getGoodsNoVer());
+            redDetailInfo.setTax(tax);
+
+            redItemInfoList.add(redDetailInfo);
+        }
+        String goodsNoVer = tXfRedNotificationDetailEntities.get(0).getGoodsNoVer();
+        return Tuple.of(redItemInfoList,goodsNoVer);
     }
 
     public Response<SummaryResult> summary(QueryModel queryModel) {
@@ -263,9 +377,45 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         return Response.ok("成功",redNotificationInfo);
     }
 
-    public Response rollback(RedNotificationApplyReverseRequest request) {
 
-        return null;
+
+    private RevokeRequest buildRevokeRequestAndLogs(List<TXfRedNotificationEntity> entityList, RedNotificationApplyReverseRequest request) {
+
+        Long serialNo = iDSequence.nextId();
+
+        RevokeRequest revokeRequest = new RevokeRequest();
+        revokeRequest.setSerialNo(String.valueOf(serialNo));
+        revokeRequest.setApplyTaxCode(entityList.get(0).getPurchaserTaxNo());
+        revokeRequest.setTerminalUn(request.getTerminalUn());
+        revokeRequest.setDeviceUn(request.getDeviceUn());
+
+        ArrayList<TXfRedNotificationLogEntity> logList = Lists.newArrayList();
+        ArrayList<RevokeRedNotificationInfo> revokeRedNotificationInfos = Lists.newArrayList();
+        entityList.stream().forEach(entity->{
+            RevokeRedNotificationInfo revokeRedNotificationInfo = new RevokeRedNotificationInfo();
+            revokeRedNotificationInfo.setRedNotificationNo(entity.getRedNotificationNo());
+            revokeRedNotificationInfos.add(revokeRedNotificationInfo);
+
+            // ================ 插入撤销流水=============
+            TXfRedNotificationLogEntity logEntity = new TXfRedNotificationLogEntity();
+            logEntity.setApplyId(entity.getId());
+            logEntity.setStatus(1);
+            logEntity.setProcessRemark("处理中");
+            logEntity.setRedNotificationNo(entity.getRedNotificationNo());
+            logEntity.setDeviceUn(request.getDeviceUn());
+            logEntity.setTerminalUn(request.getTerminalUn());
+            logEntity.setApplyType(ApplyType.ROLL_BACK.getValue());
+            logEntity.setSerialNo(revokeRequest.getSerialNo());
+//            logEntity.setCreateUserId();
+            logEntity.setCreateDate(new Date());
+            logEntity.setUpdateDate(new Date());
+            logEntity.setId(iDSequence.nextId());
+            logList.add(logEntity);
+        });
+        redNotificationLogService.saveBatch(logList);
+
+        revokeRequest.setRedNotificationList(revokeRedNotificationInfos);
+        return revokeRequest;
     }
 
     public void importNotification(MultipartFile file) {
