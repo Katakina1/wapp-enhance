@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
@@ -21,11 +20,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -48,7 +45,7 @@ public class DeductService  {
     private TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
 
     @Autowired
-    private TXfBillDeductItemRefDao tXfBillDeductItemRefDao;
+    private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
     @Autowired
     private TXfSettlementDao tXfSettlementDao;
     @Autowired
@@ -98,7 +95,7 @@ public class DeductService  {
      * @return
      */
     private TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-    Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
         if (taxCodeOptional.isPresent()) {
         TaxCode taxCode = taxCodeOptional.get();
         entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
@@ -205,10 +202,7 @@ public class DeductService  {
     public boolean matchClaimBill() {
         Date startDate = DateUtils.getFristDate();
         Date endDate = DateUtils.getLastDate();
-        int billStartIndex = 0;
-        int itemStartIndex = 0;
         int limit = 100;
-        int batchAcount = 100;
         /**
          * 查询未匹配明细的索赔单
          */
@@ -223,10 +217,14 @@ public class DeductService  {
                     log.warn("索赔单{}主信息 不符合要求，sellerNo:{},purcharseNo:{},taxRate:{}",sellerNo,purcharseNo,taxRate);
                     continue;
                 }
-                BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
                 /**
-                 *
+                 * 查询已匹配金额
                  */
+                BigDecimal matchAmount = tXfBillDeductItemRefDao.queryRefMatchAmountByBillId(tXfBillDeductEntity.getId());
+                matchAmount = Objects.isNull(matchAmount) ? BigDecimal.ZERO : matchAmount;
+                BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
+                billAmount = billAmount.subtract(matchAmount);
+
                 List<TXfBillDeductItemEntity> matchItem = new ArrayList<>();
                 /**
                  * 查询符合条件的明细
@@ -239,6 +237,9 @@ public class DeductService  {
                         billAmount = billAmount.subtract(total);
                      }else{
                         billAmount = BigDecimal.ZERO;
+                    }
+                    if (total.compareTo(BigDecimal.ZERO) > 0) {
+                        matchItem.addAll(tXfBillDeductItemEntities);
                     }
                     if (billAmount.compareTo(BigDecimal.ZERO) > 0) {
                         itemId =   tXfBillDeductItemEntities.stream().mapToLong(TXfBillDeductItemEntity::getId).max().getAsLong();
@@ -258,13 +259,13 @@ public class DeductService  {
                     }
                 }
                 /**
-                 * 匹配成功 进行绑定操作
+                 * 匹配完成 进行绑定操作
                  */
-                if (billAmount.compareTo(BigDecimal.ZERO) == 0) {
-                    doItemMatch(tXfBillDeductEntity.getId(), matchItem, tXfBillDeductEntity.getAmountWithoutTax(),tXfBillDeductEntity.getTaxRate());
+                if (CollectionUtils.isNotEmpty(matchItem)) {
+                    doItemMatch(tXfBillDeductEntity, matchItem);
                 }
             }
-            deductId =   tXfBillDeductEntities.stream().mapToLong(TXfBillDeductEntity::getId).max().getAsLong();
+            deductId =  tXfBillDeductEntities.stream().mapToLong(TXfBillDeductEntity::getId).max().getAsLong();
             /**
              * 执行下一批匹配
              */
@@ -275,13 +276,16 @@ public class DeductService  {
 
     /**
      * 执行扣除明细，匹配主信息
-     * @param billId
+     * @param tXfBillDeductEntity
      * @param tXfBillDeductItemEntitys
-     * @param billAmount
      * @return
      */
     @Transactional
-    public BigDecimal doItemMatch(Long billId, List<TXfBillDeductItemEntity> tXfBillDeductItemEntitys, BigDecimal billAmount,BigDecimal taxRate) {
+    public BigDecimal doItemMatch(TXfBillDeductEntity tXfBillDeductEntity, List<TXfBillDeductItemEntity> tXfBillDeductItemEntitys ) {
+        Long billId = tXfBillDeductEntity.getId();
+        BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
+        BigDecimal taxRate = tXfBillDeductEntity.getTaxRate();
+        BigDecimal taxAmount = tXfBillDeductEntity.getTaxAmount();
         /**
          * false 表示 存在未匹配税编的明细
          *
@@ -300,10 +304,9 @@ public class DeductService  {
             amount = billAmount .compareTo(amount) > 0 ? amount : billAmount;
             int res = tXfBillDeductItemExtDao.updateBillItem(tXfBillDeductItemEntity.getId(), amount);
             if (res == 0) {
-               continue;
+                continue;
             }
             billAmount = billAmount.subtract(amount);
-            taxAmountOther = taxAmountOther.add(amount.multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
             if (matchTaxNoFlag) {
                 if (StringUtils.isEmpty(tXfBillDeductItemEntity.getGoodsTaxNo())) {
                     matchTaxNoFlag = false;
@@ -322,14 +325,21 @@ public class DeductService  {
             tXfBillDeductItemRefEntity.setDeductItemId(tXfBillDeductItemEntity.getId());
             tXfBillDeductItemRefEntity.setPrice(tXfBillDeductItemEntity.getPrice());
             tXfBillDeductItemRefEntity.setQuantity(amount.divide(tXfBillDeductItemEntity.getQuantity()).setScale(6,RoundingMode.HALF_UP));
+            tXfBillDeductItemRefEntity.setTaxAmount(amount.multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
+            taxAmountOther = taxAmountOther.add(tXfBillDeductItemRefEntity.getTaxAmount());
+            tXfBillDeductItemRefEntity.setAmountWithTax(tXfBillDeductItemRefEntity.getTaxAmount().add(tXfBillDeductItemRefEntity.getUseAmount()));
             tXfBillDeductItemRefDao.insert(tXfBillDeductItemRefEntity);
         }
         TXfBillDeductEntity tmp = new TXfBillDeductEntity();
         tmp.setId(billId);
+        if (!matchTaxNoFlag || checkTaxRateDifference||  taxAmountOther.subtract(taxAmount).abs().compareTo(new BigDecimal("20")) > 0) {
+
+            //TODO 发起例外报告 确认税差 不需要中止
+        }
         /**
-         * 如果存在未匹配的税编，状态未待匹配税编，如果已经完成匹配税编，简称是否存在不同税率，如果存在状态未待确认税差，如果不存在，状态为待匹配蓝票，
+         * 如果当前金额没有匹配完，如果存在未匹配的税编，状态未待匹配税编，如果已经完成匹配税编，简称是否存在不同税率，如果存在状态未待确认税差，如果不存在，状态为待匹配蓝票，
          */
-        Integer status = matchTaxNoFlag ? (checkTaxRateDifference ? TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_DIFF.getCode() : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode();
+        Integer status = billAmount.compareTo(BigDecimal.ZERO)>0?TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode(): matchTaxNoFlag ? (checkTaxRateDifference ? TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_DIFF.getCode() : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode();
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
         return billAmount;
