@@ -122,6 +122,7 @@ public class CommEpdService {
      * @param settlementId
      * @param preInvoiceItemList
      */
+    @Transactional
     public void againSplitPreInvoice(Long settlementId, List<TXfPreInvoiceItemEntity> preInvoiceItemList) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
