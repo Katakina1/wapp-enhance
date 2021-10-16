@@ -122,7 +122,7 @@ public class CommSettlementService {
     }
 
     /**
-     * 通过-作废结算单预制发票
+     * 通过-作废结算单待审核的预制发票
      * 1、结算单状态不变
      * 2、预制发票状态改为已作废，清空红字信息字段
      * 沃尔玛调用
@@ -139,6 +139,7 @@ public class CommSettlementService {
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
@@ -273,7 +274,7 @@ public class CommSettlementService {
         if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
-        //作废结算单
+        //作废待审核的预制发票
         tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
             agreeDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
