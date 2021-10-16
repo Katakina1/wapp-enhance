@@ -133,6 +133,7 @@ public class ClaimItemSamsSaveCommand implements Command {
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
