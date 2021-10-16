@@ -1,8 +1,6 @@
 package com.xforceplus.wapp.modules.job.chain;
 
-import com.xforceplus.wapp.modules.job.command.ClaimBillDownloadCommand;
-import com.xforceplus.wapp.modules.job.command.ClaimBillFilterCommand;
-import com.xforceplus.wapp.modules.job.command.ClaimBillSaveCommand;
+import com.xforceplus.wapp.modules.job.command.*;
 import org.apache.commons.chain.impl.ChainBase;
 
 /**
@@ -17,6 +15,8 @@ public class ClaimBillJobChain extends ChainBase {
         super();
         addCommand(new ClaimBillDownloadCommand());
         addCommand(new ClaimBillSaveCommand());
+        addCommand(new ClaimItemHyperSaveCommand());
+        addCommand(new ClaimItemSamsSaveCommand());
         addCommand(new ClaimBillFilterCommand());
     }
 }

@@ -9,7 +9,7 @@ import org.apache.commons.chain.Context;
  * @author: Kenny Wong
  * @create: 2021-10-14 14:01
  **/
-public class EPDBillFilterCommand implements Command {
+public class EpdBillFilterCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {

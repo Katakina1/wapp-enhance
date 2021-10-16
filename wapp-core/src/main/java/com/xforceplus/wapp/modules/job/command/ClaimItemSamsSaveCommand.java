@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.listener.OriginClaimBillDataListener;
+import com.xforceplus.wapp.modules.job.listener.OriginClaimItemSamsDataListener;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
-import com.xforceplus.wapp.modules.job.service.OriginClaimBillService;
+import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +21,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM_SAMS;
 
 /**
  * @program: wapp-generator
@@ -31,19 +30,19 @@ import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT
  * @create: 2021-10-14 13:54
  **/
 @Slf4j
-public class ClaimBillSaveCommand implements Command {
+public class ClaimItemSamsSaveCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private BillJobService billJobService;
     @Autowired
-    private OriginClaimBillService service;
+    private OriginClaimItemSamsService service;
     @Value("claimBill.remote.path")
     private String remotePath;
     @Value("claimBill.local.path")
     private String localPath;
-    @Value("claimBill.sheetName")
+    @Value("claimBill.item.samsSheetName")
     private String sheetName;
 
     @Override
@@ -86,7 +85,7 @@ public class ClaimBillSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL_OBJECT, jobAcquisitionObject);
+        return Objects.equals(BILL_ITEM_SAMS, jobAcquisitionObject);
     }
 
     /**
@@ -122,30 +121,23 @@ public class ClaimBillSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
-        // 获取当前进度
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (Objects.isNull(jobAcquisitionObject)) {
-            jobAcquisitionObject = BILL_OBJECT;
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
-        }
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginClaimBillDataListener readListener = new OriginClaimBillDataListener(jobId, cursor, service);
+        OriginClaimItemSamsDataListener readListener = new OriginClaimItemSamsDataListener(jobId, cursor, service);
         try {
             EasyExcel.read(file, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        } finally {
+            // 正常处理结束，记录游标
             // 处理出现异常，记录游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
         }
@@ -162,5 +154,4 @@ public class ClaimBillSaveCommand implements Command {
         TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
         return billJobService.updateById(tXfBillJobEntity);
     }
-
 }

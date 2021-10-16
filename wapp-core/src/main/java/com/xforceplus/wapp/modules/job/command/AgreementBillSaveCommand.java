@@ -4,12 +4,10 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
-import com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillDataListener;
+import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
-import com.xforceplus.wapp.modules.job.service.impl.BillJobServiceImpl;
-import com.xforceplus.wapp.repository.dao.TXfOriginAgreementItemDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +21,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.*;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
 
 /**
  * @program: wapp-generator
@@ -37,34 +36,28 @@ public class AgreementBillSaveCommand implements Command {
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private BillJobServiceImpl billJobServiceImpl;
+    private BillJobService billJobService;
     @Autowired
-    private OriginAgreementBillService originAgreementBillService;
-    @Autowired
-    private TXfOriginAgreementItemDao tXfOriginAgreementItemDao;
+    private OriginAgreementBillService service;
     @Value("agreementBill.remote.path")
     private String remotePath;
     @Value("agreementBill.local.path")
     private String localPath;
     @Value("agreementBill.sheetName")
     private String sheetName;
-    @Value("agreementBill.item.hyperSheetName")
-    private String hyperItemSheetName;
-    @Value("agreementBill.item.samsSheetName")
-    private String samsItemSheetName;
 
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        if (isValidJobStatus(jobStatus)) {
+        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
             }
             try {
                 process(localPath, fileName, context);
-                context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             } finally {
@@ -84,6 +77,16 @@ public class AgreementBillSaveCommand implements Command {
      */
     private boolean isValidJobStatus(int jobStatus) {
         return Objects.equals(BillJobStatusEnum.DOWNLOAD_COMPLETE.getJobStatus(), jobStatus);
+    }
+
+    /**
+     * 是否是当前步骤的处理对象
+     *
+     * @param jobAcquisitionObject
+     * @return
+     */
+    private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
+        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL_OBJECT, jobAcquisitionObject);
     }
 
     /**
@@ -111,7 +114,6 @@ public class AgreementBillSaveCommand implements Command {
         sftpRemoteManager.downloadFile(remotePath, fileName, localPath);
     }
 
-
     /**
      * 处理文件入库的过程
      *
@@ -125,87 +127,28 @@ public class AgreementBillSaveCommand implements Command {
         if (Objects.isNull(jobAcquisitionObject)) {
             jobAcquisitionObject = BILL_OBJECT;
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 0);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
-        BillJobAcquisitionObjectEnum jao = Optional
-                .ofNullable(fromCode(Integer.parseInt(String.valueOf(jobAcquisitionObject))))
-                .orElse(BILL_OBJECT);
-        switch (jao) {
-            case BILL_OBJECT:
-                // 如果是主信息
-                processBillObject(localPath, fileName, context);
-                processBillItemObject(localPath, fileName, context);
-                break;
-            case BILL_ITEM:
-                // 如果是Hyper明细信息
-                processBillItemObject(localPath, fileName, context);
-                processBillItemSamsObject(localPath, fileName, context);
-                break;
-            case BILL_ITEM_SAMS:
-                // 如果是Sams明细信息
-                processBillItemSamsObject(localPath, fileName, context);
-                break;
-            default:
-                log.warn("未知的被处理对象, 当前任务={}, 清空当前值jobAcquisitionObject={}, 等待下次重新执行", fileName, jao);
-                context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, null);
-                context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
-        }
-    }
-
-    /**
-     * 处理单据主信息
-     *
-     * @param localPath
-     * @param fileName
-     * @param context
-     */
-    private void processBillObject(String localPath, String fileName, Context context) {
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginAgreementBillDataListener readListener = new OriginAgreementBillDataListener(jobId, cursor, originAgreementBillService);
-        EasyExcel.read(file, readListener)
-                .sheet(sheetName)
-                .headRowNumber(cursor)
-                .doRead();
-        context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
-        context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
-    }
-
-    /**
-     * 处理Hyper明细信息
-     *
-     * @param localPath
-     * @param fileName
-     * @param context
-     */
-    private void processBillItemObject(String localPath, String fileName, Context context) {
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
-
-        context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM_SAMS);
-        context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 0);
-    }
-
-    /**
-     * 处理Sames明细信息
-     *
-     * @param localPath
-     * @param fileName
-     * @param context
-     */
-    private void processBillItemSamsObject(String localPath, String fileName, Context context) {
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
-
-        context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 0);
+        OriginAgreementBillDataListener readListener = new OriginAgreementBillDataListener(jobId, cursor, service);
+        try {
+            EasyExcel.read(file, readListener)
+                    .sheet(sheetName)
+                    .headRowNumber(cursor)
+                    .doRead();
+            // 正常处理结束，清空游标
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            // 处理出现异常，记录游标
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+        }
     }
 
     /**
@@ -214,9 +157,10 @@ public class AgreementBillSaveCommand implements Command {
      * @param context
      * @return
      */
-    private int saveContext(Context context) {
+    @SuppressWarnings("unchecked")
+    private boolean saveContext(Context context) {
         TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobServiceImpl.updateById(tXfBillJobEntity);
+        return billJobService.updateById(tXfBillJobEntity);
     }
 
 }

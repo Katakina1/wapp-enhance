@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.service.impl.BillJobServiceImpl;
+import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
@@ -22,12 +22,12 @@ import java.util.Objects;
  * @create: 2021-10-14 13:45
  **/
 @Slf4j
-public class EPDBillDownloadCommand implements Command {
+public class EpdBillDownloadCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private BillJobServiceImpl billJobServiceImpl;
+    private BillJobService billJobService;
     @Value("epdBill.remote.path")
     private String remotePath;
     @Value("epdBill.local.path")
@@ -77,8 +77,8 @@ public class EPDBillDownloadCommand implements Command {
      * @param context
      * @return
      */
-    private int saveContext(Context context) {
+    private boolean saveContext(Context context) {
         TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobServiceImpl.updateById(tXfBillJobEntity);
+        return billJobService.updateById(tXfBillJobEntity);
     }
 }

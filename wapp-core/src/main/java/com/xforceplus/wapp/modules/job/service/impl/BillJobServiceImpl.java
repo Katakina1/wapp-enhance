@@ -28,11 +28,7 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
     @Autowired
     private TXfBillJobDao tXfBillJobDao;
 
-    /**
-     * 获取待执行的任务
-     *
-     * @return
-     */
+    @Override
     public List<Map<String, Object>> obtainAvailableJobs() {
         return tXfBillJobDao.selectMaps(
                 new QueryWrapper<TXfBillJobEntity>()
@@ -43,6 +39,7 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
         );
     }
 
+    @Override
     public boolean updateStatus(Integer id, int status) {
         TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
         tXfBillJobEntity.setId(id);
@@ -50,22 +47,12 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
         return updateById(tXfBillJobEntity);
     }
 
-    /**
-     * 根据job id锁定任务
-     *
-     * @param id
-     * @return
-     */
+    @Override
     public int lockJob(Integer id) {
         return lockJob(id, true);
     }
 
-    /**
-     * 根据job id解锁任务
-     *
-     * @param id
-     * @return
-     */
+    @Override
     public int unlockJob(Integer id) {
         return lockJob(id, false);
     }

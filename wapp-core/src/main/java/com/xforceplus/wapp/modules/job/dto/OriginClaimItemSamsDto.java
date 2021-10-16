@@ -1,28 +1,22 @@
 package com.xforceplus.wapp.modules.job.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.ExcelProperty;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.Date;
-
 /**
  * <p>
-    * 索赔单Sams明细
-    * </p>
+ * 索赔单Sams明细
+ * </p>
  *
  * @author malong@xforceplus.com
  * @since 2021-10-15
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper=true)
+@ToString(callSuper = true)
 public class OriginClaimItemSamsDto extends BaseEntity {
 
     private static final long serialVersionUID = 1L;

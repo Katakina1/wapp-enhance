@@ -4,10 +4,11 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
+import com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.listener.OriginClaimBillDataListener;
+import com.xforceplus.wapp.modules.job.listener.OriginEpdBillDataListener;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
-import com.xforceplus.wapp.modules.job.service.OriginClaimBillService;
+import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -21,29 +22,28 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.*;
 
 /**
  * @program: wapp-generator
- * @description: 原始索赔入库步骤
+ * @description: 原始EPD单入库步骤
  * @author: Kenny Wong
  * @create: 2021-10-14 13:54
  **/
 @Slf4j
-public class ClaimBillSaveCommand implements Command {
+public class EpdBillSaveCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private BillJobService billJobService;
     @Autowired
-    private OriginClaimBillService service;
-    @Value("claimBill.remote.path")
+    private OriginEpdBillService service;
+    @Value("epdBill.remote.path")
     private String remotePath;
-    @Value("claimBill.local.path")
+    @Value("epdBill.local.path")
     private String localPath;
-    @Value("claimBill.sheetName")
+    @Value("epdBill.sheetName")
     private String sheetName;
 
     @Override
@@ -129,13 +129,16 @@ public class ClaimBillSaveCommand implements Command {
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
+        BillJobAcquisitionObjectEnum jao = Optional
+                .ofNullable(fromCode(Integer.parseInt(String.valueOf(jobAcquisitionObject))))
+                .orElse(BILL_OBJECT);
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginClaimBillDataListener readListener = new OriginClaimBillDataListener(jobId, cursor, service);
+        OriginEpdBillDataListener readListener = new OriginEpdBillDataListener(jobId, cursor, service);
         try {
             EasyExcel.read(file, readListener)
                     .sheet(sheetName)
@@ -162,5 +165,4 @@ public class ClaimBillSaveCommand implements Command {
         TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
         return billJobService.updateById(tXfBillJobEntity);
     }
-
 }

@@ -2,7 +2,7 @@ package com.xforceplus.wapp.modules.job.executor;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.chain.EPDBillJobChain;
+import com.xforceplus.wapp.modules.job.chain.EpdBillJobChain;
 import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class EpdBillJobExecutor extends AbstractBillJobExecutor {
     @Override
     public void execute() {
         List<Map<String, Object>> availableJobs = getAvailableJobs();
-        Chain chain = new EPDBillJobChain();
+        Chain chain = new EpdBillJobChain();
         availableJobs.forEach(
                 availableJob -> {
                     Context context = new ContextBase(availableJob);
