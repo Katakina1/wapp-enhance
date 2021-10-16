@@ -21,6 +21,7 @@ wapp:
       tcp: 443
   db2:
     base-url: 127.0.0.1
+taxRateSet: 9,6,5,4
 spring:
   redis:
     host: wapp-redis

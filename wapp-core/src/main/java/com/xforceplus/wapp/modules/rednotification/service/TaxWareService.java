@@ -52,7 +52,7 @@ public class TaxWareService {
     private static final String SUCCESSFUL_PROCESS_FLAG = "1";
 
 
-    public TaxWareService(@Value("${wapp.xf.tenant-id:1203939049971830784}")
+    public TaxWareService(@Value("${wapp.integration.tenant-id:1203939049971830784}")
                                            String tenantId) {
         defaultHeader =  new HashMap<>();
         defaultHeader.put("rpcType", "http");
