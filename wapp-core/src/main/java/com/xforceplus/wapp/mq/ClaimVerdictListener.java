@@ -6,7 +6,6 @@ import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -15,7 +14,6 @@ import javax.jms.TextMessage;
 /**
  * 监听问题清单列表那里的索赔不定单操作审核消息事件
  */
-@Component
 @Slf4j
 public class ClaimVerdictListener implements MessageListener {
 
