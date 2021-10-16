@@ -124,7 +124,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private String invoiceType;
 
     /**
-     * 结算单类型 2 协议 2 EPD
+     * 结算单类型:1索赔单,2:协议单；3:EPD单
      */
     @TableField("settlement_type")
     private Integer settlementType;
