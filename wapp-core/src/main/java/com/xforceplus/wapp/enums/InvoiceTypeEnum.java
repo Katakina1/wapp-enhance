@@ -50,4 +50,9 @@ public enum InvoiceTypeEnum {
         map.put(TOLLS_INVOICE.getResultCode(), TOLLS_INVOICE.getResultTip());
         return map;
     }
+
+    public static boolean isElectronic(String invoiceType) {
+        return E_INVOICE.getResultCode().equals(invoiceType) || E_SPECIAL_INVOICE.getResultCode().equals(invoiceType);
+    }
+
 }

@@ -1,5 +1,8 @@
 package com.xforceplus.wapp.common.utils;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -900,12 +903,21 @@ public class DateUtils {
         return strtostr;
     }
 
+    public static boolean isCurrentMonth(Date date){
+        DateTime dateTime = new DateTime(date); // Convert java.util.Date to Joda-Time, and assign time zone to adjust.
+        DateTime now = DateTime.now( );
+        if ( ( dateTime.getMonthOfYear() == now.getMonthOfYear() ) && ( dateTime.getYear() == now.getYear() ) ) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
     public static void main(String[] args) throws Exception {
         try {
-            System.out.println(addDate(new Date(),1));
-            System.out.println(getFristDate());
-            System.out.println(getLastDate());
-
+            boolean currentMonth = isCurrentMonth(new Date(1602842453000L));
+            System.out.println(currentMonth);
         } catch (Exception e) {
             throw new Exception();
         }

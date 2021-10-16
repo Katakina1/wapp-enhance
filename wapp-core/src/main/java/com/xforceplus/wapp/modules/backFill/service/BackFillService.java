@@ -111,46 +111,10 @@ public class BackFillService  {
 
 
     public R commitVerify(BackFillCommitVerifyRequest request){
-        if(StringUtils.isEmpty(request.getSettlementNo())){
-            return R.fail("结算单号不能为空");
-        }
-        if(CollectionUtils.isEmpty(request.getVerifyBeanList())){
-            return R.fail("上传发票不能为空");
-        }
-        QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
-        preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
-        List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
-        if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
-            return R.fail("根据结算单号未找到预制发票");
-        }
-        long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.equals(t.getPreInvoiceStatus())).count();
-        if(request.getVerifyBeanList().size() > count){
-            return R.fail("您最多只需要上传"+count+"张发票，请确认后再试");
-        }
-        if("0".equals(request.getInvoiceColer())){
-            //红票上传校验
-            if(tXfPreInvoiceEntities.stream().noneMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
-                return R.fail("所有预制发票必须都有红字信息编码");
-            }
-        }else{
-            if(StringUtils.isEmpty(request.getOriginInvoiceCode())){
-                return R.fail("蓝冲发票代码不能为空");
-            }
-            if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
-                return R.fail("蓝冲发票号码不能为空");
-            }
-            QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
-            invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());
-            TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
-            if(invoiceEntity != null){
-                BigDecimal  amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO,BigDecimal :: add);
-                if(amount.compareTo(invoiceEntity.getInvoiceAmount()) != 0){
-                    return R.fail("您上传的发票合计金额与代开金额不一致，请确认后再提交");
-                }
-            }else{
-                return R.fail("未找到蓝冲的发票");
-            }
-        }
+//        R r = checkCommitRequest(request);
+//        if(R.FAIL.equals(r)){
+//            return r;
+//        }
         String batchNo = UUID.randomUUID().toString().replace("-", "");
         TXfElecUploadRecordEntity recordEntity = new TXfElecUploadRecordEntity();
         recordEntity.setCreateTime(new Date());
@@ -202,9 +166,7 @@ public class BackFillService  {
             }
             this.electronicUploadRecordDetailDao.insert(detailEntity);
         }
-
-
-        return R.ok("处理成功");
+        return R.ok(batchNo);
     }
 
     private VerificationResponse parseOfd(byte[] ofd) {
@@ -457,7 +419,7 @@ public class BackFillService  {
                 TDxRecordInvoiceEntity tDxRecordInvoiceEntity = new TDxRecordInvoiceEntity();
                 tDxRecordInvoiceEntity.setSettlementNo(request.getSettlementNo());
                 //电子发票改为签收状态
-                if(InvoiceTypeEnum.E_INVOICE.getResultCode().equals(backFillVerifyBean.getInvoiceType()) ||  InvoiceTypeEnum.E_SPECIAL_INVOICE.getResultCode().equals(backFillVerifyBean.getInvoiceType())){
+                if(InvoiceTypeEnum.isElectronic(backFillVerifyBean.getInvoiceType())){
                     tDxRecordInvoiceEntity.setQsStatus("1");
                 }
                 tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity,updateWrapper);
@@ -486,5 +448,49 @@ public class BackFillService  {
         }
 
         return R.ok("匹配成功");
+    }
+
+    public R checkCommitRequest(BackFillCommitVerifyRequest request){
+        if(StringUtils.isEmpty(request.getSettlementNo())){
+            return R.fail("结算单号不能为空");
+        }
+        if(CollectionUtils.isEmpty(request.getVerifyBeanList())){
+            return R.fail("上传发票不能为空");
+        }
+        if("0".equals(request.getInvoiceColer())){
+            //红票上传校验
+            QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
+            preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
+            List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
+            if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
+                return R.fail("根据结算单号未找到预制发票");
+            }
+            long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.equals(t.getPreInvoiceStatus())).count();
+            if(request.getVerifyBeanList().size() > count){
+                return R.fail("您最多只需要上传"+count+"张发票，请确认后再试");
+            }
+            if(tXfPreInvoiceEntities.stream().noneMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
+                return R.fail("所有预制发票必须都有红字信息编码");
+            }
+        } else{
+            if(StringUtils.isEmpty(request.getOriginInvoiceCode())){
+                return R.fail("蓝冲发票代码不能为空");
+            }
+            if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
+                return R.fail("蓝冲发票号码不能为空");
+            }
+            QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
+            invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());
+            TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
+            if(invoiceEntity != null){
+                BigDecimal  amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO,BigDecimal :: add);
+                if(amount.compareTo(invoiceEntity.getInvoiceAmount()) != 0){
+                    return R.fail("您上传的发票合计金额与代开金额不一致，请确认后再提交");
+                }
+            }else{
+                return R.fail("未找到蓝冲的发票");
+            }
+        }
+        return R.ok("校验成功");
     }
 }
