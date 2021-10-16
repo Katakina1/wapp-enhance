@@ -111,7 +111,7 @@ public class CommSettlementService {
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
@@ -140,7 +140,7 @@ public class CommSettlementService {
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
@@ -163,6 +163,24 @@ public class CommSettlementService {
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
         tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
     }
+
+    /**
+     * TODO 申请作废预制发票,废红字信息
+     * （这个时候主要给删除红票后 再删除红字信息使用）
+     *
+     * @param preInvoiceId
+     */
+//    @Transactional
+//    public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
+//        if (preInvoiceId == null) {
+//            throw new EnhanceRuntimeException("参数异常");
+//        }
+//        TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+//        updateTXfPreInvoiceEntity.setId(preInvoiceId);
+//        updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
+//        tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
+//        commRedNotificationService.applyDestroyRedNotification(preInvoiceId);
+//    }
 
 
     /**
