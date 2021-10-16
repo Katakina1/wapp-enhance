@@ -5,6 +5,7 @@ wapp:
     customer-no: T395054492021101114111213460567
     tenant-id: 4882809030005538709
     tenant-code: Walmart
+    tenant-name: Walmart
     action:
       # ofd解析 验签
       ofd: 0E707DB76E9B55CA069263CE911E36A5
@@ -16,6 +17,10 @@ wapp:
       rednotification: FECD0B7724B239B3C5950FDBDB1D09E0
       # 获取终端
       terminals: 816A43875B12DE4B50EBEC29E4DA56E2
+      # 红字信息撤销
+      rollback: 8F8D2FFCA3F768BB2D7A4D7634BB7274
+      # 红字信息生成pdf
+      genredpdf: E96F0AB61D35F93BF48928D568A97C5B
       #识别
       discern: 4D56663DC5B561D652699B4F34D25F80
       discern-callbackUrl: inte-janus.melete

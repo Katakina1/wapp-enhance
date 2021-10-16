@@ -2,6 +2,8 @@ package com.xforceplus.wapp.repository.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -95,43 +97,43 @@ public class TXfRedNotificationDetailEntity extends BaseEntity {
      * 数量
      */
     @TableField("num")
-    private Double num;
+    private BigDecimal num;
 
     /**
      * 税率
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 单价
      */
     @TableField("unit_price")
-    private Double unitPrice;
+    private BigDecimal unitPrice;
 
     /**
      * 不含税金额
      */
     @TableField("amount_without_tax")
-    private Double amountWithoutTax;
+    private BigDecimal amountWithoutTax;
 
     /**
      * 税额
      */
     @TableField("tax_amount")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * 含税金额
      */
     @TableField("amount_with_tax")
-    private Double amountWithTax;
+    private BigDecimal amountWithTax;
 
     /**
      * 扣除额
      */
     @TableField("deduction")
-    private Double deduction;
+    private BigDecimal deduction;
 
     /**
      * 创建时间
