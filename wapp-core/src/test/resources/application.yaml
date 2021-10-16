@@ -17,29 +17,29 @@ spring:
     driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: testuser01
     password: aGSsdsJFWd_w_1
-    devtools:
-        restart:
-            #热部署生效
-          enabled: false
+  devtools:
+    restart:
+      #热部署生效
+      enabled: false
     # jackson时间格式化
-    jackson:
-        time-zone: GMT+0
-        date-format: yyyy-MM-dd HH:mm:ss
-    http:
-        multipart:
-            max-file-size: 100MB
-            max-request-size: 100MB
-            enabled: true
-            location: /tmp/tomcat
-    # 指定静态资源的路径
-    resources:
-        static-locations: classpath:/static/,classpath:/views/
+  jackson:
+    time-zone: GMT+0
+    date-format: yyyy-MM-dd HH:mm:ss
+  resources:
+    static-locations: classpath:/static/,classpath:/views/
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 100MB
+      enabled: true
+      location: /tmp/tomcat
 
 # Mybatis-Plus配置
 mybatis-plus:
-  mapper-locations: classpath:mapper/**/*.xml
-#  type-aliases-package: com.xforceplus.wapp.repository.entity
-
+  mapper-locations: classpath:mapper/daoext/*.xml
+  #  type-aliases-package: com.xforceplus.wapp.repository.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 # 日志
 #logging:
 #  path: /home/vn03qsx/logs/
@@ -47,7 +47,7 @@ mybatis-plus:
 
 # 定时器配置
 schedule:
-    open: false  # 是否开启定时任务功能  true开启   false关闭
+  open: false  # 是否开启定时任务功能  true开启   false关闭
 
 #图片存储路径
 filePathConstan:
@@ -95,7 +95,7 @@ pro:
 
 # token配置
 token:
-    expire_time: 18000 #过期时间，单位秒
+  expire_time: 18000 #过期时间，单位秒
 
 # 税款所属期判断值
 currentTaxPeriod: 15
@@ -113,7 +113,7 @@ getTaxInformation: https://dx301.wal-mart.com/RESTAdapter/WALMART/FapiaoDetails
 
 sso:
   loginUrl: https://pfedprod.wal-mart.com/idp/startSSO.ping?PartnerSpId=CNWAPP
-  idp_metadata_url: 
+  idp_metadata_url:
   WMIDP_Metadata_Dev: d:\sso\WMIDP_Metadata_Dev.xml
 export:
   websocketUrl: ws://101.124.15.152:8071/b2bportal/dxhy-gylpt/websocket
@@ -137,6 +137,11 @@ management:
       exposure:
         include:
           - health
+  endpoint:
+    health:
+      show-details: always
+
+    # Activemq
 
 activemq:
   url: failover:(tcp://10.100.2.17:61616)?randomize=false&jms.useAsyncSend=true&jms.sendTimeout=3000
@@ -145,3 +150,8 @@ activemq:
   user: admin
   password: admin
   enhance_claim_verdict_queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+
+Esb:
+  url:
+    upload: http://10.100.2.17:8083/object/upload
+    downLoad: http://10.100.2.17:8083/object/downLoad/
