@@ -133,8 +133,7 @@ public class ClaimBillFilterCommand implements Command {
     private void filter(List<TXfOriginClaimBillEntity> list) {
         List<DeductBillBaseData> newList = list
                 .stream()
-                // 非黑名单共供应商
-                .filter(v -> !speacialCompanyService.count("0", v.getMemo()))
+                // .filter(v -> !speacialCompanyService.count("0", v.getMemo()))
                 .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
                 .collect(Collectors.toList());
         deductService.receiveData(newList, null, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
