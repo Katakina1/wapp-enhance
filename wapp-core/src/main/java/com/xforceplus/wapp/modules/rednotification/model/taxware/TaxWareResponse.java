@@ -22,6 +22,10 @@ public class TaxWareResponse {
     public static class ResultDTO {
         @JsonProperty("serialNo")
         private String serialNo;
+
+        @JsonProperty("pdfUrl")
+        private String pdfUrl;
+
     }
 
 }

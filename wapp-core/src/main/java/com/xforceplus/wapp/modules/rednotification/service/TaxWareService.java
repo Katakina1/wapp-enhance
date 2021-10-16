@@ -1,10 +1,12 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
+import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
@@ -18,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,8 +34,9 @@ public class TaxWareService {
     private HttpClientFactory httpClientFactory;
     @Autowired
     RedNotificationMainService redNotificationMainService;
+
     @Autowired
-    RedNotificationLogRequestService redNotificationLogRequestService;
+    RedNotificationLogService redNotificationLogService;
 
 
     @Value("${wapp.integration.action.terminals}")
@@ -44,6 +44,10 @@ public class TaxWareService {
 
     @Value("${wapp.integration.action.rednotification}")
     private String applyRedAction;
+    @Value("${wapp.integration.action.rollback}")
+    private String rollbackAction;
+    @Value("${wapp.integration.action.genredpdf}")
+    private String genredpdfAction;
 
     private final Map<String, String> defaultHeader;
 
@@ -89,12 +93,48 @@ public class TaxWareService {
         }
     }
 
+    /**
+     * 红字信息撤销
+     * @param revokeRequest
+     * @return
+     */
+    public TaxWareResponse rollback(RevokeRequest revokeRequest) {
+        try {
+            String reqJson = gson.toJson(revokeRequest);
+            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
+            log.info("撤销结果:{}", post);
+            return gson.fromJson(post, TaxWareResponse.class);
+        } catch (IOException e) {
+            log.error("撤销发起失败:" + e.getMessage(), e);
+            throw new RRException("撤销发起失败:" + e.getMessage());
+        }
+    }
 
+
+    /**
+     * 红字信息生成pdf
+     * @param request
+     * @return
+     */
+    public TaxWareResponse genredpdf(RedNotificationGeneratePdfRequest request) {
+        try {
+            String reqJson = gson.toJson(request);
+            final String post = httpClientFactory.post(genredpdfAction,defaultHeader,reqJson,"");
+            log.info("生成pdf结果:{}", post);
+            return gson.fromJson(post, TaxWareResponse.class);
+        } catch (IOException e) {
+            log.error("生成pdf发起失败:" + e.getMessage(), e);
+            throw new RRException("生成pdf发起失败:" + e.getMessage());
+        }
+    }
+
+
+   // 处理税件红字信息申请
     public void handle(RedMessage redMessage) {
         // 更新流水表(每一个红字信息一条记录)
         QueryWrapper<TXfRedNotificationLogEntity> queryWrapper = new QueryWrapper();
         queryWrapper.eq(TXfRedNotificationLogEntity.SERIAL_NO, redMessage.getSerialNo());
-        List<TXfRedNotificationLogEntity>  requestLogList = redNotificationLogRequestService.getBaseMapper().selectList(queryWrapper);
+        List<TXfRedNotificationLogEntity>  requestLogList = redNotificationLogService.getBaseMapper().selectList(queryWrapper);
         Map<Long, TXfRedNotificationLogEntity> requestLogMap = requestLogList.stream().collect(Collectors.toMap(TXfRedNotificationLogEntity::getApplyId, e->e));
 
 
@@ -126,16 +166,61 @@ public class TaxWareService {
                     redNotificationMainService.updateById(tXfRedNotificationEntity);
                     tXfRedNotificationLogEntity.setProcessRemark("申请成功");
                     tXfRedNotificationLogEntity.setStatus(2);
-                    redNotificationLogRequestService.updateById(tXfRedNotificationLogEntity);
+                    redNotificationLogService.updateById(tXfRedNotificationLogEntity);
                 }else {
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
                     redNotificationMainService.updateById(tXfRedNotificationEntity);
                     tXfRedNotificationLogEntity.setProcessRemark(redMessageInfo.getProcessRemark());
                     tXfRedNotificationLogEntity.setStatus(3);
-                    redNotificationLogRequestService.updateById(tXfRedNotificationLogEntity);
+                    redNotificationLogService.updateById(tXfRedNotificationLogEntity);
                 }
             }
 
         }
     }
+
+    /**
+     * 处理税件 撤销
+     * @param redRevokeMessageResult
+     */
+    public void handleRollBack(RedRevokeMessageResult redRevokeMessageResult) {
+        RedRevokeMessage message = redRevokeMessageResult.getResult();
+        String redNotificationNo;
+        Long serialNo  ;
+        if(Objects.nonNull(redRevokeMessageResult) && StringUtils.isNotBlank(redNotificationNo = message.getRedNotificationNo())){
+             serialNo = Long.valueOf(message.getSerialNo());
+             LambdaQueryWrapper<TXfRedNotificationLogEntity> objectQueryWrapper = new LambdaQueryWrapper<>();
+             objectQueryWrapper.eq(TXfRedNotificationLogEntity::getSerialNo,serialNo).eq(TXfRedNotificationLogEntity::getRedNotificationNo,redNotificationNo);
+             TXfRedNotificationLogEntity logEntity = redNotificationLogService.getOne(objectQueryWrapper);
+             if (logEntity ==null ){
+                 log.info("根据红字信息编号未查询到红字信息,流水号:{},红字信息表编号:{}",serialNo,redNotificationNo);
+                 return;
+             }
+
+            TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+            record.setId(logEntity.getId());
+            if (Objects.equals(TaxWareCode.SUCCESS,redRevokeMessageResult.getCode())){
+                logEntity.setStatus(2);
+                logEntity.setProcessRemark("撤销成功");
+                //修改红字信息 已撤销并解锁数据
+                record.setApproveStatus(ApproveStatus.ALREADY_ROLL_BACK.getValue());
+                record.setLockFlag(1);
+
+            }else {
+                logEntity.setStatus(3);
+                logEntity.setProcessRemark(redRevokeMessageResult.getMessage());
+                //解锁数据
+                record.setLockFlag(1);
+                // 通知调用方
+
+            }
+            redNotificationMainService.updateById(record);
+
+        }
+
+
+
+    }
+
+
 }

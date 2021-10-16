@@ -149,7 +149,7 @@ public class CommSettlementService {
     }
 
     /**
-     * 作废预制发票，但是不能作废红字信息（这个时候主要给蓝冲使用的）
+     * 直接作废预制发票，但是不能作废红字信息（这个时候主要给蓝冲使用的）
      *
      * @param preInvoiceId
      */
@@ -165,22 +165,22 @@ public class CommSettlementService {
     }
 
     /**
-     * TODO 申请作废预制发票,废红字信息
+     * 申请作废预制发票,同时申请废红字信息
      * （这个时候主要给删除红票后 再删除红字信息使用）
      *
      * @param preInvoiceId
      */
-//    @Transactional
-//    public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
-//        if (preInvoiceId == null) {
-//            throw new EnhanceRuntimeException("参数异常");
-//        }
-//        TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
-//        updateTXfPreInvoiceEntity.setId(preInvoiceId);
-//        updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
-//        tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-//        commRedNotificationService.applyDestroyRedNotification(preInvoiceId);
-//    }
+    @Transactional
+    public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
+        if (preInvoiceId == null) {
+            throw new EnhanceRuntimeException("参数异常");
+        }
+        TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+        updateTXfPreInvoiceEntity.setId(preInvoiceId);
+        updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
+        tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
+        commRedNotificationService.applyDestroyRedNotification(preInvoiceId);
+    }
 
 
     /**
