@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM_SAMS;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
 
 /**
  * @program: wapp-generator
@@ -133,8 +134,8 @@ public class ClaimItemSamsSaveCommand implements Command {
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
-            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

@@ -6,7 +6,6 @@ import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
-import com.xforceplus.wapp.modules.job.listener.OriginEpdLogItemDataListener;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -87,7 +86,7 @@ public class ClaimItemHyperSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.equals(BILL_ITEM, jobAcquisitionObject);
+        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL_ITEM, jobAcquisitionObject);
     }
 
     /**
@@ -123,6 +122,10 @@ public class ClaimItemHyperSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
+        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+        }
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
