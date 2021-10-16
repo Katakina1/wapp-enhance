@@ -78,7 +78,7 @@ public class CommSettlementService {
             return;
         }
         //预制发票
-        ////2、当预制发票没有红字信息编码时，直接作废发票
+        //2、当预制发票没有红字信息编码时，直接作废发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper2 = new QueryWrapper<>();
         preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());

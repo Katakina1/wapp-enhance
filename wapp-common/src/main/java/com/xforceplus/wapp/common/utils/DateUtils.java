@@ -1,8 +1,15 @@
 package com.xforceplus.wapp.common.utils;
 
+import cn.hutool.core.date.DateUtil;
+
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -899,16 +906,15 @@ public class DateUtils {
         }
         return strtostr;
     }
+    public static final String YYYY_MM_DD = "yyyy-MM-dd";
 
-    public static void main(String[] args) throws Exception {
-        try {
-            System.out.println(addDate(new Date(),1));
-            System.out.println(getFristDate());
-            System.out.println(getLastDate());
+    public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
 
-        } catch (Exception e) {
-            throw new Exception();
-        }
-        // System.out.println("sss");
+    public static String addDayToYYYYMMDD(String dateTime, int day) {
+        final Date parse = DateUtil.parse(dateTime);
+        final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
+        final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
+        return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
     }
+
 }

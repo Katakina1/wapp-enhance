@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
+import io.swagger.annotations.Api;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @description
  * @create 2021-10-11 16:19
  **/
+@Api(tags = "例外报告接口")
 @RestController
 @RequestMapping(EnhanceApi.BASE_PATH+"/exception-report")
 public class ExceptionReportController {
