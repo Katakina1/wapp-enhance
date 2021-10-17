@@ -174,7 +174,7 @@ public class DeductService   {
         }
         // receiveItemData(res, "");
          //receiveData(dataList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
-         receiveDone(XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        // receiveDone(XFDeductionBusinessTypeEnum.CLAIM_BILL);
     }
     /**
      * 接收索赔明细
@@ -280,7 +280,7 @@ public class DeductService   {
             /**
              * 匹配索赔单明细
              */
-            //matchClaimBill();
+            matchClaimBill();
             /**
              * 索赔单匹配蓝票 TODO
              * 索赔单匹配蓝票 金额不足，
