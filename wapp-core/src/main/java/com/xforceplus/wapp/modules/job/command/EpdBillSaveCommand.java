@@ -4,7 +4,6 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
-import com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.listener.OriginEpdBillDataListener;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
@@ -22,7 +21,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.*;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
 
 /**
  * @program: wapp-generator
@@ -86,7 +85,7 @@ public class EpdBillSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL_OBJECT, jobAcquisitionObject);
+        return Objects.equals(BILL_OBJECT, jobAcquisitionObject);
     }
 
     /**
@@ -122,16 +121,6 @@ public class EpdBillSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
-        // 获取当前进度
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (Objects.isNull(jobAcquisitionObject)) {
-            jobAcquisitionObject = BILL_OBJECT;
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
-        }
-        BillJobAcquisitionObjectEnum jao = Optional
-                .ofNullable(fromCode(Integer.parseInt(String.valueOf(jobAcquisitionObject))))
-                .orElse(BILL_OBJECT);
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
@@ -145,8 +134,8 @@ public class EpdBillSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标

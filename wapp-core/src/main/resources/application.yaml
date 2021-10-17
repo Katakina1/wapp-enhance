@@ -163,9 +163,7 @@ agreementBill:
     fileNameKeyWords:
   local:
     path: /tmp/agrementBill/
-  sheetName: 2 SAP-FBL5N
-  item:
-    sheetName: 1 SAP-ZARR0355原稿
+  sheetName: 原始协议单
 claimBill:
   remote:
     path: /tmp/claimBill/

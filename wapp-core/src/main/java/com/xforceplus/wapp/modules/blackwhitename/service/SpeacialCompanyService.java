@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.blackwhitename.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -90,4 +91,21 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
     }
 
 
+    /**
+     * 判断供应商是否在黑白名单中
+     *
+     * @param supplierType {@link String} 0-黑名单 1-白名单
+     * @param memo 供应商6D
+     * @return
+     */
+    public boolean count(String supplierType, String memo){
+        return 0 == count(
+                new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                        .lambda()
+                        // 黑名单
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
+                        // 供应商6D
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, memo)
+        );
+    }
 }

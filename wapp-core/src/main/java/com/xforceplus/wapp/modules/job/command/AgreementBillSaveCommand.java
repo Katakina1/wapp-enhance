@@ -142,8 +142,8 @@ public class AgreementBillSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM);
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标
