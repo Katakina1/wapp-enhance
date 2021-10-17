@@ -25,11 +25,11 @@ public class DeductBillBaseData {
     /**
      * 供应商编号
      */
-    private String sallerNo;
+    private String sellerNo;
     /**
      * 供应商名称
      */
-    private String sallerName;
+    private String sellerName;
     /**
      * 扣款日期
      */

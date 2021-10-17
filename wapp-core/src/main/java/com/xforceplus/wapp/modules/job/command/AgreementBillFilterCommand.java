@@ -134,6 +134,6 @@ public class AgreementBillFilterCommand implements Command {
                 .filter(v -> !speacialCompanyService.count("0", v.getMemo()))
                 .map(TXfOriginAgreementBillEntityConvertor.INSTANCE::toAgreementBillData)
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, null, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
     }
 }

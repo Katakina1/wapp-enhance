@@ -19,7 +19,7 @@ public class ClaimBillItemData {
      */
     private String verdictDate;
     /**
-     *门店编码
+     *门店编码 对应购方编码
      */
     private String storeNbr;
     /**
@@ -69,9 +69,10 @@ public class ClaimBillItemData {
     /**
      *类别编码
      */
-    private String gategoryNbr;
+    private String categoryNbr;
     /**
      *不含税金额
      */
     private BigDecimal amountWithoutTax;
+
 }

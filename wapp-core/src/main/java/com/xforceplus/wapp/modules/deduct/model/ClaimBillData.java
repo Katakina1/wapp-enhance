@@ -12,4 +12,10 @@ import lombok.Data;
  */
 @Data
 public class ClaimBillData extends  DeductBillBaseData {
+    //店铺类型（Hyper或Sams）
+    private String storeType;
+    // 定案日期
+    private String decisionDate;
+    // 所扣发票
+    private String invoiceReference;
 }
