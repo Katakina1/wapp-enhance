@@ -27,10 +27,10 @@ spring:
       date-format: yyyy-MM-dd HH:mm:ss
   resources:
       static-locations: classpath:/static/,classpath:/views/
-  servlet:
+  http:
     multipart:
-      max-request-size: 100MB
       max-file-size: 100MB
+      max-request-size: 100MB
       enabled: true
       location: /tmp/tomcat
 

@@ -41,13 +41,18 @@ public class TaxWareService {
 
     @Value("${wapp.integration.action.terminals}")
     private String getTerminalAction;
-
     @Value("${wapp.integration.action.rednotification}")
     private String applyRedAction;
     @Value("${wapp.integration.action.rollback}")
     private String rollbackAction;
     @Value("${wapp.integration.action.genredpdf}")
     private String genredpdfAction;
+
+    @Value("${wapp.integration.tenant-id:1203939049971830784}")
+    public String tenantId;
+    @Value("${wapp.integration.tenant-name:Walmart}")
+    public String tenantName;
+
 
     private final Map<String, String> defaultHeader;
 
@@ -56,8 +61,7 @@ public class TaxWareService {
     private static final String SUCCESSFUL_PROCESS_FLAG = "1";
 
 
-    public TaxWareService(@Value("${wapp.integration.tenant-id:1203939049971830784}")
-                                           String tenantId) {
+    public TaxWareService() {
         defaultHeader =  new HashMap<>();
         defaultHeader.put("rpcType", "http");
 //        defaultHeader.put("x-app-client", "janus");
@@ -116,7 +120,7 @@ public class TaxWareService {
      * @param request
      * @return
      */
-    public TaxWareResponse genredpdf(RedNotificationGeneratePdfRequest request) {
+    public TaxWareResponse generatePdf(RedNotificationGeneratePdfRequest request) {
         try {
             String reqJson = gson.toJson(request);
             final String post = httpClientFactory.post(genredpdfAction,defaultHeader,reqJson,"");

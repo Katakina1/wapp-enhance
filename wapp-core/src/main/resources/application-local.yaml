@@ -5,6 +5,7 @@ wapp:
     customer-no: T395054492021101114111213460567
     tenant-id: 4882809030005538709
     tenant-code: Walmart
+    tenant-name: Walmart
     action:
       # ofd解析 验签
       ofd: 0E707DB76E9B55CA069263CE911E36A5

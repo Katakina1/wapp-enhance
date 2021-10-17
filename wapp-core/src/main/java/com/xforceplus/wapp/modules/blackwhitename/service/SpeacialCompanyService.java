@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.blackwhitename.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
@@ -9,11 +10,15 @@ import com.xforceplus.wapp.modules.blackwhitename.convert.SpeacialCompanyConvert
 import com.xforceplus.wapp.modules.blackwhitename.util.ExcelUtil;
 import com.xforceplus.wapp.repository.dao.TXfBlackWhiteCompanyDao;
 import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -37,7 +42,12 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(companyConverter.map(page.getRecords()), page);
     }
+    public TXfBlackWhiteCompanyEntity getBlackListBy6D(String supplier6d){
+        QueryWrapper<TXfBlackWhiteCompanyEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_6D,supplier6d);
+        return getOne(wrapper);
 
+    }
     public List<TXfBlackWhiteCompanyEntity> parseExcel(Workbook workbook) {
         Sheet sheet = workbook.getSheetAt(0);
         List<TXfBlackWhiteCompanyEntity> importEntitiyList = new ArrayList<>();
@@ -64,13 +74,13 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
                         if (StringUtils.isEmpty(cellValue)) {
                             builder.append("第" + row.getRowNum() + "行" + "SAP编码为空");
                         }
-                        tXfBlackWhiteCompanyEntity.setSupplier6d(cellValue);
+                        tXfBlackWhiteCompanyEntity.setSapNo(cellValue);
                         break;
                     case 2:
                         if (StringUtils.isEmpty(cellValue)) {
                             builder.append("第" + row.getRowNum() + "行" + "供应商名称为空");
                         }
-                        tXfBlackWhiteCompanyEntity.setSupplier6d(cellValue);
+                        tXfBlackWhiteCompanyEntity.setCompanyName(cellValue);
 
                     case 3:
                         if (StringUtils.isEmpty(cellValue)) {

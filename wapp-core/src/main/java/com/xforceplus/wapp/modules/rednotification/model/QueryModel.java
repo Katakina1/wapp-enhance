@@ -59,6 +59,9 @@ public class QueryModel {
     @ApiModelProperty("1正常，2申请锁定中，3撤销锁定中")
     private Integer lockFlag;
 
+    @ApiModelProperty("1正常，0删除")
+    private Integer status;
+
 
     @ApiModelProperty("分页码 最小1")
     Integer pageNo ;

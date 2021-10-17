@@ -24,15 +24,19 @@ import java.util.List;
 @ApiModel("分页结果")
 public class PageResult<T> {
     @ApiModelProperty("分页数据信息") private List<T> rows;
-    @ApiModelProperty("分页条数信息") private Summary summary;
+    @ApiModelProperty("分页统计") private Summary summary;
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @ApiModel("分页统计")
     public static class Summary{
+        @ApiModelProperty("总条数")
         private long total;
+        @ApiModelProperty("总页数")
         private long pages;
+        @ApiModelProperty("每页数量")
         private long size;
     }
 

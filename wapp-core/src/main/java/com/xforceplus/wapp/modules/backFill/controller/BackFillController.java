@@ -1,19 +1,17 @@
 package com.xforceplus.wapp.modules.backFill.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
-import com.xforceplus.wapp.modules.backFill.model.BackFillCommitVerifyRequest;
-import com.xforceplus.wapp.modules.backFill.model.BackFillMatchRequest;
-import com.xforceplus.wapp.modules.backFill.model.SpecialElecUploadDto;
+import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
+import com.xforceplus.wapp.modules.backFill.service.InvoiceImportListener;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.system.controller.AbstractController;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +33,15 @@ public class BackFillController  extends AbstractController {
     @Autowired
     private BackFillService backFillService;
 
-    @ApiOperation(value = "纸票发票回填", notes = "", response = Response.class, tags = {"backFill"})
+    @ApiOperation(value = "纸票发票回填", notes = "", response = Response.class, authorizations = {
+            @Authorization(value = "X-Access-Token")},tags = {"backFill"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/commitVerify")
     public R comitVerify(@ApiParam(value = "BackFillCommitVerifyRequest" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
         logger.info("纸票发票回填--入参：{}", JSONObject.toJSONString(request));
-        request.setOpUserId(getUserId());
-        request.setOpUserName(getUserName());
+//        request.setOpUserId(getUserId());
+//        request.setOpUserName(getUserName());
         return backFillService.commitVerify(request);
     }
 
@@ -120,5 +119,62 @@ public class BackFillController  extends AbstractController {
         logger.info("发票回填后匹配--入参：{}", JSONObject.toJSONString(request));
         return backFillService.matchPreInvoice(request);
     }
+
+    @ApiOperation(value = "excel批量上传", notes = "", response = Response.class, tags = {"backFill"})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @PostMapping("/upload/excel")
+    public R upload(@RequestParam MultipartFile file, @RequestParam String gfName, @RequestParam String jvcode, @RequestParam("vendorId") String vendorid,
+                    @RequestParam String settlementNo,@RequestParam String invoiceColer) {
+        if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
+            return R.fail("文件格式不正确");
+        } else if (file.isEmpty()) {
+            return R.fail("文件不能为空");
+        }
+        try {
+            final String filename = file.getOriginalFilename();
+            final String suffix = filename.substring(filename.lastIndexOf(   ".") + 1);
+            if (StringUtils.isNotBlank(suffix)) {
+                InvoiceImportListener listener = new InvoiceImportListener();
+                EasyExcel.read(file.getInputStream(), BackfillInvoice.class, listener).sheet().doRead();
+                if (CollectionUtils.isEmpty(listener.getValidInvoices())) {
+                    return R.fail("未解析到数据");
+                }
+                if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
+                    return R.fail("数据填写错误");
+                }
+                logger.info("导入数据解析条数:{}", listener.getRows());
+                BackFillCommitVerifyRequest request = new BackFillCommitVerifyRequest();
+//                request.setOpUserId(getUserId());
+//                request.setOpUserName(getUserName());
+                request.setSettlementNo(settlementNo);
+                request.setInvoiceColer(invoiceColer);
+                request.setGfName(gfName);
+                request.setJvCode(jvcode);
+                request.setVendorId(vendorid);
+                List<BackFillVerifyBean> bverifyBeanList = new ArrayList<BackFillVerifyBean>();
+                BackFillVerifyBean backFillVerifyBean = null;
+                for (BackfillInvoice backfillInvoice : listener.getValidInvoices()) {
+                    backFillVerifyBean = new BackFillVerifyBean();
+                    backFillVerifyBean.setAmount(backfillInvoice.getAmount());
+                    backFillVerifyBean.setInvoiceCode(backfillInvoice.getInvoiceCode());
+                    backFillVerifyBean.setInvoiceNo(backfillInvoice.getInvoiceNo());
+                    backFillVerifyBean.setPaperDrewDate(backfillInvoice.getPaperDrewDate());
+                    bverifyBeanList.add(backFillVerifyBean);
+                }
+                request.setVerifyBeanList(bverifyBeanList);
+                return backFillService.commitVerify(request);
+            } else {
+                throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[xls/xlsx]");
+            }
+        } catch (Exception e) {
+            logger.error("上传过程中出现异常:" + e.getMessage(), e);
+            return R.fail("上传过程中出现错误，请重试");
+        }
+
+
+    }
+
+
 
 }
