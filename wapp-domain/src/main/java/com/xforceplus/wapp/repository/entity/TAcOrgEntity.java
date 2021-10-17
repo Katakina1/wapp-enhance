@@ -265,5 +265,9 @@ public class TAcOrgEntity extends BaseEntity {
     @TableField("dq_code")
     private String dqCode;
 
+    public static final String ORG_CODE = "orgCode";
+
+    public static final String ORG_TYPE = "orgType";
+
 
 }
