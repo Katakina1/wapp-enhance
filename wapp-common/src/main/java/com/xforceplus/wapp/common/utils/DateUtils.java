@@ -2,6 +2,7 @@ package com.xforceplus.wapp.common.utils;
 
 import cn.hutool.core.date.DateUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -929,14 +930,17 @@ public class DateUtils {
         } catch (Exception e) {
             throw new Exception();
         }
+    }
+
+    public static String addDayToYYYYMMDD(String dateTime, int day) {
+//        final Date parse = DateUtil.parse(dateTime);
+//        final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
+//        final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
+//        return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+        return StringUtils.EMPTY;
+    }
         // System.out.println("sss");
     public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
 
-    public static String addDayToYYYYMMDD(String dateTime, int day) {
-        final Date parse = DateUtil.parse(dateTime);
-        final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
-        final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
-        return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
-    }
 
 }

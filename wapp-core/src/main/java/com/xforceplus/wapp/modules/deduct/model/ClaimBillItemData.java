@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.deduct.model;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 类描述：接收数据清洗索赔单明细数据结构
@@ -17,7 +18,7 @@ public class ClaimBillItemData {
     /**
      *定案日期
      */
-    private String verdictDate;
+    private Date verdictDate;
     /**
      *门店编码 对应购方编码
      */
@@ -49,7 +50,7 @@ public class ClaimBillItemData {
     /**
      *单位
      */
-    private BigDecimal unit;
+    private String unit;
     /**
      *税率
      */
