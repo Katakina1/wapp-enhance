@@ -55,23 +55,22 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     public List<TXfBillDeductEntity> checkClaimMatch(@Param("startDate") Date startDate,@Param("endDate") Date endDate);
 
     /** 查询超期正数的勾选和税率
-     * select sum(amount_without_tax),seller_no,purchaser_no, tax_rate from t_xf_bill_deduct where create_date >= ? and amount_without_tax >0 group by seller_no,purchaser_no, tax_rate
      * @param referenceDate
      * @return
      */
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no, tax_rate,status  from t_xf_bill_deduct where deduct_date >= #{referenceDate}  and business_type = #{type} and status = #{status} and amount_without_tax > 0 group by seller_no,purchaser_no, tax_rate")
+    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate,status  from t_xf_bill_deduct where deduct_date >= #{referenceDate}  and business_type = #{type} and status = #{status} and amount_without_tax > 0 group by purchaser_no, seller_no,tax_rate")
     public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Date referenceDate,Integer type,Integer status);
 
 
 
-    /**select sum(amount_without_tax) as amount_without_tax ,seller_no,purchaser_no, tax_rate from t_xf_bill_deduct where purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate} and amount_without_tax < 0
+    /**
      *  查询同维度下 负数金额 的总和
      * @param purchaserNo
      * @param sellerNo
      * @param taxRate
      * @return
      */
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no, tax_rate,status from t_xf_bill_deduct where purchaser_no  = #{purchaserNo} and seller_no = #{sellerNo} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax < 0")
+    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount, sum(amount_with_tax) as amount_with_tax,purchaser_no, seller_no,tax_rate,status from t_xf_bill_deduct where purchaser_no  = #{purchaserNo} and seller_no = #{sellerNo} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax < 0")
     public TXfBillDeductEntity querySpecialNegativeBill(@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate,@Param("type") Integer type,@Param("status") Integer status);
 
     @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no, tax_rate from t_xf_bill_deduct where ref_settlement_no  = #{settlementNo}")
@@ -84,6 +83,12 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and create_date >= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0")
     public int updateMergePositiveBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate,@Param("referenceDate") Date referenceDate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus);
 
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no, tax_rate from t_xf_bill_deduct where   business_type = #{type} and status = #{status}   group by purchaser_no,seller_no ")
+    /**
+     * 索赔单 当月有效
+     * @param type
+     * @param status
+     * @return
+     */
+    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no from t_xf_bill_deduct where  business_type = #{type} and status = #{status} and DATEDIFF(month,create_date,GETDATE())=0  group by purchaser_no,seller_no ")
     public List<TXfBillDeductEntity> querySuitableClaimBill( @Param("type")Integer type,@Param("status")Integer status);
 }

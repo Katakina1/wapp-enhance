@@ -157,19 +157,14 @@ public class DeductService  {
             /**
              * 合并结算单
              */
-            mergeClaimSettlement();
+            mergeSettlement(deductionEnum, null);
 
         }else{
-            /**
-             * 自动取消 自动解锁
-             */
-           // unlockAndCancel(deductionEnum);
+
             /**
              * 自动合并结算单
              */
-            TXfBillDeductStatusEnum status = deductionEnum == XFDeductionBusinessTypeEnum.EPD_BILL ? TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT: TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
-            TXfBillDeductStatusEnum targetStatus = deductionEnum == XFDeductionBusinessTypeEnum.EPD_BILL ? TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT : TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT;
-            mergeEPDandAgreementSettlement(deductionEnum, status, targetStatus, null);
+            mergeSettlement(deductionEnum, null);
             /**
              * 匹配蓝票
              */
@@ -177,9 +172,8 @@ public class DeductService  {
             /**
              * 匹配税编
              */
-
+            
         }
-        //EPD 协议单处理
         return true;
     }
 
@@ -365,9 +359,9 @@ public class DeductService  {
         if (deductionEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
             mergeClaimSettlement();
         } else if (deductionEnum == XFDeductionBusinessTypeEnum.AGREEMENT_BILL) {
-            mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.AGREEMENT_BILL, TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT,manualChoice);
+            mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.AGREEMENT_BILL, TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE,manualChoice);
         } else if (deductionEnum == XFDeductionBusinessTypeEnum.EPD_BILL) {
-            mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT,manualChoice);
+            mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE,manualChoice);
         }
         return false;
     }
