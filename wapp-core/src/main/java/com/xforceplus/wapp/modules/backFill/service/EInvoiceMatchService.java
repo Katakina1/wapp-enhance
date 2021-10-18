@@ -1,6 +1,8 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.CommonUtil;
@@ -8,6 +10,7 @@ import com.xforceplus.wapp.common.utils.InvoiceUtil;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
 import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
+import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
 import com.xforceplus.wapp.repository.daoExt.XfRecordInvoiceDao;
@@ -72,6 +75,9 @@ public class EInvoiceMatchService {
 
     @Autowired
     private TransactionalService transactionalService;
+
+    @Autowired
+    private TDxInvoiceDao tDxInvoiceDao;
 
 
     @Value("${wapp.org-check:false}")
@@ -161,11 +167,15 @@ public class EInvoiceMatchService {
                     return true;
                 }
         );
-        int result = this.saveOrUpdateInvoice(map);
+        int result = this.saveOrUpdateRecordInvoice(map);
+        //只有红票才入库
+        if(new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0){
+            saveOrUpdateInvoice(map);
+        }
         if (result == 0) {
             // 新增发票情况下才会将明细入库
             successSuppliers.add(() -> {
-                saveOrUpdateInvoiceDetail(invoiceDetails, invoiceMain.getInvoiceNo(), invoiceMain.getInvoiceCode());
+                saveOrUpdateRecordInvoiceDetail(invoiceDetails, invoiceMain.getInvoiceNo(), invoiceMain.getInvoiceCode());
                 return true;
             });
         }
@@ -210,7 +220,7 @@ public class EInvoiceMatchService {
      * @param map
      * @return 0 插入，1更新
      */
-    public int saveOrUpdateInvoice(Map<String, Object> map) {
+    public int saveOrUpdateRecordInvoice(Map<String, Object> map) {
         final Object invoiceCode = map.get("invoiceCode");
         String code = invoiceCode.toString();
         String no = map.get("invoiceNo").toString();
@@ -320,7 +330,7 @@ public class EInvoiceMatchService {
      * @param invoiceNo
      * @param invoiceCode
      */
-    private void saveOrUpdateInvoiceDetail(List<InvoiceDetail> details,String invoiceNo,String invoiceCode){
+    private void saveOrUpdateRecordInvoiceDetail(List<InvoiceDetail> details,String invoiceNo,String invoiceCode){
         if (!CollectionUtils.isEmpty(details)){
             List<TDxRecordInvoiceDetailEntity> recordDetails =new ArrayList<>();
             for (int i = 0; i < details.size(); i++) {
@@ -342,6 +352,57 @@ public class EInvoiceMatchService {
             }
             recordInvoiceDao.saveRecordInvoiceDetail(recordDetails);
         }
+    }
+
+    /**
+     *
+     * @param map
+     * @return 扫描表 0 插入，1更新
+     */
+    public int saveOrUpdateInvoice(Map<String, Object> map) {
+        final Object invoiceCode = map.get("invoiceCode");
+        String code = invoiceCode.toString();
+        String no = map.get("invoiceNo").toString();
+        String uuid = code + "" + no;
+        QueryWrapper<TDxInvoiceEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TDxInvoiceEntity.UUID,uuid);
+        TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(wrapper);
+        String jvcode = (String) map.get("jvcode");
+        OrgEntity orgEntity = matchDao.getXfMessage((String) map.get("venderid"));
+        boolean flag = false;
+        int result=0;
+        try {
+            //判断uuid是否存在
+            if (tDxInvoiceEntity != null) {
+                //不存在
+                //录入
+                map.put("xfTaxNo", orgEntity.getTaxno());
+                map.put("xfName", orgEntity.getOrgname());
+                if ("04".equals(CommonUtil.getFplx((String) invoiceCode))) {
+                    //TODO
+                } else {
+
+                }
+                TDxInvoiceEntity entity = JSONObject.parseObject(JSONObject.toJSONString(map), TDxInvoiceEntity.class);
+                flag = tDxInvoiceDao.insert(entity) >0;
+            } else {
+                result=1;
+                //存在数据
+                String flowType = tDxInvoiceEntity.getFlowType();
+                BigDecimal invoiceAmount = tDxInvoiceEntity.getInvoiceAmount();
+                if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
+                    throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
+                }
+                //TODO
+
+            }
+        } catch (Exception e) {
+            log.error("录入发票:" + e.getMessage(), e);
+            throw new EnhanceRuntimeException("录入发票失败:" + e.getMessage());
+        } finally {
+            log.info("更新/插入结果:{},{}-{}", flag, invoiceCode, map.get("invoiceNo"));
+        }
+        return result;
     }
 
     private static String  convertStatus(String status,String redFlag){

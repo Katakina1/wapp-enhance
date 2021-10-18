@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.common.utils;
 
 import cn.hutool.core.date.DateUtil;
+import org.joda.time.DateTime;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -913,6 +914,17 @@ public class DateUtils {
         return strtostr;
     }
     public static final String YYYY_MM_DD = "yyyy-MM-dd";
+
+    public static boolean isCurrentMonth(Date date){
+        DateTime dateTime = new DateTime(date); // Convert java.util.Date to Joda-Time, and assign time zone to adjust.
+        DateTime now = DateTime.now( );
+        if ( ( dateTime.getMonthOfYear() == now.getMonthOfYear() ) && ( dateTime.getYear() == now.getYear() ) ) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
 
