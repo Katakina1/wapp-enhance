@@ -20,9 +20,10 @@ import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.NumberFormat;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,16 +51,16 @@ public class EpdBillFilterCommand implements Command {
     private DeductService deductService;
 
     // 使用在TXfOriginAgreementBillEntityConvertor 和 TXfOriginEpdBillEntityConvertor
-    private static final Map<String, String> TAX_CODE_TRANSLATOR =
+    public static final Map<String, BigDecimal> TAX_CODE_TRANSLATOR =
             ImmutableMap
-                    .<String, String>builder()
-                    .put("TG", "3%")
-                    .put("TH", "17%")
-                    .put("TL", "11%")
-                    .put("TM", "16%")
-                    .put("TN", "10%")
-                    .put("TO", "13%")
-                    .put("TP", "9%")
+                    .<String, BigDecimal>builder()
+                    .put("TG", new BigDecimal("3%"))
+                    .put("TH", new BigDecimal("17%"))
+                    .put("TL", new BigDecimal("11%"))
+                    .put("TM", new BigDecimal("16%"))
+                    .put("TN", new BigDecimal("10%"))
+                    .put("TO", new BigDecimal("13%"))
+                    .put("TP", new BigDecimal("9%"))
                     .build();
 
     /**
@@ -164,15 +165,18 @@ public class EpdBillFilterCommand implements Command {
                             if (Objects.isNull(v.getTaxRate())) {
                                 // 如税率不存在，根据发票号码去《EPD LOG 明细》中找
                                 // 根据account和reference
-                                String taxRate = getTaxRate(jobId, v.getSallerNo(), v.getReference());
-                                v.setTaxRate(taxRate);
+                                String taxRate = getTaxRate(jobId, v.getSellerNo(), v.getReference());
+                                if (NumberUtils.isNumber(taxRate)) {
+                                    // LOG明细中的tax rate为整数，将小数点左移两位
+                                    v.setTaxRate(new BigDecimal(taxRate).movePointLeft(2));
+                                }
                             }
                         }
                 )
                 // 无税率的EPD单是无效单据
                 .filter(v -> Objects.nonNull(v.getTaxRate()))
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, null, XFDeductionBusinessTypeEnum.EPD_BILL);
+        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.EPD_BILL);
     }
 
     /**
@@ -191,7 +195,7 @@ public class EpdBillFilterCommand implements Command {
                 .eq(TXfOriginEpdLogItemEntity::getVendor, account)
                 .eq(TXfOriginEpdLogItemEntity::getReference, reference));
         if (Objects.nonNull(tXfOriginEpdLogItemEntity)) {
-            return NumberFormat.getPercentInstance().format(tXfOriginEpdLogItemEntity.getTaxRate());
+            return tXfOriginEpdLogItemEntity.getTaxRate();
         }
         return null;
     }

@@ -1,8 +1,19 @@
 package com.xforceplus.wapp.common.utils;
 
+import cn.hutool.core.date.DateUtil;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -899,16 +910,37 @@ public class DateUtils {
         }
         return strtostr;
     }
+    public static final String YYYY_MM_DD = "yyyy-MM-dd";
+
+    public static boolean isCurrentMonth(Date date){
+        DateTime dateTime = new DateTime(date); // Convert java.util.Date to Joda-Time, and assign time zone to adjust.
+        DateTime now = DateTime.now( );
+        if ( ( dateTime.getMonthOfYear() == now.getMonthOfYear() ) && ( dateTime.getYear() == now.getYear() ) ) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     public static void main(String[] args) throws Exception {
         try {
-            System.out.println(addDate(new Date(),1));
-            System.out.println(getFristDate());
-            System.out.println(getLastDate());
-
+            boolean currentMonth = isCurrentMonth(new Date(1602842453000L));
+            System.out.println(currentMonth);
         } catch (Exception e) {
             throw new Exception();
         }
-        // System.out.println("sss");
     }
+
+    public static String addDayToYYYYMMDD(String dateTime, int day) {
+//        final Date parse = DateUtil.parse(dateTime);
+//        final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
+//        final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
+//        return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+        return StringUtils.EMPTY;
+    }
+        // System.out.println("sss");
+    public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
+
+
 }

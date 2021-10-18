@@ -252,7 +252,7 @@ public class ClaimBillFilterCommand implements Command {
                 .filter(v -> v.getCostAmount().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, null, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
     }
 
     /**

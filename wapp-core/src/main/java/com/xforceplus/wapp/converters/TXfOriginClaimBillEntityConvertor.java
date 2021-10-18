@@ -24,7 +24,7 @@ public interface TXfOriginClaimBillEntityConvertor {
     // 索赔号/换货号
     @Mapping(source = "exchangeNo", target = "businessNo")
     // 定案日期
-    @Mapping(source = "decisionDate", target = "decisionDate", dateFormat = "yyyy/MM/dd")
+    @Mapping(source = "decisionDate", target = "verdictDate", dateFormat = "yyyy/MM/dd")
     // 成本金额
     @Mapping(source = "costAmount", target = "amountWithoutTax")
     // 所扣发票

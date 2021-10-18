@@ -30,7 +30,7 @@ public interface TXfOriginEpdBillEntityConvertor {
     @Mapping(source = "paymentDate", target = "paymentDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "companyCode", target = "purchaserNo")
     @Mapping(source = "text", target = "remark")
-    @Mapping(source = "taxCode", target = "taxRate", expression = "java(EpdBillFilterCommand.TAX_CODE_TRANSLATOR.get(taxCode))")
+    @Mapping(target = "taxRate", expression = "java(EpdBillFilterCommand.TAX_CODE_TRANSLATOR.get(tXfOriginEpdBillEntity.getTaxCode()))")
     /**
      * 转换成EPDBillData
      *

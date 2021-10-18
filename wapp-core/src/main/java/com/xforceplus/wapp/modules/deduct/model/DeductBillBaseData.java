@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.deduct.model;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 类描述：协议单，EPD,索赔的通用数据
@@ -25,15 +26,15 @@ public class DeductBillBaseData {
     /**
      * 供应商编号
      */
-    private String sallerNo;
+    private String sellerNo;
     /**
      * 供应商名称
      */
-    private String sallerName;
+    private String sellerName;
     /**
      * 扣款日期
      */
-    private String deductDate;
+    private Date deductDate;
     /**
      * 扣款公司jv_code
      */
@@ -57,7 +58,7 @@ public class DeductBillBaseData {
     /**
      * 税率
      */
-    private String taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 批次号

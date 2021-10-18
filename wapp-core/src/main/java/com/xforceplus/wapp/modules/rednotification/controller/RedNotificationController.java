@@ -77,7 +77,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/download")
     public Response download(@RequestBody RedNotificationExportPdfRequest request){
-        return Response.ok("成功");
+        return rednotificationService.downloadPdf(request);
     }
 
 

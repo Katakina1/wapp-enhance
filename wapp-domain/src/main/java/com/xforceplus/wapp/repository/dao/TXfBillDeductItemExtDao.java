@@ -29,17 +29,17 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
      * @param purchaserNo
      * @param sellerNo
      * @param taxRate
-     * @param start
+     * @param id
      * @param limit
      * @return
      */
-    @Select("select * from t_xf_bill_deduct_item  where create_date => #{startDate} and create_date <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate} and goods_tax_no <>'' order by id limit ${start} ,${limit} ")
+    @Select("select top ${limit} * from t_xf_bill_deduct_item  where id > #{id}  and  create_date >= #{startDate} and create_date <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate}   order by id   ")
     public List<TXfBillDeductItemEntity > queryMatchBillItem(@Param("startDate") Date startDate,
                                                              @Param("endDate") Date endDate,
                                                              @Param("purchaserNo")String purchaserNo,
                                                              @Param("sellerNo")String sellerNo,
                                                              @Param("taxRate") BigDecimal taxRate,
-                                                             @Param("start") int start,
+                                                             @Param("id") Long id,
                                                              @Param("limit") int limit );
 
     /**
@@ -48,12 +48,19 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
      * @param amount
      * @return
      */
-   @Update("update t_xf_bill_deduct_item  where id = #{id} and remaining_amount = remaining_amount - ${amount}  where remaining_amount >= ${amount}  ")
+   @Update("update t_xf_bill_deduct_item set remaining_amount = remaining_amount - ${amount}  where id = #{id} and remaining_amount >= ${amount}  ")
     public int updateBillItem(@Param("id") Long id, @Param("amount") BigDecimal amount);
 
-    @Select("select item.goods_tax_no,item.tax_rate,item.item_short_name,item.unit,item.tax_pre,item.tax_pre_con,ref.price,ref.quantity,ref.use_amount from t_xf_bill_deduct_item_ref ref, t_xf_bill_deduct_item item\n" +
-            "where ref.deduct_id = #{billId} and ref.deduct_item_id = item.id")
-    public List<TXfBillDeductItemEntity> queryItemsByBillId(@Param("billId")Long billId);
+    /**
+     * 查询索赔单 下关联的 索赔明细信息
+     * @param purchaserNo
+     * @param sellerNo
+     * @param type
+     * @param status
+     * @return
+     */
+    @Select("select item.zero_tax,item.tax_pre_con,item.tax_pre,item.goods_no_ver,item.goods_tax_no,item.cn_desc,item.unit,item.item_no,item.tax_rate,item.item_short_name,item.quantity,ref.price,ref.quantity,ref.use_amount amount_without_tax from t_xf_bill_deduct_item_ref ref, t_xf_bill_deduct_item item,t_xf_bill_deduct deduct where deduct.purchaser_no =#{purchaserNo} and deduct.seller_no = #{sellerNo} and  deduct.business_type = #{type} and deduct.status = #{status} and deduct.create_date >= dateadd(d,-day(getdate())+1,getdate())   and ref.deduct_id = deduct.id and ref.deduct_item_id = item.id")
+    public List<TXfBillDeductItemEntity> queryItemsByBill(@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo,@Param("type")Integer type,@Param("status")Integer status);
 
 
 }

@@ -175,11 +175,11 @@ public class TXfSettlementEntity extends BaseEntity {
      * 结算单状态
 待确认 1
 待开票 2
-已开部票 3
+已开部分票 3
 已开票 4
 已完成 5
 待审核 6
-已撤销 7
+已作废 7
 
      */
     @TableField("settlement_status")

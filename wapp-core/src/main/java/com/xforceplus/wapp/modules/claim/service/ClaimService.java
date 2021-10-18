@@ -1,32 +1,44 @@
 package com.xforceplus.wapp.modules.claim.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
+import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
+import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
 import com.xforceplus.wapp.repository.dao.*;
-import com.xforceplus.wapp.repository.entity.*;
+import com.xforceplus.wapp.repository.entity.TDxQuestionPaperEntity;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommClaimService;
 import com.xforceplus.wapp.service.CommRedNotificationService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * 索赔的结算单相关逻辑操作
  */
 @Service
-public class ClaimService {
+public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEntity> {
 
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
@@ -49,6 +61,8 @@ public class ClaimService {
     @Autowired
     private TDxQuestionPaperDao tDxQuestionPaperDao;
 
+    @Autowired
+    private DeductMapper deductMapper;
     /**
      * 申请索赔单不定案
      *
@@ -161,7 +175,7 @@ public class ClaimService {
      * 通过索赔单id申请不定案 需要将所理赔单分组（根据结算单分组）
      * 供应商调用
      *
-     * @param billDeductIdList 预制发票id
+     * @param billDeductIdList 索赔单ID
      */
     public void applyClaimVerdictByBillDeductId(List<Long> billDeductIdList) {
         if (CollectionUtils.isEmpty(billDeductIdList)) {
@@ -238,6 +252,7 @@ public class ClaimService {
             return str;
         }
     }
+
 
 
 }

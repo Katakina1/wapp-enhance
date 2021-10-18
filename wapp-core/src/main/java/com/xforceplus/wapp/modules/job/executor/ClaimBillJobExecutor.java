@@ -62,7 +62,7 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
         context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DONE.getJobStatus());
         saveContext(context);
         // 触发下游任务
-        deductService.receiveDone(null, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        deductService.receiveDone(XFDeductionBusinessTypeEnum.CLAIM_BILL);
     }
 
     /**

@@ -87,14 +87,14 @@ public class CommClaimService {
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
 
         //修改索赔单状态
-        //作废
+        //申请中的索赔单修改为：作废
         billDeductList1.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
-        //待生成结算单 清空结算单编号
+        //已生成结算单的索赔单修改为：待生成结算单 清空结算单编号
         billDeductList2.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
