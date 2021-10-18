@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.taxcode.dto;
+package com.xforceplus.wapp.dto;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;

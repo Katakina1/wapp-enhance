@@ -5,7 +5,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xforceplus.wapp.enums.OverdueTypeEnum;
+import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.modules.overdue.converters.OverdueConverter;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import com.xforceplus.wapp.modules.overdue.excel.OverdueImportListener;
@@ -41,8 +41,8 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         this.overdueConverter = overdueConverter;
     }
 
-    public Tuple2<List<Overdue>, Page<OverdueEntity>> page(long current, long size,
-                                                           OverdueTypeEnum typeEnum, String sellerName, String sellerNo, String sellerTaxNo) {
+    public Tuple2<List<Overdue>, Page<?>> page(long current, long size,
+                                               ServiceTypeEnum typeEnum, String sellerName, String sellerNo, String sellerTaxNo) {
         log.info("超期配置分页查询,入参：{}，{}，{}，{}", current, size, sellerName, sellerTaxNo);
         LambdaQueryChainWrapper<OverdueEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag)
@@ -61,7 +61,7 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         return Tuple.of(overdueConverter.map(page.getRecords()), page);
     }
 
-    public Either<String, Integer> export(OverdueTypeEnum typeEnum, InputStream is) {
+    public Either<String, Integer> export(ServiceTypeEnum typeEnum, InputStream is) {
         OverdueImportListener listener = new OverdueImportListener();
         EasyExcel.read(is, OverdueDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices())) {

@@ -2,7 +2,6 @@ package com.xforceplus.wapp.modules.overdue.converters;
 
 import com.xforceplus.wapp.converters.BaseConverter;
 import com.xforceplus.wapp.converters.GlobalConfig;
-import com.xforceplus.wapp.enums.OverdueTypeEnum;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import com.xforceplus.wapp.modules.overdue.models.Overdue;
 import com.xforceplus.wapp.repository.entity.OverdueEntity;
