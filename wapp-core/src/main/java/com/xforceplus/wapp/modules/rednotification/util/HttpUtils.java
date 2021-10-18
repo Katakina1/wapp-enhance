@@ -671,6 +671,10 @@ public abstract class HttpUtils {
         try {
             HttpPut httpPut = new HttpPut(url);
             httpPut.addHeader(HTTP.CONTENT_TYPE, APPLICATION_JSON);
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                httpPut.addHeader(entry.getKey(), entry.getValue());
+            }
+
 
             StringEntity se = new StringEntity(json, DEFAULT_CHARSET);
             se.setContentType(CONTENT_TYPE_TEXT_JSON);

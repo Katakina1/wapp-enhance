@@ -8,7 +8,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum OperationType implements ValueEnum<Integer>{
+public enum OperationType implements ValueEnum<String>{
     CONFIRM("confirm","确认"),
     REJECT("reject","驳回");
 
