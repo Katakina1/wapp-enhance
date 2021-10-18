@@ -22,17 +22,17 @@ public class ClaimVerdictListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        log.info("--------接受索赔不定案消息-------------");
+        log.info("--------处理索赔不定案消息-------------");
         try {
             TextMessage msg = (TextMessage) message;
             if (msg == null) {
-                log.error("接受索赔不定案消息为空");
+                log.error("处理索赔不定案消息为空");
                 return;
             }
-            log.info("消费者收到的报文为:" + msg);
+            log.info("处理索赔不定案消费者收到的报文为:" + msg);
             String text = msg.getText();
             JSONObject enhanceClaimVerdictMap = JSON.parseObject(text);
-            log.info("消费者收到的业务报文为:" + text);
+            log.info("处理索赔不定案消费者收到的业务报文为:" + text);
             //1通过 2不通过
             String operationType = enhanceClaimVerdictMap.getString("operationType");
             String businessNo = enhanceClaimVerdictMap.getString("businessNo");
