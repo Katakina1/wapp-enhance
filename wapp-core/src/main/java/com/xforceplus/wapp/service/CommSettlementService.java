@@ -236,20 +236,17 @@ public class CommSettlementService {
     }
 
     /**
-     * 检查结算单是否能重新拆票
+     * 检查结算单是否能重新拆票 申请红字
      * 如果不能则会抛出异常提示 调用方捕获异常处理相关后续逻辑
      *
      * @param settlementId
      * @return
      */
-    public void checkAgainSplitSettlementPreInvoice(Long settlementId) {
+    public boolean checkAgainSplitSettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
-        }
-        if (TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode() != tXfSettlementEntity.getSettlementStatus()) {
-            throw new EnhanceRuntimeException("结算单目前不是待开票");
         }
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
@@ -268,6 +265,7 @@ public class CommSettlementService {
                 throw new EnhanceRuntimeException("不能重新申请预制发票与红字信息");
             }
         }
+        return true;
     }
 
     /**
@@ -327,6 +325,5 @@ public class CommSettlementService {
             rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
-
 
 }
