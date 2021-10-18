@@ -28,17 +28,17 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
-//                "t_xf_settlement",
-//                "t_xf_settlement_item",
-//                "t_xf_bill_deduct",
-//                "t_xf_bill_deduct_item",
-//                "t_xf_bill_deduct_invoice",
-//                "t_xf_bill_deduct_item_ref",
-                "t_xf_red_notification",
-                "t_xf_red_notification_detail",
-                "t_xf_red_notification_log"
-
-                );
+                "t_xf_bill_deduct_item_ref",
+                "t_xf_elec_upload_record_detail",
+                // by kenny start
+                "t_xf_bill_job",
+                "t_xf_origin_epd_bill",
+                "t_xf_origin_epd_log_item",
+                "t_xf_origin_agreement_bill",
+                "t_xf_origin_agreement_item",
+                "t_xf_origin_claim_bill",
+                "t_xf_origin_claim_item_hyper",
+                "t_xf_origin_claim_item_sams"                );
 //         generateMainCode();
         // generateItemCode();
     }
@@ -52,7 +52,7 @@ public class CodeGenerator {
         GlobalConfig gc = new GlobalConfig();
         String projectPath = System.getProperty("user.dir");
         if (projectPath.contains("wapp-generator")){
-            projectPath=projectPath.substring(0,projectPath.indexOf("/wapp-generator"));
+            projectPath=projectPath.substring(0,projectPath.indexOf("\\wapp-generator"));
         }
         gc.setOutputDir(projectPath + "/wapp-domain/src/main/java/");
         gc.setAuthor("malong@xforceplus.com");

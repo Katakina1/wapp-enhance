@@ -63,7 +63,7 @@ public class Receiver implements ApplicationRunner{
             //设置消息监听器
             consumer.setMessageListener(new ClaimVerdictListener());
         } catch (Exception e) {
-            e.printStackTrace();
+           log.error(e.getMessage(),e);
         }
     }
 

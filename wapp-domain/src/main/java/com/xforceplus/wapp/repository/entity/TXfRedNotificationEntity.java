@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
@@ -15,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-15
+ * @since 2021-10-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -80,6 +81,12 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private String redNotificationNo;
 
     /**
+     * 锁表示，1正常，2申请锁定中，3撤销锁定中
+     */
+    @TableField("lock_flag")
+    private Integer lockFlag;
+
+    /**
      * 申请原因
      */
     @TableField("apply_reason")
@@ -137,25 +144,25 @@ public class TXfRedNotificationEntity extends BaseEntity {
      * 不含税金额
      */
     @TableField("amount_without_tax")
-    private Double amountWithoutTax;
+    private BigDecimal amountWithoutTax;
 
     /**
      * 税额
      */
     @TableField("tax_amount")
-    private Double taxAmount;
+    private BigDecimal taxAmount;
 
     /**
      * 含税金额
      */
     @TableField("amount_with_tax")
-    private Double amountWithTax;
+    private BigDecimal amountWithTax;
 
     /**
      * 扣除额
      */
     @TableField("deduction")
-    private Double deduction;
+    private BigDecimal deduction;
 
     /**
      * 计价方式
@@ -241,11 +248,11 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
-    @TableField("terminal_type")
-    private Integer terminalType;
-
     @TableField("user_id")
     private Long userId;
+
+    @TableField("terminal_type")
+    private Integer terminalType;
 
     @TableField("remark")
     private String remark;
@@ -268,6 +275,8 @@ public class TXfRedNotificationEntity extends BaseEntity {
     public static final String APPROVE_STATUS = "approve_status";
 
     public static final String RED_NOTIFICATION_NO = "red_notification_no";
+
+    public static final String LOCK_FLAG = "lock_flag";
 
     public static final String APPLY_REASON = "apply_reason";
 
@@ -323,9 +332,9 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
-    public static final String TERMINAL_TYPE = "terminal_type";
-
     public static final String USER_ID = "user_id";
+
+    public static final String TERMINAL_TYPE = "terminal_type";
 
     public static final String REMARK = "remark";
 

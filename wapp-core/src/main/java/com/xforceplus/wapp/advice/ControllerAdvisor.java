@@ -2,9 +2,11 @@ package com.xforceplus.wapp.advice;
 
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +31,13 @@ public class ControllerAdvisor {
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(MethodArgumentNotValidException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
     }
+
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<R<?>> handleBindException(BindException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
+    }
+
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(Exception e) {

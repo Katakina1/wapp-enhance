@@ -1,9 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -17,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -57,6 +56,18 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     @TableField("quantity")
     private BigDecimal quantity;
 
+    /**
+     * 税额
+     */
+    @TableField("tax_amount")
+    private BigDecimal taxAmount;
+
+    /**
+     * 含税金额
+     */
+    @TableField("amount_with_tax")
+    private BigDecimal amountWithTax;
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -76,6 +87,10 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     public static final String PRICE = "price";
 
     public static final String QUANTITY = "quantity";
+
+    public static final String TAX_AMOUNT = "tax_amount";
+
+    public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
     public static final String ID = "id";
 

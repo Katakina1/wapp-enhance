@@ -11,6 +11,7 @@ CREATE TABLE
     applying_status smallint,
     approve_status smallint,
     red_notification_no nvarchar(20),
+    lock_flag smallint,
     apply_reason nvarchar(100),
     invoice_type nvarchar(2),
     origin_invoice_no varchar(20),
@@ -63,6 +64,10 @@ go
 exec sp_addextendedproperty 'MS_Description', '审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'approve_status';
 go
 exec sp_addextendedproperty 'MS_Description', '红字信息表编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'red_notification_no';
+
+go
+exec sp_addextendedproperty 'MS_Description', '锁表示，1正常，2申请锁定中，3撤销锁定中','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'lock_flag';
+
 go
 exec sp_addextendedproperty 'MS_Description', '申请原因','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'apply_reason';
 go
@@ -96,7 +101,7 @@ exec sp_addextendedproperty 'MS_Description', '单号','SCHEMA', 'dbo', 'TABLE',
 go
 exec sp_addextendedproperty 'MS_Description', '红字信息状态0 删除 1 正常','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'status';
 go
-exec sp_addextendedproperty 'MS_Description', '红字信息来源1.索赔单，2协议单，3.EPD','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_origin';
+exec sp_addextendedproperty 'MS_Description', '红字信息来源1.索赔单，2协议单，3.EPD ,4 导入','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_origin';
 
 go
 exec sp_addextendedproperty 'MS_Description', '公司编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'company_code';
@@ -199,6 +204,8 @@ CREATE TABLE
     apply_id         bigint,
     status           smallint ,
     process_remark   nvarchar(200),
+    red_notification_no nvarchar(20),
+    event_type nvarchar(20),
     device_un        nvarchar(30),
     terminal_un      nvarchar(30),
     apply_type       smallint,
@@ -217,6 +224,12 @@ go
 exec sp_addextendedproperty 'MS_Description', '操作流水状态 1处理中，2，处理成功，3处理失败','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'status';
 go
 exec sp_addextendedproperty 'MS_Description', '操作流水备注','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'process_remark';
+go
+exec sp_addextendedproperty 'MS_Description', '红字信息表编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'red_notification_no';
+
+go
+exec sp_addextendedproperty 'MS_Description', '事件类型','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'event_type';
+
 go
 exec sp_addextendedproperty 'MS_Description', '设备唯一编码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification_log', 'COLUMN', 'device_un';
 go

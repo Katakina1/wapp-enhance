@@ -1,25 +1,24 @@
 package com.xforceplus.wapp.modules.claim.service;
 
-import com.xforceplus.wapp.WappApplication;
-import junit.framework.TestCase;
+import com.alibaba.fastjson.JSON;
+import com.xforceplus.wapp.BaseUnitTest;
+import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
+import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
+import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = WappApplication.class)
 @Slf4j
-public class ClaimServiceTest {
+public class ClaimServiceTest extends BaseUnitTest {
 
     @Autowired
-    private ClaimService claimService;
-
+    private DeductViewService claimService;
 
     @Test
     public void testApplyClaimVerdict() {
+       // claimService.applyClaimVerdict();
     }
 
     @Test
@@ -32,5 +31,13 @@ public class ClaimServiceTest {
 
     @Test
     public void testApplyClaimVerdictByBillDeductId() {
+    }
+
+    @Test
+    public void testDeductByPage() {
+        DeductListRequest request=new DeductListRequest();
+        final PageResult<DeductListResponse> result = claimService.deductClaimByPage(request);
+
+        System.out.println("r:"+JSON.toJSONString(result));
     }
 }

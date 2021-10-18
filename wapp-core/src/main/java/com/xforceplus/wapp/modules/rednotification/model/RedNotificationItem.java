@@ -53,19 +53,19 @@ public class RedNotificationItem {
      * 数量
      */
     @ApiModelProperty("数量")
-    private Double num;
+    private BigDecimal num;
 
     /**
      * 税率
      */
     @ApiModelProperty("税率")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 单价
      */
     @ApiModelProperty("单价")
-    private Double unitPrice;
+    private BigDecimal unitPrice;
 
     @ApiModelProperty("不含税金额")
     private BigDecimal amountWithoutTax;

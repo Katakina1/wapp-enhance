@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
@@ -34,7 +35,7 @@ import java.util.Date;
 public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDao, TXfExceptionReportEntity> implements ExceptionReportService {
     public static final String YYYY_MM_DD = "yyyy-MM-dd";
 
-    private static final SimpleDateFormat sdf = new SimpleDateFormat(YYYY_MM_DD);
+    private static final SimpleDateFormat SDF = new SimpleDateFormat(YYYY_MM_DD);
 
     @Autowired
     private IDSequence idSequence;
@@ -85,12 +86,9 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         if (StringUtils.isNotBlank(request.getEndDeductDate())) {
 
             try {
-                final Date parse = sdf.parse(request.getEndDeductDate());
-                final Instant plus = parse.toInstant().plus(1, ChronoUnit.DAYS);
-                final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
-                final String format = from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+                final String format = DateUtils.addDayToYYYYMMDD(request.getEndDeductDate(), 1);
                 wrapper.lt(TXfExceptionReportEntity::getCreateTime, format);
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 log.error("时间转换失败" + e.getMessage(), e);
             }
         }

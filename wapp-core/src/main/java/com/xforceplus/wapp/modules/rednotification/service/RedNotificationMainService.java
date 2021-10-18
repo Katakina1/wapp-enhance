@@ -1,37 +1,50 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.BaseRowModel;
+import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.xforceplus.phoenix.split.model.BaseResponse;
 import com.xforceplus.wapp.common.dto.PageResult;
-import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
+import com.xforceplus.wapp.common.enums.*;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.rednotification.listener.ExcelListener;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
 import com.xforceplus.wapp.modules.rednotification.model.*;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ExportInfo;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
+import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.sequence.IDSequence;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.sl.usermodel.Sheet;
+import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDao, TXfRedNotificationEntity> {
 
     @Autowired
@@ -39,9 +52,13 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     @Autowired
     RedNotificationItemService redNotificationItemService;
     @Autowired
+    RedNotificationLogService redNotificationLogService;
+    @Autowired
     TaxWareService taxWareService;
     @Autowired
     IDSequence iDSequence;
+
+    private static final Integer MAX_PDF_RED_NO_SIZE = 500;
 
 
 
@@ -69,6 +86,57 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         redNotificationItemService.saveBatch(listItem);
 
         return "" ;
+    }
+
+    public Response applyByPage(RedNotificationApplyReverseRequest request) {
+        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        //构建税件请求
+        if (!CollectionUtils.isEmpty(filterData)){
+            ApplyRequest applyRequest = new ApplyRequest();
+            applyRequest.setDeviceUn(request.getDeviceUn());
+            applyRequest.setTerminalUn(request.getTerminalUn());
+            applyRequest.setSerialNo(String.valueOf(iDSequence.nextId()));
+            List<RedInfo> redInfoList = buildRedInfoList(filterData,applyRequest);
+            applyRequest.setRedInfoList(redInfoList);
+            TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
+            if (Objects.equals(TaxWareCode.SUCCESS,taxWareResponse.getCode())){
+                return  Response.ok("请求成功" , applyRequest.getSerialNo());
+            }else {
+                //更新流水.全部失败
+                updateRequestFail(applyRequest.getSerialNo(), taxWareResponse);
+                return  Response.failed(taxWareResponse.getMessage());
+            }
+        }else {
+            return  Response.ok("未找到申请数据");
+        }
+
+    }
+
+    public Response rollback(RedNotificationApplyReverseRequest request) {
+        QueryModel queryModel = request.getQueryModel();
+//        queryModel.setLockFlag(1);
+//        queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
+//        queryModel.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
+        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        List<TXfRedNotificationEntity> entityList = filterData.stream().filter(item ->
+                item.getLockFlag() == 0
+                        && item.getApplyingStatus() == RedNoApplyingStatus.APPLIED.getValue()
+                        && item.getApproveStatus() == ApproveStatus.APPROVE_PASS.getValue()
+        ).collect(Collectors.toList());
+        if (filterData.size()>0 && entityList.size() != filterData.size()){
+            return Response.failed("锁定中或未审核通过 不允许撤销");
+        }
+        RevokeRequest revokeRequest = buildRevokeRequestAndLogs(entityList,request);
+        TaxWareResponse rollbackResponse = taxWareService.rollback(revokeRequest);
+
+        if (Objects.equals(TaxWareCode.SUCCESS,rollbackResponse.getCode())){
+            return  Response.ok("请求成功" , revokeRequest.getSerialNo());
+        }else {
+            //更新流水.全部失败
+            updateRequestFail(revokeRequest.getSerialNo(), rollbackResponse);
+            return  Response.failed(rollbackResponse.getMessage());
+        }
+
     }
 
 
@@ -148,35 +216,38 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             queryWrapper.eq(TXfRedNotificationEntity::getPid,queryModel.getPid());
         }
         if (queryModel.getApproveStatus()!=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getApplyingStatus,queryModel.getApproveStatus());
+            queryWrapper.eq(TXfRedNotificationEntity::getApproveStatus,queryModel.getApproveStatus());
         }
+        if (queryModel.getApplyingStatus()!=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getApplyingStatus,queryModel.getApplyingStatus());
+        }
+        if (queryModel.getLockFlag()!=null){
+            queryWrapper.eq(TXfRedNotificationEntity::getLockFlag,queryModel.getLockFlag());
+        }
+
         return queryWrapper;
     }
 
-    public Response applyByPage(RedNotificationApplyReverseRequest request) {
-        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
-        //构建税件请求
-        if (!CollectionUtils.isEmpty(filterData)){
-            ApplyRequest applyRequest = new ApplyRequest();
-            applyRequest.setDeviceUn(request.getDeviceUn());
-            applyRequest.setTerminalUn(request.getTerminalUn());
-            applyRequest.setSerialNo(String.valueOf(iDSequence.nextId()));
-            List<RedInfo> redInfoList = buildRedInfoList(filterData);
-            applyRequest.setRedInfoList(redInfoList);
-            TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
-            if (Objects.equals(TaxWareCode.SUCCESS,taxWareResponse.getCode())){
-                return  Response.ok("请求成功" , applyRequest.getSerialNo());
-            }else {
-                return  Response.failed(taxWareResponse.getMessage());
-            }
-        }else {
-            return  Response.ok("未找到申请数据");
-        }
 
+
+    /**
+     * 更新流失失败
+     * @param  serialNo
+     * @param taxWareResponse
+     */
+    private void updateRequestFail(String serialNo, TaxWareResponse taxWareResponse) {
+        LambdaUpdateWrapper<TXfRedNotificationLogEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(TXfRedNotificationLogEntity::getSerialNo, serialNo);
+        TXfRedNotificationLogEntity record = new TXfRedNotificationLogEntity();
+        record.setStatus(3);
+        record.setProcessRemark(taxWareResponse.getMessage());
+        redNotificationLogService.update(record,updateWrapper);
     }
 
-    private List<RedInfo> buildRedInfoList(List<TXfRedNotificationEntity> filterData) {
+    private List<RedInfo> buildRedInfoList(List<TXfRedNotificationEntity> filterData,ApplyRequest applyRequest) {
         ArrayList<RedInfo> redInfoList = Lists.newArrayList();
+        ArrayList<TXfRedNotificationLogEntity> logList = Lists.newArrayList();
+
         for (TXfRedNotificationEntity notificationEntity : filterData) {
             RedInfo redInfo = new RedInfo();
             redInfo.setPid(String.valueOf(notificationEntity.getId()));
@@ -188,8 +259,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             redInfo.setPurchaserTaxCode(notificationEntity.getPurchaserTaxNo());
             redInfo.setSellerName(notificationEntity.getSellerName());
             redInfo.setSellerTaxCode(notificationEntity.getSellerTaxNo());
-            //明细字段
-//           redInfo.setTaxCodeVersion();
+
             redInfo.setOriginalInvoiceType(notificationEntity.getOriginInvoiceType());
             redInfo.setOriginalInvoiceCode(notificationEntity.getOriginInvoiceCode());
             redInfo.setOriginalInvoiceNo(notificationEntity.getOriginInvoiceNo());
@@ -197,13 +267,70 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             redInfo.setApplicationReason(String.valueOf(notificationEntity.getApplyType()));
 
             Amount amount = new Amount();
-//            amount.setTaxAmount(notificationEntity.getTaxAmount());
-//            redInfo.setAmount();
-//            redInfo.setDetails();
+            amount.setTaxAmount(notificationEntity.getTaxAmount());
+            amount.setAmountWithoutTax(notificationEntity.getAmountWithoutTax());
+            amount.setAmountWithTax(notificationEntity.getAmountWithTax());
+            redInfo.setAmount(amount);
 
+
+            Tuple2<List<RedDetailInfo>,String> result= buildDetails(notificationEntity.getId());
+            List<RedDetailInfo> details = result._1;
+            //明细字段
+            redInfo.setTaxCodeVersion(result._2);
+            redInfo.setDetails(details);
             redInfoList.add(redInfo);
+            // ================ 插入申请流水=============
+            TXfRedNotificationLogEntity logEntity = new TXfRedNotificationLogEntity();
+            logEntity.setApplyId(notificationEntity.getId());
+            logEntity.setStatus(1);
+            logEntity.setProcessRemark("处理中");
+            logEntity.setRedNotificationNo("");
+            logEntity.setDeviceUn(applyRequest.getDeviceUn());
+            logEntity.setTerminalUn(applyRequest.getTerminalUn());
+            logEntity.setApplyType(ApplyType.APPLY.getValue());
+            logEntity.setSerialNo(applyRequest.getSerialNo());
+//            logEntity.setCreateUserId();
+            logEntity.setCreateDate(new Date());
+            logEntity.setUpdateDate(new Date());
+            logEntity.setId(iDSequence.nextId());
+            logList.add(logEntity);
         }
+        redNotificationLogService.saveBatch(logList);
         return redInfoList;
+    }
+
+    private Tuple2<List<RedDetailInfo>,String> buildDetails(Long id) {
+        ArrayList<RedDetailInfo> redItemInfoList = Lists.newArrayList();
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> detailMapper = new LambdaQueryWrapper<>();
+        detailMapper.eq(TXfRedNotificationDetailEntity::getApplyId, id);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(detailMapper);
+        for (TXfRedNotificationDetailEntity detailEntity : tXfRedNotificationDetailEntities) {
+            RedDetailInfo redDetailInfo = new RedDetailInfo();
+
+            DetailAmount detailAmount = new DetailAmount();
+            detailAmount.setTaxAmount(detailEntity.getTaxAmount());
+            detailAmount.setAmountWithoutTax(detailEntity.getAmountWithoutTax());
+            detailAmount.setUnitPrice(detailEntity.getUnitPrice());
+            detailAmount.setTaxDeduction(detailEntity.getDeduction());
+            redDetailInfo.setDetailAmount(detailAmount);
+
+            Production production = new Production();
+            production.setProductionCode(detailEntity.getGoodsTaxNo());
+            production.setProductionName(detailEntity.getGoodsName());
+            redDetailInfo.setProduction(production);
+
+            Tax tax = new Tax();
+            tax.setPreferentialTax(detailEntity.getTaxPre()==1?true:false);
+            tax.setTaxPolicy(detailEntity.getTaxPreCon());
+            tax.setTaxRate(detailEntity.getTaxRate());
+            tax.setZeroTax(String.valueOf(detailEntity.getZeroTax()));
+            tax.setTaxCodeVersion(detailEntity.getGoodsNoVer());
+            redDetailInfo.setTax(tax);
+
+            redItemInfoList.add(redDetailInfo);
+        }
+        String goodsNoVer = tXfRedNotificationDetailEntities.get(0).getGoodsNoVer();
+        return Tuple.of(redItemInfoList,goodsNoVer);
     }
 
     public Response<SummaryResult> summary(QueryModel queryModel) {
@@ -263,17 +390,291 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         return Response.ok("成功",redNotificationInfo);
     }
 
-    public Response rollback(RedNotificationApplyReverseRequest request) {
 
+
+    private RevokeRequest buildRevokeRequestAndLogs(List<TXfRedNotificationEntity> entityList, RedNotificationApplyReverseRequest request) {
+
+        Long serialNo = iDSequence.nextId();
+
+        RevokeRequest revokeRequest = new RevokeRequest();
+        revokeRequest.setSerialNo(String.valueOf(serialNo));
+        revokeRequest.setApplyTaxCode(entityList.get(0).getPurchaserTaxNo());
+        revokeRequest.setTerminalUn(request.getTerminalUn());
+        revokeRequest.setDeviceUn(request.getDeviceUn());
+
+        ArrayList<TXfRedNotificationLogEntity> logList = Lists.newArrayList();
+        ArrayList<RevokeRedNotificationInfo> revokeRedNotificationInfos = Lists.newArrayList();
+        entityList.stream().forEach(entity->{
+            RevokeRedNotificationInfo revokeRedNotificationInfo = new RevokeRedNotificationInfo();
+            revokeRedNotificationInfo.setRedNotificationNo(entity.getRedNotificationNo());
+            revokeRedNotificationInfos.add(revokeRedNotificationInfo);
+
+            // ================ 插入撤销流水=============
+            TXfRedNotificationLogEntity logEntity = new TXfRedNotificationLogEntity();
+            logEntity.setApplyId(entity.getId());
+            logEntity.setStatus(1);
+            logEntity.setProcessRemark("处理中");
+            logEntity.setRedNotificationNo(entity.getRedNotificationNo());
+            logEntity.setDeviceUn(request.getDeviceUn());
+            logEntity.setTerminalUn(request.getTerminalUn());
+            logEntity.setApplyType(ApplyType.ROLL_BACK.getValue());
+            logEntity.setSerialNo(revokeRequest.getSerialNo());
+//            logEntity.setCreateUserId();
+            logEntity.setCreateDate(new Date());
+            logEntity.setUpdateDate(new Date());
+            logEntity.setId(iDSequence.nextId());
+            logList.add(logEntity);
+        });
+        redNotificationLogService.saveBatch(logList);
+
+        revokeRequest.setRedNotificationList(revokeRedNotificationInfos);
+        return revokeRequest;
+    }
+
+    public Response importNotification(MultipartFile file) {
+        InputStream inputStream = null;
+        try {
+            inputStream = new BufferedInputStream(file.getInputStream());
+        } catch (IOException e) {
+            log.error("获取导入文件失败",e);
+            return Response.failed("获取导入文件失败");
+        }
+        //实例化实现了AnalysisEventListener接口的类
+        ExcelListener excelListener = new ExcelListener(this,redNotificationMainMapper);
+        ExcelReader reader = new ExcelReader(inputStream,null,excelListener);
+        //读取信息
+        reader.read(new Sheet(1,1, ImportInfo.class));
+        return Response.ok("导入成功");
+    }
+
+    public Response downloadPdf(RedNotificationExportPdfRequest request) {
+        Integer generateModel = request.getGenerateModel();
+        QueryModel queryModel = request.getQueryModel();
+        queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
+        queryModel.setStatus(1);
+        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        if(filterData.size()>MAX_PDF_RED_NO_SIZE){
+            return Response.failed("单次生成pdf的红字信息数目不得超过"+MAX_PDF_RED_NO_SIZE);
+        }
+        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+        //获取明细
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, applyList);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
+        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+        String downLoadUrl = exportRedNoPdf(filterData, listItemMap, generateModel);
+        return Response.ok("生成成功",downLoadUrl);
+    }
+
+    private String exportRedNoPdf(List<TXfRedNotificationEntity> applies, Map<Long, List<TXfRedNotificationDetailEntity>> detailMap, Integer generateModel){
+
+        List<ZipContentInfo> zipInfos = null;
+        RedNoGeneratePdfModel pdfModel = ValueEnum.getEnumByValue(RedNoGeneratePdfModel.class, generateModel).orElse(RedNoGeneratePdfModel.Merge_All);
+        switch (pdfModel){
+            case Merge_All:
+                Map<String, List<TXfRedNotificationEntity>> mergeAllMap = new HashMap<>();
+                mergeAllMap.put("全部合并",applies);
+                zipInfos = generateRedNoPdf(mergeAllMap, detailMap,pdfModel);
+                break;
+            case Split_By_Seller:
+                Map<String, List<TXfRedNotificationEntity>> groupBySeller = applies.stream()
+                        .collect(Collectors.groupingBy((redNotificationEntity)->{
+                            if(StringUtils.isNotBlank(redNotificationEntity.getSellerName())){
+                                return redNotificationEntity.getSellerName();
+                            }else{
+                                return "销方名称为空";
+                            }
+                        }));
+                zipInfos = generateRedNoPdf(groupBySeller, detailMap,pdfModel);
+                break;
+            case Split_By_Purchaser:
+                Map<String, List<TXfRedNotificationEntity>> groupByPurchaser = applies.stream()
+                        .collect(Collectors.groupingBy((redNotificationEntity)->{
+                            if(StringUtils.isNotBlank(redNotificationEntity.getPurchaserName())){
+                                return redNotificationEntity.getPurchaserName();
+                            }else{
+                                return "购方名称为空";
+                            }
+                        }));
+                zipInfos = generateRedNoPdf(groupByPurchaser, detailMap,pdfModel);
+                break;
+        }
+        return makeRedNoPdfZip(zipInfos);
+    }
+
+
+    private List<ZipContentInfo> generateRedNoPdf(Map<String, List<TXfRedNotificationEntity>> redNoMap, Map<Long, List<TXfRedNotificationDetailEntity>> detailsMap, RedNoGeneratePdfModel model){
+        List<ZipContentInfo> zipContents = new CopyOnWriteArrayList<>();
+        redNoMap.keySet().stream().forEach(head->{
+            redNoMap.get(head).parallelStream().forEach(redNoApply->{
+                RedNotificationGeneratePdfRequest request = buildRedNotificationGeneratePdfRequest(redNoApply,detailsMap.get(redNoApply.getId()));
+                log.info("开始生成红字信息pdf:"+request.getSerialNo());
+                long start = System.currentTimeMillis();
+                TaxWareResponse response = taxWareService.generatePdf(request);
+                log.info("红字信息生成pdf耗时:{}ms,流水号:{}",System.currentTimeMillis()-start, request.getSerialNo());
+                TaxWareResponse.ResultDTO result;
+                String pdfUrl;
+                if(Objects.nonNull(result = response.getResult()) && StringUtils.isNotBlank(pdfUrl = result.getPdfUrl())){
+                    String fileName;
+                    if(model == RedNoGeneratePdfModel.Merge_All){
+                        fileName = redNoApply.getPurchaserTaxNo() + ".pdf";
+                    }else{
+                        fileName = format("{}/{}.pdf",  head,redNoApply.getPurchaserTaxNo());
+                    }
+                    ZipContentInfo zipInfo = new ZipContentInfo();
+                    zipInfo.setFile(false);
+                    zipInfo.setRelativePath(fileName);
+                    zipInfo.setSourceUrl(pdfUrl);
+                    zipContents.add(zipInfo);
+                }
+            });
+        });
+        return zipContents;
+    }
+
+    private String makeRedNoPdfZip(List<ZipContentInfo> zipContents){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String zipFile = format("output/{}/{}/{}.zip",  "invoice-service", "redNoZip",sdf.format(new Date()));
+        if(zipContents.size()>0){
+            DownloadUrlUtils.commonZipFiles(zipContents,zipFile);
+            //发送到消息中心
+            return DownloadUrlUtils.putFile(zipFile);
+        }
         return null;
     }
 
-    public void importNotification(MultipartFile file) {
-//        InputStream inputStream = new BufferedInputStream(file.getInputStream());
-//        //实例化实现了AnalysisEventListener接口的类
-//        ExcelListener excelListener = new ExcelListener(userDao);
-//        ExcelReader reader = new ExcelReader(inputStream,null,excelListener);
-//        //读取信息
-//        reader.read(new Sheet(1,1,User.class));
+
+    public static String format(String format, Object... args) {
+        return MessageFormatter.arrayFormat(format, args).getMessage();
     }
+
+    private RedNotificationGeneratePdfRequest buildRedNotificationGeneratePdfRequest(TXfRedNotificationEntity apply, List<TXfRedNotificationDetailEntity> applyDetails){
+
+        RedNotificationGeneratePdfRequest request = new RedNotificationGeneratePdfRequest();
+        RequestHead head = new RequestHead();
+        head.setDebug(null);
+        head.setTenantId(taxWareService.tenantId);
+        head.setTenantName(taxWareService.tenantName);
+        request.setHead(head);
+
+        RedGeneratePdfInfo redInfo = new RedGeneratePdfInfo();
+        redInfo.setApplicant(apply.getApplyType());
+        redInfo.setDate(apply.getInvoiceDate());
+
+        List<RedGeneratePdfDetailInfo> detailInfos = applyDetails.stream().map(item->{
+            RedGeneratePdfDetailInfo detailInfo = new RedGeneratePdfDetailInfo();
+            detailInfo.setAmountWithoutTax(item.getAmountWithoutTax().toPlainString());
+            detailInfo.setCargoName(item.getGoodsName());
+            detailInfo.setQuantity(item.getNum().toPlainString());
+            detailInfo.setTaxAmount(item.getTaxAmount().toPlainString());
+            detailInfo.setTaxRate(item.getTaxRate().toPlainString());
+            detailInfo.setUnitPrice(item.getUnitPrice().toPlainString());
+            return detailInfo;
+        }).collect(Collectors.toList());
+
+        redInfo.setDetails(detailInfos);
+
+        redInfo.setOriginInvoiceCode(apply.getOriginInvoiceCode());
+        redInfo.setOriginInvoiceNo(apply.getOriginInvoiceNo());
+        redInfo.setPurchaseTaxNo(apply.getPurchaserTaxNo());
+        redInfo.setPurchaserName(apply.getPurchaserName());
+        redInfo.setRedNotificationNo(apply.getPurchaserTaxNo());
+        redInfo.setSellerName(apply.getSellerName());
+        redInfo.setSellerTaxNo(apply.getSellerTaxNo());
+        redInfo.setTotalAmountWithoutTax(apply.getAmountWithoutTax().toString());
+        redInfo.setTotalTaxAmount(apply.getTaxAmount().toString());
+        request.setRedInfo(redInfo);
+
+        request.setSerialNo(String.valueOf(iDSequence.nextId()));
+        return request;
+    }
+
+    /**
+     * 导出excl
+     * @param request
+     * @return
+     */
+    public Response export(RedNotificationExportPdfRequest request) {
+
+        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+        //获取明细
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, applyList);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
+//        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+
+        List<Long> redNoIds = new ArrayList<>();
+        List<ExportInfo> exportInfos = filterData.stream().map(apply -> {
+            redNoIds.add(apply.getId());
+            ExportInfo dto = redNotificationMainMapper.mainEntityToExportInfo(apply);
+            ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApplyingStatus()).orElse(ApproveStatus.OTHERS);
+            dto.setApplyStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
+
+            if (StringUtils.isNotBlank(apply.getInvoiceType())){
+                dto.setInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getInvoiceType()).get().getDescription());
+            }
+            if (StringUtils.isNotBlank(apply.getOriginInvoiceType())){
+                dto.setOriginInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getOriginInvoiceType()).get().getDescription());
+            }
+            return dto;
+        }).collect(Collectors.toList());
+
+        List<ExportItemInfo> itemInfos = redNotificationMainMapper.detailEntityToExportInfoList(tXfRedNotificationDetailEntities);
+
+        String s = writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo());
+
+        return Response.ok("导出成功,请在消息中心查看",s);
+    }
+
+
+
+    private String writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2) {
+
+        String fileName = "红字信息表";
+        String sheetName = "红字信息主信息";
+        String sheetName2 = "红字信息明细";
+
+        String businessId = String.valueOf(System.currentTimeMillis());
+        String filePath = "file/" + "walmart" + "/" + DateUtils.curDateMselStr17() + "/"  + fileName + "导出" + businessId + ".xlsx";
+        ;
+        File localFile = new File(filePath);
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(localFile);
+        } catch (FileNotFoundException fnfException) {
+            fnfException.printStackTrace();
+            log.error("new FileOutputStream(localFile) err!");
+        }
+        ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
+
+        Sheet sheet = new Sheet(1, 0, object.getClass());
+
+        sheet.setSheetName(sheetName);
+
+        writer.write(list, sheet);
+
+        Sheet sheet2 = new Sheet(2, 0, object2.getClass());
+        sheet2.setSheetName(sheetName2);
+
+        writer.write(list2, sheet2);
+
+        writer.finish();
+
+        try {
+            out.close();
+        } catch (IOException ioException) {
+            log.info(" out.close() err!");
+        }
+
+        return DownloadUrlUtils.putFile(filePath);
+
+    }
+
+
+
 }

@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-15
+ * @since 2021-10-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -42,6 +42,18 @@ public class TXfRedNotificationLogEntity extends BaseEntity {
      */
     @TableField("process_remark")
     private String processRemark;
+
+    /**
+     * 红字信息表编号
+     */
+    @TableField("red_notification_no")
+    private String redNotificationNo;
+
+    /**
+     * 事件类型
+     */
+    @TableField("event_type")
+    private String eventType;
 
     /**
      * 设备唯一编码
@@ -94,6 +106,10 @@ public class TXfRedNotificationLogEntity extends BaseEntity {
     public static final String STATUS = "status";
 
     public static final String PROCESS_REMARK = "process_remark";
+
+    public static final String RED_NOTIFICATION_NO = "red_notification_no";
+
+    public static final String EVENT_TYPE = "event_type";
 
     public static final String DEVICE_UN = "device_un";
 

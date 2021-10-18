@@ -73,4 +73,24 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         this.update(wrapper);
     }
 
+    /**
+     * 根据orgcode获取公司信息
+     * @param orgCode  --jvcode 或者供应商6d号码
+     * @param orgType 5 沃尔玛公司 8供应商公司
+     * @return
+     */
+    public TAcOrgEntity getOrgInfoByOrgCode(String orgCode,String orgType) {
+        if(StringUtils.isEmpty(orgCode)){
+            return null;
+        }
+        QueryWrapper<TAcOrgEntity> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(orgCode)) {
+            wrapper.eq(TAcOrgEntity.ORG_CODE, orgCode);
+        }
+        if (StringUtils.isNotBlank(orgType)) {
+            wrapper.eq(TAcOrgEntity.ORG_TYPE, orgType);
+        }
+        return this.getOne(wrapper);
+    }
+
 }

@@ -1,8 +1,16 @@
 package com.xforceplus.wapp.common.utils;
 
+import cn.hutool.core.date.DateUtil;
+import org.joda.time.DateTime;
+
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -882,6 +890,12 @@ public class DateUtils {
         return strtostr;
     }
 
+   static SimpleDateFormat format =  new SimpleDateFormat("yyyyMMddHHmmssSSS");
+    public static String curDateMselStr17() {
+        Date date = new Date();
+        return format.format(date);
+    }
+
     /**
      * yyyy-MM-dd ת yyyyMMdd
      * @param strDate
@@ -899,16 +913,26 @@ public class DateUtils {
         }
         return strtostr;
     }
+    public static final String YYYY_MM_DD = "yyyy-MM-dd";
 
-    public static void main(String[] args) throws Exception {
-        try {
-            System.out.println(addDate(new Date(),1));
-            System.out.println(getFristDate());
-            System.out.println(getLastDate());
-
-        } catch (Exception e) {
-            throw new Exception();
+    public static boolean isCurrentMonth(Date date){
+        DateTime dateTime = new DateTime(date); // Convert java.util.Date to Joda-Time, and assign time zone to adjust.
+        DateTime now = DateTime.now( );
+        if ( ( dateTime.getMonthOfYear() == now.getMonthOfYear() ) && ( dateTime.getYear() == now.getYear() ) ) {
+            return true;
+        }else{
+            return false;
         }
-        // System.out.println("sss");
     }
+
+
+    public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
+
+    public static String addDayToYYYYMMDD(String dateTime, int day) {
+        final Date parse = DateUtil.parse(dateTime);
+        final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
+        final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
+        return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+    }
+
 }

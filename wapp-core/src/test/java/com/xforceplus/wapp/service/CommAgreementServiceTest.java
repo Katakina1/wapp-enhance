@@ -13,6 +13,8 @@ public class CommAgreementServiceTest extends BaseUnitTest {
 
     @Test
     public void testDestroyAgreementSettlement() {
+
+      //  commAgreementService.destroyAgreementSettlement();
     }
 
     @Test

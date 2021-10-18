@@ -37,7 +37,7 @@ import java.util.function.Function;
  */
 @Service
 @Slf4j
-public class DeductService  {
+public class DeductService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEntity>  {
     @Autowired
     private TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
@@ -518,5 +518,7 @@ public class DeductService  {
         BeanUtils.copyProperties(deductBillBaseData, tXfBillDeductEntity);
         return tXfBillDeductEntity;
     }
+
+
 
 }

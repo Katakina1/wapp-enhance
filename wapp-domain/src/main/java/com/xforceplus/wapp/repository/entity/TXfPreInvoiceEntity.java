@@ -17,7 +17,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -124,7 +124,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private String invoiceType;
 
     /**
-     * 结算单类型 2 协议 2 EPD
+     * 结算单类型:1索赔单,2:协议单；3:EPD单
      */
     @TableField("settlement_type")
     private Integer settlementType;
@@ -184,7 +184,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private BigDecimal taxRate;
+    private Double taxRate;
 
     /**
      * 备注
