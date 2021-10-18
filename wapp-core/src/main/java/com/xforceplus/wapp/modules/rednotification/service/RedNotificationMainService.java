@@ -6,12 +6,10 @@ import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import com.xforceplus.phoenix.split.model.BaseResponse;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.utils.DateUtils;
@@ -38,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -157,6 +156,25 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             return Response.failed("所选购方税号不唯一,无法获取唯一终端");
         }
         GetTerminalResult getTerminalResult = new GetTerminalResult();
+        // 补充弹窗信息
+        TXfRedNotificationEntity record = filterData.get(0);
+        getTerminalResult.setNewCompanyName(record.getPurchaserName());
+        getTerminalResult.setInvoiceType(record.getInvoiceType());
+        getTerminalResult.setInvoiceCount(filterData.size());
+        //统计金额信息
+        BigDecimal totalAmountWithTax = BigDecimal.ZERO ;
+        BigDecimal totalAmountWithoutTax = BigDecimal.ZERO ;
+        BigDecimal totalTaxAmount = BigDecimal.ZERO ;
+        for (TXfRedNotificationEntity item : filterData) {
+            totalAmountWithTax = totalAmountWithTax.add(item.getAmountWithTax());
+            totalAmountWithoutTax =totalAmountWithoutTax.add(item.getAmountWithoutTax());
+            totalTaxAmount = totalTaxAmount.add(item.getTaxAmount());
+        }
+
+        getTerminalResult.setAmountWithTax(totalAmountWithTax.toPlainString());
+        getTerminalResult.setAmountWithoutTax(totalAmountWithoutTax.toPlainString());
+        getTerminalResult.setTaxAmount(totalTaxAmount.toPlainString());
+
 
         GetTerminalResponse terminal = taxWareService.getTerminal(collect.get(0));
         List<TerminalDTO> terminalList = Lists.newLinkedList();
@@ -578,7 +596,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         redInfo.setOriginInvoiceNo(apply.getOriginInvoiceNo());
         redInfo.setPurchaseTaxNo(apply.getPurchaserTaxNo());
         redInfo.setPurchaserName(apply.getPurchaserName());
-        redInfo.setRedNotificationNo(apply.getPurchaserTaxNo());
+        redInfo.setRedNotificationNo(apply.getRedNotificationNo());
         redInfo.setSellerName(apply.getSellerName());
         redInfo.setSellerTaxNo(apply.getSellerTaxNo());
         redInfo.setTotalAmountWithoutTax(apply.getAmountWithoutTax().toString());

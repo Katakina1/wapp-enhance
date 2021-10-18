@@ -3,10 +3,7 @@ package com.xforceplus.wapp.modules.rednotification.service;
 import com.google.gson.Gson;
 import com.xforceplus.wapp.BaseUnitTest;
 import com.xforceplus.wapp.WappApplication;
-import com.xforceplus.wapp.modules.rednotification.model.taxware.ApplyRequest;
-import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
-import com.xforceplus.wapp.modules.rednotification.model.taxware.RedMessage;
-import com.xforceplus.wapp.modules.rednotification.model.taxware.TaxWareResponse;
+import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +22,7 @@ public class TaxWareServiceTest extends BaseUnitTest {
 
     @Test
     public void testGetTerminal() {
-        GetTerminalResponse terminal = taxWareService.getTerminal("91420111271850146W");
+        GetTerminalResponse terminal = taxWareService.getTerminal("91310113SHUIKWLU93");
         assert terminal!=null;
     }
 
@@ -45,5 +42,30 @@ public class TaxWareServiceTest extends BaseUnitTest {
         String reqJson = readJsonFromFile("data/applyResult.json");
         RedMessage redMessage = gson.fromJson(reqJson, RedMessage.class);
         taxWareService.handle(redMessage);
+    }
+
+    @Test
+    public void getTerminal() {
+    }
+
+    @Test
+    public void applyRedInfo() {
+    }
+
+    @Test
+    public void rollback() {
+        String path = "data/RollBackRequst.json" ;
+        String reqJson = readJsonFromFile(path);
+        RevokeRequest revokeRequest= gson.fromJson(reqJson, RevokeRequest.class);
+        TaxWareResponse taxWareResponse = taxWareService.rollback(revokeRequest);
+        assertTrue(Objects.equals(taxWareResponse.getCode(),"TXWR000000"));
+    }
+
+    @Test
+    public void generatePdf() {
+    }
+
+    @Test
+    public void handleRollBack() {
     }
 }
