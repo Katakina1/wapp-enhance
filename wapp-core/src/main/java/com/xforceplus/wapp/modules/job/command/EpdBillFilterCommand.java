@@ -54,13 +54,13 @@ public class EpdBillFilterCommand implements Command {
     public static final Map<String, BigDecimal> TAX_CODE_TRANSLATOR =
             ImmutableMap
                     .<String, BigDecimal>builder()
-                    .put("TG", new BigDecimal("3%"))
-                    .put("TH", new BigDecimal("17%"))
-                    .put("TL", new BigDecimal("11%"))
-                    .put("TM", new BigDecimal("16%"))
-                    .put("TN", new BigDecimal("10%"))
-                    .put("TO", new BigDecimal("13%"))
-                    .put("TP", new BigDecimal("9%"))
+                    .put("TG", BigDecimal.valueOf(0.03))
+                    .put("TH", BigDecimal.valueOf(0.17))
+                    .put("TL", BigDecimal.valueOf(0.11))
+                    .put("TM", BigDecimal.valueOf(0.16))
+                    .put("TN", BigDecimal.valueOf(0.10))
+                    .put("TO", BigDecimal.valueOf(0.13))
+                    .put("TP", BigDecimal.valueOf(0.09))
                     .build();
 
     /**
