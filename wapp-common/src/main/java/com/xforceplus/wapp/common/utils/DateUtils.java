@@ -922,14 +922,6 @@ public class DateUtils {
     }
 
 
-    public static void main(String[] args) throws Exception {
-        try {
-            boolean currentMonth = isCurrentMonth(new Date(1602842453000L));
-            System.out.println(currentMonth);
-        } catch (Exception e) {
-            throw new Exception();
-        }
-        // System.out.println("sss");
     public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
 
     public static String addDayToYYYYMMDD(String dateTime, int day) {
