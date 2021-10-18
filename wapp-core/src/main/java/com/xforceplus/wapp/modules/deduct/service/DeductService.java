@@ -602,7 +602,7 @@ public class DeductService   {
         tXfSettlementEntity.setSellerAddress(defaultValue(sellerOrgEntity.getAddress()));
         tXfSettlementEntity.setSellerBankAccount(sellerOrgEntity.getAccount());
         tXfSettlementEntity.setSellerBankName(sellerOrgEntity.getBank());
-        tXfSettlementEntity.setSellerName(defaultValue(sellerOrgEntity.getOrgNme()));
+        tXfSettlementEntity.setSellerName(defaultValue(sellerOrgEntity.getOrgName()));
         tXfSettlementEntity.setSellerTel(defaultValue(sellerOrgEntity.getPhone()));
         tXfSettlementEntity.setPurchaserNo(purchaserNo);
         tXfSettlementEntity.setRemark(StringUtils.EMPTY);
@@ -610,7 +610,7 @@ public class DeductService   {
         tXfSettlementEntity.setPurchaserAddress(purchaserOrgEntity.getAddress());
         tXfSettlementEntity.setPurchaserBankAccount(purchaserOrgEntity.getAccount());
         tXfSettlementEntity.setPurchaserBankName(purchaserOrgEntity.getBank());
-        tXfSettlementEntity.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgNme()));
+        tXfSettlementEntity.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
         tXfSettlementEntity.setPurchaserTel(defaultValue(purchaserOrgEntity.getPhone()) );
         tXfSettlementEntity.setPurchaserTaxNo(purchaserOrgEntity.getTaxNo());
         tXfSettlementEntity.setAvailableAmount(tXfSettlementEntity.getAmountWithoutTax());
