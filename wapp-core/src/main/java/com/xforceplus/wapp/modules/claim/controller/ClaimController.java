@@ -9,6 +9,7 @@ import com.xforceplus.wapp.modules.claim.dto.SettlementApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -33,6 +34,9 @@ public class ClaimController {
     @GetMapping
     @ApiOperation(value = "索赔单列表")
     public R claims(DeductListRequest request){
+
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductViewService.deductClaimByPage(request);
         return R.ok(page);
     }
@@ -42,6 +46,8 @@ public class ClaimController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/apply-verdict")
     public R claimApplyVerdict(@RequestBody SettlementApplyVerdictRequest request) {
+
+        request.setSellerNo(UserUtil.getUser().getUsercode());
         claimService.applyClaimVerdictByBillDeductId( request.getBillDeductIdList());
         return R.ok("成功", "");
     }

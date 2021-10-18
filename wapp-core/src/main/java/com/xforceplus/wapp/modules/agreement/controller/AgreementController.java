@@ -8,6 +8,7 @@ import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ public class AgreementController {
     @GetMapping("summary")
     @ApiOperation(value = "页头统计")
     public R summary(DeductListRequest request){
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(summary);
     }
@@ -41,6 +44,8 @@ public class AgreementController {
     @GetMapping
     @ApiOperation(value = "协议列表")
     public R agreements(DeductListRequest request) {
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(page);
     }

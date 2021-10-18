@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,7 +10,9 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
+import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
     @Autowired
     private DeductMapper deductMapper;
+
+//    @Autowired
+//    private CompanyService companyService;
 
     public List<SummaryResponse> summary(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
 
@@ -79,6 +83,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
         deductEntity.setDeductInvoice(request.getInvoiceNo());
 
+        deductEntity.setSellerNo(request.getSellerNo());
+
         QueryWrapper<TXfBillDeductEntity> wrapper= Wrappers.query(deductEntity);
         //扣款日期>>Begin
         final String deductDateBegin = request.getDeductDateBegin();
@@ -116,6 +122,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
      * @return
      */
     public PageResult<DeductListResponse> deductClaimByPage(DeductListRequest request){
+        final String usercode = UserUtil.getUser().getUsercode();
+//        companyService.getOrgInfoByOrgCode();
         final PageResult<DeductListResponse> result = deductByPage(request, XFDeductionBusinessTypeEnum.CLAIM_BILL);
         final List<DeductListResponse> responses = result.getRows();
 

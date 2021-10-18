@@ -20,4 +20,6 @@ public class ApplyVerdictRequest implements Serializable {
     @ApiModelProperty(value = "索赔单id")
     @NotBlank(message = "索赔单id不能为空")
     private List<Long> billDeductIdList;
+    @ApiModelProperty(value = "供应商编号",hidden = true)
+    private String sellerNo;
 }
