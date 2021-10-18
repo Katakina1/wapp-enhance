@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.claim.controller;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.modules.claim.dto.ApplyVerdictRequest;
+import com.xforceplus.wapp.modules.claim.dto.SettlementApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
@@ -34,7 +34,7 @@ public class ClaimController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/applyVerdict")
-    public Response applyVerdict(@RequestBody ApplyVerdictRequest request) {
+    public Response applyVerdict(@RequestBody SettlementApplyVerdictRequest request) {
         claimService.applyClaimVerdict(request.getSettlementId(), request.getBillDeductIdList());
         return Response.ok("成功", "");
     }
@@ -46,4 +46,14 @@ public class ClaimController {
         final PageResult<DeductListResponse> page = deductViewService.deductClaimByPage(request);
         return R.ok(page);
     }
+
+    @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @PostMapping(value = "/apply-verdict")
+    public Response claimApplyVerdict(@RequestBody SettlementApplyVerdictRequest request) {
+        claimService.applyClaimVerdictByBillDeductId( request.getBillDeductIdList());
+        return Response.ok("成功", "");
+    }
+
 }
