@@ -1,6 +1,6 @@
 package com.xforceplus.wapp.modules.system.controller;
 
-import com.xforceplus.wapp.modules.system.model.UserEntity;
+import com.xforceplus.wapp.modules.sys.entity.UserEntity;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
