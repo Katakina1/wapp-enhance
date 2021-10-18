@@ -61,13 +61,13 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
      * 不含税单价
      */
     @TableField("unit_price")
-    private Double unitPrice;
+    private BigDecimal unitPrice;
 
     /**
      * 数量
      */
     @TableField("quantity")
-    private Double quantity;
+    private BigDecimal quantity;
 
     /**
      * 单位
@@ -83,7 +83,7 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 不含税金额

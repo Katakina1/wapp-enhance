@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 public class R<T> {
 
     public static final String OK = "XFWAPP0000";
-    public static final String FAIL = "XFWAPP0000";
+    public static final String FAIL = "XFWAPP0001";
 
     @ApiModelProperty("错误码") private String code;
     @ApiModelProperty("错误信息") private String message;
