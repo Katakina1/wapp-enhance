@@ -694,5 +694,37 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
 
+    /**
+     * 确认
+     * 驳回  回到已申请 。从待审批页面消失
+     * @param request
+     * @return
+     */
+    public Response<String> operation(RedNotificationConfirmRejectRequest request) {
+        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        List<Long> list = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+        if (Objects.equals(OperationType.CONFIRM.getValue(),request.getOperationType())){
+           // 确认 //自动尝试一次 //撤销待审核
+            TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+            record.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
+            LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(TXfRedNotificationEntity::getId,list);
+            int update = getBaseMapper().update(record, updateWrapper);
 
+            RedNotificationApplyReverseRequest reverseRequest = new RedNotificationApplyReverseRequest();
+            request.getQueryModel().setApproveStatus(null);
+            reverseRequest.setQueryModel(request.getQueryModel());
+            rollback(reverseRequest);
+        }else {
+            // 驳回 ，修改状态到已申请
+            TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+            record.setApproveStatus(ApproveStatus.APPROVE_FAIL.getValue());
+            LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(TXfRedNotificationEntity::getId,list);
+            int update = getBaseMapper().update(record, updateWrapper);
+        }
+        return Response.ok("操作成功");
+
+
+    }
 }
