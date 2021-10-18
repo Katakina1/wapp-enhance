@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -40,8 +41,8 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Value("claimBill.remote.fileNameKeyWords")
     private String fileNameKeyWords;
 
-    // TODO 添加定时任务
     // TODO 添加异步处理
+    @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {
         List<String> fileNames = scanFiles(remotePath, fileNameKeyWords);

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.xforceplus.wapp.enums.BillJobLockStatusEnum.UNLOCKED;
-import static com.xforceplus.wapp.enums.BillJobTypeEnum.AGREEMENT_BILL_JOB;
 
 /**
  * @program: wapp-generator
@@ -29,11 +28,11 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
     private TXfBillJobDao tXfBillJobDao;
 
     @Override
-    public List<Map<String, Object>> obtainAvailableJobs() {
+    public List<Map<String, Object>> obtainAvailableJobs(int jobType) {
         return tXfBillJobDao.selectMaps(
                 new QueryWrapper<TXfBillJobEntity>()
                         .lambda()
-                        .eq(TXfBillJobEntity::getJobType, AGREEMENT_BILL_JOB.getJobType())
+                        .eq(TXfBillJobEntity::getJobType, jobType)
                         .ne(TXfBillJobEntity::getJobStatus, BillJobStatusEnum.DONE.getJobStatus())
                         .eq(TXfBillJobEntity::getJobLockStatus, UNLOCKED.getLockStatus())
         );
@@ -48,13 +47,13 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
     }
 
     @Override
-    public int lockJob(Integer id) {
-        return lockJob(id, true);
+    public int lockJob(Integer jobId) {
+        return lockJob(jobId, true);
     }
 
     @Override
-    public int unlockJob(Integer id) {
-        return lockJob(id, false);
+    public int unlockJob(Integer jobId) {
+        return lockJob(jobId, false);
     }
 
     /**

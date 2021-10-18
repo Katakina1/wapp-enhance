@@ -40,8 +40,9 @@ public class BackFillController  extends AbstractController {
     @PostMapping(value = "/commitVerify")
     public R comitVerify(@ApiParam(value = "BackFillCommitVerifyRequest" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
         logger.info("纸票发票回填--入参：{}", JSONObject.toJSONString(request));
-//        request.setOpUserId(getUserId());
-//        request.setOpUserName(getUserName());
+        request.setOpUserId(getUserId());
+        request.setOpUserName(getUserName());
+        request.setVendorId(getUser().getUsercode());
         return backFillService.commitVerify(request);
     }
 
@@ -111,6 +112,7 @@ public class BackFillController  extends AbstractController {
     @PostMapping("/match")
     public R match(@ApiParam(value = "BackFillMatchRequest" ,required=true )@RequestBody BackFillMatchRequest request) {
         logger.info("发票回填后匹配--入参：{}", JSONObject.toJSONString(request));
+        request.setVenderId(getUser().getUsercode());
         return backFillService.matchPreInvoice(request);
     }
 

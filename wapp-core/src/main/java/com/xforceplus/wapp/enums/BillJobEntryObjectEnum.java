@@ -4,7 +4,7 @@ import lombok.Getter;
 
 import java.util.Objects;
 
-public enum BillJobAcquisitionObjectEnum {
+public enum BillJobEntryObjectEnum {
 
     /**
      * 单据对象
@@ -22,12 +22,12 @@ public enum BillJobAcquisitionObjectEnum {
     @Getter
     private final int code;
 
-    BillJobAcquisitionObjectEnum(int billObjectCode) {
+    BillJobEntryObjectEnum(int billObjectCode) {
         this.code = billObjectCode;
     }
 
-    public static BillJobAcquisitionObjectEnum fromCode(int billObjectCode) {
-        for (BillJobAcquisitionObjectEnum value : BillJobAcquisitionObjectEnum.values()) {
+    public static BillJobEntryObjectEnum fromCode(int billObjectCode) {
+        for (BillJobEntryObjectEnum value : BillJobEntryObjectEnum.values()) {
             if (Objects.equals(value.getCode(), billObjectCode)) {
                 return value;
             }

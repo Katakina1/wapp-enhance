@@ -3,7 +3,6 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xforceplus.apollo.utils.business.InvoiceType;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.IsDealEnum;
@@ -14,13 +13,10 @@ import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,9 +38,9 @@ public class RecordInvoiceService {
     @Autowired
     private TDxInvoiceDao tDxInvoiceDao;
 
-    public PageResult<RecordInvoiceResponse> getPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus){
+    public PageResult<RecordInvoiceResponse> getPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
         Page<TDxRecordInvoiceEntity> page=new Page<>(pageNo,pageSize);
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus);
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
         BeanUtil.copyList(pageResult.getRecords(),response,RecordInvoiceResponse.class);
@@ -53,13 +49,13 @@ public class RecordInvoiceService {
     }
 
 
-    public List<TDxRecordInvoiceEntity> getListBySettlementNo(String settlementNo,String invoiceStatus){
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus);
+    public List<TDxRecordInvoiceEntity> getListBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
         return tDxRecordInvoiceDao.selectList(wrapper);
     }
 
-    public Integer getCountBySettlementNo(String settlementNo,String invoiceStatus){
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus);
+    public Integer getCountBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
         return tDxRecordInvoiceDao.selectCount(wrapper);
     }
 
@@ -93,9 +89,10 @@ public class RecordInvoiceService {
         }
     }
 
-    private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus){
+    private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus,String venderid){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO.getValue());
+        wrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO.getValue())
+        .eq(TDxRecordInvoiceEntity.VENDERID,venderid);
         if(StringUtils.isNotEmpty(settlementNo)){
             wrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,settlementNo);
         }

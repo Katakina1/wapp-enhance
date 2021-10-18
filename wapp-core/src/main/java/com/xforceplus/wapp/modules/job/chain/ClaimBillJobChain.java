@@ -14,9 +14,9 @@ public class ClaimBillJobChain extends ChainBase {
     public ClaimBillJobChain() {
         super();
         addCommand(new ClaimBillDownloadCommand());
-        addCommand(new ClaimBillSaveCommand());
         addCommand(new ClaimItemHyperSaveCommand());
         addCommand(new ClaimItemSamsSaveCommand());
+        addCommand(new ClaimBillSaveCommand());
         addCommand(new ClaimBillFilterCommand());
     }
 }

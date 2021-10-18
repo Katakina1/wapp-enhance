@@ -21,51 +21,48 @@ public class OriginAgreementBillDto extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
-    @ExcelProperty("Amount in doc. curr.")
-    private String amountInDocCurr;
+    @ExcelProperty("客户编码")
+    private String customerNumber;
 
-    @ExcelProperty("Text")
-    private String text;
+    @ExcelProperty("客户名称")
+    private String customerName;
 
-    @ExcelProperty("Clearing date")
-    private String clearingDate;
+    @ExcelProperty("金额(含税)")
+    private String amountWithTax;
 
-    @ExcelProperty("Cleared/open items symbol")
-    private String clearedOpenItemsSymbol;
-
-    @ExcelProperty("Document Number")
-    private String documentNumber;
-
-    @ExcelProperty("Document Date")
-    private String documentDate;
-
-    @ExcelProperty("Tax code")
-    private String taxCode;
-
-    @ExcelProperty("Reference key 2")
-    private String referenceKey2;
-
-    @ExcelProperty("Department")
-    private String department;
-
-    @ExcelProperty("Company Code")
-    private String companyCode;
-
-    @ExcelProperty("Posting Date")
-    private String postingDate;
-
-    @ExcelProperty("Document Type")
-    private String documentType;
-
-    @ExcelProperty("Reference")
-    private String reference;
-
-    @ExcelProperty("Document Header Text")
-    private String documentHeaderText;
-
-    @ExcelProperty("Reason code")
+    @ExcelProperty("协议类型编码")
     private String reasonCode;
 
-    @ExcelProperty("Account")
-    private String account;
+    @ExcelProperty("协议号")
+    private String reference;
+
+    @ExcelProperty("税码")
+    private String taxCode;
+
+    @ExcelProperty("扣款日期")
+    private String clearingDate;
+
+    @ExcelProperty("税率")
+    private String taxRate;
+
+    @ExcelProperty("供应商6D")
+    private String memo;
+
+    @ExcelProperty("协议类型")
+    private String referenceType;
+
+    @ExcelProperty("扣款公司编码")
+    private String companyCode;
+
+    @ExcelProperty("凭证编号")
+    private String documentNumber;
+
+    @ExcelProperty("凭证类型")
+    private String documentType;
+
+    @ExcelProperty("入账日期")
+    private String postingDate;
+
+    @ExcelProperty("税额")
+    private String taxAmount;
 }

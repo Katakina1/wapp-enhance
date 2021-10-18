@@ -30,7 +30,20 @@ public class AgreementBillData extends  DeductBillBaseData {
      */
     private String memo;
     /**
+     * 税码
+     */
+    private String taxCode;
+    /**
      * 协议号
      */
     private String reference;
+    /**
+     * 协议类型
+     */
+    private String referenceType;
+    /**
+     * 入账日期
+     */
+    private String postingDate;
+
 }
