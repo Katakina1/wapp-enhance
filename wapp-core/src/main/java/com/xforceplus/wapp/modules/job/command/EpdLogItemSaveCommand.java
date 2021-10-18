@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 
 /**
  * @program: wapp-generator
@@ -49,8 +50,7 @@ public class EpdLogItemSaveCommand implements Command {
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -59,6 +59,7 @@ public class EpdLogItemSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -85,7 +86,7 @@ public class EpdLogItemSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.equals(BILL_ITEM, jobAcquisitionObject);
+        return Objects.isNull(jobAcquisitionObject) || Objects.equals(ITEM.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -121,6 +122,11 @@ public class EpdLogItemSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
+        // 获取当前进度
+        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+        }
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
@@ -133,7 +139,8 @@ public class EpdLogItemSaveCommand implements Command {
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
-            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

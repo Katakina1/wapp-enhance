@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-18
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -97,6 +97,12 @@ public class TXfBillJobEntity extends BaseEntity {
     @TableField("job_lock_status")
     private Boolean jobLockStatus;
 
+    /**
+     * 原始数据处理对象 依次为 2-单据明细（EPD单log明细或索赔单Hyper明细） 3-单据明细（索赔单Sams明细）
+     */
+    @TableField("job_entry_object")
+    private Integer jobEntryObject;
+
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
@@ -124,6 +130,8 @@ public class TXfBillJobEntity extends BaseEntity {
     public static final String UPDATE_TIME = "update_time";
 
     public static final String JOB_LOCK_STATUS = "job_lock_status";
+
+    public static final String JOB_ENTRY_OBJECT = "job_entry_object";
 
     public static final String ID = "id";
 
