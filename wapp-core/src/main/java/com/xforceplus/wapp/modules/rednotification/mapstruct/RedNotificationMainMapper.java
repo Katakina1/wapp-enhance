@@ -2,6 +2,9 @@ package com.xforceplus.wapp.modules.rednotification.mapstruct;
 
 
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ExportInfo;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.repository.entity.*;
 import org.mapstruct.*;
 import com.xforceplus.wapp.modules.rednotification.model.*;
@@ -29,4 +32,14 @@ public interface RedNotificationMainMapper {
     List<RedNotificationItem> entityToItemInfoList(List<TXfRedNotificationDetailEntity> redNotificationEntityList);
 
 
+    ExportInfo mainEntityToExportInfo(TXfRedNotificationEntity apply);
+
+    List<ExportItemInfo> detailEntityToExportInfoList(List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities);
+
+    RedNotificationMain importInfoToMainEntity(ImportInfo importInfo);
+
+    List<RedNotificationItem> importInfoListToItemEntityList(List<ImportInfo> importInfoList);
+
+    @Mapping(target = "taxRate", expression = "java(RedNotificationFactory.handleTaxRate(importInfo.getTaxRate()))")
+    RedNotificationItem importInfoToRedNotificationItem(ImportInfo importInfo);
 }

@@ -1,6 +1,10 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.BaseRowModel;
+import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -10,9 +14,13 @@ import com.google.common.collect.Lists;
 import com.xforceplus.phoenix.split.model.BaseResponse;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.rednotification.listener.ExcelListener;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
 import com.xforceplus.wapp.modules.rednotification.model.*;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ExportInfo;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
+import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
 import com.xforceplus.wapp.repository.entity.*;
@@ -22,7 +30,6 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.sl.usermodel.Sheet;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,8 +37,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -425,13 +431,20 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         return revokeRequest;
     }
 
-    public void importNotification(MultipartFile file) {
-//        InputStream inputStream = new BufferedInputStream(file.getInputStream());
-//        //实例化实现了AnalysisEventListener接口的类
-//        ExcelListener excelListener = new ExcelListener(userDao);
-//        ExcelReader reader = new ExcelReader(inputStream,null,excelListener);
-//        //读取信息
-//        reader.read(new Sheet(1,1,User.class));
+    public Response importNotification(MultipartFile file) {
+        InputStream inputStream = null;
+        try {
+            inputStream = new BufferedInputStream(file.getInputStream());
+        } catch (IOException e) {
+            log.error("获取导入文件失败",e);
+            return Response.failed("获取导入文件失败");
+        }
+        //实例化实现了AnalysisEventListener接口的类
+        ExcelListener excelListener = new ExcelListener(this,redNotificationMainMapper);
+        ExcelReader reader = new ExcelReader(inputStream,null,excelListener);
+        //读取信息
+        reader.read(new Sheet(1,1, ImportInfo.class));
+        return Response.ok("导入成功");
     }
 
     public Response downloadPdf(RedNotificationExportPdfRequest request) {
@@ -575,6 +588,93 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         request.setSerialNo(String.valueOf(iDSequence.nextId()));
         return request;
     }
+
+    /**
+     * 导出excl
+     * @param request
+     * @return
+     */
+    public Response export(RedNotificationExportPdfRequest request) {
+
+        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+        //获取明细
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, applyList);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
+//        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+
+        List<Long> redNoIds = new ArrayList<>();
+        List<ExportInfo> exportInfos = filterData.stream().map(apply -> {
+            redNoIds.add(apply.getId());
+            ExportInfo dto = redNotificationMainMapper.mainEntityToExportInfo(apply);
+            ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApplyingStatus()).orElse(ApproveStatus.OTHERS);
+            dto.setApplyStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
+
+            if (StringUtils.isNotBlank(apply.getInvoiceType())){
+                dto.setInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getInvoiceType()).get().getDescription());
+            }
+            if (StringUtils.isNotBlank(apply.getOriginInvoiceType())){
+                dto.setOriginInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getOriginInvoiceType()).get().getDescription());
+            }
+            return dto;
+        }).collect(Collectors.toList());
+
+        List<ExportItemInfo> itemInfos = redNotificationMainMapper.detailEntityToExportInfoList(tXfRedNotificationDetailEntities);
+
+        String s = writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo());
+
+        return Response.ok("导出成功,请在消息中心查看",s);
+    }
+
+
+
+    private String writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2) {
+
+        String fileName = "红字信息表";
+        String sheetName = "红字信息主信息";
+        String sheetName2 = "红字信息明细";
+
+        String businessId = String.valueOf(System.currentTimeMillis());
+        String filePath = "file/" + "walmart" + "/" + DateUtils.curDateMselStr17() + "/"  + fileName + "导出" + businessId + ".xlsx";
+        ;
+        File localFile = new File(filePath);
+        if (!localFile.getParentFile().exists()) {
+            localFile.getParentFile().mkdirs();
+        }
+
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(localFile);
+        } catch (FileNotFoundException fnfException) {
+            fnfException.printStackTrace();
+            log.error("new FileOutputStream(localFile) err!");
+        }
+        ExcelWriter writer = new ExcelWriter(out, ExcelTypeEnum.XLSX, true);
+
+        Sheet sheet = new Sheet(1, 0, object.getClass());
+
+        sheet.setSheetName(sheetName);
+
+        writer.write(list, sheet);
+
+        Sheet sheet2 = new Sheet(2, 0, object2.getClass());
+        sheet2.setSheetName(sheetName2);
+
+        writer.write(list2, sheet2);
+
+        writer.finish();
+
+        try {
+            out.close();
+        } catch (IOException ioException) {
+            log.info(" out.close() err!");
+        }
+
+        return DownloadUrlUtils.putFile(filePath);
+
+    }
+
 
 
 }
