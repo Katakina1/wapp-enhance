@@ -24,19 +24,27 @@ public class RecordInvoiceController extends AbstractController {
     @Autowired
     RecordInvoiceService recordInvoiceService;
 
-    @ApiOperation(value = "底账发票列表", notes = "", response = Response.class, authorizations = {
-            @Authorization(value = "X-Access-Token")},tags = {"recordInvoice"})
+    @ApiOperation(value = "结算单详情发票列表", notes = "结算单详情发票列表", response = Response.class,tags = {"recordInvoice"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @GetMapping(value = "/list")
     public R list(@ApiParam(value = "结算单号", required = true) @RequestParam String settlementNo,
                   @ApiParam(value = "发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常 5-蓝冲", required = true) @RequestParam String invoiceStatus){
-        logger.info("底账发票列表--入参：{}", settlementNo +"--"+invoiceStatus);
-        return R.ok(recordInvoiceService.getInvocieBySettlementNo(settlementNo, invoiceStatus));
+        logger.info("结算单详情发票列表--入参：{}", settlementNo +"--"+invoiceStatus);
+        return R.ok(recordInvoiceService.getListBySettlementNo(settlementNo, invoiceStatus));
     }
 
-    @ApiOperation(value = "红票删除", notes = "", response = Response.class, authorizations = {
-            @Authorization(value = "X-Access-Token")},tags = {"recordInvoice"})
+    @ApiOperation(value = "结算单详情发票列表tab", notes = "结算单详情发票列表tab", response = Response.class,tags = {"recordInvoice"})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @GetMapping(value = "/count")
+    public R count(@ApiParam(value = "结算单号", required = true) @RequestParam String settlementNo,
+                    @ApiParam(value = "发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常 5-蓝冲", required = true) @RequestParam String invoiceStatus){
+        logger.info("结算单详情发票列表tab--入参：{}", settlementNo +"--"+invoiceStatus);
+        return R.ok(recordInvoiceService.getCountBySettlementNo(settlementNo, invoiceStatus));
+    }
+
+    @ApiOperation(value = "红票删除", notes = "红票删除", response = Response.class,tags = {"recordInvoice"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @DeleteMapping(value = "/delete/{id}")
@@ -44,9 +52,5 @@ public class RecordInvoiceController extends AbstractController {
         logger.info("底账发票列表--入参：{}", id);
         return R.ok(recordInvoiceService.deleteInvoice(id));
     }
-
-
-
-
 
 }
