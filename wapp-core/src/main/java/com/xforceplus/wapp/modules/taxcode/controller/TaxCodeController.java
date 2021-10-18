@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.taxcode.controller;
 import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.modules.taxcode.dto.IdsDto;
+import com.xforceplus.wapp.dto.IdsDto;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.entity.TaxCodeEntity;

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
+ * invoiceOrigin
  * 红字信息审批状态  操作类型  1 申请 2 同步 3 撤销 4 删除
  * 5.撤销待审批  单独页面审批
  * approve_status

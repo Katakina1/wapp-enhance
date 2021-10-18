@@ -6,7 +6,7 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.DefaultSettingEnum;
-import com.xforceplus.wapp.enums.OverdueTypeEnum;
+import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.modules.overdue.converters.OverdueConverter;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import com.xforceplus.wapp.modules.overdue.models.Overdue;
@@ -25,9 +25,6 @@ import lombok.val;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.validation.constraints.Min;
-import java.util.Optional;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -57,7 +54,7 @@ public class OverdueController {
                                              @ApiParam("供应商编号") @RequestParam(required = false) String sellerNo,
                                              @ApiParam("供应商税号") @RequestParam(required = false) String sellerTaxNo) {
         long start = System.currentTimeMillis();
-        R<PageResult<Overdue>> r = ValueEnum.getEnumByValue(OverdueTypeEnum.class, type).map(it -> {
+        R<PageResult<Overdue>> r = ValueEnum.getEnumByValue(ServiceTypeEnum.class, type).map(it -> {
             val page = overdueService.page(current, size,
                     it, sellerName, sellerNo, sellerTaxNo);
             return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
@@ -111,7 +108,7 @@ public class OverdueController {
     @PutMapping("/overdue/{type}")
     public R<Integer> exportOverdue(@ApiParam(value = "超期配置类型", required = true) @PathVariable Integer type,
                                     @RequestParam("file") MultipartFile file) {
-        OverdueTypeEnum typeEnum = ValueEnum.getEnumByValue(OverdueTypeEnum.class, type).orElseThrow(() -> new RuntimeException("超期配置类型不正确"));
+        ServiceTypeEnum typeEnum = ValueEnum.getEnumByValue(ServiceTypeEnum.class, type).orElseThrow(() -> new RuntimeException("超期配置类型不正确"));
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
         } else if (file.isEmpty()) {

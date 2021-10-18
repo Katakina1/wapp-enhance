@@ -29,15 +29,15 @@ public class TaxRateConfig {
     private Map<BigDecimal, BigDecimal> taxRateMap = Maps.newHashMap();
 
     public BigDecimal getNextTaxRate(BigDecimal taxRate) {
-        return taxRateMap.get(taxRate);
+        return taxRateMap.get(BigDecimal.valueOf(taxRate.doubleValue()));
     }
 
-    //@PostConstruct
+    @PostConstruct
     public void init() {
         if (StringUtils.isEmpty(taxRateStr)) {
-            taxRateStr = "13,11,9,6,5,3,1,0";
+            taxRateStr = "0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00";
         }
-        List<BigDecimal> res = Arrays.asList(taxRateStr.split(",")).stream().map(x -> new BigDecimal(x)).sorted().collect(Collectors.toList());
+        List<BigDecimal> res = Arrays.asList(taxRateStr.split(",")).stream().map(x -> new BigDecimal(x)).unordered().collect(Collectors.toList());
         for (int i = 0; i < res.size(); i++) {
             if (i == res.size() - 1) {
                 taxRateMap.put(res.get(i), null);

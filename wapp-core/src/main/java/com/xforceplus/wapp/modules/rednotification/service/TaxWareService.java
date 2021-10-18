@@ -10,6 +10,7 @@ import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
+import com.xforceplus.wapp.modules.rednotification.util.HttpUtils;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationLogEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +53,10 @@ public class TaxWareService {
     public String tenantId;
     @Value("${wapp.integration.tenant-name:Walmart}")
     public String tenantName;
-
+    @Value("${wapp.integration.authentication}")
+    public String authentication;
+    @Value("${wapp.integration.host.http}")
+    public String host;
 
     private final Map<String, String> defaultHeader;
 
@@ -61,11 +65,12 @@ public class TaxWareService {
     private static final String SUCCESSFUL_PROCESS_FLAG = "1";
 
 
-    public TaxWareService() {
+    public TaxWareService(@Value("${wapp.integration.tenant-id:1203939049971830784}")  String tenantId) {
         defaultHeader =  new HashMap<>();
         defaultHeader.put("rpcType", "http");
 //        defaultHeader.put("x-app-client", "janus");
         defaultHeader.put("tenant-id", tenantId);
+        defaultHeader.put("tenantId", tenantId);
         defaultHeader.put("tenantCode", tenantId);
         defaultHeader.put("accept-encoding","");
     }
@@ -105,10 +110,13 @@ public class TaxWareService {
     public TaxWareResponse rollback(RevokeRequest revokeRequest) {
         try {
             String reqJson = gson.toJson(revokeRequest);
-            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
+//            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
+            HttpUtils.pack(defaultHeader,rollbackAction, this.authentication) ;
+            final String post = HttpUtils.doPutHttpRequest(host,defaultHeader,reqJson) ;
+            final String post2 = HttpUtils.doPutJsonSkipSsl(host,defaultHeader,reqJson) ;
             log.info("撤销结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("撤销发起失败:" + e.getMessage(), e);
             throw new RRException("撤销发起失败:" + e.getMessage());
         }

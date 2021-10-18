@@ -75,4 +75,16 @@ public class LocalFileSystemManager {
         File file = new File(path, fileName);
         return file.exists();
     }
+
+    /**
+     * 删除文件
+     *
+     * @param path
+     * @param fileName
+     * @return
+     */
+    public static boolean deleteFile(String path, String fileName) {
+        File file = new File(path, fileName);
+        return file.delete();
+    }
 }

@@ -101,7 +101,7 @@ exec sp_addextendedproperty 'MS_Description', '单号','SCHEMA', 'dbo', 'TABLE',
 go
 exec sp_addextendedproperty 'MS_Description', '红字信息状态0 删除 1 正常','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'status';
 go
-exec sp_addextendedproperty 'MS_Description', '红字信息来源1.索赔单，2协议单，3.EPD','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_origin';
+exec sp_addextendedproperty 'MS_Description', '红字信息来源1.索赔单，2协议单，3.EPD ,4 导入','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_origin';
 
 go
 exec sp_addextendedproperty 'MS_Description', '公司编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'company_code';

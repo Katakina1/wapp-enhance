@@ -38,13 +38,30 @@ public class AgreementBillDownloadCommand implements Command {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus)) {
-            downloadFile(remotePath, fileName, localPath);
-            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DOWNLOAD_COMPLETE.getJobStatus());
-            saveContext(context);
+            try {
+                process(remotePath, fileName, localPath, context);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
+            } finally {
+                saveContext(context);
+            }
         } else {
             log.info("跳过文件下载步骤，当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
+    }
+
+    /**
+     * @param remotePath
+     * @param fileName
+     * @param localPath
+     * @param context
+     * @throws Exception
+     */
+    private void process(String remotePath, String fileName, String localPath, Context context) throws Exception {
+        downloadFile(remotePath, fileName, localPath);
+        context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DOWNLOAD_COMPLETE.getJobStatus());
     }
 
     /**

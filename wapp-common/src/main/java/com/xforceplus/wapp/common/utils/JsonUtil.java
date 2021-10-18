@@ -2,6 +2,8 @@ package com.xforceplus.wapp.common.utils;
 
 import com.alibaba.fastjson.JSON;
 
+import java.util.List;
+
 /**
  * @author malong@xforceplus.com
  * @program wapp-enhance
@@ -11,5 +13,9 @@ import com.alibaba.fastjson.JSON;
 public class JsonUtil {
     public static <T> T fromJson(String json ,Class<T> clz){
         return JSON.parseObject(json,clz);
+    }
+
+    public static <T> List<T> fromJsonList(String json , Class<T> clz){
+        return JSON.parseArray(json,clz);
     }
 }

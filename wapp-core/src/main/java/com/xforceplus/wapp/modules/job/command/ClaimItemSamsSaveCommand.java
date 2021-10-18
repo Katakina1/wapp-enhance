@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM_SAMS;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM_SAMS;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 
 /**
  * @program: wapp-generator
@@ -49,8 +50,7 @@ public class ClaimItemSamsSaveCommand implements Command {
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -85,7 +85,7 @@ public class ClaimItemSamsSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.equals(BILL_ITEM_SAMS, jobAcquisitionObject);
+        return Objects.equals(ITEM_SAMS.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -133,9 +133,12 @@ public class ClaimItemSamsSaveCommand implements Command {
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
-            context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            context.put(TXfBillJobEntity.REMARK, e.getMessage());
         } finally {
             // 正常处理结束，记录游标
             // 处理出现异常，记录游标

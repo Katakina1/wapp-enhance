@@ -6,7 +6,6 @@ import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
-import com.xforceplus.wapp.modules.job.listener.OriginEpdLogItemDataListener;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -22,8 +21,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM_SAMS;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM_SAMS;
 
 /**
  * @program: wapp-generator
@@ -51,8 +50,7 @@ public class ClaimItemHyperSaveCommand implements Command {
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -61,6 +59,7 @@ public class ClaimItemHyperSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -87,7 +86,7 @@ public class ClaimItemHyperSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.equals(BILL_ITEM, jobAcquisitionObject);
+        return Objects.isNull(jobAcquisitionObject) || Objects.equals(ITEM.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -123,6 +122,10 @@ public class ClaimItemHyperSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
+        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+        }
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
@@ -135,8 +138,9 @@ public class ClaimItemHyperSaveCommand implements Command {
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM_SAMS.getBillObjectCode());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM_SAMS.getCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

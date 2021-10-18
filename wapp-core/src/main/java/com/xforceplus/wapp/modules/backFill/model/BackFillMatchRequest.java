@@ -24,6 +24,10 @@ public class BackFillMatchRequest {
     @ApiModelProperty("发票颜色  0红票 1蓝票")
     private String invoiceColer = null;
 
+    @JsonProperty("venderId")
+    @ApiModelProperty("供应商号")
+    private String venderId = null;
+
     @JsonProperty("verifyBeanList")
     @ApiModelProperty("回填发票列表")
     private List<BackFillVerifyBean> verifyBeanList = new ArrayList<BackFillVerifyBean>();
