@@ -12,6 +12,7 @@ import org.apache.commons.chain.Chain;
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -34,8 +35,8 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
     @Autowired
     private DeductService deductService;
 
-    // TODO 添加定时任务
     // TODO 添加异步处理
+    @Scheduled(cron = "* * 0 * * ?")
     @Override
     public void execute() {
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(CLAIM_BILL_JOB.getJobType());
@@ -45,9 +46,12 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
                     Integer jobId = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));
                     Context context = new ContextBase(availableJob);
                     try {
-                        billJobService.lockJob(jobId);
-                        if (chain.execute(context)) {
-                            executePostAction(context);
+                        if (billJobService.lockJob(jobId) == 1) {
+                            if (chain.execute(context)) {
+                                executePostAction(context);
+                            }
+                        } else {
+                            log.warn("索赔单job任务锁定失败，放弃执行，jobId={}", jobId);
                         }
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
