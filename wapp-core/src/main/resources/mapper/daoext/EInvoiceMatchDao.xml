@@ -312,8 +312,8 @@
         create_date,
         invoice_status,
         tp_status,
-        company_code
-
+        company_code,
+        is_del
         ) VALUES (
         #{invoiceCode},
         #{invoiceNo},
@@ -338,8 +338,8 @@
         getdate(),
         #{invoiceStatus},
         '0',
-        #{companyCode}
-
+        #{companyCode},
+        '0'
         )
     </insert>
 
@@ -370,7 +370,8 @@
         create_date,
         tp_status,
         company_code,
-        invoice_status
+        invoice_status,
+        is_del
         ) VALUES (
         #{invoiceCode},
         #{invoiceNo},
@@ -396,7 +397,8 @@
         getdate(),
         '0',
         #{companyCode},
-        #{invoiceStatus}
+        #{invoiceStatus},
+        '0'
         )
     </insert>
 </mapper>
