@@ -1,12 +1,13 @@
 package com.xforceplus.wapp.converters;
 
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
+import com.xforceplus.wapp.modules.job.command.EpdBillFilterCommand;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(imports = EpdBillFilterCommand.class)
 public interface TXfOriginAgreementBillEntityConvertor {
 
     TXfOriginAgreementBillEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginAgreementBillEntityConvertor.class);
@@ -28,7 +29,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 扣款日期
     @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     // 税率
-    @Mapping(source = "taxRate", target = "taxRate")
+    @Mapping(source = "taxRate", target = "taxRate", defaultValue = "java(EpdBillFilterCommand.TAX_CODE_TRANSLATOR.get(taxCode))")
     // 供应商6D
     @Mapping(source = "memo", target = "memo")
     // 协议类型

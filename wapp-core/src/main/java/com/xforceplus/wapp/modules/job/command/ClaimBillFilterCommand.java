@@ -51,9 +51,9 @@ public class ClaimBillFilterCommand implements Command {
     @Autowired
     private DeductService deductService;
 
-    private final static String NEGATIVE_SYMBOL = "-";
-    private final static String HYPER = "Hyper";
-    private final static String SAMS = "sams";
+    private static final String NEGATIVE_SYMBOL = "-";
+    private static final String HYPER = "Hyper";
+    private static final String SAMS = "sams";
 
     /**
      * 一次从数据库中拉取的最大行数

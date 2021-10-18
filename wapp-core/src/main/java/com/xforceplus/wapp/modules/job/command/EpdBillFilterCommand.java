@@ -49,7 +49,8 @@ public class EpdBillFilterCommand implements Command {
     @Autowired
     private DeductService deductService;
 
-    private final static Map<String, String> TAX_CODE_TRANSLATOR =
+    // 使用在TXfOriginAgreementBillEntityConvertor 和 TXfOriginEpdBillEntityConvertor
+    private static final Map<String, String> TAX_CODE_TRANSLATOR =
             ImmutableMap
                     .<String, String>builder()
                     .put("TG", "3%")
