@@ -62,6 +62,7 @@ public class ClaimBillFilterCommand implements Command {
                 return true;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -133,9 +134,10 @@ public class ClaimBillFilterCommand implements Command {
     private void filter(List<TXfOriginClaimBillEntity> list) {
         List<DeductBillBaseData> newList = list
                 .stream()
+                // TODO
                 // .filter(v -> !speacialCompanyService.count("0", v.getMemo()))
                 .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, null, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        deductService.receiveData(newList, null, XFDeductionBusinessTypeEnum.CLAIM_BILL);
     }
 }

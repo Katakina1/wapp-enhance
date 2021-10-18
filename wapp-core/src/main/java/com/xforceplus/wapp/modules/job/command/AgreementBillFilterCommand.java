@@ -59,6 +59,7 @@ public class AgreementBillFilterCommand implements Command {
                 return true;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }

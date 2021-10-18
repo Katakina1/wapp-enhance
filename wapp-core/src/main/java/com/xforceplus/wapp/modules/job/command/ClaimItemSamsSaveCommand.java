@@ -136,8 +136,10 @@ public class ClaimItemSamsSaveCommand implements Command {
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            context.put(TXfBillJobEntity.REMARK, e.getMessage());
         } finally {
             // 正常处理结束，记录游标
             // 处理出现异常，记录游标

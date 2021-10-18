@@ -60,6 +60,7 @@ public class ClaimItemHyperSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -140,6 +141,7 @@ public class ClaimItemHyperSaveCommand implements Command {
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_ITEM_SAMS.getBillObjectCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

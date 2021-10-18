@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
+import static com.xforceplus.wapp.util.LocalFileSystemManager.deleteFile;
 
 /**
  * @program: wapp-generator
@@ -144,10 +145,12 @@ public class AgreementBillSaveCommand implements Command {
             // 正常处理结束，清空游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }
 

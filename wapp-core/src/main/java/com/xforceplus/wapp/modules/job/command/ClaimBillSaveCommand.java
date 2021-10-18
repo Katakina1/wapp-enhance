@@ -59,6 +59,7 @@ public class ClaimBillSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -137,6 +138,7 @@ public class ClaimBillSaveCommand implements Command {
             // 正常处理结束，清空游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标

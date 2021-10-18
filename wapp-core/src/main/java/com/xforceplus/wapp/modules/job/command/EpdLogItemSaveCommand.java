@@ -60,6 +60,7 @@ public class EpdLogItemSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
