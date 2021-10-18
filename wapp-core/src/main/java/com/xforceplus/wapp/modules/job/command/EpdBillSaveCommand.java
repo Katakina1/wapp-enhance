@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 
 /**
  * @program: wapp-generator
@@ -49,8 +49,7 @@ public class EpdBillSaveCommand implements Command {
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -85,7 +84,7 @@ public class EpdBillSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.equals(BILL_OBJECT, jobAcquisitionObject);
+        return Objects.equals(BILL.getCode(), jobAcquisitionObject);
     }
 
     /**

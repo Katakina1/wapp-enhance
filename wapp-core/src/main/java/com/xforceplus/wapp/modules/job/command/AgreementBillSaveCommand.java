@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_ITEM;
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
-import static com.xforceplus.wapp.util.LocalFileSystemManager.deleteFile;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 
 /**
  * @program: wapp-generator
@@ -51,8 +49,7 @@ public class AgreementBillSaveCommand implements Command {
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -87,7 +84,7 @@ public class AgreementBillSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL_OBJECT, jobAcquisitionObject);
+        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -124,10 +121,8 @@ public class AgreementBillSaveCommand implements Command {
      */
     private void process(String localPath, String fileName, Context context) {
         // 获取当前进度
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (Objects.isNull(jobAcquisitionObject)) {
-            jobAcquisitionObject = BILL_OBJECT;
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL_OBJECT);
+        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
         int cursor = Optional
