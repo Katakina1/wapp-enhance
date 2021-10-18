@@ -6,18 +6,24 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * 索赔单业务逻辑
  */
 @Slf4j
-@RestController("/company")
+@RestController
 @Api(tags = "抬头信息管理")
+@RequestMapping(EnhanceApi.BASE_PATH+"/company")
 public class CompanyController {
 
     @Autowired
@@ -41,5 +47,12 @@ public class CompanyController {
         return R.ok();
     }
 
+
+    @ApiOperation("购方机构列表")
+    @GetMapping("purchasers")
+    public R purchaserOrg(){
+        final List<TAcOrgEntity> purchaserOrgs = companyService.getPurchaserOrgs();
+        return R.ok(Collections.singletonMap("orgs",purchaserOrgs));
+    }
 
 }

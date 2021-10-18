@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.company.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
@@ -91,6 +92,16 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
             wrapper.eq(TAcOrgEntity.ORG_TYPE, orgType);
         }
         return this.getOne(wrapper);
+    }
+
+
+    public List<TAcOrgEntity> getPurchaserOrgs(){
+        LambdaQueryWrapper<TAcOrgEntity> wrapper=new LambdaQueryWrapper<>();
+        wrapper.select(TAcOrgEntity::getOrgNme,TAcOrgEntity::getTaxNo,TAcOrgEntity::getOrgCode);
+        wrapper.eq(TAcOrgEntity::getOrgType,5);
+
+        return this.list(wrapper);
+
     }
 
 }

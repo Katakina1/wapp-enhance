@@ -6,6 +6,8 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
@@ -48,5 +50,12 @@ public class AgreementController {
         request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(page);
+    }
+
+    @GetMapping("invoice")
+    public R invoiceList(InvoiceMatchListRequest request) {
+
+        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
+        return R.ok();
     }
 }
