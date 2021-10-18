@@ -41,8 +41,8 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         this.overdueConverter = overdueConverter;
     }
 
-    public Tuple2<List<Overdue>, Page<OverdueEntity>> page(long current, long size,
-                                                           OverdueTypeEnum typeEnum, String sellerName, String sellerNo, String sellerTaxNo) {
+    public Tuple2<List<Overdue>, Page<?>> page(long current, long size,
+                                               OverdueTypeEnum typeEnum, String sellerName, String sellerNo, String sellerTaxNo) {
         log.info("超期配置分页查询,入参：{}，{}，{}，{}", current, size, sellerName, sellerTaxNo);
         LambdaQueryChainWrapper<OverdueEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag)

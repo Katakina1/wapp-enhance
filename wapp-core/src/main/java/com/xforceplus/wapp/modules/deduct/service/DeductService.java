@@ -162,7 +162,7 @@ public class DeductService  {
         /**
          * 查询未匹配明细的索赔单
          */
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(startDate,endDate, billStartIndex, limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getType(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(startDate,endDate, billStartIndex, limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
                 String sellerNo = tXfBillDeductEntity.getSellerNo();
@@ -216,7 +216,7 @@ public class DeductService  {
              * 执行下一批匹配
              */
             billStartIndex = (billStartIndex + 1) * batchAcount;
-            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(startDate,endDate, billStartIndex, limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getType(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(startDate,endDate, billStartIndex, limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         }
         return true;
     }
@@ -324,7 +324,7 @@ public class DeductService  {
          */
         Date referenceDate = DateUtils.addDate(DateUtils.getNow(), expireScale);
         //查询大于expireDate， 同一购销对，同一税率 总不含税金额为正的单据
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitablePositiveBill(referenceDate, deductionEnum.getType(), tXfBillDeductStatusEnum.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitablePositiveBill(referenceDate, deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode());
         if (CollectionUtils.isNotEmpty(manualChoice)) {
             tXfBillDeductEntities.addAll(manualChoice);
         }
@@ -332,7 +332,7 @@ public class DeductService  {
             /**
              * 查询 同一购销对，同一税率 下所有的负数单据
              */
-            TXfBillDeductEntity negativeBill = tXfBillDeductExtDao.querySpecialNegativeBill(tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(), deductionEnum.getType(), tXfBillDeductStatusEnum.getCode());
+            TXfBillDeductEntity negativeBill = tXfBillDeductExtDao.querySpecialNegativeBill(tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(), deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode());
             if (negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) > 0) {
                 try {
                     batchUpdateMergeBill(deductionEnum,tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
@@ -455,7 +455,7 @@ public class DeductService  {
         /**
          * 查询符合条件的索赔单，购销一致维度，状态为待生成结算单
          */
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableClaimBill(XFDeductionBusinessTypeEnum.CLAIM_BILL.getType(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableClaimBill(XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
          /**
          * 查询索赔单明细，组装结算单明细信息
          */

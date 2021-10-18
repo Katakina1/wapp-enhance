@@ -9,8 +9,8 @@ import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.converters.InvoiceConverter;
 import com.xforceplus.wapp.converters.InvoiceDetailsConverter;
 import com.xforceplus.wapp.modules.rednotification.service.TaxWareService;
-import com.xforceplus.wapp.service.InvoiceDetailsServiceImpl;
-import com.xforceplus.wapp.service.InvoiceServiceImpl;
+import com.xforceplus.wapp.service.RecordInvoiceDetailsServiceImpl;
+import com.xforceplus.wapp.service.RecordInvoiceServiceImpl;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -29,12 +29,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TaxWareInvoiceHandler implements IntegrationResultHandler {
     private final TaxWareService taxWareService;
-    private final InvoiceServiceImpl invoiceService;
-    private final InvoiceDetailsServiceImpl invoiceDetailsService;
+    private final RecordInvoiceServiceImpl invoiceService;
+    private final RecordInvoiceDetailsServiceImpl invoiceDetailsService;
     private final InvoiceConverter invoiceConverter;
     private final InvoiceDetailsConverter invoiceDetailsConverter;
 
-    public TaxWareInvoiceHandler(TaxWareService taxWareService, InvoiceServiceImpl invoiceService, InvoiceDetailsServiceImpl invoiceDetailsService, InvoiceConverter invoiceConverter, InvoiceDetailsConverter invoiceDetailsConverter) {
+    public TaxWareInvoiceHandler(TaxWareService taxWareService, RecordInvoiceServiceImpl invoiceService, RecordInvoiceDetailsServiceImpl invoiceDetailsService, InvoiceConverter invoiceConverter, InvoiceDetailsConverter invoiceDetailsConverter) {
         this.taxWareService = taxWareService;
         this.invoiceService = invoiceService;
         this.invoiceDetailsService = invoiceDetailsService;
@@ -44,8 +44,7 @@ public class TaxWareInvoiceHandler implements IntegrationResultHandler {
 
     @Override
     public String requestName() {
-        //TODO 队列名
-        return "invoice_item";
+        return "purchaserInvoiceSync";
     }
 
     @Override
@@ -53,15 +52,15 @@ public class TaxWareInvoiceHandler implements IntegrationResultHandler {
     public boolean handle(SealedMessage sealedMessage) {
         log.info("payload obj:{},header:{}", sealedMessage.getPayload().getObj(), sealedMessage.getHeader());
         List<TaxWareInvoiceVO> vo = JsonUtil.fromJsonList(sealedMessage.getPayload().getObj().toString(), TaxWareInvoiceVO.class);
-        for (List<TaxWareInvoiceVO> it : Lists.partition(vo, 10)) {
-            val collect = it.parallelStream()
-                    .map(taxWareService::getInvoiceAllElements).filter(Optional::isPresent)
-                    .map(Optional::get).collect(Collectors.toList());
-            List<TaxWareInvoice> invoiceList = collect.parallelStream().map(Tuple2::_1).collect(Collectors.toList());
-            List<TaxWareInvoiceDetail> detailList = collect.parallelStream().map(Tuple2::_2).flatMap(List::stream).collect(Collectors.toList());
-            invoiceService.saveBatch(invoiceConverter.map(invoiceList));
-            invoiceDetailsService.saveBatch(invoiceDetailsConverter.map(detailList), 2000);
-        }
+//        for (List<TaxWareInvoiceVO> it : Lists.partition(vo, 10)) {
+//            val collect = it.parallelStream()
+//                    .map(taxWareService::getInvoiceAllElements).filter(Optional::isPresent)
+//                    .map(Optional::get).collect(Collectors.toList());
+//            List<TaxWareInvoice> invoiceList = collect.parallelStream().map(Tuple2::_1).collect(Collectors.toList());
+//            List<TaxWareInvoiceDetail> detailList = collect.parallelStream().map(Tuple2::_2).flatMap(List::stream).collect(Collectors.toList());
+//        }
+//        invoiceService.saveBatch(invoiceConverter.map(invoiceList));
+//        invoiceDetailsService.saveBatch(invoiceDetailsConverter.map(detailList), 2000);
         return true;
     }
 }

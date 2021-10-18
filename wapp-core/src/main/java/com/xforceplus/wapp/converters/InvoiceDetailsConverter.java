@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.converters;
 
 import com.xforceplus.wapp.client.TaxWareInvoiceDetail;
-import com.xforceplus.wapp.repository.entity.InvoiceDetailsEntity;
+import com.xforceplus.wapp.repository.entity.RecordInvoiceDetailsEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author mashaopeng@xforceplus.com
  */
-@Mapper(config = GlobalConfig.class)
+@Mapper(config = GlobalConfig.class, uses = BaseConverter.class)
 public interface InvoiceDetailsConverter {
-    List<InvoiceDetailsEntity> map(List<TaxWareInvoiceDetail> invoices);
+    List<RecordInvoiceDetailsEntity> map(List<TaxWareInvoiceDetail> invoices);
 }

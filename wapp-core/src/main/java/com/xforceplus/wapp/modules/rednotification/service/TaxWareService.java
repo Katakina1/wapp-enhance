@@ -46,8 +46,8 @@ public class TaxWareService {
     @Value("${wapp.integration.action.rednotification}")
     private String applyRedAction;
 
-    @Value("${wapp.integration.action.invoice-all-elements}")
-    private String invoiceAllElementsAction;
+//    @Value("${wapp.integration.action.invoice-all-elements}")
+//    private String invoiceAllElementsAction;
 
     private final Map<String, String> defaultHeader;
 
@@ -93,25 +93,25 @@ public class TaxWareService {
         }
     }
 
-    public Optional<Tuple2<TaxWareInvoice, List<TaxWareInvoiceDetail>>> getInvoiceAllElements(TaxWareInvoiceVO vo) {
-        long start = System.currentTimeMillis();
-        try {
-            String post = httpClientFactory.post(invoiceAllElementsAction, defaultHeader, gson.toJson(vo), StringUtils.EMPTY);
-            log.debug("获取税件发票全要素信息,返回值:{}", post);
-            TaxWareInvoiceRsp taxWareInvoiceRsp = gson.fromJson(post, TaxWareInvoiceRsp.class);
-            if (Objects.nonNull(taxWareInvoiceRsp) && "TXWRBT0001".equals(taxWareInvoiceRsp.getCode())) {
-                TaxWareInvoice invoiceMain = taxWareInvoiceRsp.getResult().getInvoiceMain();
-                List<TaxWareInvoiceDetail> invoiceDetails = taxWareInvoiceRsp.getResult().getInvoiceDetails();
-                //TODO 明细缺少关联ID
-                log.info("获取税件发票全要素信息耗时{}ms", System.currentTimeMillis() - start);
-                return Optional.of(Tuple.of(invoiceMain, invoiceDetails));
-            }
-        } catch (IOException e) {
-            log.error("获取税件发票全要素信息异常[{}]:" + e.getMessage(), e);
-        }
-        log.info("获取税件发票全要素信息耗时{}ms", System.currentTimeMillis() - start);
-        return Optional.empty();
-    }
+//    public Optional<Tuple2<TaxWareInvoice, List<TaxWareInvoiceDetail>>> getInvoiceAllElements(TaxWareInvoiceVO vo) {
+//        long start = System.currentTimeMillis();
+//        try {
+//            String post = httpClientFactory.post(invoiceAllElementsAction, defaultHeader, gson.toJson(vo), StringUtils.EMPTY);
+//            log.debug("获取税件发票全要素信息,返回值:{}", post);
+//            TaxWareInvoiceRsp taxWareInvoiceRsp = gson.fromJson(post, TaxWareInvoiceRsp.class);
+//            if (Objects.nonNull(taxWareInvoiceRsp) && "TXWRBT0001".equals(taxWareInvoiceRsp.getCode())) {
+//                TaxWareInvoice invoiceMain = taxWareInvoiceRsp.getResult().getInvoiceMain();
+//                List<TaxWareInvoiceDetail> invoiceDetails = taxWareInvoiceRsp.getResult().getInvoiceDetails();
+//                //TODO 明细缺少关联ID
+//                log.info("获取税件发票全要素信息耗时{}ms", System.currentTimeMillis() - start);
+//                return Optional.of(Tuple.of(invoiceMain, invoiceDetails));
+//            }
+//        } catch (IOException e) {
+//            log.error("获取税件发票全要素信息异常[{}]:" + e.getMessage(), e);
+//        }
+//        log.info("获取税件发票全要素信息耗时{}ms", System.currentTimeMillis() - start);
+//        return Optional.empty();
+//    }
 
 
     public void handle(RedMessage redMessage) {
