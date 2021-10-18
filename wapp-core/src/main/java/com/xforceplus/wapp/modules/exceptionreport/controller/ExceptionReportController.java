@@ -65,10 +65,31 @@ public class ExceptionReportController {
     @ApiOperation(value = "重新匹配")
     public R reMatch(@RequestBody ReMatchRequest request) {
         final List<Long> ids = request.getIds();
-        if (CollectionUtils.isEmpty(ids)){
+        if (CollectionUtils.isEmpty(ids)) {
             throw new EnhanceRuntimeException("请选择需要重新匹配的例外报告");
         }
         return R.ok();
+    }
+
+    @GetMapping("agreement/export")
+    @ApiOperation(value = "协议单导出")
+    public R agreementExport(ExceptionReportRequest request) {
+        exceptionReportService.export(request, ExceptionReportTypeEnum.AGREEMENT);
+        return R.ok("单据导出正在处理，请在消息中心");
+    }
+
+    @GetMapping("claim/export")
+    @ApiOperation(value = "索赔单导出")
+    public R claimExport(ExceptionReportRequest request) {
+        exceptionReportService.export(request, ExceptionReportTypeEnum.CLAIM);
+        return R.ok("单据导出正在处理，请在消息中心");
+    }
+
+    @GetMapping("epd/export")
+    @ApiOperation(value = "EPD单导出")
+    public R epdExport(ExceptionReportRequest request) {
+        exceptionReportService.export(request, ExceptionReportTypeEnum.EPD);
+        return R.ok("单据导出正在处理，请在消息中心");
     }
 
     private static <T> PageResult<T> toPageResult(Page<T> page) {

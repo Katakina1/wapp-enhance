@@ -95,4 +95,29 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
 
         return this.page(page, wrapper);
     }
+    @Override
+    public void export(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum) {
+        Page<TXfExceptionReportEntity> page = new Page<>();
+        page.setSize(request.getSize());
+        page.setCurrent(request.getPage());
+        TXfExceptionReportEntity entity = exceptionReportMapper.toEntity(request);
+        entity.setType(typeEnum.getType());
+        final String startDeductDate = request.getStartDeductDate();
+        final LambdaQueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.lambdaQuery(entity);
+
+        if (StringUtils.isNotBlank(startDeductDate)) {
+            wrapper.gt(TXfExceptionReportEntity::getCreateTime, startDeductDate);
+        }
+
+        if (StringUtils.isNotBlank(request.getEndDeductDate())) {
+
+            try {
+                final String format = DateUtils.addDayToYYYYMMDD(request.getEndDeductDate(), 1);
+                wrapper.lt(TXfExceptionReportEntity::getCreateTime, format);
+            } catch (Exception e) {
+                log.error("时间转换失败" + e.getMessage(), e);
+            }
+        }
+
+    }
 }
