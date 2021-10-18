@@ -4,6 +4,7 @@ import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.modules.sys.entity.UserEntity;
 import com.xforceplus.wapp.modules.sys.service.ShiroService;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
@@ -58,8 +59,14 @@ public class OAuth2Realm extends AuthorizingRealm {
 		try {
 			
 			 LOGGER.debug("token: "+ accessToken);
+			 if (StringUtils.isBlank(accessToken)){
+				 throw new IncorrectCredentialsException("您的登录信息不合法，请重新登录");
+			 }
 			//查询用户信息
 			byte[] decode = Base64.decode(URLDecoder.decode(accessToken));
+			if (decode == null){
+				throw new IncorrectCredentialsException("您的登录信息不合法，请重新登录");
+			}
 			String string = new String(decode,"UTF-8");
 			UserEntity user = JsonUtil.fromJson(string, UserEntity.class);
 			
@@ -92,9 +99,9 @@ public class OAuth2Realm extends AuthorizingRealm {
 	        user.setExpireTime(String.valueOf(time));
 	        return new SimpleAuthenticationInfo(user, accessToken, getName());
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.info(""+e.getMessage(),e);
+			throw new IncorrectCredentialsException("您的登录信息不合法，请重新登录");
 		}
-		return null;
     }
 
     /**
