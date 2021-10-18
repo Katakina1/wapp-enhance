@@ -93,6 +93,8 @@ public class ShiroConfig {
         filterMap.put("/v2/api-docs", "anon");
         filterMap.put("/swagger-resources/**", "anon");
         filterMap.put("/", "anon");
+        filterMap.put("/health", "anon");
+        filterMap.put("/env", "anon");
         filterMap.put("/**", "oauth2");
 
         shiroFilter.setFilterChainDefinitionMap(filterMap);
