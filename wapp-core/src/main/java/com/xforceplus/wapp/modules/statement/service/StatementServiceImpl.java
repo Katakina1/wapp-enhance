@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
 import com.xforceplus.wapp.modules.statement.models.Statement;
 import com.xforceplus.wapp.modules.statement.models.StatementCount;
@@ -21,7 +22,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -73,8 +78,8 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         return Tuple.of(statementConverter.map(page.getRecords()), page);
     }
 
-    public List<StatementCount> count(@NonNull Integer type, String settlementNo, String purchaserNo, String invoiceType,
-                                      String businessNo, String taxRate) {
+    public Collection<StatementCount> count(@NonNull Integer type, String settlementNo, String purchaserNo, String invoiceType,
+                                            String businessNo, String taxRate) {
         log.info("结算单tab统计,入参,type:{},settlementNo:{},purchaserNo:{},invoiceType:{},businessNo:{},taxRate:{}",
                 type, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
@@ -99,13 +104,14 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                     .distinct().collect(Collectors.toList());
             lambda.in(TXfSettlementEntity::getSettlementNo, nos);
         }
+        Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
+                .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
+                .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
         wrapper.select("settlement_status as status, count(*) as total");
-        List<StatementCount> list = getBaseMapper().selectMaps(wrapper).stream()
-                .map(it -> it.entrySet()
-                        .stream().map(entry -> new StatementCount(entry.getKey(), (Integer) entry.getValue()))
-                        .collect(Collectors.toList()))
-                .flatMap(List::stream).collect(Collectors.toList());
-        log.debug("结算单tab统计,结果:{}", list);
-        return list;
+        getBaseMapper().selectMaps(wrapper)
+                .forEach(it -> tabMap.put(it.get("status").toString(),
+                        new StatementCount(it.get("status").toString(), (Integer) it.get("total"))));
+        log.debug("结算单tab统计,结果:{}", tabMap.values());
+        return tabMap.values();
     }
 }

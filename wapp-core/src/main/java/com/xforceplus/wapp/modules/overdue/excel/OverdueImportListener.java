@@ -5,7 +5,7 @@ import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.enums.ValueEnum;
-import com.xforceplus.wapp.enums.OverdueTypeEnum;
+import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +49,6 @@ public class OverdueImportListener extends AnalysisEventListener<OverdueDto> {
     }
 
     private boolean checkImportInvoice(OverdueDto data) {
-        return ValueEnum.isValid(OverdueTypeEnum.class, data.getType());
+        return ValueEnum.isValid(ServiceTypeEnum.class, data.getType());
     }
 }
