@@ -1,12 +1,13 @@
 package com.xforceplus.wapp.converters;
 
 import com.xforceplus.wapp.modules.deduct.model.EPDBillData;
+import com.xforceplus.wapp.modules.job.command.EpdBillFilterCommand;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(imports = EpdBillFilterCommand.class)
 public interface TXfOriginEpdBillEntityConvertor {
 
     TXfOriginEpdBillEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginEpdBillEntityConvertor.class);
@@ -18,17 +19,18 @@ public interface TXfOriginEpdBillEntityConvertor {
     // @Mapping(source = "referenceKey1", target = "")
     // @Mapping(source = "cashDiscAmtLc", target = "")
     @Mapping(source = "account", target = "sellerNo")
-    @Mapping(source = "clearingDate", target = "deductDate")
+    @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "amountInLocalCurrency", target = "amountWithTax")
     // @Mapping(source = "referenceKey2", target = "")
     // @Mapping(source = "reverseClearing", target = "")
     @Mapping(source = "reference", target = "businessNo")
     // @Mapping(source = "paymentBlock", target = "")
-    @Mapping(source = "postingDate", target = "postingDate")
+    @Mapping(source = "postingDate", target = "postingDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "invoiceReference", target = "invoiceReference")
-    @Mapping(source = "paymentDate", target = "paymentDate")
+    @Mapping(source = "paymentDate", target = "paymentDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "companyCode", target = "purchaserNo")
     @Mapping(source = "text", target = "remark")
+    @Mapping(source = "taxCode", target = "taxRate", expression = "java(EpdBillFilterCommand.TAX_CODE_TRANSLATOR.get(taxCode))")
     /**
      * 转换成EPDBillData
      *

@@ -18,7 +18,7 @@ public interface TXfOriginClaimItemHyperEntityConvertor {
     @Mapping(source = "vndrNbr", target = "sellerNo")
     @Mapping(source = "deptNbr", target = "deptNbr")
     @Mapping(source = "taxRate", target = "taxRate")
-    @Mapping(source = "finalDate", target = "verdictDate")
+    @Mapping(source = "finalDate", target = "verdictDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "categoryNbr", target = "categoryNbr")
     @Mapping(source = "vnpkCost", target = "vnpkCost")
     @Mapping(source = "itemQty", target = "quantity")

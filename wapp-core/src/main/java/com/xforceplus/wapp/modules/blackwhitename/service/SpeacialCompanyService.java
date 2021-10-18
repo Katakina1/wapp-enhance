@@ -98,7 +98,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * @param memo 供应商6D
      * @return
      */
-    public boolean count(String supplierType, String memo){
+    public boolean hitBlackOrWhiteList(String supplierType, String memo){
         return 0 == count(
                 new QueryWrapper<TXfBlackWhiteCompanyEntity>()
                         .lambda()

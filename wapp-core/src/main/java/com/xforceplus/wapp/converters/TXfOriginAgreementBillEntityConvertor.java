@@ -26,7 +26,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 税码
     @Mapping(source = "taxCode", target = "taxCode")
     // 扣款日期
-    @Mapping(source = "clearingDate", target = "deductDate")
+    @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     // 税率
     @Mapping(source = "taxRate", target = "taxRate")
     // 供应商6D
@@ -40,7 +40,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 凭证类型
     @Mapping(source = "documentType", target = "documentType")
     // 入账日期
-    @Mapping(source = "postingDate", target = "postingDate")
+    @Mapping(source = "postingDate", target = "postingDate", dateFormat = "yyyy/MM/dd")
     // 税额
     @Mapping(source = "taxAmount", target = "taxAmount")
     /**

@@ -14,7 +14,7 @@ public interface TXfOriginClaimBillEntityConvertor {
     // 业务单据类型;1:索赔;2:协议;3:EPD
     @Mapping(target = "businessType", constant = "1")
     // 扣款日期
-    @Mapping(source = "deductionDate", target = "deductDate")
+    @Mapping(source = "deductionDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     // 扣款公司
     @Mapping(source = "deductionCompany", target = "purchaserNo")
     // 供应商号
@@ -24,7 +24,7 @@ public interface TXfOriginClaimBillEntityConvertor {
     // 索赔号/换货号
     @Mapping(source = "exchangeNo", target = "businessNo")
     // 定案日期
-    @Mapping(source = "decisionDate", target = "decisionDate")
+    @Mapping(source = "decisionDate", target = "decisionDate", dateFormat = "yyyy/MM/dd")
     // 成本金额
     @Mapping(source = "costAmount", target = "amountWithoutTax")
     // 所扣发票
