@@ -57,9 +57,6 @@ public class CommSettlementService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if (tXfSettlementEntity.getSettlementStatus() == TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode()) {
-            throw new EnhanceRuntimeException("已经开具红票");
-        }
         //预制发票
         //1、当预制发票有红字信息编码时，申请作废红字信息编码，需要沃尔玛审核
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();

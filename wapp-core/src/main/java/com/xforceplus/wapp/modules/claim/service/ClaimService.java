@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +67,11 @@ public class ClaimService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if (tXfSettlementEntity.getSettlementStatus() == TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode()) {
-            throw new EnhanceRuntimeException("已经开具红票");
+        //结算单状态（上传部分红票，已上传红票需要发票管理那里维护）
+        List<Integer> settlementStatusList = Arrays.asList(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode(),
+                TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode());
+        if (settlementStatusList.contains(tXfSettlementEntity.getSettlementStatus())) {
+            throw new EnhanceRuntimeException("已经开了红票");
         }
         //索赔单
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
