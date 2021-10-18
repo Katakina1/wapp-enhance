@@ -11,8 +11,6 @@ wapp:
       ofd: 0E707DB76E9B55CA069263CE911E36A5
       # 发票验真
       verification: 3A0ED452A8386C3B04B1F9C3F6C76A42
-      # pdf云识别
-      pdf: 043F1FF00631D5E8F0261CD532D2F477
       # 申请红字信息表
       rednotification: FECD0B7724B239B3C5950FDBDB1D09E0
       # 获取终端
@@ -22,7 +20,7 @@ wapp:
       # 红字信息生成pdf
       genredpdf: E96F0AB61D35F93BF48928D568A97C5B
       #识别
-      discern: 4D56663DC5B561D652699B4F34D25F80
+      discern: 043F1FF00631D5E8F0261CD532D2F477
       discern-callbackUrl: inte-janus.melete
     host:
       tcp: janus-tcp-inte.xforceplus.com
