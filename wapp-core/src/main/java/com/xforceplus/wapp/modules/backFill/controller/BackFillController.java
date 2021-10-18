@@ -2,15 +2,17 @@ package com.xforceplus.wapp.modules.backFill.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
+import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.InvoiceImportListener;
-import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.system.controller.AbstractController;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,17 +28,15 @@ import java.util.Set;
 /**
  * Created by SunShiyong on 2021/10/12.
  */
+@Api(tags = "backFill")
 @RestController
-@RequestMapping(value = "/invoice/backFill")
+@RequestMapping(value = EnhanceApi.BASE_PATH+"/invoice/backFill")
 public class BackFillController  extends AbstractController {
 
     @Autowired
     private BackFillService backFillService;
 
-    @ApiOperation(value = "纸票发票回填", notes = "纸票发票回填", response = Response.class, authorizations = {
-            @Authorization(value = "X-Access-Token")},tags = {"backFill"})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "纸票发票回填")
     @PostMapping(value = "/commitVerify")
     public R comitVerify(@ApiParam(value = "BackFillCommitVerifyRequest" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
         logger.info("纸票发票回填--入参：{}", JSONObject.toJSONString(request));
@@ -45,9 +45,7 @@ public class BackFillController  extends AbstractController {
         return backFillService.commitVerify(request);
     }
 
-    @ApiOperation(value = "电票发票上传", notes = "电票发票上传", response = Response.class, tags = {"backFill"})
-    @ApiResponses(value = {
-    @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "电票发票上传")
     @PostMapping("/upload")
     public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid) {
         if (files.length == 0) {
@@ -102,27 +100,21 @@ public class BackFillController  extends AbstractController {
         }
     }
 
-    @ApiOperation(value = "循环获取上传结果", notes = "循环获取上传结果", response = Response.class, tags = {"backFill"})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "循环获取上传结果")
     @GetMapping("/upload/{batchNo}")
     public R pollingUploadResult(@PathVariable String batchNo) {
         logger.info("循环获取上传结果--入参：{}", batchNo);
         return R.ok(this.backFillService.getUploadResult(batchNo));
     }
 
-    @ApiOperation(value = "上传发票匹配", notes = "上传发票匹配", response = Response.class, tags = {"backFill"})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "上传发票匹配")
     @PostMapping("/match")
     public R match(@ApiParam(value = "BackFillMatchRequest" ,required=true )@RequestBody BackFillMatchRequest request) {
         logger.info("发票回填后匹配--入参：{}", JSONObject.toJSONString(request));
         return backFillService.matchPreInvoice(request);
     }
 
-    @ApiOperation(value = "excel批量上传", notes = "excel批量上传", response = Response.class, tags = {"backFill"})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "excel批量上传")
     @PostMapping("/upload/excel")
     public R upload(@RequestParam MultipartFile file, @RequestParam String gfName, @RequestParam String jvcode, @RequestParam("vendorId") String vendorid,
                     @RequestParam String settlementNo,@RequestParam String invoiceColer) {

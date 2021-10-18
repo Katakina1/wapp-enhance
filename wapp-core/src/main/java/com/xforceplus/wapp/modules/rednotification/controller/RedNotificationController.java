@@ -23,7 +23,7 @@ import java.net.URLDecoder;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/red-notification")
+@RequestMapping(value = "/api/red-notification")
 public class RedNotificationController {
     @Autowired
     RedNotificationMainService rednotificationService;
@@ -72,12 +72,20 @@ public class RedNotificationController {
     }
 
 
-    @ApiOperation(value = "红字信息表下载", notes = "", response = Response.class, tags = {"red-notification",})
+    @ApiOperation(value = "红字信息表下载pdf", notes = "", response = Response.class, tags = {"red-notification",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
-    @PostMapping(value = "/download")
+    @PostMapping(value = "/download-pdf")
     public Response download(@RequestBody RedNotificationExportPdfRequest request){
         return rednotificationService.downloadPdf(request);
+    }
+
+    @ApiOperation(value = "红字信息表导出", notes = "", response = Response.class, tags = {"red-notification",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @PostMapping(value = "/export")
+    public Response export(@RequestBody RedNotificationExportPdfRequest request){
+        return rednotificationService.export(request);
     }
 
 
@@ -107,7 +115,7 @@ public class RedNotificationController {
     @GetMapping(value = "/template")
     public void template(HttpServletResponse res, HttpServletRequest req){
         try {
-            String name = "客商信息导入模板";
+            String name = "红字信息表导入模板";
             String fileName = name+".xlsx";
             ServletOutputStream out;
             res.setContentType("multipart/form-data");
@@ -158,14 +166,6 @@ public class RedNotificationController {
         return Response.ok("成功");
     }
 
-    @ApiOperation(value = "红字信息导出", notes = "", response = Response.class, tags = {"red-notification",})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
-    @PostMapping(value = "/export")
-    public Response export(@RequestBody QueryModel queryModel){
-
-        return Response.ok("成功");
-    }
 
 
     @ApiOperation(value = "获取红字信息申请终端", notes = "", response = Response.class, tags = {"red-notification",})

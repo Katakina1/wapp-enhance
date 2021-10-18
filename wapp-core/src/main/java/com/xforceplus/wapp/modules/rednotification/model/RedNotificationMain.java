@@ -84,7 +84,7 @@ public class RedNotificationMain {
     /**
      * 红字信息来源1.索赔单，2协议单，3.EPD
      */
-    @ApiModelProperty("红字信息来源1.索赔单，2协议单，3.EPD")
+    @ApiModelProperty("红字信息来源1.索赔单，2协议单，3.EPD ,4 导入")
     private Integer invoiceOrigin;
 
     /**

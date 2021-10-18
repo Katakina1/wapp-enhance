@@ -890,6 +890,12 @@ public class DateUtils {
         return strtostr;
     }
 
+   static SimpleDateFormat format =  new SimpleDateFormat("yyyyMMddHHmmssSSS");
+    public static String curDateMselStr17() {
+        Date date = new Date();
+        return format.format(date);
+    }
+
     /**
      * yyyy-MM-dd ת yyyyMMdd
      * @param strDate
