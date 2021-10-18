@@ -33,7 +33,7 @@ public class BackFillController  extends AbstractController {
     @Autowired
     private BackFillService backFillService;
 
-    @ApiOperation(value = "纸票发票回填", notes = "", response = Response.class, authorizations = {
+    @ApiOperation(value = "纸票发票回填", notes = "纸票发票回填", response = Response.class, authorizations = {
             @Authorization(value = "X-Access-Token")},tags = {"backFill"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
@@ -45,7 +45,7 @@ public class BackFillController  extends AbstractController {
         return backFillService.commitVerify(request);
     }
 
-    @ApiOperation(value = "电票发票上传", notes = "", response = Response.class, tags = {"backFill"})
+    @ApiOperation(value = "电票发票上传", notes = "电票发票上传", response = Response.class, tags = {"backFill"})
     @ApiResponses(value = {
     @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping("/upload")
@@ -102,7 +102,7 @@ public class BackFillController  extends AbstractController {
         }
     }
 
-    @ApiOperation(value = "循环获取上传结果", notes = "", response = Response.class, tags = {"backFill"})
+    @ApiOperation(value = "循环获取上传结果", notes = "循环获取上传结果", response = Response.class, tags = {"backFill"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @GetMapping("/upload/{batchNo}")
@@ -111,7 +111,7 @@ public class BackFillController  extends AbstractController {
         return R.ok(this.backFillService.getUploadResult(batchNo));
     }
 
-    @ApiOperation(value = "上传发票匹配", notes = "", response = Response.class, tags = {"backFill"})
+    @ApiOperation(value = "上传发票匹配", notes = "上传发票匹配", response = Response.class, tags = {"backFill"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping("/match")
@@ -120,7 +120,7 @@ public class BackFillController  extends AbstractController {
         return backFillService.matchPreInvoice(request);
     }
 
-    @ApiOperation(value = "excel批量上传", notes = "", response = Response.class, tags = {"backFill"})
+    @ApiOperation(value = "excel批量上传", notes = "excel批量上传", response = Response.class, tags = {"backFill"})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping("/upload/excel")
@@ -152,7 +152,7 @@ public class BackFillController  extends AbstractController {
                 request.setGfName(gfName);
                 request.setJvCode(jvcode);
                 request.setVendorId(vendorid);
-                List<BackFillVerifyBean> bverifyBeanList = new ArrayList<BackFillVerifyBean>();
+                List<BackFillVerifyBean> bverifyBeanList = new ArrayList<>();
                 BackFillVerifyBean backFillVerifyBean = null;
                 for (BackfillInvoice backfillInvoice : listener.getValidInvoices()) {
                     backFillVerifyBean = new BackFillVerifyBean();

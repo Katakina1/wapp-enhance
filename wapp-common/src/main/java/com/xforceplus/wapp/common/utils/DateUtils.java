@@ -1,9 +1,7 @@
 package com.xforceplus.wapp.common.utils;
 
 import cn.hutool.core.date.DateUtil;
-
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -921,14 +919,6 @@ public class DateUtils {
         }
     }
 
-
-    public static void main(String[] args) throws Exception {
-        try {
-            boolean currentMonth = isCurrentMonth(new Date(1602842453000L));
-            System.out.println(currentMonth);
-        } catch (Exception e) {
-            throw new Exception();
-        }
         // System.out.println("sss");
     public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
 
@@ -937,6 +927,15 @@ public class DateUtils {
         final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
         final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
         return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+    }
+
+    public static void main(String[] args) throws Exception {
+        try {
+            boolean currentMonth = isCurrentMonth(new Date(1602842453000L));
+            System.out.println(currentMonth);
+        } catch (Exception e) {
+            throw new Exception();
+        }
     }
 
 }
