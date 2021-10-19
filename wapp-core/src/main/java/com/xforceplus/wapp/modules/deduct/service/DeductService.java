@@ -358,16 +358,11 @@ public class DeductService   {
                     //  如果返回个数大于1，则取第一条记录
                     TXfBillDeductEntity target = pages.getRecords().get(0);
                     if (sameParties(tXfBillDeductEntity, target)) {
-                        int targetStatus = target.getStatus();
-                        switch (targetStatus) {
-                            case TXfBillDeductStatusEnum.AGREEMENT_LOCK:
-                                updateBillStatus(deductionEnum, target, false);
-                                break;
-                            case TXfBillDeductStatusEnum.EPD_LOCK:
-                            case TXfBillDeductStatusEnum.AGREEMENT_UNLOCK:
-                            case TXfBillDeductStatusEnum.EPD_UNLOCK:
-                            default:
+                        if (Objects.equals(TXfBillDeductStatusEnum.LOCK.getCode(), target.getLockFlag())){
+                            boolean result = updateBillStatus(deductionEnum, target, TXfBillDeductStatusEnum.UNLOCK);
+                            log.info("解锁source单据id={}的target单据的id={}, result={}", tXfBillDeductEntity.getId(), target.getId(), result);
                         }
+                        tXfBillDeductEntity.setStatus(target.getStatus());
                     } else {
                         log.info("source单据id={}与target单据的id={}购销对不一致，跳过解锁取消逻辑", tXfBillDeductEntity.getId(), target.getId());
                     }
