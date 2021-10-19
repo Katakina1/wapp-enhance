@@ -29,4 +29,6 @@ public interface ExceptionReportService {
     void add4EPD(TXfExceptionReportEntity entity);
 
     Page<TXfExceptionReportEntity> getPage(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
+
+    void export(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
 }

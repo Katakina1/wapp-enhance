@@ -6,8 +6,11 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,8 @@ public class AgreementController {
     @GetMapping("summary")
     @ApiOperation(value = "页头统计")
     public R summary(DeductListRequest request){
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(summary);
     }
@@ -41,7 +46,16 @@ public class AgreementController {
     @GetMapping
     @ApiOperation(value = "协议列表")
     public R agreements(DeductListRequest request) {
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(page);
+    }
+
+    @GetMapping("invoice")
+    public R invoiceList(InvoiceMatchListRequest request) {
+
+        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
+        return R.ok();
     }
 }

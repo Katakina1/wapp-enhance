@@ -1,25 +1,23 @@
 package com.xforceplus.wapp.modules.company.controller;
 
 import com.xforceplus.wapp.annotation.EnhanceApi;
-import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.modules.blackwhitename.util.ExcelUtil;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
-import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,8 +25,8 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping(EnhanceApi.BASE_PATH + "/company")
 @Api(tags = "抬头信息管理")
+@RequestMapping(EnhanceApi.BASE_PATH+"/company")
 public class CompanyController {
 
     @Autowired
@@ -67,5 +65,12 @@ public class CompanyController {
         return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据", result.get())) : R.fail(result.getLeft());
     }
 
+
+    @ApiOperation("购方机构列表")
+    @GetMapping("purchasers")
+    public R purchaserOrg(){
+        final List<TAcOrgEntity> purchaserOrgs = companyService.getPurchaserOrgs();
+        return R.ok(Collections.singletonMap("orgs",purchaserOrgs));
+    }
 
 }

@@ -1,12 +1,14 @@
 package com.xforceplus.wapp.modules.company.service;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.enums.CompanyTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.Constants.Constants;
 import com.xforceplus.wapp.modules.company.convert.CompanyConverter;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
@@ -25,10 +27,6 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.xforceplus.wapp.enums.CompanyTypeEnum;
-
-import static java.util.Comparator.comparing;
 
 /**
  * 索赔的结算单相关逻辑操作
@@ -178,5 +176,15 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         return save||CollectionUtils.isNotEmpty(updateList) ? Either.right(list.size()) : Either.right(0);
     }
 
+
+
+    public List<TAcOrgEntity> getPurchaserOrgs(){
+        LambdaQueryWrapper<TAcOrgEntity> wrapper=new LambdaQueryWrapper<>();
+        wrapper.select(TAcOrgEntity::getOrgName,TAcOrgEntity::getTaxNo,TAcOrgEntity::getOrgCode);
+        wrapper.eq(TAcOrgEntity::getOrgType,5);
+
+        return this.list(wrapper);
+
+    }
 
 }

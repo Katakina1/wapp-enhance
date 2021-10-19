@@ -1,23 +1,29 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
+import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,30 +85,32 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
         deductEntity.setDeductInvoice(request.getInvoiceNo());
 
+        deductEntity.setSellerNo(request.getSellerNo());
+
         QueryWrapper<TXfBillDeductEntity> wrapper= Wrappers.query(deductEntity);
         //扣款日期>>Begin
         final String deductDateBegin = request.getDeductDateBegin();
         if (StringUtils.isNotBlank(deductDateBegin)){
-            wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE,deductDateBegin);
+            wrapper.ge(TXfBillDeductEntity.DEDUCT_DATE,deductDateBegin);
         }
 
         //扣款日期>>End
         String deductDateEnd = request.getDeductDateEnd();
         if (StringUtils.isNotBlank(deductDateEnd)){
             final String format = DateUtils.addDayToYYYYMMDD(deductDateEnd, 1);
-            wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE,format);
+            wrapper.le(TXfBillDeductEntity.DEDUCT_DATE,format);
         }
         // ===============================
         //定案、入账日期 >> begin
         final String verdictDateBegin = request.getVerdictDateBegin();
         if (StringUtils.isNotBlank(verdictDateBegin)){
-            wrapper.gt(TXfBillDeductEntity.VERDICT_DATE,deductDateBegin);
+            wrapper.ge(TXfBillDeductEntity.VERDICT_DATE,deductDateBegin);
         }
         //定案、入账日期 >> end
         String verdictDateEnd = request.getVerdictDateEnd();
         if (StringUtils.isNotBlank(verdictDateEnd)){
             final String format = DateUtils.addDayToYYYYMMDD(verdictDateEnd, 1);
-            wrapper.lt(TXfBillDeductEntity.VERDICT_DATE,format);
+            wrapper.le(TXfBillDeductEntity.VERDICT_DATE,format);
         }
 
 
@@ -116,6 +124,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
      * @return
      */
     public PageResult<DeductListResponse> deductClaimByPage(DeductListRequest request){
+        final String usercode = UserUtil.getUser().getUsercode();
+//        companyService.getOrgInfoByOrgCode();
         final PageResult<DeductListResponse> result = deductByPage(request, XFDeductionBusinessTypeEnum.CLAIM_BILL);
         final List<DeductListResponse> responses = result.getRows();
 
@@ -132,9 +142,28 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
     private Map<String,Integer> getInvoiceCountBySettlement(List<String> settlementNos){
 
-
+// TODO
 
 
         return Collections.emptyMap();
     }
+
+    public List<InvoiceMatchListResponse> invoice(InvoiceMatchListRequest request){
+
+        final Long billId = request.getBillId();
+        final TXfBillDeductEntity byId = this.getById(billId);
+        if (Objects.isNull(byId)){
+            throw new EnhanceRuntimeException("参数有误，协议单/EPD不存在");
+        }
+        final Integer status = byId.getStatus();
+
+        final String sellerNo = byId.getSellerNo();
+        final String purchaserNo = byId.getPurchaserNo();
+        final BigDecimal taxRate = byId.getTaxRate();
+
+
+        return null;
+    }
+
+
 }

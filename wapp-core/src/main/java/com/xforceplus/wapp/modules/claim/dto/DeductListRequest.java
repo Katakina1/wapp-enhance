@@ -48,4 +48,7 @@ public class DeductListRequest {
     private BigDecimal taxRate;
     @ApiModelProperty("状态")
     private Integer status;
+
+    @ApiModelProperty(hidden = true,value = "销方编号,vendorId,userCode")
+    private String sellerNo;
 }

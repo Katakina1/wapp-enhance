@@ -1,6 +1,9 @@
 package com.xforceplus.wapp.modules.exceptionreport.event;
 
-import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +17,27 @@ import lombok.Setter;
  **/
 @Setter
 @Getter
+@EqualsAndHashCode
 public class NewExceptionReportEvent {
-    private TXfExceptionReportEntity entity;
+
+    /**
+     * 协议单、EPD单、索赔单 实例对象
+     */
+    private TXfBillDeductEntity deduct;
+
+    /**
+     * 例外报告类型
+     */
+    private ExceptionReportTypeEnum type;
+
+    /**
+     * 例外说明
+     */
+    private String description;
+
+    /**
+     * 例外报告代码
+     */
+    private ExceptionReportCodeEnum reportCode;
+
 }

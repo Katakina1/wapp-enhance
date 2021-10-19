@@ -23,16 +23,20 @@ spring:
         enabled: false
     # jackson时间格式化
   jackson:
-      time-zone: GMT+0
-      date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+0
+    date-format: yyyy-MM-dd HH:mm:ss
+
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+
   resources:
       static-locations: classpath:/static/,classpath:/views/
-  http:
+  servlet:
     multipart:
       max-file-size: 100MB
-      max-request-size: 100MB
-      enabled: true
       location: /tmp/tomcat
+      enabled: true
+      max-request-size: 100MB
 
 # Mybatis-Plus配置
 mybatis-plus:
@@ -150,6 +154,9 @@ activemq:
   user: admin
   password: admin
   enhance_claim_verdict_queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+  queue:
+    # 导出申请
+    export-request: cn.wm.host.enhance.export-request.queue
 
 Esb:
   url:

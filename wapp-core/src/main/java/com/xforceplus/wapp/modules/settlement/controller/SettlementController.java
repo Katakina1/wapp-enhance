@@ -1,9 +1,13 @@
 package com.xforceplus.wapp.modules.settlement.controller;
 
 import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.claim.dto.ApplyVerdictRequest;
+import com.xforceplus.wapp.modules.claim.dto.SettlementApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -30,9 +34,15 @@ public class SettlementController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/applyVerdict")
-    public Response applyVerdict(@RequestBody ApplyVerdictRequest request) {
+    public Response applyVerdict(@RequestBody SettlementApplyVerdictRequest request) {
         claimService.applyClaimVerdict(request.getSettlementId(), request.getBillDeductIdList());
         return Response.ok("成功", "");
+    }
+
+    @PostMapping("undo-red-notification")
+    public R undoRedNotification(@RequestBody SettlementUndoRedNotificationRequest request){
+        claimService.agreeClaimVerdict(request.getSettlementId());
+        return R.ok("撤销红字信息表申请已提交成功");
     }
 
 }
