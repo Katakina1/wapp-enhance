@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.blackwhitename.Constants.Constants;
 import com.xforceplus.wapp.modules.company.convert.CompanyConverter;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
@@ -92,6 +93,34 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         return this.getOne(wrapper);
     }
 
+    public boolean updateCompanyInfoById(TAcOrgEntity orgEntity) {
+        if (null == orgEntity.getOrgId()) {
+            return false;
+        }
+        LambdaUpdateChainWrapper<TAcOrgEntity> wrapper = new LambdaUpdateChainWrapper<>(getBaseMapper());
+
+        wrapper.set(TAcOrgEntity::getLastModifyTime, DateUtils.obtainValidDate(new Date()));
+        if (null != orgEntity.getOrgId()) {
+            wrapper.eq(TAcOrgEntity::getOrgId, orgEntity.getOrgId());
+        }
+        if (StringUtils.isNotBlank(orgEntity.getAccount())) {
+            wrapper.set(TAcOrgEntity::getAccount, orgEntity.getAccount());
+        }
+        if (StringUtils.isNotBlank(orgEntity.getAddress())) {
+            wrapper.set(TAcOrgEntity::getAddress, orgEntity.getAddress());
+        }
+        if (StringUtils.isNotBlank(orgEntity.getBank())) {
+            wrapper.set(TAcOrgEntity::getBank, orgEntity.getBank());
+        }
+        if (null != orgEntity.getQuota()) {
+            wrapper.set(TAcOrgEntity::getQuota, orgEntity.getQuota());
+        }
+        if (StringUtils.isNotBlank(orgEntity.getOrgName())) {
+            wrapper.set(TAcOrgEntity::getOrgName, orgEntity.getOrgName());
+        }
+        return wrapper.update();
+    }
+
     /**
      * 导入抬头信息
      *
@@ -115,7 +144,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         List<CompanyImportDto> list = listener.getValidInvoices();
         QueryWrapper wrapperCode = new QueryWrapper<>();
         wrapperCode.in(TAcOrgEntity.ORG_CODE, supplierCodeList);
-        List<TAcOrgEntity> resultOrgCodeList = this.list(wrapper);
+        List<TAcOrgEntity> resultOrgCodeList = this.list(wrapperCode);
         Map<String, Long> map = new HashMap<>();
         resultOrgCodeList.stream().forEach(code -> {
             map.put(code.getOrgCode(), code.getOrgId());
@@ -135,12 +164,18 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
             if (map.get(e.getOrgCode()) != null) {
                 e.setOrgId(map.get(e.getOrgCode()));
                 updateList.add(e);
-            }else{
+            } else {
+                e.setCreateTime(DateUtils.obtainValidDate(new Date()));
                 addList.add(e);
             }
         });
         boolean save = saveBatch(addList, 2000);
-        return save ? Either.right(list.size()) : Either.right(0);
+        if(CollectionUtils.isNotEmpty(updateList)){
+            updateList.stream().forEach(update ->{
+                updateCompanyInfoById(update);
+            });
+        }
+        return save||CollectionUtils.isNotEmpty(updateList) ? Either.right(list.size()) : Either.right(0);
     }
 
 
