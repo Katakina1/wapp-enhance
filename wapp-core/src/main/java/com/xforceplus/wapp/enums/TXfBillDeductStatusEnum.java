@@ -10,25 +10,27 @@ import lombok.Getter;
  */
 public enum TXfBillDeductStatusEnum {
 
-    CLAIM_NO_MATCH_ITEM(101, "索赔单:待匹配明细"),
-    CLAIM_NO_MATCH_TAX_NO(102, "索赔单:待确认税编"),
-    CLAIM_NO_MATCH_TAX_DIFF(103, "索赔单:待确认税差"),
-    CLAIM_NO_MATCH_BLUE_INVOICE(104, "索赔单:待匹配蓝票"),
-    CLAIM_NO_MATCH_SETTLEMENT(105, "索赔单:待生成结算单"),
-    CLAIM_MATCH_SETTLEMENT(106, "索赔单:已生成结算单"),
-    CLAIM_WAIT_CHECK(107, "索赔单:待审核"),
-    CLAIM_DESTROY(108, "索赔单:已作废"),
-
-    AGREEMENT_NO_MATCH_SETTLEMENT(201, "协议单:待匹配结算单"),
-    AGREEMENT_MATCH_SETTLEMENT(202, "协议单:已匹配结算单"),
-    AGREEMENT_LOCK(203, "协议单:已锁定"),
-    AGREEMENT_UNLOCK(204, "协议单:已取消"),
-    AGREEMENT_NO_MATCH_BLUE_INVOICE(205, "协议单:待匹配蓝票"),
-
-
-    EPD_NO_MATCH_SETTLEMENT(301, "EPD单:待匹配结算单"),
-    EPD_MATCH_SETTLEMENT(302, "EPD单:已匹配结算单"),
-    EPD_NO_MATCH_BLUE_INVOICE(303, "EPD单:待匹配蓝票"),
+    NO_MATCH_ITEM(101, " 待匹配明细"),
+    NO_MATCH_TAX_NO(102, " 待确认税编"),
+    NO_MATCH_TAX_DIFF(103, " 待确认税差"),
+    NO_MATCH_BLUE_INVOICE(104, " 待匹配蓝票"),
+    NO_MATCH_SETTLEMENT(105, " 待生成结算单"),
+    MATCH_SETTLEMENT(106, " 已生成结算单"),
+    WAIT_CHECK(107, " 待审核"),
+    DESTROY(108, " 已作废"),
+    LOCK(109, " 已锁定"),
+    UNLOCK(110, "协议单:已取消"),
+//
+//    AGREEMENT_NO_MATCH_SETTLEMENT(201, "协议单:待匹配结算单"),
+//    AGREEMENT_MATCH_SETTLEMENT(202, "协议单:已匹配结算单"),
+//    AGREEMENT_LOCK(203, "协议单:已锁定"),
+//    AGREEMENT_UNLOCK(204, "协议单:已取消"),
+//    AGREEMENT_NO_MATCH_BLUE_INVOICE(205, "协议单:待匹配蓝票"),
+//
+//
+//    EPD_NO_MATCH_SETTLEMENT(301, "EPD单:待匹配结算单"),
+//    EPD_MATCH_SETTLEMENT(302, "EPD单:已匹配结算单"),
+//    EPD_NO_MATCH_BLUE_INVOICE(303, "EPD单:待匹配蓝票"),
 
     ;
 

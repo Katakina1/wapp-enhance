@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +84,11 @@ public class PreinvoiceService {
     private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
     @Autowired
     private IDSequence idSequence;
+    @PostConstruct
+    public void initData() {
+
+     //   splitPreInvoice("","");
+    }
 
     /**
      * 拆票方法
