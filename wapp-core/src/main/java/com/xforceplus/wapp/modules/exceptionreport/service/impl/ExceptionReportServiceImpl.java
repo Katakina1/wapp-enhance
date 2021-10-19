@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfExceptionReportDao;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
 import com.xforceplus.wapp.sequence.IDSequence;
@@ -106,6 +108,8 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     }
     @Override
     public void export(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum) {
+        final Long userId = UserUtil.getUserId();
+        String filePrefix="例外报告导出";
         List<TXfExceptionReportEntity> list = getExportData(request,typeEnum,0);
         try (BigExcelWriter bigExcelWriter = new BigExcelWriter()) {
             while (CollectionUtils.isNotEmpty(list)) {
@@ -117,11 +121,11 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
             ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
             bigExcelWriter.flush(outputStream);
             try {
-                final String file = fileService.uploadFile(outputStream.toByteArray(), "");
+                final String excelFileName = ExcelExportUtil.getExcelFileName(userId, filePrefix);
+                final String file = fileService.uploadFile(outputStream.toByteArray(), excelFileName);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
     }
 

@@ -34,4 +34,7 @@ public class ExceptionReportRequest extends PageViewRequest {
      */
     private String billNo;
 
+    private Long userId;
+
+
 }
