@@ -10,7 +10,7 @@
           "goodsName": "*乳制品*水泥",
           "goodsTaxNo": "1030204010000000000",
           "model": "袋",
-          "num": 1,
+          "num": -1,
           "taxAmount": -3,
           "taxConvertCode": "string",
           "taxPre": 0,

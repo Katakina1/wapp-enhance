@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.listener.ExcelListener;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
 import com.xforceplus.wapp.modules.rednotification.model.*;
@@ -24,6 +25,7 @@ import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.sequence.IDSequence;
+import com.xforceplus.wapp.service.CommSettlementService;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     TaxWareService taxWareService;
     @Autowired
     IDSequence iDSequence;
+    @Autowired
+    CommSettlementService commSettlementService;
 
     private static final Integer MAX_PDF_RED_NO_SIZE = 500;
 
@@ -73,6 +77,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             tXfRedNotificationEntity.setId(id);
             tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPLY.getValue());
             tXfRedNotificationEntity.setStatus(1);
+            tXfRedNotificationEntity.setLockFlag(LockFlag.NORMAL.getValue());
+            tXfRedNotificationEntity.setApproveStatus(ApproveStatus.OTHERS.getValue());
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationMainMapper.itemInfoToEntityList(info.getRedNotificationItemList());
             tXfRedNotificationDetailEntities.stream().forEach(item->{
                 item.setApplyId(id);
@@ -329,6 +335,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             detailAmount.setTaxAmount(detailEntity.getTaxAmount());
             detailAmount.setAmountWithoutTax(detailEntity.getAmountWithoutTax());
             detailAmount.setUnitPrice(detailEntity.getUnitPrice());
+            detailAmount.setQuantity(detailEntity.getNum());
             detailAmount.setTaxDeduction(detailEntity.getDeduction());
             redDetailInfo.setDetailAmount(detailAmount);
 
@@ -341,7 +348,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             tax.setPreferentialTax(detailEntity.getTaxPre()==1?true:false);
             tax.setTaxPolicy(detailEntity.getTaxPreCon());
             tax.setTaxRate(detailEntity.getTaxRate());
-            tax.setZeroTax(String.valueOf(detailEntity.getZeroTax()));
+            tax.setZeroTax(detailEntity.getZeroTax()==null?"":String.valueOf(detailEntity.getZeroTax()));
             tax.setTaxCodeVersion(detailEntity.getGoodsNoVer());
             redDetailInfo.setTax(tax);
 
@@ -530,6 +537,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 long start = System.currentTimeMillis();
                 TaxWareResponse response = taxWareService.generatePdf(request);
                 log.info("红字信息生成pdf耗时:{}ms,流水号:{}",System.currentTimeMillis()-start, request.getSerialNo());
+                if( response.getCode()!=null && !Objects.equals(response.getCode(),TaxWareCode.SUCCESS)){
+                    throw new RRException(response.getMessage());
+                }
                 TaxWareResponse.ResultDTO result;
                 String pdfUrl;
                 if(Objects.nonNull(result = response.getResult()) && StringUtils.isNotBlank(pdfUrl = result.getPdfUrl())){
@@ -711,6 +721,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             updateWrapper.in(TXfRedNotificationEntity::getId,list);
             int update = getBaseMapper().update(record, updateWrapper);
 
+            // 同意删除预制发票
+            commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(list);
+
             RedNotificationApplyReverseRequest reverseRequest = new RedNotificationApplyReverseRequest();
             request.getQueryModel().setApproveStatus(null);
             reverseRequest.setQueryModel(request.getQueryModel());
@@ -722,6 +735,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.in(TXfRedNotificationEntity::getId,list);
             int update = getBaseMapper().update(record, updateWrapper);
+
+            // 驳回保留红字预制发票
+            commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(list);
         }
         return Response.ok("操作成功");
 

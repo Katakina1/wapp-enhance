@@ -2,9 +2,9 @@ package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
@@ -13,12 +13,13 @@ import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.HttpUtils;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationLogEntity;
+import com.xforceplus.wapp.service.CommPreInvoiceService;
+import com.xforceplus.wapp.service.CommSettlementService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,6 +39,9 @@ public class TaxWareService {
 
     @Autowired
     RedNotificationLogService redNotificationLogService;
+    @Autowired
+    CommPreInvoiceService commPreInvoiceService;
+
 
 
     @Value("${wapp.integration.action.terminals}")
@@ -113,7 +117,7 @@ public class TaxWareService {
 //            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
             HttpUtils.pack(defaultHeader,rollbackAction, this.authentication) ;
             final String post = HttpUtils.doPutHttpRequest(host,defaultHeader,reqJson) ;
-            final String post2 = HttpUtils.doPutJsonSkipSsl(host,defaultHeader,reqJson) ;
+//            final String post2 = HttpUtils.doPutJsonSkipSsl(host,defaultHeader,reqJson) ;
             log.info("撤销结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
         } catch (Exception e) {
@@ -179,6 +183,9 @@ public class TaxWareService {
                     tXfRedNotificationLogEntity.setProcessRemark("申请成功");
                     tXfRedNotificationLogEntity.setStatus(2);
                     redNotificationLogService.updateById(tXfRedNotificationLogEntity);
+                    //commPreInvoiceService//
+                    commPreInvoiceService.fillPreInvoiceClaimRedNotification(Long.parseLong(tXfRedNotificationEntity.getPid()),redMessageInfo.getRedNotificationNo());
+
                 }else {
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
                     redNotificationMainService.updateById(tXfRedNotificationEntity);

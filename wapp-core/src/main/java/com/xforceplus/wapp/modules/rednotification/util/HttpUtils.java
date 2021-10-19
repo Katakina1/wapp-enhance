@@ -561,24 +561,21 @@ public abstract class HttpUtils {
                          post.addHeader(header.getKey(), header.getValue());
                      }
                  HttpEntity entity = new StringEntity(requestBody,"Utf-8");
-                 System.out.println("请求体是："+requestBody);
+
                  post.setEntity(entity);
                  response = httpClient.execute(post);
                  // 获得响应的实体对象
                  HttpEntity httpEntity = response.getEntity();
                 // 使用Apache提供的工具类进行转换成字符串
                  entityStr = EntityUtils.toString(httpEntity, "UTF-8");
-                 System.out.println("PUT请求路径："+post);
-                 System.out.println("PUT请求结果："+entityStr);
+
              } catch (ClientProtocolException e) {
-                 System.err.println("Http协议出现问题");
-                 e.printStackTrace();
+                 logger.error("Http协议出现问题",e);
+
              } catch (ParseException e) {
-                 System.err.println("解析错误");
-                 e.printStackTrace();
+                 logger.error("解析错误",e);
              } catch (IOException e) {
-                 System.err.println("IO异常");
-                 e.printStackTrace();
+                 logger.error("IO异常",e);
              }
          return entityStr;
      }
