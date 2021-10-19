@@ -79,6 +79,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             tXfRedNotificationEntity.setStatus(1);
             tXfRedNotificationEntity.setLockFlag(LockFlag.NORMAL.getValue());
             tXfRedNotificationEntity.setApproveStatus(ApproveStatus.OTHERS.getValue());
+            tXfRedNotificationEntity.setCreateDate(new Date());
+            tXfRedNotificationEntity.setUpdateDate(new Date());
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationMainMapper.itemInfoToEntityList(info.getRedNotificationItemList());
             tXfRedNotificationDetailEntities.stream().forEach(item->{
                 item.setApplyId(id);
@@ -227,6 +229,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName, queryModel.getPurchaserName());
         }
 
+        if (!StringUtils.isEmpty(queryModel.getSellerName())){
+            queryWrapper.eq(TXfRedNotificationEntity::getSellerName, queryModel.getSellerName());
+        }
+
         if (!StringUtils.isEmpty(queryModel.getRedNotificationNo())){
             queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo, queryModel.getRedNotificationNo());
         }
@@ -319,6 +325,17 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             logEntity.setId(iDSequence.nextId());
             logList.add(logEntity);
         }
+        //更新红字信息表 的申请流水号
+        List<Long> ids = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(ids)){
+            LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(TXfRedNotificationEntity::getId,ids)  ;
+            TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
+            entity.setSerialNo(applyRequest.getSerialNo());
+            getBaseMapper().update(entity,updateWrapper);
+        }
+
+
         redNotificationLogService.saveBatch(logList);
         return redInfoList;
     }

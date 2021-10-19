@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-16
+ * @since 2021-10-19
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -42,6 +43,12 @@ public class TXfRedNotificationEntity extends BaseEntity {
      */
     @TableField("pid")
     private String pid;
+
+    /**
+     * 申请流水号
+     */
+    @TableField("serial_no")
+    private String serialNo;
 
     /**
      * 1 销方 2购方
@@ -182,7 +189,7 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private Integer status;
 
     /**
-     * 红字信息来源1.索赔单，2协议单，3.EPD
+     * 红字信息来源1.索赔单，2协议单，3.EPD ,4 导入
      */
     @TableField("invoice_origin")
     private Integer invoiceOrigin;
@@ -247,14 +254,14 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
+    @TableField("remark")
+    private String remark;
+
     @TableField("user_id")
     private Long userId;
 
     @TableField("terminal_type")
     private Integer terminalType;
-
-    @TableField("remark")
-    private String remark;
 
 
     public static final String ID = "id";
@@ -262,6 +269,8 @@ public class TXfRedNotificationEntity extends BaseEntity {
     public static final String INVOICE_DATE = "invoice_date";
 
     public static final String PID = "pid";
+
+    public static final String SERIAL_NO = "serial_no";
 
     public static final String USER_ROLE = "user_role";
 
@@ -331,10 +340,10 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
+    public static final String REMARK = "remark";
+
     public static final String USER_ID = "user_id";
 
     public static final String TERMINAL_TYPE = "terminal_type";
-
-    public static final String REMARK = "remark";
 
 }

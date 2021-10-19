@@ -5,6 +5,7 @@ CREATE TABLE
     invoice_date nvarchar(30),
     pid nvarchar(50),
     remark nvarchar(50),
+    serial_no  nvarchar(30),
     user_role smallint,
     apply_type smallint,
     apply_remark nvarchar(255),
@@ -51,6 +52,8 @@ go
 exec sp_addextendedproperty 'MS_Description', '开票日期','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'invoice_date';
 go
 exec sp_addextendedproperty 'MS_Description', '红字信息唯一标识','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'pid';
+go
+exec sp_addextendedproperty 'MS_Description', '申请流水号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'serial_no';
 
 go
 exec sp_addextendedproperty 'MS_Description', '1 销方 2购方','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'user_role';
