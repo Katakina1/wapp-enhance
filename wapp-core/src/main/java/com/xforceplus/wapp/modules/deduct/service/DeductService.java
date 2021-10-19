@@ -352,7 +352,7 @@ public class DeductService   {
                         .selectPage(new Page<>(1, 10),
                                 new QueryWrapper<TXfBillDeductEntity>()
                                         .lambda()
-                                        .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getType())
+                                        .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getValue())
                                         .eq(TXfBillDeductEntity::getAgreementReference, reference)
                         );
                 if (pages.getTotal() >0) {
