@@ -30,6 +30,9 @@ public class QueryModel {
     @ApiModelProperty("购方名称")
     private String purchaserName;
 
+    @ApiModelProperty("销方名称")
+    private String sellerName;
+
     @ApiModelProperty("供应商公司编号")
     private String companyCode;
 
