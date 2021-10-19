@@ -100,6 +100,6 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @return
      */
     @Select(" update t_xf_bill_deduct set status = #{targetStatus},ref_settlement_no=#{settlementNo}    where  purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and  business_type = #{type} and status = #{status} and create_date >= dateadd(d,-day(getdate())+1,getdate()) ")
-    public int updateSuitableClaimBill(@Param("type")Integer type, @Param("status")Integer status, @Param("targetStatus") Integer targetStatus, @Param("settlementNo")String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo);
+    public Integer updateSuitableClaimBill(@Param("type")Integer type, @Param("status")Integer status, @Param("targetStatus") Integer targetStatus, @Param("settlementNo")String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo);
 
 }
