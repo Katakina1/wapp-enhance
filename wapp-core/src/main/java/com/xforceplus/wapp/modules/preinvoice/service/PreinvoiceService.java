@@ -86,8 +86,7 @@ public class PreinvoiceService {
     private IDSequence idSequence;
     @PostConstruct
     public void initData() {
-
-     //   splitPreInvoice("","");
+    // splitPreInvoice("settlementNo1853061001646081","172164");
     }
 
     /**
@@ -104,7 +103,7 @@ public class PreinvoiceService {
         //调用拆票请求
         //保存拆票结果
         //调用红字请求
-        TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo( settlementNo,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode() );
+        TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo(0l, settlementNo,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode() );
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
         CreatePreInvoiceParam createPreInvoiceParam = assembleParam(tXfSettlementEntity, tXfSettlementItemEntities, tAcOrgEntity);
@@ -161,6 +160,9 @@ public class PreinvoiceService {
         billInfo.setSellerId(0L);
         billInfo.setSellerTenantId(0l);
         billInfo.setSellerGroupId(0l);
+        billInfo.setInvoiceType("s");
+        billInfo.setSalesbillId(tXfSettlementEntity.getSettlementNo());
+
         List<BillItem> billItems = new ArrayList<>();
         BeanUtil.copyList( tXfSettlementItemEntities,billItems,BillItem.class);
         String settlementNo = tXfSettlementEntity.getSettlementNo();
@@ -170,12 +172,33 @@ public class PreinvoiceService {
             billItem.setSalesbillItemId(settlementNo + i);
             billItem.setSalesbillNo(settlementNo);
             billItem.setSalesbillItemNo(settlementNo + i);
+
+            billItem.setInnerPrepayAmountTax(BigDecimal.ZERO);
+            billItem.setInnerPrepayAmountWithoutTax(BigDecimal.ZERO);
+            billItem.setInnerPrepayAmountWithTax(BigDecimal.ZERO);
+
+            billItem.setInnerDiscountTax(BigDecimal.ZERO);
+            billItem.setInnerDiscountWithTax(BigDecimal.ZERO);
+            billItem.setInnerDiscountWithoutTax(BigDecimal.ZERO);
+
+            billItem.setOutterDiscountTax(BigDecimal.ZERO);
+            billItem.setOutterDiscountWithoutTax(BigDecimal.ZERO);
+            billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
+
+
+            billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
+            billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
+            billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
+
+            billItem.setDeductions(BigDecimal.ZERO);
         }
         billInfo.setBillItems(billItems);
         SplitRule splitRule =    JSONObject.parseObject(RULE_INFO, SplitRule.class);
         splitRule.setInvoiceLimit(BigDecimal.valueOf(tAcOrgEntity.getQuota()));
         createPreInvoiceParam.setBillInfo(billInfo);
         createPreInvoiceParam.setRule(splitRule);
+        createPreInvoiceParam.setRoutingKey("");
+
         return createPreInvoiceParam;
     }
     /**

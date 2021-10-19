@@ -18,19 +18,18 @@ public enum TXfBillDeductStatusEnum {
     CLAIM_MATCH_SETTLEMENT(106, "索赔单:已生成结算单"),
     CLAIM_WAIT_CHECK(107, "索赔单:待审核"),
     CLAIM_DESTROY(108, "索赔单:已作废"),
-
+    // 初始状态 201，合并后 进入 205，匹配完蓝票后 进入 202
     AGREEMENT_NO_MATCH_SETTLEMENT(201, "协议单:待匹配结算单"),
     AGREEMENT_MATCH_SETTLEMENT(202, "协议单:已匹配结算单"),
-    AGREEMENT_LOCK(203, "协议单:已锁定"),
-    AGREEMENT_UNLOCK(204, "协议单:已取消"),
     AGREEMENT_NO_MATCH_BLUE_INVOICE(205, "协议单:待匹配蓝票"),
-
-
+    AGREEMENT_CANCEL(206, "协议单:已取消"),
     EPD_NO_MATCH_SETTLEMENT(301, "EPD单:待匹配结算单"),
     EPD_MATCH_SETTLEMENT(302, "EPD单:已匹配结算单"),
     EPD_NO_MATCH_BLUE_INVOICE(303, "EPD单:待匹配蓝票"),
-    EPD_LOCK(304, "协议单:已锁定"),
-    EPD_UNLOCK(305, "协议单:已取消"),
+    EPD_CANCEL(304, "EPD单:已取消"),
+
+    LOCK(1, " 已锁定"),
+    UNLOCK(0, "解锁"),
     ;
 
     @Getter

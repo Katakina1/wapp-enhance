@@ -109,6 +109,13 @@ public class RedNotificationMain {
     @ApiModelProperty("扣款时间")
     private Date paymentTime;
 
+
+    /**
+     * 申请流水号
+     */
+    @ApiModelProperty("申请流水号")
+    private String serialNo;
+
     //============== 新增不需要====
     @ApiModelProperty("红字信息主键")
     private Long id;

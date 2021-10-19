@@ -36,6 +36,8 @@ public interface RedNotificationMainMapper {
 
     List<ExportItemInfo> detailEntityToExportInfoList(List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities);
 
+
+    @Mapping(target = "serialNo", source = "sellerNumber")
     RedNotificationMain importInfoToMainEntity(ImportInfo importInfo);
 
     List<RedNotificationItem> importInfoListToItemEntityList(List<ImportInfo> importInfoList);

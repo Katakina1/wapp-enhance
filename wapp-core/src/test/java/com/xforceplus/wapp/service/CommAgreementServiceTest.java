@@ -13,11 +13,11 @@ public class CommAgreementServiceTest extends BaseUnitTest {
 
     @Test
     public void testDestroyAgreementSettlement() {
-
-      //  commAgreementService.destroyAgreementSettlement();
+      //  commAgreementService.destroyAgreementSettlement(1L);
     }
 
     @Test
     public void testAgainSplitPreInvoice() {
+       // commAgreementService.againSplitPreInvoice(1L);
     }
 }
