@@ -6,6 +6,7 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.ServiceTypeEnum;
+import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.statement.models.Statement;
 import com.xforceplus.wapp.modules.statement.models.StatementCount;
 import com.xforceplus.wapp.modules.statement.service.StatementServiceImpl;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -44,7 +46,7 @@ public class StatementController {
                                                  @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
                                                  @ApiParam(value = "查询类型 1.索赔、2.协议、3.EPD", required = true)
                                                  @RequestParam Integer type,
-                                                 @ApiParam("结算单状态") @RequestParam(required = false) List<String> settlementStatus,
+                                                 @ApiParam("结算单状态") @RequestParam(required = false) Integer settlementStatus,
                                                  @ApiParam("结算单号") @RequestParam(required = false) String settlementNo,
                                                  @ApiParam("结算单号") @RequestParam(required = false) String purchaserNo,
                                                  @ApiParam("发票类型（枚举值与结果实体枚举值相同）")
@@ -58,6 +60,9 @@ public class StatementController {
         }
         if (Objects.nonNull(type) && !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
             return R.fail("查询类型不正确");
+        }
+        if (Objects.nonNull(settlementStatus) && !ValueEnum.isValid(TXfSettlementStatusEnum.class, settlementStatus)) {
+            return R.fail("结算单状态不正确");
         }
         val page = statementService.page(current, size, type,
                 settlementStatus, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
@@ -84,6 +89,8 @@ public class StatementController {
         }
         val count = statementService.count(type, settlementNo, purchaserNo,
                 invoiceType, businessNo, taxRate);
+        //全部统计
+        count.add(new StatementCount("0", count.stream().mapToInt(StatementCount::getTotal).sum()));
         log.info("税编分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(count);
     }
