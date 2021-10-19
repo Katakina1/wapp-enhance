@@ -41,8 +41,8 @@ spring:
 # Activemq
 activemq:
     queue-name:
-      enhance_claim_verdict_queue: test.cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
-
+      enhance-claim-verdict-queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+      export-request: cn.wm.host.enhance.export-request.queue # 导出申请
 # Mybatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath:mapper/daoext/*.xml

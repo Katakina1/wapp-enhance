@@ -19,7 +19,7 @@ public class ClaimVerdictConsumer {
     @Autowired
     private ClaimService claimService;
 
-    @JmsListener(destination = "${activemq.queue-name.enhance_claim_verdict_queue}")
+    @JmsListener(destination = "${activemq.queue-name.enhance-claim-verdict-queue}")
     public void onMessage(String message) {
         log.info("--------处理索赔不定案消息-------------");
         try {
