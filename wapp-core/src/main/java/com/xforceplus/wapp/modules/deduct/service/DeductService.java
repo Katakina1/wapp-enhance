@@ -333,7 +333,7 @@ public class DeductService   {
                         int firstStatus = target.getStatus();
                         // switch (firstStatus) {
                         // }
-                        updateBillStatus(deductionEnum, tXfBillDeductEntity, false);
+                        // updateBillStatus(deductionEnum, tXfBillDeductEntity, false);
                         tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                     }
                 }
