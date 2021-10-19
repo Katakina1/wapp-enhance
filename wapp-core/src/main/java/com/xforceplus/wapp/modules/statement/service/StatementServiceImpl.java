@@ -80,6 +80,10 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                                       String businessNo, String taxRate) {
         log.info("结算单tab统计,入参,type:{},settlementNo:{},purchaserNo:{},invoiceType:{},businessNo:{},taxRate:{}",
                 type, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
+        Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
+                .filter(it -> it.getCode() != 8)
+                .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
+                .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
         val lambda = wrapper.lambda();
         lambda.eq(TXfSettlementEntity::getSettlementType, type).groupBy(TXfSettlementEntity::getSettlementStatus);
@@ -100,12 +104,11 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                     .select(TXfBillDeductEntity::getRefSettlementNo).eq(TXfBillDeductEntity::getBusinessNo, businessNo)
                     .list().stream().map(TXfBillDeductEntity::getRefSettlementNo)
                     .distinct().collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(nos)) {
+                return Lists.newArrayList(tabMap.values());
+            }
             lambda.in(TXfSettlementEntity::getSettlementNo, nos);
         }
-        Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
-                .filter(it -> it.getCode() != 8)
-                .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
-                .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
         wrapper.select("settlement_status as status, count(*) as total");
         getBaseMapper().selectMaps(wrapper)
                 .forEach(it -> tabMap.computeIfPresent(it.get("status").toString(),

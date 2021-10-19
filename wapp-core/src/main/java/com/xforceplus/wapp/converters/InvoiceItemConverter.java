@@ -1,7 +1,8 @@
 package com.xforceplus.wapp.converters;
 
-import com.xforceplus.wapp.client.TaxWareInvoiceDetail;
-import com.xforceplus.wapp.repository.entity.RecordInvoiceDetailsEntity;
+import com.google.common.collect.Lists;
+import com.xforceplus.wapp.handle.vo.InvoiceVo;
+import com.xforceplus.wapp.repository.entity.TXfInvoiceItemEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -11,5 +12,13 @@ import java.util.List;
  */
 @Mapper(config = GlobalConfig.class, uses = BaseConverter.class)
 public interface InvoiceItemConverter {
-    List<RecordInvoiceDetailsEntity> map(List<TaxWareInvoiceDetail> invoices);
+    TXfInvoiceItemEntity map(InvoiceVo.InvoiceItemVO items, Long invoiceId);
+
+    default List<TXfInvoiceItemEntity> map(List<InvoiceVo.InvoiceItemVO> items, Long invoiceId) {
+        List<TXfInvoiceItemEntity> list = Lists.newArrayListWithCapacity(items.size());
+        for (InvoiceVo.InvoiceItemVO item : items) {
+            list.add(map(item, invoiceId));
+        }
+        return list;
+    }
 }

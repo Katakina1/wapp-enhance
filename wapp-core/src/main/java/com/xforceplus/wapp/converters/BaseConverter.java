@@ -19,10 +19,6 @@ public interface BaseConverter {
         return date.getTime();
     }
 
-    default String mapDateToString(Date date) {
-        return String.valueOf(date.getTime());
-    }
-
     default BigDecimal mapBigDecimal(String decimal) {
         return StringUtils.isBlank(decimal) ? null : new BigDecimal(decimal);
     }
