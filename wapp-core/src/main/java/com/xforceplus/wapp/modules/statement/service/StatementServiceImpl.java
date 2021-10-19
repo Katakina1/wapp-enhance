@@ -50,7 +50,12 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         LambdaQueryChainWrapper<TXfSettlementEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
                 .eq(TXfSettlementEntity::getSettlementType, type);
         if (Objects.nonNull(settlementStatus)) {
-            wrapper.in(TXfSettlementEntity::getSettlementStatus, settlementStatus);
+            wrapper.eq(TXfSettlementEntity::getSettlementStatus, settlementStatus);
+        } else {
+            Set<Integer> collect = Arrays.stream(TXfSettlementStatusEnum.values())
+                    .filter(it -> it.getCode() < 8)
+                    .map(TXfSettlementStatusEnum::getValue).collect(Collectors.toSet());
+            wrapper.in(TXfSettlementEntity::getSettlementStatus, collect);
         }
         if (StringUtils.isNotBlank(settlementNo)) {
             wrapper.eq(TXfSettlementEntity::getSettlementNo, settlementNo);
@@ -81,12 +86,15 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         log.info("结算单tab统计,入参,type:{},settlementNo:{},purchaserNo:{},invoiceType:{},businessNo:{},taxRate:{}",
                 type, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
         Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
-                .filter(it -> it.getCode() != 8)
+                .filter(it -> it.getValue() < 8)
                 .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
                 .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
         val lambda = wrapper.lambda();
-        lambda.eq(TXfSettlementEntity::getSettlementType, type).groupBy(TXfSettlementEntity::getSettlementStatus);
+        lambda.eq(TXfSettlementEntity::getSettlementType, type)
+                .in(TXfSettlementEntity::getSettlementStatus, tabMap.keySet())
+                .groupBy(TXfSettlementEntity::getSettlementStatus);
+
         if (StringUtils.isNotBlank(settlementNo)) {
             lambda.eq(TXfSettlementEntity::getSettlementNo, settlementNo);
         }
