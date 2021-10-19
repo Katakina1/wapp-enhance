@@ -90,7 +90,7 @@ public class StatementController {
         val count = statementService.count(type, settlementNo, purchaserNo,
                 invoiceType, businessNo, taxRate);
         //全部统计
-        count.add(new StatementCount(StringUtils.EMPTY, count.stream().mapToInt(StatementCount::getTotal).sum()));
+        count.add(new StatementCount("0", count.stream().mapToInt(StatementCount::getTotal).sum()));
         log.info("税编分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(count);
     }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
 import com.xforceplus.wapp.modules.statement.models.Statement;
@@ -75,8 +76,8 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         return Tuple.of(statementConverter.map(page.getRecords()), page);
     }
 
-    public Collection<StatementCount> count(@NonNull Integer type, String settlementNo, String purchaserNo, String invoiceType,
-                                            String businessNo, String taxRate) {
+    public List<StatementCount> count(@NonNull Integer type, String settlementNo, String purchaserNo, String invoiceType,
+                                      String businessNo, String taxRate) {
         log.info("结算单tab统计,入参,type:{},settlementNo:{},purchaserNo:{},invoiceType:{},businessNo:{},taxRate:{}",
                 type, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
@@ -102,14 +103,14 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             lambda.in(TXfSettlementEntity::getSettlementNo, nos);
         }
         Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
-                .filter(it -> it.getValue().compareTo(8) != 0)
+                .filter(it -> it.getCode() != 8)
                 .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
                 .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
         wrapper.select("settlement_status as status, count(*) as total");
         getBaseMapper().selectMaps(wrapper)
-                .forEach(it -> tabMap.put(it.get("status").toString(),
-                        new StatementCount(it.get("status").toString(), (Integer) it.get("total"))));
+                .forEach(it -> tabMap.computeIfPresent(it.get("status").toString(),
+                        (k, v) -> new StatementCount(it.get("status").toString(), (Integer) it.get("total"))));
         log.debug("结算单tab统计,结果:{}", tabMap.values());
-        return tabMap.values();
+        return Lists.newArrayList(tabMap.values());
     }
 }
