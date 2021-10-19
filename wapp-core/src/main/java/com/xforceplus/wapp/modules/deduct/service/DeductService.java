@@ -394,8 +394,12 @@ public class DeductService   {
      * @return {boolean} true-更新成功, false-更新失败
      */
     private boolean updateBillStatus(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfBillDeductStatusEnum status) {
-        // TODO by 孙世勇
-        return true;
+        if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+            tXfBillDeductEntity.setLockFlag(status.getCode());
+        }else{
+           tXfBillDeductEntity.setStatus(status.getCode());
+        }
+        return tXfBillDeductExtDao.updateById(tXfBillDeductEntity) >0;
     }
 
 
