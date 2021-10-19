@@ -13,13 +13,16 @@ public class CommRedNotificationServiceTest extends BaseUnitTest {
 
     @Test
     public void testApplyAddRedNotification() {
+        //commRedNotificationService.applyDestroyRedNotification(1L);
     }
 
     @Test
-    public void testApplyCancelRedNotification() {
+    public void testApplyDestroyRedNotification() {
+        //commRedNotificationService.applyDestroyRedNotification(1L);
     }
 
     @Test
-    public void testConfirmCancelRedNotification() {
+    public void testConfirmDestroyRedNotification() {
+        //commRedNotificationService.confirmDestroyRedNotification(1L);
     }
 }
