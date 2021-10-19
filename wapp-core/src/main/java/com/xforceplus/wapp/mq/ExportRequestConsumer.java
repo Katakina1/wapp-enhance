@@ -1,5 +1,6 @@
-package com.xforceplus.wapp.export;
+package com.xforceplus.wapp.mq;
 
+import com.xforceplus.wapp.export.IExportHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -23,7 +24,7 @@ import java.util.Optional;
  **/
 @Component
 @Slf4j
-public class ExportRequestListener {
+public class ExportRequestConsumer {
 
     private final ApplicationContext applicationContext;
 
@@ -31,13 +32,13 @@ public class ExportRequestListener {
 
     final Map<String, IExportHandler> exportHandlers = new HashMap<>();
 
-    public ExportRequestListener(ApplicationContext applicationContext) {
+    public ExportRequestConsumer(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         final Map<String, IExportHandler> beansOfType = applicationContext.getBeansOfType(IExportHandler.class);
         beansOfType.forEach((k, v) -> exportHandlers.put(v.handlerName(), v));
     }
 
-    @JmsListener(destination = "${activemq.queue.export-request}")
+    @JmsListener(destination = "${activemq.queue-name.export-request}")
     public boolean doListen(Message<String> message, TextMessage textMessage) {
 
         final MessageHeaders headers = message.getHeaders();
