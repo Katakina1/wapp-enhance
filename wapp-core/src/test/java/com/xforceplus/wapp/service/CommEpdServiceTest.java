@@ -13,9 +13,11 @@ public class CommEpdServiceTest extends BaseUnitTest {
 
     @Test
     public void testDestroyEpdSettlement() {
+       // commEpdService.destroyEpdSettlement(1L);
     }
 
     @Test
     public void testAgainSplitPreInvoice() {
+       // commEpdService.againSplitPreInvoice(1L);
     }
 }
