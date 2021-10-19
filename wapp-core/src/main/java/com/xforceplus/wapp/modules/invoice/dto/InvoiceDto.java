@@ -26,7 +26,7 @@ public class InvoiceDto {
     /**
      * 开票日期
      */
-    private Date paperDrewDate;
+    private String paperDrewDate;
 
     /**
      * 购方名称
