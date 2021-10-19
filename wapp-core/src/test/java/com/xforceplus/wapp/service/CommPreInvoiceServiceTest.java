@@ -13,5 +13,6 @@ public class CommPreInvoiceServiceTest extends BaseUnitTest {
 
     @Test
     public void testFillPreInvoiceClaimRedNotification() {
+        //commPreInvoiceService.fillPreInvoiceClaimRedNotification(1L,"1111");
     }
 }

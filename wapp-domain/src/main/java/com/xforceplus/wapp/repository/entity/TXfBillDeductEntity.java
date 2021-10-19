@@ -1,9 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -17,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-19
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -156,6 +155,12 @@ EPD单:301待匹配结算单;302已匹配结算单
     @TableField("amount_with_tax")
     private BigDecimal amountWithTax;
 
+    /**
+     * 锁定状态 1 锁定 0 未锁定
+     */
+    @TableField("lock_flag")
+    private Integer lockFlag;
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -207,6 +212,8 @@ EPD单:301待匹配结算单;302已匹配结算单
     public static final String AMOUNT_WITHOUT_TAX = "amount_without_tax";
 
     public static final String AMOUNT_WITH_TAX = "amount_with_tax";
+
+    public static final String LOCK_FLAG = "lock_flag";
 
     public static final String ID = "id";
 

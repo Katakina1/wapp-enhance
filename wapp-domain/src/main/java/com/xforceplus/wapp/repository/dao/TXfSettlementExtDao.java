@@ -36,7 +36,7 @@ public interface TXfSettlementExtDao extends BaseMapper<TXfSettlementEntity> {
 
      * @return
      */
-    @Select("select  * from t_xf_settlement  where id > #{id} and  settlement_no =  #{settlementNo}   and status = #{status}  "  )
-     TXfSettlementEntity  querySettlementByNo(@Param("settlementNo") String settlementNo, @Param("status") Integer status);
+    @Select("select  * from t_xf_settlement  where id > #{id} and  settlement_no =  #{settlementNo}   and settlement_status = #{status}  "  )
+     TXfSettlementEntity  querySettlementByNo(@Param("id") Long id, @Param("settlementNo") String settlementNo, @Param("status") Integer status);
 
 }
