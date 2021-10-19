@@ -395,8 +395,35 @@ public class DeductService   {
      * @return {boolean} true-更新成功, false-更新失败
      */
     private boolean updateBillStatus(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfBillDeductStatusEnum status) {
-        // TODO by 孙世勇
-        return true;
+        if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
+            if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
+                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                    log.info("只有待匹配结算单的协议单才能撤销");
+                    return false;
+                }
+                if(TXfBillDeductStatusEnum.LOCK.equals(status)){
+                    log.info("只有待匹配结算单的协议单才能锁定");
+                    return false;
+                }
+            }
+        }else if(XFDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
+            if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
+                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                    log.info("只有待匹配结算单的EPD才能撤销");
+                    return false;
+                }
+                if(TXfBillDeductStatusEnum.LOCK.equals(status)){
+                    log.info("只有待匹配结算单的EPD才能锁定");
+                    return false;
+                }
+            }
+        }
+        if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+            tXfBillDeductEntity.setLockFlag(status.getCode());
+        }else{
+           tXfBillDeductEntity.setStatus(status.getCode());
+        }
+        return tXfBillDeductExtDao.updateById(tXfBillDeductEntity) >0;
     }
 
 
