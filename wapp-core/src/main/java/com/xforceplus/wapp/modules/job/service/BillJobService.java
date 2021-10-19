@@ -20,7 +20,7 @@ public interface BillJobService extends IService<TXfBillJobEntity> {
      * @param jobId
      * @return
      */
-    int lockJob(Integer jobId);
+    boolean lockJob(Integer jobId);
 
     /**
      * 根据job id解锁任务
@@ -28,7 +28,7 @@ public interface BillJobService extends IService<TXfBillJobEntity> {
      * @param jobId
      * @return
      */
-    int unlockJob(Integer jobId);
+    boolean unlockJob(Integer jobId);
 
     /**
      * 获取待执行的任务
@@ -37,12 +37,4 @@ public interface BillJobService extends IService<TXfBillJobEntity> {
      */
     List<Map<String, Object>> obtainAvailableJobs(int JobType);
 
-    /**
-     * 更新状态
-     *
-     * @param id
-     * @param status
-     * @return
-     */
-    boolean updateStatus(Integer id, int status);
 }
