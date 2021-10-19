@@ -16,4 +16,8 @@ public interface Constants {
      * Excel .xlsm文件后缀
      */
      String EXCEL_XLSM = ".xlsm";
+
+     String COMPANY_TYPE_SUPPLIER="8";
+
+     String COMPANY_TYPE_WALMART="5";
 }

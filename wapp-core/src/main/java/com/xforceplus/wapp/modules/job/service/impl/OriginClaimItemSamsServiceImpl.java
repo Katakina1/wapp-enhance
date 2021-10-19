@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
 import com.xforceplus.wapp.repository.dao.TXfOriginClaimItemSamsDao;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
+import org.springframework.stereotype.Service;
 
 /**
  * @program: wapp-generator
@@ -11,5 +12,6 @@ import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
  * @author: Kenny Wong
  * @create: 2021-10-15 17:36
  **/
+@Service
 public class OriginClaimItemSamsServiceImpl extends ServiceImpl<TXfOriginClaimItemSamsDao, TXfOriginClaimItemSamsEntity> implements OriginClaimItemSamsService {
 }
