@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
@@ -311,16 +313,45 @@ public class DeductService   {
     /**
      * 自动取消和解锁 自动解锁当天新增的EPD 协议单
      * @param deductionEnum
-     * @return
+     * @return true - 操作成功，不存在失败的场景
      */
-    public boolean unlockAndCancel(XFDeductionBusinessTypeEnum deductionEnum,TXfBillDeductEntity tXfBillDeductEntity) {
-        if (deductionEnum == XFDeductionBusinessTypeEnum.AGREEMENT_BILL || deductionEnum == XFDeductionBusinessTypeEnum.EPD_BILL) {
-
+    public boolean unlockAndCancel(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity) {
+        if (Objects.equals(deductionEnum, XFDeductionBusinessTypeEnum.AGREEMENT_BILL)
+                || Objects.equals(deductionEnum,XFDeductionBusinessTypeEnum.EPD_BILL)) {
+            // 获取协议单号
+            String reference = tXfBillDeductEntity.getAgreementReference();
+            if (Objects.nonNull(reference)) {
+                // 查找相同协议号的数据，取第一页数据，分页大小没有特殊要求，默认设置成10
+                Page<TXfBillDeductEntity> pages = tXfBillDeductExtDao
+                        .selectPage(new Page<>(1, 10),
+                                new QueryWrapper<TXfBillDeductEntity>()
+                                        .lambda()
+                                        .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getType())
+                                        .eq(TXfBillDeductEntity::getAgreementReference, reference)
+                        );
+                if (pages.getTotal() >0) {
+                    lockBill(deductionEnum, tXfBillDeductEntity, false);
+                }
+                tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+            } else {
+                log.error("非法的单据id={}，协议号agreement reference为空，跳过解锁取消逻辑", tXfBillDeductEntity.getId());
+            }
         }
-        tXfBillDeductExtDao.insert(tXfBillDeductEntity);
-        return false;
+        return true;
     }
 
+    /**
+     * 锁定协议单或EPD单
+     *
+     * @param deductionEnum {@link XFDeductionBusinessTypeEnum} 单据类型
+     * @param tXfBillDeductEntity {@link TXfBillDeductEntity} 单据实体
+     * @param lockStatus {boolean} 锁定状态 true-锁定, false-解锁
+     * @return {boolean} true-锁定或解锁成功, false-锁定或解锁失败
+     */
+    private boolean lockBill(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, boolean lockStatus) {
+        // TODO by 孙世勇
+        return true;
+    }
 
 
     /**
