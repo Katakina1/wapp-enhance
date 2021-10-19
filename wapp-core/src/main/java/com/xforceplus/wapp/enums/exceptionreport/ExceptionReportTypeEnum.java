@@ -22,7 +22,7 @@ public enum ExceptionReportTypeEnum {
      * 类型
      */
     @Getter
-    private int type;
+    private final int type;
     ExceptionReportTypeEnum(int type){
         this.type=type;
     }

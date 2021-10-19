@@ -1,21 +1,12 @@
 package com.xforceplus.wapp.modules.claim.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
-import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
-import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.TDxQuestionPaperEntity;
@@ -24,7 +15,6 @@ import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommClaimService;
 import com.xforceplus.wapp.service.CommRedNotificationService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +28,7 @@ import java.util.stream.Collectors;
  * 索赔的结算单相关逻辑操作
  */
 @Service
-public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEntity> {
+public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEntity> {
 
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
@@ -63,6 +53,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEnti
 
     @Autowired
     private DeductMapper deductMapper;
+
     /**
      * 申请索赔单不定案
      *
@@ -80,11 +71,22 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEnti
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if (tXfSettlementEntity.getSettlementStatus() == TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode()) {
+        doApplyVerdict(tXfSettlementEntity, billDeductIdList);
+    }
+
+    private void doApplyVerdict(TXfSettlementEntity tXfSettlementEntity, List<Long> billDeductIdList) {
+        if (Objects.equals(tXfSettlementEntity.getSettlementStatus(), TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode())) {
             throw new EnhanceRuntimeException("已经开具红票");
         }
         //索赔单
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
+        billDeductList.forEach(x -> {
+            final boolean bool = Objects.equals(x.getStatus(), TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
+            if (bool){
+                throw new EnhanceRuntimeException("索赔单:["+x.getBusinessNo()+"]已经是提交不定案待审核，不需要重新提交");
+            }
+        });
+
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
@@ -186,21 +188,33 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEnti
             throw new EnhanceRuntimeException("索赔单不存在");
         }
         List<String> settlementNoList = tXfBillDeductEntityList.stream().map(TXfBillDeductEntity::getRefSettlementNo).distinct().collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(settlementNoList)) {
+            throw new EnhanceRuntimeException("您所选择的索赔单没有对应的结算单数据");
+        }
+
         QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
         List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
         if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("索赔单没有对应的结算单数据");
         }
+
+        Map<String, TXfSettlementEntity> settlementMap = new HashMap<>();
+        tXfSettlementEntityList.forEach(x -> {
+            settlementMap.put(x.getSettlementNo(), x);
+        });
         //分组处理不定案
         Map<String, List<TXfBillDeductEntity>> settlementIdToBillDeductMap = tXfBillDeductEntityList.stream().collect(Collectors.groupingBy(TXfBillDeductEntity::getRefSettlementNo));
-        //<结算单编号,结算单id>
-        Map<String, Long> settlementIdToNoMap = tXfSettlementEntityList.stream().collect(Collectors.toMap(TXfSettlementEntity::getSettlementNo, TXfSettlementEntity::getId));
+        Map<TXfSettlementEntity, List<TXfBillDeductEntity>> settlementBillDeDuctMap = new HashMap<>();
+
+        settlementIdToBillDeductMap.forEach((k, v) -> {
+            settlementBillDeDuctMap.put(settlementMap.get(k), v);
+        });
+
         //<结算单id,Array<索赔单id列表>>
-        settlementIdToBillDeductMap.entrySet().forEach(entry -> {
-            Long settlementId = settlementIdToNoMap.get(entry.getKey());
-            List<Long> settlementDeductIdList = entry.getValue().stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
-            applyClaimVerdict(settlementId, settlementDeductIdList);
+        settlementBillDeDuctMap.forEach((key, value) -> {
+            List<Long> settlementDeductIdList = value.stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
+            doApplyVerdict(key, settlementDeductIdList);
 
         });
     }
@@ -252,7 +266,6 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao,TXfBillDeductEnti
             return str;
         }
     }
-
 
 
 }

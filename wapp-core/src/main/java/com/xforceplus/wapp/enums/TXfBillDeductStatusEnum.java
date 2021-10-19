@@ -29,7 +29,8 @@ public enum TXfBillDeductStatusEnum {
     EPD_NO_MATCH_SETTLEMENT(301, "EPD单:待匹配结算单"),
     EPD_MATCH_SETTLEMENT(302, "EPD单:已匹配结算单"),
     EPD_NO_MATCH_BLUE_INVOICE(303, "EPD单:待匹配蓝票"),
-
+    EPD_LOCK(304, "协议单:已锁定"),
+    EPD_UNLOCK(305, "协议单:已取消"),
     ;
 
     @Getter

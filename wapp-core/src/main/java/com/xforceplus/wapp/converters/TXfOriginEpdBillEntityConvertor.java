@@ -23,7 +23,7 @@ public interface TXfOriginEpdBillEntityConvertor {
     @Mapping(source = "amountInLocalCurrency", target = "amountWithTax")
     // @Mapping(source = "referenceKey2", target = "")
     // @Mapping(source = "reverseClearing", target = "")
-    @Mapping(source = "reference", target = "businessNo")
+    @Mapping(source = "reference", target = "reference")
     // @Mapping(source = "paymentBlock", target = "")
     @Mapping(source = "postingDate", target = "postingDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "invoiceReference", target = "invoiceReference")
