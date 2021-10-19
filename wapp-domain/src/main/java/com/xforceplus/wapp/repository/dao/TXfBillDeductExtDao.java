@@ -31,11 +31,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @return
      */
        @Select("select top ${limit} * from t_xf_bill_deduct " +
-            "where id> #{id} and create_date >= #{startDate} and create_date <= #{endDate} and business_type = #{billType} and status = #{status}  " +
+            "where id> #{id} and create_date >= #{startDate}   and business_type = #{billType} and status = #{status}  " +
             "order by id  ")
     List<TXfBillDeductEntity> queryUnMatchBill(@Param("id") Long id,
                                                @Param("startDate") Date startDate,
-                                               @Param("endDate") Date endDate,
+
                                                @Param("limit") Integer limit,
                                                @Param("billType") Integer billType,
                                                @Param("status") Integer status);
