@@ -10,7 +10,6 @@ import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.model.*;
-import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
@@ -21,11 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -305,7 +302,7 @@ public class DeductService   {
             /**
              * 匹配税编
              */
-            
+
         }
         return true;
     }
@@ -329,10 +326,17 @@ public class DeductService   {
                                         .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getType())
                                         .eq(TXfBillDeductEntity::getAgreementReference, reference)
                         );
-                if (pages.getTotal() >0) {
-                    lockBill(deductionEnum, tXfBillDeductEntity, false);
+                log.info("根据单据id={}的匹配到的拥有相同的reference={}的单据数量为{}", tXfBillDeductEntity.getId(), reference, pages.getTotal());
+                if (pages.getTotal() > 0) {
+                    TXfBillDeductEntity target = pages.getRecords().get(0);
+                    if (sameParties(tXfBillDeductEntity, target)) {
+                        int firstStatus = target.getStatus();
+                        // switch (firstStatus) {
+                        // }
+                        updateBillStatus(deductionEnum, tXfBillDeductEntity, false);
+                        tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+                    }
                 }
-                tXfBillDeductExtDao.insert(tXfBillDeductEntity);
             } else {
                 log.error("非法的单据id={}，协议号agreement reference为空，跳过解锁取消逻辑", tXfBillDeductEntity.getId());
             }
@@ -341,14 +345,29 @@ public class DeductService   {
     }
 
     /**
-     * 锁定协议单或EPD单
+     * 判断两个单据的交易双方是否一致
+     *
+     * @param source
+     * @param target
+     * @return
+     */
+    private boolean sameParties(TXfBillDeductEntity source, TXfBillDeductEntity target){
+        if (Objects.isNull(source) || Objects.isNull(target)) {
+            return false;
+        }
+        return Objects.equals(source.getPurchaserNo(), target.getPurchaserNo())
+                && Objects.equals(source.getSellerNo(), target.getSellerNo());
+    }
+
+    /**
+     * 更新协议单或EPD单
      *
      * @param deductionEnum {@link XFDeductionBusinessTypeEnum} 单据类型
      * @param tXfBillDeductEntity {@link TXfBillDeductEntity} 单据实体
-     * @param lockStatus {boolean} 锁定状态 true-锁定, false-解锁
-     * @return {boolean} true-锁定或解锁成功, false-锁定或解锁失败
+     * @param status {@link TXfBillDeductStatusEnum} 业务单状态
+     * @return {boolean} true-更新成功, false-更新失败
      */
-    private boolean lockBill(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, boolean lockStatus) {
+    private boolean updateBillStatus(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfBillDeductStatusEnum status) {
         // TODO by 孙世勇
         return true;
     }
