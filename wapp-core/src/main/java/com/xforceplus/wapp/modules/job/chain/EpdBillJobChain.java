@@ -17,8 +17,8 @@ public class EpdBillJobChain extends ChainBase {
     public EpdBillJobChain() {
         super();
         addCommand(new EpdBillDownloadCommand());
-        addCommand(new EpdBillSaveCommand());
         addCommand(new EpdLogItemSaveCommand());
+        addCommand(new EpdBillSaveCommand());
         addCommand(new EpdBillFilterCommand());
     }
 }

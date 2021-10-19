@@ -240,6 +240,11 @@ public class RecordInvoiceResponse {
     @ApiModelProperty("主键")
     private Long id;
 
+    @ApiModelProperty("红字信息编号")
+    private String redNoticeNumber;
+
+    @ApiModelProperty("税率")
+    private String taxRate;
 
 
 

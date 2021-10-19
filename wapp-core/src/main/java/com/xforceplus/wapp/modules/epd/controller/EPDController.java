@@ -7,6 +7,8 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import io.swagger.annotations.Api;
@@ -14,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -36,7 +39,7 @@ public class EPDController {
 
     @GetMapping("summary")
     @ApiOperation(value = "EPD页头统计")
-    public R summary(DeductListRequest request){
+    public R summary(DeductListRequest request) {
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.EPD_BILL);
         return R.ok(summary);
     }
@@ -46,5 +49,12 @@ public class EPDController {
     public R epds(@Valid DeductListRequest request) {
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.EPD_BILL);
         return R.ok(page);
+    }
+
+    @GetMapping("invoice")
+    public R invoiceList(InvoiceMatchListRequest request) {
+
+        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
+        return R.ok();
     }
 }

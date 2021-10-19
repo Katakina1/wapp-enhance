@@ -6,18 +6,27 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 索赔单业务逻辑
  */
 @Slf4j
-@RestController("/company")
+@RestController
 @Api(tags = "抬头信息管理")
+@RequestMapping(EnhanceApi.BASE_PATH+"/company")
 public class CompanyController {
 
     @Autowired
@@ -41,5 +50,27 @@ public class CompanyController {
         return R.ok();
     }
 
+    @ApiOperation("抬头信息导入")
+    @PutMapping("/import")
+    public R batchImport(@ApiParam("导入的文件") @RequestParam(required = true) MultipartFile file
+                         ) throws IOException {
+        if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
+            return R.fail("文件格式不正确");
+        } else if (file.isEmpty()) {
+            return R.fail("文件不能为空");
+        }
+        long start = System.currentTimeMillis();
+        Either<String, Integer> result = companyService.importData(file.getInputStream());
+        log.info("抬头信息导入,耗时:{}ms", System.currentTimeMillis() - start);
+        return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据", result.get())) : R.fail(result.getLeft());
+    }
+
+
+    @ApiOperation("购方机构列表")
+    @GetMapping("purchasers")
+    public R purchaserOrg(){
+        final List<TAcOrgEntity> purchaserOrgs = companyService.getPurchaserOrgs();
+        return R.ok(Collections.singletonMap("orgs",purchaserOrgs));
+    }
 
 }

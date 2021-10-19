@@ -23,16 +23,20 @@ spring:
         enabled: false
     # jackson时间格式化
   jackson:
-      time-zone: GMT+0
-      date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+0
+    date-format: yyyy-MM-dd HH:mm:ss
+
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+
   resources:
       static-locations: classpath:/static/,classpath:/views/
-  http:
+  servlet:
     multipart:
       max-file-size: 100MB
-      max-request-size: 100MB
-      enabled: true
       location: /tmp/tomcat
+      enabled: true
+      max-request-size: 100MB
   activemq:
     broker-url: tcp://10.100.2.17:61616
     user: admin
@@ -42,7 +46,7 @@ spring:
 activemq:
   queue-name:
     enhance_claim_verdict_queue: test.cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
-
+    export-request: cn.wm.host.enhance.export-request.queue # 导出申请
 # Mybatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath:mapper/daoext/*.xml
@@ -154,17 +158,17 @@ Esb:
   url:
     upload: http://10.100.2.17:8083/object/upload
     downLoad: http://10.100.2.17:8083/object/downLoad/
+
 # 注意事项
 # 1、请从研发团队获取标准的EXCEL模板
+# 1、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
 agreementBill:
   remote:
     path: /tmp/agrementBill/
     fileNameKeyWords:
   local:
     path: /tmp/agrementBill/
-  sheetName: 2 SAP-FBL5N
-  item:
-    sheetName: 1 SAP-ZARR0355原稿
+  sheetName: 原始协议单
 claimBill:
   remote:
     path: /tmp/claimBill/

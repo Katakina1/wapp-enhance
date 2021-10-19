@@ -11,11 +11,11 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 /**
  * <p>
-    * 原始协议单数据SAP-FBL5N
+    * 原始协议单数据
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -55,56 +55,98 @@ public class TXfOriginAgreementBillEntity extends BaseEntity {
     @TableField(value="update_time", update="now(3)" )
     private Date updateTime;
 
-    @TableField("amount_in_doc_curr")
-    private String amountInDocCurr;
+    /**
+     * 客户编码
+     */
+    @TableField("customer_number")
+    private String customerNumber;
 
-    @TableField("text")
-    private String text;
+    /**
+     * 客户名称
+     */
+    @TableField("customer_name")
+    private String customerName;
 
-    @TableField("clearing_date")
-    private String clearingDate;
+    /**
+     * 金额(含税)
+     */
+    @TableField("amount_with_tax")
+    private String amountWithTax;
 
-    @TableField("cleared_open_items_symbol")
-    private String clearedOpenItemsSymbol;
-
-    @TableField("document_number")
-    private String documentNumber;
-
-    @TableField("document_date")
-    private String documentDate;
-
-    @TableField("tax_code")
-    private String taxCode;
-
-    @TableField("reference_key_2")
-    private String referenceKey2;
-
-    @TableField("department")
-    private String department;
-
-    @TableField("company_code")
-    private String companyCode;
-
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
-
-    @TableField("posting_date")
-    private String postingDate;
-
-    @TableField("document_type")
-    private String documentType;
-
-    @TableField("reference")
-    private String reference;
-
-    @TableField("document_header_text")
-    private String documentHeaderText;
-
+    /**
+     * 协议类型编码
+     */
     @TableField("reason_code")
     private String reasonCode;
 
-    @TableField("account")
-    private String account;
+    /**
+     * 协议号
+     */
+    @TableField("reference")
+    private String reference;
+
+    /**
+     * 税码
+     */
+    @TableField("tax_code")
+    private String taxCode;
+
+    /**
+     * 扣款日期
+     */
+    @TableField("clearing_date")
+    private String clearingDate;
+
+    /**
+     * 税率
+     */
+    @TableField("tax_rate")
+    private String taxRate;
+
+    /**
+     * 供应商6D
+     */
+    @TableField("memo")
+    private String memo;
+
+    /**
+     * 协议类型
+     */
+    @TableField("reference_type")
+    private String referenceType;
+
+    /**
+     * 扣款公司编码
+     */
+    @TableField("company_code")
+    private String companyCode;
+
+    /**
+     * 凭证编号
+     */
+    @TableField("document_number")
+    private String documentNumber;
+
+    /**
+     * 凭证类型
+     */
+    @TableField("document_type")
+    private String documentType;
+
+    /**
+     * 入账日期
+     */
+    @TableField("posting_date")
+    private String postingDate;
+
+    /**
+     * 税额
+     */
+    @TableField("tax_amount")
+    private String taxAmount;
+
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
 
 
     public static final String JOB_ID = "job_id";
@@ -117,38 +159,36 @@ public class TXfOriginAgreementBillEntity extends BaseEntity {
 
     public static final String UPDATE_TIME = "update_time";
 
-    public static final String AMOUNT_IN_DOC_CURR = "amount_in_doc_curr";
+    public static final String CUSTOMER_NUMBER = "customer_number";
 
-    public static final String TEXT = "text";
+    public static final String CUSTOMER_NAME = "customer_name";
 
-    public static final String CLEARING_DATE = "clearing_date";
-
-    public static final String CLEARED_OPEN_ITEMS_SYMBOL = "cleared_open_items_symbol";
-
-    public static final String DOCUMENT_NUMBER = "document_number";
-
-    public static final String DOCUMENT_DATE = "document_date";
-
-    public static final String TAX_CODE = "tax_code";
-
-    public static final String REFERENCE_KEY_2 = "reference_key_2";
-
-    public static final String DEPARTMENT = "department";
-
-    public static final String COMPANY_CODE = "company_code";
-
-    public static final String ID = "id";
-
-    public static final String POSTING_DATE = "posting_date";
-
-    public static final String DOCUMENT_TYPE = "document_type";
-
-    public static final String REFERENCE = "reference";
-
-    public static final String DOCUMENT_HEADER_TEXT = "document_header_text";
+    public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
     public static final String REASON_CODE = "reason_code";
 
-    public static final String ACCOUNT = "account";
+    public static final String REFERENCE = "reference";
+
+    public static final String TAX_CODE = "tax_code";
+
+    public static final String CLEARING_DATE = "clearing_date";
+
+    public static final String TAX_RATE = "tax_rate";
+
+    public static final String MEMO = "memo";
+
+    public static final String REFERENCE_TYPE = "reference_type";
+
+    public static final String COMPANY_CODE = "company_code";
+
+    public static final String DOCUMENT_NUMBER = "document_number";
+
+    public static final String DOCUMENT_TYPE = "document_type";
+
+    public static final String POSTING_DATE = "posting_date";
+
+    public static final String TAX_AMOUNT = "tax_amount";
+
+    public static final String ID = "id";
 
 }

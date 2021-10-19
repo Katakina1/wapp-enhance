@@ -14,7 +14,6 @@ import java.util.Date;
 @AllArgsConstructor
 @TableName(value="t_xf_default_setting")
 public class DefaultSettingEntity {
-    private static final long serialVersionUID = 1L;
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 

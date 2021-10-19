@@ -42,9 +42,10 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(companyConverter.map(page.getRecords()), page);
     }
-    public TXfBlackWhiteCompanyEntity getBlackListBy6D(String supplier6d){
+    public TXfBlackWhiteCompanyEntity getBlackListBy6D(String supplier6d,String supplierType){
         QueryWrapper<TXfBlackWhiteCompanyEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_6D,supplier6d);
+        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE,supplierType);
         return getOne(wrapper);
 
     }
@@ -101,4 +102,21 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
     }
 
 
+    /**
+     * 判断供应商是否在黑白名单中
+     *
+     * @param supplierType {@link String} 0-黑名单 1-白名单
+     * @param memo 供应商6D
+     * @return
+     */
+    public boolean hitBlackOrWhiteList(String supplierType, String memo){
+        return 0 == count(
+                new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                        .lambda()
+                        // 黑名单
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
+                        // 供应商6D
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, memo)
+        );
+    }
 }
