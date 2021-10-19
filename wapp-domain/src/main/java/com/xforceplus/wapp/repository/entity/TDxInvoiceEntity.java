@@ -327,12 +327,6 @@ public class TDxInvoiceEntity extends BaseEntity {
     @TableField("belongs_to")
     private String belongsTo;
 
-    /**
-     * 剩余可匹配的额度，默认跟invoice_amount
-     */
-    @TableField("remaining_amount")
-    private BigDecimal remainingAmount;
-
     @TableField("ariba_confirm_date")
     private Date aribaConfirmDate;
 
