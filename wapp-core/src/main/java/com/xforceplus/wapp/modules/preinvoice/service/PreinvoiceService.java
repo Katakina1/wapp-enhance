@@ -3,15 +3,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.xforceplus.phoenix.split.model.*;
 import com.xforceplus.wapp.common.utils.BeanUtil;
+import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceItemDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementItemExtDao;
-import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
-import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementItemEntity;
+import com.xforceplus.wapp.repository.entity.*;
+import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommRedNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -75,7 +76,14 @@ public class PreinvoiceService {
     @Autowired
     private RestTemplate restTemplate;
     // 配置访问域名
-    private String domainUrl;
+    private String domainUrl= "";
+    @Autowired
+    private TXfPreInvoiceDao tXfPreInvoiceDao;
+    @Autowired
+    private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
+    @Autowired
+    private IDSequence idSequence;
+
     /**
      * 拆票方法
      * @param settlementNo
@@ -83,6 +91,13 @@ public class PreinvoiceService {
      * @return
      */
     public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo) {
+        //查询待拆票算单主信息，
+        //查询结算单明细信息
+        //查询开票信息
+        //组装拆票请求
+        //调用拆票请求
+        //保存拆票结果
+        //调用红字请求
         TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo( settlementNo,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode() );
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
@@ -93,13 +108,32 @@ public class PreinvoiceService {
         param.put("returnMode", "sync");
         param.put("taxDeviceType", 3);
         ResponseEntity<BaseResponse> res = restTemplate.postForEntity(domainUrl, createPreInvoiceParam, BaseResponse.class, param);
-        //查询待拆票算单主信息，
-        //查询结算单明细信息
-        //查询开票信息
-        //组装拆票请求
-        //调用拆票请求
-        //保存拆票结果
-        //调用红字请求
+        Object object = res.getBody().getResult();
+        List<SplitPreInvoiceInfo> splitPreInvoiceInfos = (List<SplitPreInvoiceInfo>) object;
+        for (SplitPreInvoiceInfo splitPreInvoiceInfo : splitPreInvoiceInfos) {
+            TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+            List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = new ArrayList<>();
+            BeanUtil.copyProperties(splitPreInvoiceInfo, tXfPreInvoiceEntity);
+            tXfPreInvoiceEntity.setId(idSequence.nextId());
+            tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
+            for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
+                TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
+                BeanUtil.copyProperties(preInvoiceItem, tXfPreInvoiceItemEntity);
+                tXfPreInvoiceItemEntity.setId(idSequence.nextId());
+                tXfPreInvoiceItemEntity.setPreInvoiceId(tXfPreInvoiceEntity.getId());
+                tXfPreInvoiceItemDao.insert(tXfPreInvoiceItemEntity);
+                tXfPreInvoiceItemEntities.add(tXfPreInvoiceItemEntity);
+            }
+            try {
+                PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
+                applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
+                applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);
+                commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
+            } catch (Exception e) {
+                log.error("发起红字信息申请 失败{} 预制发票id：{}",e,tXfPreInvoiceEntity.getId());
+            }
+        }
+
         return null;
     }
 

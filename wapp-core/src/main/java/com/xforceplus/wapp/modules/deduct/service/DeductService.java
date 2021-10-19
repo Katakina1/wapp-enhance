@@ -175,32 +175,32 @@ public class DeductService   {
         // receiveItemData(res, "");
          //receiveData(dataList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
         // receiveDone(XFDeductionBusinessTypeEnum.CLAIM_BILL);
-        int amount = 10;
-        List<DeductBillBaseData> dataList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            AgreementBillData deductBillBaseData = new AgreementBillData();
-            deductBillBaseData.setAmountWithoutTax(new BigDecimal(amount*2*(i+1)-i).negate());
-            deductBillBaseData.setBusinessNo(idSequence.nextId().toString());
-            deductBillBaseData.setBusinessType(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.getType());
-            deductBillBaseData.setBatchNo("BT112312312312");
-            deductBillBaseData.setDeductDate(new Date());
-            deductBillBaseData.setPurchaserNo("PT");
-            deductBillBaseData.setSellerNo("172164");
-            deductBillBaseData.setRemark("索赔");
-            deductBillBaseData.setTaxAmount(new BigDecimal("0.13").multiply(deductBillBaseData.getAmountWithoutTax()).setScale(2, RoundingMode.HALF_UP));
-             deductBillBaseData.setTaxRate(new BigDecimal("0.13"));
-            deductBillBaseData.setAmountWithTax(deductBillBaseData.getAmountWithoutTax().add(deductBillBaseData.getTaxAmount()));
-
-            deductBillBaseData.setMemo("172164");
-            deductBillBaseData.setReasonCode("reasonCode" + i);
-            deductBillBaseData.setReferenceType("ko");
-            deductBillBaseData.setDocumentNo("DocumentNo" + i);
-            deductBillBaseData.setDocumentType("LK" );
-            deductBillBaseData.setTaxCode("tx");
-            dataList.add(deductBillBaseData);
-        }
+//        int amount = 10;
+//        List<DeductBillBaseData> dataList = new ArrayList<>();
+//        for (int i = 0; i < 10; i++) {
+//            AgreementBillData deductBillBaseData = new AgreementBillData();
+//            deductBillBaseData.setAmountWithoutTax(new BigDecimal(amount*2*(i+1)-i).negate());
+//            deductBillBaseData.setBusinessNo(idSequence.nextId().toString());
+//            deductBillBaseData.setBusinessType(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.getType());
+//            deductBillBaseData.setBatchNo("BT112312312312");
+//            deductBillBaseData.setDeductDate(new Date());
+//            deductBillBaseData.setPurchaserNo("PT");
+//            deductBillBaseData.setSellerNo("172164");
+//            deductBillBaseData.setRemark("索赔");
+//            deductBillBaseData.setTaxAmount(new BigDecimal("0.13").multiply(deductBillBaseData.getAmountWithoutTax()).setScale(2, RoundingMode.HALF_UP));
+//             deductBillBaseData.setTaxRate(new BigDecimal("0.13"));
+//            deductBillBaseData.setAmountWithTax(deductBillBaseData.getAmountWithoutTax().add(deductBillBaseData.getTaxAmount()));
+//
+//            deductBillBaseData.setMemo("172164");
+//            deductBillBaseData.setReasonCode("reasonCode" + i);
+//            deductBillBaseData.setReferenceType("ko");
+//            deductBillBaseData.setDocumentNo("DocumentNo" + i);
+//            deductBillBaseData.setDocumentType("LK" );
+//            deductBillBaseData.setTaxCode("tx");
+//            dataList.add(deductBillBaseData);
+//        }
       // receiveData(dataList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-      receiveDone(XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+      //receiveDone(XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
     }
     /**
      * 接收索赔明细
