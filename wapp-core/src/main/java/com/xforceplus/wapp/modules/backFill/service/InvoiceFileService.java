@@ -103,6 +103,7 @@ public class InvoiceFileService{
     }
 
     private void saveImg(TXfInvoiceFileEntity ofd, String imgPreviewUrl) {
+
         final ResponseEntity<byte[]> forEntity = restTemplate.getForEntity(imgPreviewUrl, byte[].class);
         try {
             final String uploadFile = fileService.uploadFile(forEntity.getBody(), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
