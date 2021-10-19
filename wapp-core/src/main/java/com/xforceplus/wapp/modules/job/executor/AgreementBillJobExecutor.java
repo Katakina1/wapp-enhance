@@ -46,7 +46,7 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
                     Integer jobId = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));
                     Context context = new ContextBase(availableJob);
                     try {
-                        if (billJobService.lockJob(jobId) == 1) {
+                        if (billJobService.lockJob(jobId)) {
                             if (chain.execute(context)) {
                                 executePostAction(context);
                             }
