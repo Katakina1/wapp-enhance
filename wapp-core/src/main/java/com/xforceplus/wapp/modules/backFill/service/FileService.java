@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
+import cn.hutool.core.codec.Base64Encoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +11,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-//import sun.misc.BASE64Encoder;
 
 import java.io.IOException;
 
@@ -61,7 +61,7 @@ public class FileService {
         HttpHeaders headers = new HttpHeaders();
         ResponseEntity<byte[]> responseEntity = restTemplate.exchange(downLoadUrl + "?uploadId=" + uploadId, HttpMethod.GET, new HttpEntity<>(headers), byte[].class);
         if (responseEntity.getBody() != null) {
-            //return new BASE64Encoder().encode(responseEntity.getBody());
+            return  Base64Encoder.encode(responseEntity.getBody());
         }
         return null;
     }

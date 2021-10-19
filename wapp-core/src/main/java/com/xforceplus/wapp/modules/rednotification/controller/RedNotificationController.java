@@ -106,7 +106,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/confirm-reject")
     public Response<String> operation(@RequestBody RedNotificationConfirmRejectRequest request){
-        return Response.ok("成功");
+        return rednotificationService.operation(request);
     }
 
     @ApiOperation(value = "获取红字信息表模板", notes = "", response = Response.class, tags = {"red-notification",})
