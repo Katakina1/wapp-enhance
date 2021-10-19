@@ -1,8 +1,10 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
+import cn.hutool.core.codec.Base64Encoder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.google.common.io.BaseEncoding;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.apollo.msg.SealedMessage.Header;
@@ -18,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import sun.misc.BASE64Encoder;
-//import sun.misc.BASE64Encoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -168,16 +168,15 @@ public class DiscernService implements IntegrationResultHandler {
 	    
 		  GZIPOutputStream gzip = null;
 		  try {
-		    BASE64Encoder encoder = new BASE64Encoder();
-		    // 返回Base64编码过的字节数组字符串
-		    String tmpStr = encoder.encode(Objects.requireNonNull(file));
+ 		    // 返回Base64编码过的字节数组字符串
+		    String tmpStr = Base64Encoder.encode(Objects.requireNonNull(file));
 
 		    ByteArrayOutputStream out = new ByteArrayOutputStream();
 		    gzip = new GZIPOutputStream(out);
 		    gzip.write(tmpStr.getBytes());
 		    gzip.close();
 
-		    return encoder.encode(Objects.requireNonNull(out.toByteArray()));
+		    return Base64Encoder.encode(Objects.requireNonNull(out.toByteArray()));
 		  } catch (Exception e) {
 		    log.error("字符串压缩异常:{}", e);
 		  }
