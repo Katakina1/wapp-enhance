@@ -22,10 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,7 +40,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         this.billDeductExtDao = billDeductExtDao;
     }
 
-    public Tuple2<List<Statement>, Page<?>> page(Long current, Long size, @NonNull Integer type, List<String> settlementStatus,
+    public Tuple2<List<Statement>, Page<?>> page(Long current, Long size, @NonNull Integer type, Integer settlementStatus,
                                                  String settlementNo, String purchaserNo, String invoiceType,
                                                  String businessNo, String taxRate) {
         log.info("结算单分页查询,入参,type:{},settlementStatus:{},settlementNo:{},purchaserNo:{}," +
@@ -51,7 +48,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                 type, settlementStatus, settlementNo, purchaserNo, invoiceType, businessNo, taxRate, current, size);
         LambdaQueryChainWrapper<TXfSettlementEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
                 .eq(TXfSettlementEntity::getSettlementType, type);
-        if (CollectionUtils.isNotEmpty(settlementStatus)) {
+        if (Objects.nonNull(settlementStatus)) {
             wrapper.in(TXfSettlementEntity::getSettlementStatus, settlementStatus);
         }
         if (StringUtils.isNotBlank(settlementNo)) {
@@ -105,6 +102,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             lambda.in(TXfSettlementEntity::getSettlementNo, nos);
         }
         Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
+                .filter(it -> it.getValue().compareTo(8) != 0)
                 .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
                 .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
         wrapper.select("settlement_status as status, count(*) as total");

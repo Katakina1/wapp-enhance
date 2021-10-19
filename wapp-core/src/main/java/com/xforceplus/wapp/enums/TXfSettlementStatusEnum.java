@@ -1,11 +1,12 @@
 package com.xforceplus.wapp.enums;
 
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.Getter;
 
 /**
  * 结算单状态
  */
-public enum TXfSettlementStatusEnum {
+public enum TXfSettlementStatusEnum implements ValueEnum<Integer> {
 
     WAIT_CONFIRM(1,"待确认"),
     NO_UPLOAD_RED_INVOICE(2,"待开票"),
@@ -25,5 +26,10 @@ public enum TXfSettlementStatusEnum {
     TXfSettlementStatusEnum(Integer code, String desc){
         this.code = code;
         this.desc = desc;
+    }
+
+    @Override
+    public Integer getValue() {
+        return code;
     }
 }
