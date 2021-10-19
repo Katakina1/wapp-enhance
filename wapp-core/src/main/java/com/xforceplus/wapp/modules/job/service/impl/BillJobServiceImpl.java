@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.job.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
@@ -68,6 +69,10 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
         tXfBillJobEntity.setId(id);
         tXfBillJobEntity.setJobLockStatus(lockStatus);
         tXfBillJobEntity.setUpdateTime(new Date());
-        return tXfBillJobDao.updateById(tXfBillJobEntity);
+        return tXfBillJobDao.update(tXfBillJobEntity,
+                new UpdateWrapper<TXfBillJobEntity>()
+                        .lambda()
+                        .eq(TXfBillJobEntity::getId, id)
+                        .eq(TXfBillJobEntity::getJobLockStatus, !lockStatus));
     }
 }
