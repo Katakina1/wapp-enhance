@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.converters.TXfOriginClaimBillEntityConvertor;
+import com.xforceplus.wapp.converters.TXfOriginClaimItemHyperEntityConvertor;
+import com.xforceplus.wapp.converters.TXfOriginClaimItemSamsEntityConvertor;
+import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
+import com.xforceplus.wapp.modules.deduct.model.ClaimBillItemData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
@@ -15,6 +18,8 @@ import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -46,6 +51,10 @@ public class ClaimBillFilterCommand implements Command {
     @Autowired
     private DeductService deductService;
 
+    private static final String NEGATIVE_SYMBOL = "-";
+    private static final String HYPER = "Hyper";
+    private static final String SAMS = "sams";
+
     /**
      * 一次从数据库中拉取的最大行数
      */
@@ -62,6 +71,7 @@ public class ClaimBillFilterCommand implements Command {
                 return true;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -98,6 +108,37 @@ public class ClaimBillFilterCommand implements Command {
      */
     @SuppressWarnings("unchecked")
     private void process(int jobId, Context context) {
+        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT))) {
+            context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.BILL.getCode());
+        }
+        Object jobEntryObject = context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT);
+        BillJobEntryObjectEnum jeo = BillJobEntryObjectEnum.fromCode(Integer.parseInt(String.valueOf(jobEntryObject)));
+        assert jeo != null;
+        switch (jeo) {
+            case BILL:
+                processBill(jobId, context);
+                processItemHyper(jobId, context);
+                processItemSams(jobId, context);
+                break;
+            case ITEM:
+                processItemHyper(jobId, context);
+                processItemSams(jobId, context);
+                break;
+            case ITEM_SAMS:
+                processItemSams(jobId, context);
+                break;
+            default:
+                log.error("未知的job_entry_object={}", jobEntryObject);
+                context.put(TXfBillJobEntity.REMARK, String.format("未知的job_entry_object=%s", String.valueOf(jobEntryObject)));
+        }
+    }
+
+    /**
+     * @param jobId
+     * @param context
+     */
+    @SuppressWarnings("unchecked")
+    private void processBill(int jobId, Context context) {
         Object jobEntryProgress = context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS);
         // 上次完成页
         long last = 0;
@@ -120,7 +161,81 @@ public class ClaimBillFilterCommand implements Command {
             );
             // 总页数
             pages = page.getPages();
-            filter(page.getRecords());
+            filterBill(page.getRecords());
+            context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
+        } while (last < pages);
+        // 全部处理完成后清空处理进度
+        context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.ITEM.getCode());
+        context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, 0);
+    }
+
+    /**
+     * @param jobId
+     * @param context
+     */
+    @SuppressWarnings("unchecked")
+    private void processItemHyper(int jobId, Context context) {
+        Object jobEntryProgress = context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS);
+        // 上次完成页
+        long last = 0;
+        // 获取当前进度
+        if (Objects.isNull(jobEntryProgress)) {
+            context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, 0);
+        } else {
+            // 记录上次完成的页数，这次从last+1开始
+            last = Long.parseLong(String.valueOf(jobEntryProgress));
+        }
+        // 先获取分页总数
+        long pages;
+        List<String> negativeExchangeNos = obtainNegativeExchangeNos(jobId, HYPER);
+        do {
+            Page<TXfOriginClaimItemHyperEntity> page = itemHyperService.page(
+                    new Page<>(++last, BATCH_COUNT),
+                    new QueryWrapper<TXfOriginClaimItemHyperEntity>()
+                            .lambda()
+                            .eq(TXfOriginClaimItemHyperEntity::getJobId, jobId)
+                            .orderBy(true, true, TXfOriginClaimItemHyperEntity::getId)
+            );
+            // 总页数
+            pages = page.getPages();
+            filterItemHyper(negativeExchangeNos, page.getRecords());
+            context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
+        } while (last < pages);
+        // 全部处理完成后清空处理进度
+        context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.ITEM_SAMS.getCode());
+        context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, 0);
+    }
+
+    /**
+     * @param jobId
+     * @param context
+     */
+    @SuppressWarnings("unchecked")
+    private void processItemSams(int jobId, Context context) {
+        Object jobEntryProgress = context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS);
+        // 上次完成页
+        long last = 0;
+        // 获取当前进度
+        if (Objects.isNull(jobEntryProgress)) {
+            context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, 0);
+        } else {
+            // 记录上次完成的页数，这次从last+1开始
+            last = Long.parseLong(String.valueOf(jobEntryProgress));
+        }
+        // 先获取分页总数
+        long pages;
+        List<String> negativeExchangeNos = obtainNegativeExchangeNos(jobId, SAMS);
+        do {
+            Page<TXfOriginClaimItemSamsEntity> page = itemSamsService.page(
+                    new Page<>(++last, BATCH_COUNT),
+                    new QueryWrapper<TXfOriginClaimItemSamsEntity>()
+                            .lambda()
+                            .eq(TXfOriginClaimItemSamsEntity::getJobId, jobId)
+                            .orderBy(true, true, TXfOriginClaimItemSamsEntity::getId)
+            );
+            // 总页数
+            pages = page.getPages();
+            filterItemSams(negativeExchangeNos, page.getRecords());
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
     }
@@ -130,12 +245,69 @@ public class ClaimBillFilterCommand implements Command {
      *
      * @param list
      */
-    private void filter(List<TXfOriginClaimBillEntity> list) {
+    private void filterBill(List<TXfOriginClaimBillEntity> list) {
         List<DeductBillBaseData> newList = list
                 .stream()
-                // .filter(v -> !speacialCompanyService.count("0", v.getMemo()))
+                // 索赔单不含税金额为负数
+                .filter(v -> v.getCostAmount().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
                 .collect(Collectors.toList());
-        deductService.receiveData(newList,   XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+    }
+
+    /**
+     * 过滤转换入库
+     *
+     * @param negativeExchangeNos
+     * @param list
+     */
+    private void filterItemHyper(List<String> negativeExchangeNos, List<TXfOriginClaimItemHyperEntity> list) {
+        List<ClaimBillItemData> newList = list
+                .stream()
+                // 索赔单不含税金额为负数
+                .filter(v -> negativeExchangeNos.contains(v.getClaimNbr()))
+                // 索赔单明细不含税金额为负数
+                .filter(v -> v.getLineCost().startsWith(NEGATIVE_SYMBOL))
+                .map(TXfOriginClaimItemHyperEntityConvertor.INSTANCE::toClaimBillItemData)
+                .collect(Collectors.toList());
+        deductService.receiveItemData(newList, null);
+    }
+
+    /**
+     * 过滤转换入库
+     *
+     * @param negativeExchangeNos
+     * @param list
+     */
+    private void filterItemSams(List<String> negativeExchangeNos, List<TXfOriginClaimItemSamsEntity> list) {
+        List<ClaimBillItemData> newList = list
+                .stream()
+                // 索赔单不含税金额为负数
+                .filter(v -> negativeExchangeNos.contains(v.getClaimNumber()))
+                // 索赔单明细不含税金额为负数
+                .filter(v -> v.getShipCost().startsWith(NEGATIVE_SYMBOL))
+                .map(TXfOriginClaimItemSamsEntityConvertor.INSTANCE::toClaimBillItemData)
+                .collect(Collectors.toList());
+        deductService.receiveItemData(newList, null);
+    }
+
+    /**
+     * 获取负数的索赔号列表
+     *
+     * @param jobId
+     * @param storeType
+     * @return
+     */
+    private List<String> obtainNegativeExchangeNos(int jobId, String storeType) {
+        return service.list(
+                new QueryWrapper<TXfOriginClaimBillEntity>()
+                        .lambda()
+                        .eq(TXfOriginClaimBillEntity::getJobId, jobId)
+                        .eq(TXfOriginClaimBillEntity::getStoreType, storeType)
+                        .likeLeft(TXfOriginClaimBillEntity::getAmountWithTax, NEGATIVE_SYMBOL)
+        )
+                .stream()
+                .map(TXfOriginClaimBillEntity::getExchangeNo)
+                .collect(Collectors.toList());
     }
 }

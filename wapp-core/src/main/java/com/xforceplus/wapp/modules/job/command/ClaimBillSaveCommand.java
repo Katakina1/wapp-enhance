@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL_OBJECT;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 
 /**
  * @program: wapp-generator
@@ -49,8 +49,7 @@ public class ClaimBillSaveCommand implements Command {
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
-        Object jobAcquisitionObject = context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT);
-        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(jobAcquisitionObject)) {
+        if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -59,6 +58,7 @@ public class ClaimBillSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -85,7 +85,7 @@ public class ClaimBillSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.equals(BILL_OBJECT, jobAcquisitionObject);
+        return Objects.equals(BILL.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -137,6 +137,7 @@ public class ClaimBillSaveCommand implements Command {
             // 正常处理结束，清空游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标

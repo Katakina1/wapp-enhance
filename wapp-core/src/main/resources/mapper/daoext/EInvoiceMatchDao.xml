@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao">
+
+    <insert id="saveElectronInvoice" useGeneratedKeys="true" keyProperty="invoice.id"
+            parameterType="com.xforceplus.wapp.repository.entity.TDxInvoiceEntity">
+        INSERT INTO t_dx_invoice WITH(ROWLOCK) (
+        		invoice_type,
+	     		invoice_code,
+	     		invoice_no,
+        		gf_tax_no,
+        		gf_name,
+        		xf_tax_no,
+        		xf_name,
+        		invoice_amount,
+        		tax_amount,
+        		total_amount,
+        		invoice_date,
+        		user_account,
+        		user_name,
+        		valid,
+        		uuid,
+        		create_date,
+        		update_date,
+        		scan_id,
+        		notes,
+        		check_code,
+        		qs_status,
+        		qs_type,
+        		qs_date,bindyesorno,packyesorno,rebateyesorno,flow_type
+        ,file_type,dy_invoice_no,dy_invoice_code
+        ,jv_code,venderid,company_code
+        	)
+        VALUES (#{invoice.invoiceType},#{invoice.invoiceCode},#{invoice.invoiceNo},#{invoice.gfTaxNo},
+        		#{invoice.gfName},#{invoice.xfTaxNo},#{invoice.xfName},
+        		#{invoice.invoiceAmount},#{invoice.taxAmount},#{invoice.totalAmount},#{invoice.invoiceDate, jdbcType=TIMESTAMP},
+        		#{invoice.userAccount},#{invoice.userName},
+        		1,#{invoice.uuid},getdate(),getdate(),
+        		#{invoice.scanId},#{invoice.notes},#{invoice.checkCode},
+        		#{invoice.qsStatus},#{invoice.qsType},getdate(),0,1,0,#{invoice.flowType},#{invoice.fileType},#{invoice.invoiceNo},#{invoice.invoiceCode}
+        ,#{invoice.jvCode},#{invoice.vendorId},#{invoice.companyCode}
+        )
+    </insert>
+
+    <update id="updateRebateyesorno">
+        update t_dx_invoice set rebateyesorno=#{rebateyesorno} where id=#{id}
+    </update>
+
+
+    <resultMap id="ElectronInvoiceMap"
+               type="com.xforceplus.wapp.repository.entity.TDxInvoiceEntity">
+        <id column="id" property="id"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="invoice_serial_no" property="invoiceSerialNo"/>
+        <result column="gf_tax_no" property="gfTaxNo"/>
+        <result column="gf_name" property="gfName"/>
+        <result column="xf_tax_no" property="xfTaxNo"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="user_account" property="userAccount"/>
+        <result column="user_name" property="userName"/>
+        <result column="qs_status" property="qsStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="qs_date" property="qsDate"/>
+        <result column="valid" property="valid"/>
+        <result column="check_code" property="checkCode"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="scan_id" property="scanId"/>
+        <result column="uuid" property="uuid"/>
+        <result column="notes" property="notes"/>
+    </resultMap>
+
+    <select id="selectElectronInvoiceById" resultMap="ElectronInvoiceMap">
+        select
+        id,
+        invoice_no,
+        invoice_code,
+        qs_status,
+        check_code,
+        invoice_date,
+        gf_tax_no,
+        xf_tax_no,
+        invoice_amount,
+        tax_amount,
+        total_amount,
+        scan_id,
+        uuid
+        from t_dx_invoice WITH(NOLOCK)
+        where valid = 1
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+        <if test="uuid != null and uuid != ''">
+            and uuid = #{uuid}
+        </if>
+    </select>
+    <select id="selectElectronInvoiceByUUid" resultMap="ElectronInvoiceMap">
+        select
+        id,
+        invoice_no,
+        invoice_code,
+        qs_status,
+        check_code,
+        invoice_date,
+        gf_tax_no,
+        xf_tax_no,
+        invoice_amount,
+        tax_amount,
+        total_amount,
+        scan_id,
+        uuid
+        from t_dx_invoice WITH(NOLOCK)
+        where  uuid = #{uuid}
+    </select>
+
+    <delete id="deleteRecordInvoice">
+		DELETE FROM t_dx_record_invoice WITH(ROWLOCK) WHERE uuid = #{uuid}
+	</delete>
+
+    <delete id="deleteRecordInvoiceDetail">
+		DELETE FROM t_dx_record_invoice_detail WITH(ROWLOCK) WHERE uuid = #{uuid}
+	</delete>
+
+    <update id="updateElectronInvoice">
+        UPDATE t_dx_invoice WITH(ROWLOCK)
+        SET
+        gf_tax_no=#{invoice.gfTaxNo},
+        gf_name=#{invoice.gfName},
+        xf_tax_no=#{invoice.xfTaxNo},
+        xf_name=#{invoice.xfName},
+        <if test="invoice.userAccount != null and invoice.userAccount != ''">
+            user_account=#{invoice.userAccount},
+        </if>
+        <if test="invoice.userName != null and invoice.userName != ''">
+            user_name=#{invoice.userName},
+        </if>
+        total_amount=#{invoice.totalAmount},
+        invoice_amount=#{invoice.invoiceAmount},
+        tax_amount=#{invoice.taxAmount},
+        invoice_date=#{invoice.invoiceDate},
+        qs_status=#{invoice.qsStatus},
+        notes=#{invoice.notes},
+        update_date = getdate(),
+        qs_date = getdate(),
+        check_code = #{invoice.checkCode}
+        WHERE invoice_code=#{invoice.invoiceCode} and invoice_no=#{invoice.invoiceNo}
+    </update>
+
+
+	<update id="updateElectronInvoiceImg">
+		UPDATE t_dx_invoice_img WITH(ROWLOCK)
+		SET
+		image_path = #{invoiceImage.imagePath},
+		scan_id = #{invoiceImage.scanId},
+		update_date = getdate()
+		WHERE uuid=#{invoiceImage.uuid}
+	</update>
+
+    <delete id="deleteInvoiceImg">
+		DELETE FROM t_dx_invoice_img WITH(ROWLOCK) WHERE uuid = #{uuid}
+	</delete>
+
+    <select id="selectByIds" resultType="com.xforceplus.wapp.repository.entity.TDxInvoiceEntity">
+		select *
+		from t_dx_invoice WITH(NOLOCK)
+		where id in
+		<foreach collection="ids" close=")" open="(" separator="," item="id">
+			#{id}
+		</foreach>
+	</select>
+
+    <insert id="saveDelElectronInvoice"
+            parameterType="com.xforceplus.wapp.repository.entity.TDxInvoiceEntity">
+		INSERT INTO t_dx_invoice_del WITH(ROWLOCK)(
+		invoice_type,
+		invoice_code,
+		invoice_no,
+		gf_tax_no,
+		gf_name,
+		xf_tax_no,
+		invoice_amount,
+		tax_amount,
+		total_amount,
+		invoice_date,
+		user_account,
+		user_name,
+		valid,
+		uuid,
+		create_date,
+		update_date,
+		scan_id,
+		notes,
+		qs_date
+		)
+		VALUES (#{invoice.invoiceType},#{invoice.invoiceCode},#{invoice.invoiceNo},#{invoice.gfTaxNo},
+		#{invoice.gfName},#{invoice.xfTaxNo},
+		#{invoice.invoiceAmount},#{invoice.taxAmount},#{invoice.totalAmount},#{invoice.invoiceDate, jdbcType=TIMESTAMP},
+		#{invoice.userAccount},#{invoice.userName},
+		#{invoice.valid},#{invoice.uuid},#{invoice.createDate, jdbcType=TIMESTAMP},#{invoice.updateDate, jdbcType=TIMESTAMP},
+		#{invoice.scanId},#{invoice.notes},#{invoice.qsDate})
+	</insert>
+
+
+    <update id="updateDelRecordInvoice">
+		UPDATE t_dx_invoice_del WITH(ROWLOCK)
+		SET
+		invoice_type = #{invoice.invoiceType},
+		invoice_code = #{invoice.invoiceCode},
+		invoice_no = #{invoice.invoiceNo},
+		gf_tax_no = #{invoice.gfTaxNo},
+		gf_name = #{invoice.gfName},
+		xf_tax_no = #{invoice.xfTaxNo},
+		invoice_amount = #{invoice.invoiceAmount},
+		tax_amount = #{invoice.taxAmount},
+		total_amount = #{invoice.totalAmount},
+		invoice_date = #{invoice.invoiceDate, jdbcType=TIMESTAMP},
+		user_account = #{invoice.userAccount},
+		user_name = #{invoice.userName},
+		valid = #{invoice.valid},
+		create_date = #{invoice.createDate, jdbcType=TIMESTAMP},
+		update_date = #{invoice.updateDate, jdbcType=TIMESTAMP},
+		scan_id = #{invoice.scanId},
+		notes = #{invoice.notes},
+		qs_date = #{invoice.qsDate}
+		WHERE uuid = #{invoice.uuid}
+	</update>
+
+    <select id="selectDelInvoiceCount" resultType="Integer">
+		select count(1)
+		from t_dx_invoice_del WITH(NOLOCK)
+		where uuid = #{uuid}
+	</select>
+
+    <update id="updateRecordInvoice">
+		UPDATE t_dx_record_invoice WITH(ROWLOCK)
+		SET
+		qs_date = getdate()
+		qs_status = 1,
+		qs_type = 5
+		WHERE uuid = #{uuid}
+	</update>
+
+	<select id="selectGfTaxNo" resultType="string">
+		SELECT t.taxno
+		FROM t_ac_org t WITH(NOLOCK)
+		INNER JOIN t_ac_user_taxno tuser ON tuser.orgid = t.orgid
+		WHERE tuser.userid = #{userId}
+	</select>
+
+
+    <!--匹配成功更新底账表-->
+    <update id="updateInvoiceMatch">
+        UPDATE t_dx_record_invoice WITH(ROWLOCK)
+        SET dxhy_match_status=#{matchStatus},
+        settlementAmount=#{invoiceAmount},
+        red_money_amount=#{invoiceAmount},
+        matchno=#{matchno},
+        match_date=getdate(),
+        venderid=#{venderid},
+        flow_type='1',
+        scan_match_status='1',
+        confirm_status='1',
+        confirm_reason=#{confirmReason},
+        confirm_time=GETDATE(),
+        confirm_user_id=#{confirmUserId},
+        is_return_ticket='1'
+        WHERE id=#{id}
+        and dxhy_match_status in('0','1','5','6')
+    </update>
+
+
+
+
+    <select id="selectGfByJvCode" resultType="com.xforceplus.wapp.repository.entity.OrgEntity">
+        select taxno ,
+        taxname ,
+         orgname,
+        company_code  company
+        from t_ac_org WITH(NOLOCK) where orgcode=#{jvCode}
+    </select>
+
+
+    <insert id="saveInvoice">
+        INSERT INTO t_dx_record_invoice WITH(ROWLOCK) (
+        invoice_code,
+        invoice_no,
+        invoice_amount,
+        invoice_date,
+        total_amount,
+        tax_amount,
+        tax_rate,
+        venderid,
+        dxhy_match_status,
+        source_system,
+        detail_yesorno,
+        uuid,
+        jvcode,
+        gf_name,
+        invoice_type,
+        gf_tax_no,
+        check_code,
+        xf_name,
+        xf_tax_no,
+        flow_type,
+        create_date,
+        invoice_status,
+        tp_status,
+        company_code,
+        is_del
+        ) VALUES (
+        #{invoiceCode},
+        #{invoiceNo},
+        #{invoiceAmount},
+        #{invoiceDate},
+        #{totalAmount},
+        #{taxAmount},
+        #{taxRate},
+        #{venderid},
+        '0',
+        #{sourceSystem},
+        '1',
+        #{uuid},
+        #{jvcode},
+        #{gfName},
+        #{invoiceType},
+        #{gfTaxno},
+        #{checkNo},
+        #{xfName},
+        #{xfTaxNo},
+        '1',
+        getdate(),
+        #{invoiceStatus},
+        '0',
+        #{companyCode},
+        '0'
+        )
+    </insert>
+
+
+    <insert id="saveInvoicePP">
+        INSERT INTO t_dx_record_invoice WITH(ROWLOCK) (
+        invoice_code,
+        invoice_no,
+        dk_invoiceAmount,
+        invoice_amount,
+        invoice_date,
+        total_amount,
+        tax_amount,
+        tax_rate,
+        venderid,
+        dxhy_match_status,
+        source_system,
+        detail_yesorno,
+        uuid,
+        jvcode,
+        gf_name,
+        invoice_type,
+        gf_tax_no,
+        check_code,
+        xf_name,
+        xf_tax_no,
+        flow_type,
+        create_date,
+        tp_status,
+        company_code,
+        invoice_status,
+        is_del
+        ) VALUES (
+        #{invoiceCode},
+        #{invoiceNo},
+        #{invoiceAmount},
+        #{invoiceAmount},
+        #{invoiceDate},
+        #{totalAmount},
+        #{taxAmount},
+        #{taxRate},
+        #{venderid},
+        '0',
+        #{sourceSystem},
+        '1',
+        #{uuid},
+        #{jvcode},
+        #{gfName},
+        #{invoiceType},
+        #{gfTaxno},
+        #{checkNo},
+        #{xfName},
+        #{xfTaxNo},
+        '1',
+        getdate(),
+        '0',
+        #{companyCode},
+        #{invoiceStatus},
+        '0'
+        )
+    </insert>
+</mapper>

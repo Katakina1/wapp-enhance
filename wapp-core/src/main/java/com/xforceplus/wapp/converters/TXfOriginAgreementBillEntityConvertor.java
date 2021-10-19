@@ -1,12 +1,13 @@
 package com.xforceplus.wapp.converters;
 
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
+import com.xforceplus.wapp.modules.job.command.EpdBillFilterCommand;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(imports = EpdBillFilterCommand.class)
 public interface TXfOriginAgreementBillEntityConvertor {
 
     TXfOriginAgreementBillEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginAgreementBillEntityConvertor.class);
@@ -26,9 +27,9 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 税码
     @Mapping(source = "taxCode", target = "taxCode")
     // 扣款日期
-    @Mapping(source = "clearingDate", target = "deductDate")
+    @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     // 税率
-    @Mapping(source = "taxRate", target = "taxRate")
+    @Mapping(target = "taxRate", defaultValue = "java(EpdBillFilterCommand.TAX_CODE_TRANSLATOR.get(tXfOriginAgreementBillEntity.getTaxCode()))")
     // 供应商6D
     @Mapping(source = "memo", target = "memo")
     // 协议类型
@@ -40,7 +41,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 凭证类型
     @Mapping(source = "documentType", target = "documentType")
     // 入账日期
-    @Mapping(source = "postingDate", target = "postingDate")
+    @Mapping(source = "postingDate", target = "postingDate", dateFormat = "yyyy/MM/dd")
     // 税额
     @Mapping(source = "taxAmount", target = "taxAmount")
     /**

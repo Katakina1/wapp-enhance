@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.enums;
 
 import com.google.common.collect.Maps;
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,7 +15,7 @@ import java.util.Map;
  */
 @AllArgsConstructor
 @Getter
-public enum InvoiceTypeEnum {
+public enum InvoiceTypeEnum implements ValueEnum<String> {
 
     /**
      * 专票
@@ -36,23 +37,22 @@ public enum InvoiceTypeEnum {
 
     TOLLS_INVOICE("14", "增值税电子普通发票（通行费）");
 
-    private String resultCode;
-
-    private String resultTip;
+    private final String value;
+    private final String resultTip;
 
     public static Map<String, String> invoiceTypeMap() {
         final Map<String, String> map = Maps.newHashMapWithExpectedSize(6);
-        map.put(SPECIAL_INVOICE.getResultCode(), SPECIAL_INVOICE.getResultTip());
-        map.put(MOTOR_INVOICE.getResultCode(), MOTOR_INVOICE.getResultTip());
-        map.put(GENERAL_INVOICE.getResultCode(), GENERAL_INVOICE.getResultTip());
-        map.put(E_INVOICE.getResultCode(), E_INVOICE.getResultTip());
-        map.put(VOLUME_INVOICE.getResultCode(), VOLUME_INVOICE.getResultTip());
-        map.put(TOLLS_INVOICE.getResultCode(), TOLLS_INVOICE.getResultTip());
+        map.put(SPECIAL_INVOICE.getValue(), SPECIAL_INVOICE.getResultTip());
+        map.put(MOTOR_INVOICE.getValue(), MOTOR_INVOICE.getResultTip());
+        map.put(GENERAL_INVOICE.getValue(), GENERAL_INVOICE.getResultTip());
+        map.put(E_INVOICE.getValue(), E_INVOICE.getResultTip());
+        map.put(VOLUME_INVOICE.getValue(), VOLUME_INVOICE.getResultTip());
+        map.put(TOLLS_INVOICE.getValue(), TOLLS_INVOICE.getResultTip());
         return map;
     }
 
     public static boolean isElectronic(String invoiceType) {
-        return E_INVOICE.getResultCode().equals(invoiceType) || E_SPECIAL_INVOICE.getResultCode().equals(invoiceType);
+        return E_INVOICE.getValue().equals(invoiceType) || E_SPECIAL_INVOICE.getValue().equals(invoiceType);
     }
 
 }

@@ -9,7 +9,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum OverdueTypeEnum implements ValueEnum<Integer> {
+public enum ServiceTypeEnum implements ValueEnum<Integer> {
     /**
      *    1.索赔、2.协议、3.EPD
      */

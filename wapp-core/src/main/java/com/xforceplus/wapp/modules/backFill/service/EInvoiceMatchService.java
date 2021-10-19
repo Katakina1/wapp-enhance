@@ -89,7 +89,7 @@ public class EInvoiceMatchService {
 
 
     @Transactional
-    public void matchResultAfterVerify(VerificationBack verificationBack, SealedMessage.Header header) {
+    public void   matchResultAfterVerify(VerificationBack verificationBack, SealedMessage.Header header) {
         String taskId = verificationBack.getTaskId();
         final TXfElecUploadRecordDetailEntity electronicUploadRecordDetailEntity = electronicUploadRecordDetailService.getByVerifyTaskId(taskId);
         if (!verificationBack.isOK()) {
@@ -163,7 +163,9 @@ public class EInvoiceMatchService {
                     electronicUploadRecordService.increaseSucceed(electronicUploadRecordDetailEntity.getBatchNo());
                     //保存发票号码代码到上传详情
                     electronicUploadRecordDetailService.updateById(electronicUploadRecordDetailEntity);
-                    invoiceFileService.save(electronicUploadRecordDetailEntity, invoiceMain);
+                    if(electronicUploadRecordDetailEntity.getFileType() != null){
+                        invoiceFileService.save(electronicUploadRecordDetailEntity, invoiceMain);
+                    }
                     return true;
                 }
         );

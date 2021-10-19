@@ -38,7 +38,7 @@ public class TAcOrgEntity extends BaseEntity {
      * 机构名称
      */
     @TableField("orgname")
-    private String orgNme;
+    private String orgName;
 
     /**
      * 纳税人识别号
@@ -243,9 +243,8 @@ public class TAcOrgEntity extends BaseEntity {
      */
     @TableField("quota")
     private Double quota;
-
     @TableField("orgid")
-    private Integer orgId;
+    private Long orgId;
 
     @TableField("is_mm")
     private String isMm;

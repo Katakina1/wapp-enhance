@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemEntity;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -21,6 +22,7 @@ import java.util.List;
 * @author malong@xforceplus.com
 * @since 2021-10-12
 */
+@Mapper
 public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEntity> {
 
     /**

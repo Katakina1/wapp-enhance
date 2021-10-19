@@ -155,8 +155,10 @@ Esb:
   url:
     upload: http://10.100.2.17:8083/object/upload
     downLoad: http://10.100.2.17:8083/object/downLoad/
+
 # 注意事项
 # 1、请从研发团队获取标准的EXCEL模板
+# 1、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
 agreementBill:
   remote:
     path: /tmp/agrementBill/

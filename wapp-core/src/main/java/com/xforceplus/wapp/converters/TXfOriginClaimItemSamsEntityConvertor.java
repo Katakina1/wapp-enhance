@@ -15,7 +15,7 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     @Mapping(source = "itemTaxPct", target = "taxRate")
     @Mapping(source = "shipCost", target = "amountWithoutTax")
     @Mapping(source = "itemNbr", target = "itemNo")
-    @Mapping(source = "rtnDate", target = "verdictDate")
+    @Mapping(source = "rtnDate", target = "verdictDate", dateFormat = "yyyy/MM/dd")
     // @Mapping(source = "shipRetail", target = "")
     @Mapping(source = "deptNbr", target = "deptNbr")
     // @Mapping(source = "claimNumber", target = "")
@@ -28,6 +28,10 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     // @Mapping(source = "reportCode", target = "")
     @Mapping(source = "shipQty", target = "quantity")
     // @Mapping(source = "oldItem", target = "")
+    /**
+     * @param tXfOriginClaimItemSamsEntity
+     * @return
+     */
     ClaimBillItemData toClaimBillItemData(TXfOriginClaimItemSamsEntity tXfOriginClaimItemSamsEntity);
 
 }

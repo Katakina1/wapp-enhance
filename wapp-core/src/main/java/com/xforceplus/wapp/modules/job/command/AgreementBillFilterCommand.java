@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.converters.TXfOriginAgreementBillEntityConvertor;
+import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
@@ -59,6 +60,7 @@ public class AgreementBillFilterCommand implements Command {
                 return true;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             } finally {
                 saveContext(context);
             }
@@ -95,6 +97,9 @@ public class AgreementBillFilterCommand implements Command {
      */
     @SuppressWarnings("unchecked")
     private void process(int jobId, Context context) {
+        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT))) {
+            context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.BILL.getCode());
+        }
         Object jobEntryProgress = context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS);
         // 上次完成页
         long last = 0;
@@ -131,7 +136,7 @@ public class AgreementBillFilterCommand implements Command {
         List<DeductBillBaseData> newList = list
                 .stream()
                 // 非黑名单共供应商
-                .filter(v -> !speacialCompanyService.count("0", v.getMemo()))
+                .filter(v -> !speacialCompanyService.hitBlackOrWhiteList("0", v.getMemo()))
                 .map(TXfOriginAgreementBillEntityConvertor.INSTANCE::toAgreementBillData)
                 .collect(Collectors.toList());
         deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
