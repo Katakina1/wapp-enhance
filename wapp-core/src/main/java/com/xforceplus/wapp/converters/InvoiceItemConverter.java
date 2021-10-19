@@ -10,6 +10,6 @@ import java.util.List;
  * @author mashaopeng@xforceplus.com
  */
 @Mapper(config = GlobalConfig.class, uses = BaseConverter.class)
-public interface InvoiceDetailsConverter {
+public interface InvoiceItemConverter {
     List<RecordInvoiceDetailsEntity> map(List<TaxWareInvoiceDetail> invoices);
 }
