@@ -260,6 +260,18 @@ public class TXfInvoiceEntity extends BaseEntity {
     @TableField("remaining_amount")
     private BigDecimal remainingAmount;
 
+    /**
+     * 创建日期
+     */
+    @TableField("create_time")
+    private Date createTime;
+
+    /**
+     * 更新日期
+     */
+    @TableField(value="update_time", update="now(3)" )
+    private Date updateTime;
+
 
     public static final String ID = "id";
 
@@ -338,5 +350,9 @@ public class TXfInvoiceEntity extends BaseEntity {
     public static final String EFFECTIVE_TAX_AMOUNT = "effective_tax_amount";
 
     public static final String REMAINING_AMOUNT = "remaining_amount";
+
+    public static final String CREATE_TIME = "create_time";
+
+    public static final String UPDATE_TIME = "update_time";
 
 }
