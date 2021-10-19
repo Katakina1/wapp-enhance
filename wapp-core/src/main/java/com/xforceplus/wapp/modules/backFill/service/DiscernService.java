@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Encoder;
 //import sun.misc.BASE64Encoder;
 
 import java.io.ByteArrayOutputStream;
@@ -165,21 +166,21 @@ public class DiscernService implements IntegrationResultHandler {
 	 */
 	public static String gzip(byte[] file) {
 	    
-//		  GZIPOutputStream gzip = null;
-//		  try {
-//		    BASE64Encoder encoder = new BASE64Encoder();
-//		    // 返回Base64编码过的字节数组字符串
-//		    String tmpStr = encoder.encode(Objects.requireNonNull(file));
-//
-//		    ByteArrayOutputStream out = new ByteArrayOutputStream();
-//		    gzip = new GZIPOutputStream(out);
-//		    gzip.write(tmpStr.getBytes());
-//		    gzip.close();
-//
-//		    return encoder.encode(Objects.requireNonNull(out.toByteArray()));
-//		  } catch (Exception e) {
-//		    log.error("字符串压缩异常:{}", e);
-//		  }
+		  GZIPOutputStream gzip = null;
+		  try {
+		    BASE64Encoder encoder = new BASE64Encoder();
+		    // 返回Base64编码过的字节数组字符串
+		    String tmpStr = encoder.encode(Objects.requireNonNull(file));
+
+		    ByteArrayOutputStream out = new ByteArrayOutputStream();
+		    gzip = new GZIPOutputStream(out);
+		    gzip.write(tmpStr.getBytes());
+		    gzip.close();
+
+		    return encoder.encode(Objects.requireNonNull(out.toByteArray()));
+		  } catch (Exception e) {
+		    log.error("字符串压缩异常:{}", e);
+		  }
 		  
 		  return "";
 
