@@ -180,7 +180,7 @@ public class CommSettlementService {
 
 
     /**
-     * 结算单重新申请预制发票（拆分结算订单下面的预制发票）
+     * 结算单重新申请预制发票（针对结算单下所有已作废的预制发票发起重新申请）
      * 针对结算单下所有已作废的预制发票发起重新申请，
      * 如果结算单下没有已作废的预制发票，
      * 进一步判断正常状态（非待审核、非已作废）的预制发票是否存在红字信息编码，
@@ -202,21 +202,20 @@ public class CommSettlementService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
-        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
-        //拆票（针对已作废的预制发票明细重新拆票）
+        //查询作废的预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
         preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
-        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
-
-        //删除结算单之前已作废的预制发票（作废了）避免申请逻辑状态判断问题
         List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
         List<Long> preInvoiceIdList = tXfPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
-        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
+        //查询作废的预制发票明细
         QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
         preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
+        List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(preInvoiceItemWrapper);
+        //拆票（针对已作废的预制发票明细重新拆票）
+        preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(),tXfPreInvoiceItemEntityList);
+        //删除结算单之前已作废的预制发票（作废了）避免申请逻辑状态判断问题
+        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
         tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
     }
 
