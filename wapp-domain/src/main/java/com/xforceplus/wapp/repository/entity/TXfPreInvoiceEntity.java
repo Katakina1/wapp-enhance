@@ -184,7 +184,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 备注
