@@ -33,7 +33,7 @@ wapp:
 
 activemq:
   queue-name:
-    export-request: cn.wm.host.enhance.export-request.queue-ml2 # 导出申请
+    export-request: cn.wm.host.enhance.export-request.queue # 导出申请
 
 taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
 mybatis-plus:
