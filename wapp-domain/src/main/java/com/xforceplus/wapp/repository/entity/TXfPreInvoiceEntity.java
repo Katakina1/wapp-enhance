@@ -28,6 +28,12 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 结算单id
+     */
+    @TableField("settlement_id")
+    private String settlementId;
+
+    /**
      * 结算单编码
      */
     @TableField("settlement_no")
@@ -275,6 +281,8 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
 
     public static final String SETTLEMENT_NO = "settlement_no";
+
+    public static final String SETTLEMENT_ID = "settlement_id";
 
     public static final String PURCHASER_NO = "purchaser_no";
 
