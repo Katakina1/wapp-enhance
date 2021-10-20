@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.handle;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.utils.JsonUtil;
@@ -43,13 +44,14 @@ public class InvoiceHandler implements IntegrationResultHandler {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean handle(SealedMessage sealedMessage) {
-        log.info("request name:{},payload obj:{},header:{}", this.requestName(), sealedMessage.getPayload().getObj(), sealedMessage.getHeader());
+        log.info("request name:{},payload obj:{},header:{}", this.requestName(), sealedMessage.getPayload().getObj(), JSON.toJSONString(sealedMessage.getHeader()));
         InvoiceVo vo = JsonUtil.fromJson(sealedMessage.getPayload().getObj().toString(), InvoiceVo.class);
-        List<InvoiceVo.InvoiceItemVO> items = vo.getItems();
-        TXfInvoiceEntity invoiceMap = invoiceConverter.map(vo);
+        InvoiceVo.Invoice invoice = vo.getData();
+        List<InvoiceVo.InvoiceItemVO> items = invoice.getItems();
+        TXfInvoiceEntity invoiceMap = invoiceConverter.map(invoice);
         return new LambdaQueryChainWrapper<>(invoiceService.getBaseMapper())
-                .eq(TXfInvoiceEntity::getInvoiceCode, vo.getInvoiceCode())
-                .eq(TXfInvoiceEntity::getInvoiceNo, vo.getInvoiceNo()).oneOpt()
+                .eq(TXfInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode())
+                .eq(TXfInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo()).oneOpt()
                 .map(it -> {
                     invoiceMap.setId(it.getId());
                     log.warn("发票更新,invoiceCode:{},invoiceNo:{}", it.getInvoiceCode(), it.getInvoiceNo());
