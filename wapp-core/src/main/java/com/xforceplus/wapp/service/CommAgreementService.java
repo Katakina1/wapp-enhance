@@ -116,8 +116,7 @@ public class CommAgreementService {
     }
 
     /**
-     * 修改后的结算单的中的部门预制发票明细重新去拆票
-     * 删除之前的预制发票
+     * 修改后的结算单的中的部分预制发票明细重新去拆票（申请红字信息），删除之前的预制发票
      *
      * @param settlementId
      * @param preInvoiceItemList
@@ -136,7 +135,6 @@ public class CommAgreementService {
         QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
         preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
         tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
-
     }
 
 }
