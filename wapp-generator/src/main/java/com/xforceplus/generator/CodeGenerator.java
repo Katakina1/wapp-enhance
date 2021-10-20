@@ -39,7 +39,8 @@ public class CodeGenerator {
                 // "t_xf_origin_claim_bill",
                 // "t_xf_origin_claim_item_hyper",
                 // "t_xf_origin_claim_item_sams"
-                "t_dx_excel_exportlog"
+                "t_dx_excel_exportlog",
+                "t_dx_messagecontrol"
                 );
 //         generateMainCode();
         // generateItemCode();

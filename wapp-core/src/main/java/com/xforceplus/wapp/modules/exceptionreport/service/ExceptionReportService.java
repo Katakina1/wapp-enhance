@@ -31,4 +31,5 @@ public interface ExceptionReportService {
     Page<TXfExceptionReportEntity> getPage(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
 
     void export(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
+    void doExport(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
 }
