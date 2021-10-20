@@ -7,18 +7,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.billdeduct.converters.BillDeductConverter;
+import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
+import com.xforceplus.wapp.modules.billdeduct.service.BillDeductServiceImpl;
 import com.xforceplus.wapp.modules.preinvoice.converters.PreInvoiceConverter;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
+import com.xforceplus.wapp.modules.settlement.converters.SettlementItemConverter;
+import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
-import com.xforceplus.wapp.modules.statement.models.BaseInformation;
-import com.xforceplus.wapp.modules.statement.models.PreInvoice;
-import com.xforceplus.wapp.modules.statement.models.Statement;
-import com.xforceplus.wapp.modules.statement.models.StatementCount;
+import com.xforceplus.wapp.modules.statement.models.*;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
-import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import com.xforceplus.wapp.repository.entity.*;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.NonNull;
@@ -42,17 +42,27 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     private final TXfBillDeductExtDao billDeductExtDao;
     private final PreinvoiceService preinvoiceService;
     private final PreInvoiceConverter preInvoiceConverter;
+    private final SettlementItemServiceImpl settlementItemService;
+    private final SettlementItemConverter settlementItemConverter;
+    private final BillDeductServiceImpl billDeductService;
+    private final BillDeductConverter billDeductConverter;
+    private final BillDeductItemServiceImpl billDeductItemService;
 
-    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter) {
+    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService) {
         this.statementConverter = statementConverter;
         this.billDeductExtDao = billDeductExtDao;
         this.preinvoiceService = preinvoiceService;
         this.preInvoiceConverter = preInvoiceConverter;
+        this.settlementItemService = settlementItemService;
+        this.settlementItemConverter = settlementItemConverter;
+        this.billDeductService = billDeductService;
+        this.billDeductConverter = billDeductConverter;
+        this.billDeductItemService = billDeductItemService;
     }
 
-    public Tuple2<List<Statement>, Page<?>> page(Long current, Long size, @NonNull Integer type, Integer settlementStatus,
-                                                 String settlementNo, String purchaserNo, String invoiceType,
-                                                 String businessNo, String taxRate) {
+    public Tuple2<List<Settlement>, Page<?>> page(Long current, Long size, @NonNull Integer type, Integer settlementStatus,
+                                                  String settlementNo, String purchaserNo, String invoiceType,
+                                                  String businessNo, String taxRate) {
         log.info("结算单分页查询,入参,type:{},settlementStatus:{},settlementNo:{},purchaserNo:{}," +
                         "invoiceType:{},businessNo:{},taxRate:{},分页数据,current:{},size:{}",
                 type, settlementStatus, settlementNo, purchaserNo, invoiceType, businessNo, taxRate, current, size);
@@ -90,14 +100,14 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         return Tuple.of(statementConverter.map(page.getRecords()), page);
     }
 
-    public List<StatementCount> count(@NonNull Integer type, String settlementNo, String purchaserNo, String invoiceType,
-                                      String businessNo, String taxRate) {
+    public List<SettlementCount> count(@NonNull Integer type, String settlementNo, String purchaserNo, String invoiceType,
+                                       String businessNo, String taxRate) {
         log.info("结算单tab统计,入参,type:{},settlementNo:{},purchaserNo:{},invoiceType:{},businessNo:{},taxRate:{}",
                 type, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
-        Map<String, StatementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
+        Map<String, SettlementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
                 .filter(it -> it.getValue() < 8)
-                .map(it -> StatementCount.builder().status(it.getCode().toString()).total(0).build())
-                .collect(Collectors.toMap(StatementCount::getStatus, Function.identity()));
+                .map(it -> SettlementCount.builder().status(it.getCode().toString()).total(0).build())
+                .collect(Collectors.toMap(SettlementCount::getStatus, Function.identity()));
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
         val lambda = wrapper.lambda();
         lambda.eq(TXfSettlementEntity::getSettlementType, type)
@@ -129,26 +139,43 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         wrapper.select("settlement_status as status, count(*) as total");
         getBaseMapper().selectMaps(wrapper)
                 .forEach(it -> tabMap.computeIfPresent(it.get("status").toString(),
-                        (k, v) -> new StatementCount(it.get("status").toString(), (Integer) it.get("total"))));
+                        (k, v) -> new SettlementCount(it.get("status").toString(), (Integer) it.get("total"))));
         log.debug("结算单tab统计,结果:{}", tabMap.values());
         return Lists.newArrayList(tabMap.values());
     }
 
     public Tuple2<List<PreInvoice>, Page<?>> awaitingInvoicePage(Long current, Long size, @NonNull String settlementNo) {
         log.info("待开票列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
-        Page<TXfPreInvoiceEntity> page = new LambdaQueryChainWrapper<>(preinvoiceService.getBaseMapper())
+        val page = new LambdaQueryChainWrapper<>(preinvoiceService.getBaseMapper())
                 .eq(TXfPreInvoiceEntity::getSettlementNo, settlementNo)
                 .page(new Page<>(current, size));
         log.debug("待开票列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(preInvoiceConverter.map(page.getRecords()), page);
     }
 
-    public Tuple2<List<BaseInformation>, Page<?>> baseInformationClaimPage(Long current, Long size, @NonNull Integer type, @NonNull String settlementNo) {
-        
-        return null;
+    public Tuple2<List<? extends BaseInformation>, Page<?>> baseInformationClaimPage(Long current, Long size,
+                                                                           @NonNull String settlementNo) {
+        log.info("索赔明细列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
+        val page = new LambdaQueryChainWrapper<>(billDeductService.getBaseMapper())
+                .eq(TXfBillDeductEntity::getRefSettlementNo, settlementNo)
+                .select(TXfBillDeductEntity::getId, TXfBillDeductEntity::getBusinessNo)
+                .page(new Page<>(current, size));
+        log.debug("索赔明细列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
+        List<Claim> map = page.getRecords().parallelStream().map(it -> {
+            List<TXfBillDeductItemEntity> items = billDeductItemService.listByDeductId(it.getId());
+            return billDeductConverter.map(it, items);
+        }).collect(Collectors.toList());
+        log.debug("索赔明细列表查询,总条数:{},分页转换数据:{}", page.getTotal(), map);
+        return Tuple.of(map, page);
     }
-    public Tuple2<List<BaseInformation>, Page<?>> baseInformationAgreementPage(Long current, Long size, @NonNull Integer type, @NonNull String settlementNo) {
 
-        return null;
+    public Tuple2<List<? extends BaseInformation>, Page<?>> baseInformationAgreementPage(Long current, Long size,
+                                                                               @NonNull String settlementNo) {
+        log.info("协议明细列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
+        val page = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
+                .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
+                .page(new Page<>(current, size));
+        log.debug("协议明细列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
+        return Tuple.of(settlementItemConverter.map(page.getRecords()), page);
     }
 }
