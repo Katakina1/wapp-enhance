@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.util.Date;
 
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
