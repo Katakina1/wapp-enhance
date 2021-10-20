@@ -280,6 +280,9 @@ public class CommSettlementService {
         if (CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
             throw new EnhanceRuntimeException("预制发票不存在");
         }
+        if (tXfPreInvoiceEntityList.size() != preInvoiceIdList.size()) {
+            throw new EnhanceRuntimeException("预制发票缺失");
+        }
         List<String> settlementNoList = tXfPreInvoiceEntityList.stream().map(TXfPreInvoiceEntity::getSettlementNo).distinct().collect(Collectors.toList());
         QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
@@ -308,6 +311,9 @@ public class CommSettlementService {
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectBatchIds(preInvoiceIdList);
         if (CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
             throw new EnhanceRuntimeException("预制发票不存在");
+        }
+        if (tXfPreInvoiceEntityList.size() != preInvoiceIdList.size()) {
+            throw new EnhanceRuntimeException("预制发票缺失");
         }
         List<String> settlementNoList = tXfPreInvoiceEntityList.stream().map(TXfPreInvoiceEntity::getSettlementNo).distinct().collect(Collectors.toList());
         QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();

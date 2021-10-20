@@ -187,6 +187,9 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         if (CollectionUtils.isEmpty(tXfBillDeductEntityList)) {
             throw new EnhanceRuntimeException("索赔单不存在");
         }
+        if (tXfBillDeductEntityList.size() != billDeductIdList.size()) {
+            throw new EnhanceRuntimeException("索赔单缺失");
+        }
         List<String> settlementNoList = tXfBillDeductEntityList.stream().map(TXfBillDeductEntity::getRefSettlementNo).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(settlementNoList)) {
             throw new EnhanceRuntimeException("您所选择的索赔单没有对应的结算单数据");
