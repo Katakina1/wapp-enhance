@@ -87,6 +87,9 @@ public class CommSettlementService {
                 tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
             });
         }
+        if (CollectionUtils.isEmpty(tXfPreInvoiceEntityList) || CollectionUtils.isEmpty(tXfPreInvoiceEntityList2)) {
+            throw new EnhanceRuntimeException("结算单没有可撤销的预制发票(红字信息)");
+        }
     }
 
     /**
@@ -205,7 +208,7 @@ public class CommSettlementService {
         //查询作废的预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceWrapper = new QueryWrapper<>();
         preInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
-        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY);
+        preInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
         List<Long> preInvoiceIdList = tXfPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
         //查询作废的预制发票明细
@@ -213,7 +216,7 @@ public class CommSettlementService {
         preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
         List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(preInvoiceItemWrapper);
         //拆票（针对已作废的预制发票明细重新拆票）
-        preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(),tXfPreInvoiceItemEntityList);
+        preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), tXfPreInvoiceItemEntityList);
         //删除结算单之前已作废的预制发票（作废了）避免申请逻辑状态判断问题
         tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
         tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
@@ -233,20 +236,22 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("结算单不存在");
         }
         //预制发票
-        QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
-        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
-        boolean hasCancelSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
-                .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.DESTROY.getCode());
-        if (!hasCancelSettlementPreInvoice) {
+        QueryWrapper<TXfPreInvoiceEntity> destroyPreInvoiceWrapper = new QueryWrapper<>();
+        destroyPreInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
+        destroyPreInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.DESTROY.getCode());
+        int destroyPreInvoiceCount = tXfPreInvoiceDao.selectCount(destroyPreInvoiceWrapper);
+        //是否有作废的数据
+        if (destroyPreInvoiceCount == 0) {
             //是否存在没有红字信息的预制发票
-            boolean hasNoApplyRedSettlementPreInvoice = tXfPreInvoiceEntityList.stream()
-                    .anyMatch(tXfPreInvoice -> tXfPreInvoice.getPreInvoiceStatus() == TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
+            QueryWrapper<TXfPreInvoiceEntity> noRedPreInvoiceWrapper = new QueryWrapper<>();
+            noRedPreInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
+            noRedPreInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
+            int noRedPreInvoiceCount = tXfPreInvoiceDao.selectCount(noRedPreInvoiceWrapper);
             //需要判断结算单是否在沃尔玛有待申请状态(如果没有待申请状态的红字信息说明税件神奇失败了，这个时候可以重新申请预制发票的红字信息)
             //是否有申请中的红字信息 或者 是否有审核通过
             boolean hasApplyWappRed = redNotificationOuterService.isWaitingApplyBySettlementNo(tXfSettlementEntity.getSettlementNo());
-            if (!hasNoApplyRedSettlementPreInvoice && !hasApplyWappRed) {
-                throw new EnhanceRuntimeException("不能重新申请预制发票与红字信息");
+            if (noRedPreInvoiceCount == 0 && !hasApplyWappRed) {
+                throw new EnhanceRuntimeException("不能重新申请预制发票(红字信息)");
             }
         }
         return true;
