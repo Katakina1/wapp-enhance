@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.CompanyTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
+import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import com.xforceplus.wapp.modules.company.convert.CompanyConverter;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;
@@ -22,8 +23,11 @@ import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +39,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
     private final CompanyConverter companyConverter;
-
+    @Value("${wapp.export.tmp}")
+    private String tmp;
     public CompanyService(CompanyConverter companyConverter) {
         this.companyConverter = companyConverter;
     }
@@ -122,13 +127,13 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
     /**
      * 导入抬头信息
      *
-     * @param is
+     * @param file
      * @return
      */
-    public Either<String, Integer> importData(InputStream is) {
+    public Either<String, Integer> importData(MultipartFile file) throws IOException {
         QueryWrapper wrapper = new QueryWrapper<>();
         CompanyImportListener listener = new CompanyImportListener();
-        EasyExcel.read(is, CompanyImportDto.class, listener).sheet().doRead();
+        EasyExcel.read(file.getInputStream(), CompanyImportDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices())) {
             return Either.left("未解析到数据");
         }
@@ -172,6 +177,10 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
             updateList.stream().forEach(update ->{
                 updateCompanyInfoById(update);
             });
+        }
+        if(CollectionUtils.isNotEmpty(listener.getInvalidInvoices())){
+            EasyExcel.write(tmp+file.getOriginalFilename(), CompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
+
         }
         return save||CollectionUtils.isNotEmpty(updateList) ? Either.right(list.size()) : Either.right(0);
     }
