@@ -187,7 +187,7 @@ public class TaxWareService {
                     tXfRedNotificationLogEntity.setStatus(2);
                     redNotificationLogService.updateById(tXfRedNotificationLogEntity);
                     //commPreInvoiceService//
-                    commPreInvoiceService.fillPreInvoiceClaimRedNotification(Long.parseLong(tXfRedNotificationEntity.getPid()),redMessageInfo.getRedNotificationNo());
+                    commPreInvoiceService.fillPreInvoiceRedNotification(Long.parseLong(tXfRedNotificationEntity.getPid()),redMessageInfo.getRedNotificationNo());
 
                 }else {
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());

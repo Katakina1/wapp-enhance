@@ -12,13 +12,12 @@ import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.export.ExportHandlerEnum;
 import com.xforceplus.wapp.export.IExportHandler;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
-import com.xforceplus.wapp.modules.backFill.model.FileUploadResult;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
-import com.xforceplus.wapp.modules.messagecontrol.service.MessageControlService;
+import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.mq.ActiveMqProducer;
 import com.xforceplus.wapp.repository.dao.TXfExceptionReportDao;
@@ -29,24 +28,15 @@ import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommonMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.text.ParseException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -63,6 +53,8 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat(YYYY_MM_DD);
 
+    private final String downLoadurl = "api/core/ftp/download";
+
     @Autowired
     private IDSequence idSequence;
 
@@ -72,7 +64,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     @Autowired
     private FileService fileService;
 
-    private final String filePrefix="例外报告";
+    private final String filePrefix = "例外报告";
 
     @Autowired
     private ActiveMqProducer activeMqProducer;
@@ -87,10 +79,15 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     private ExcelExportLogService excelExportLogService;
 
     @Autowired
-    private MessageControlService messageControlService;
+    private FtpUtilService ftpUtilService;
 
-    @Value("${wapp.export_success_queue_gfone}")
-    private String gfoneQueue;
+    private final Map<String, String> headClaim;
+    private final Map<String, String> headEPD;
+
+    public ExceptionReportServiceImpl() {
+        headClaim = excelHeadClaim();
+        headEPD = excelHeadEPD();
+    }
 
     @Override
     public void add4Claim(TXfExceptionReportEntity entity) {
@@ -113,6 +110,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     private void saveExceptionReport(TXfExceptionReportEntity entity) {
 
         entity.setId(idSequence.nextId());
+        entity.setStatus("1");
         this.save(entity);
 
     }
@@ -147,36 +145,48 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     @Override
     public void export(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum) {
         final Long userId = UserUtil.getUserId();
-        request.setUserId(userId);
-        request.setUserName(UserUtil.getLoginName());
-        ExceptionReportExportDto dto=new ExceptionReportExportDto();
+        ExceptionReportExportDto dto = new ExceptionReportExportDto();
         dto.setType(typeEnum);
         dto.setRequest(request);
+        dto.setUserId(userId);
+        dto.setLoginName(UserUtil.getLoginName());
+
+        TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
+        excelExportlogEntity.setCreateDate(new Date());
+        //这里的userAccount是userid
+        excelExportlogEntity.setUserAccount(dto.getUserId().toString());
+        excelExportlogEntity.setUserName(dto.getLoginName());
+        excelExportlogEntity.setConditions(JSON.toJSONString(request));
+        excelExportlogEntity.setStartDate(new Date());
+        excelExportlogEntity.setExportStatus(ExcelExportLogService.REQUEST);
+        excelExportlogEntity.setServiceType(SERVICE_TYPE);
+
+        this.excelExportLogService.save(excelExportlogEntity);
+        dto.setLogId(excelExportlogEntity.getId());
+
         activeMqProducer.send(exportQueue, JSON.toJSONString(dto),
                 Collections.singletonMap(IExportHandler.KEY_OF_HANDLER_NAME, ExportHandlerEnum.EXCEPTION_REPORT.name())
         );
     }
 
 
-    public void doExport(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum){
-        List<TXfExceptionReportEntity> list = getExportData(request,typeEnum,0);
-        TDxExcelExportlogEntity excelExportlogEntity=new TDxExcelExportlogEntity();
-        excelExportlogEntity.setCreateDate(new Date());
+    public void doExport(ExceptionReportExportDto exportDto) {
+        ExceptionReportRequest request = exportDto.getRequest();
+        ExceptionReportTypeEnum typeEnum = exportDto.getType();
         //这里的userAccount是userid
-        excelExportlogEntity.setUserAccount(request.getUserId().toString());
-        excelExportlogEntity.setUserName(request.getUserName());
-        excelExportlogEntity.setConditions(JSON.toJSONString(request));
-        excelExportlogEntity.setStartDate(new Date());
+        final TDxExcelExportlogEntity excelExportlogEntity = excelExportLogService.getById(exportDto.getLogId());
         excelExportlogEntity.setEndDate(new Date());
         excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
-        excelExportlogEntity.setServiceType(SERVICE_TYPE);
 
-        TDxMessagecontrolEntity messagecontrolEntity=new TDxMessagecontrolEntity();
+        TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
         //这里的userAccount是userName
-        messagecontrolEntity.setUserAccount(request.getUserName());
+        messagecontrolEntity.setUserAccount(exportDto.getLoginName());
         messagecontrolEntity.setContent(getSuccContent());
 
+        List<TXfExceptionReportEntity> list = getExportData(request, typeEnum, 0);
         try (BigExcelWriter bigExcelWriter = new BigExcelWriter()) {
+            Map<String, String> head = typeEnum == ExceptionReportTypeEnum.CLAIM ? headClaim : headEPD;
+            bigExcelWriter.setHeaderAlias(head);
             while (CollectionUtils.isNotEmpty(list)) {
                 bigExcelWriter.write(list);
                 long lastId = list.get(list.size() - 1).getId();
@@ -185,45 +195,43 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
             // TODO
 
             try {
-                final String excelFileName = ExcelExportUtil.getExcelFileName(request.getUserId(), filePrefix);
-                final File x = File.createTempFile(excelFileName, "x");
-                log.info("file:{}",x.getAbsolutePath());
-                FileOutputStream fileOutputStream=new FileOutputStream(x);
-                bigExcelWriter.flush(fileOutputStream);
-//                FileInputStream fileInputStream=new FileInputStream(x);
-//                IOUtils.read(fileInputStream,)
-                final byte[] bytes = FileUtils.readFileToByteArray(x);
+                final String excelFileName = ExcelExportUtil.getExcelFileName(exportDto.getUserId(), filePrefix);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                bigExcelWriter.flush(out);
 
 
-//                ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+                ByteArrayInputStream is = new ByteArrayInputStream(out.toByteArray());
 
-                final FileUploadResult file = fileService.upload(bytes, excelFileName);
-                messagecontrolEntity.setUrl(file.getData().getUploadId());
-                excelExportlogEntity.setFilepath(file.getData().getUploadPath());
-                messagecontrolEntity.setTitle(this.filePrefix+"导出成功");
+                //推送sftp
+                String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+                String ftpFilePath = ftpPath + "/" + excelFileName;
+                ftpUtilService.uploadFile(ftpPath, excelFileName, is);
+                messagecontrolEntity.setUrl(getUrl(excelExportlogEntity.getId()));
+                excelExportlogEntity.setFilepath(ftpFilePath);
+                messagecontrolEntity.setTitle(this.filePrefix + "导出成功");
 
             } catch (Exception e) {
                 e.printStackTrace();
-                log.error("例外报告导出失败:"+e.getMessage(),e);
+                log.error("例外报告导出失败:" + e.getMessage(), e);
                 excelExportlogEntity.setExportStatus(ExcelExportLogService.FAIL);
                 excelExportlogEntity.setErrmsg(e.getMessage());
-                messagecontrolEntity.setTitle(this.filePrefix+"导出失败");
+                messagecontrolEntity.setTitle(this.filePrefix + "导出失败");
                 messagecontrolEntity.setContent(getFailContent(e.getMessage()));
 
-            }finally {
-                excelExportLogService.save(excelExportlogEntity);
+            } finally {
+                excelExportLogService.updateById(excelExportlogEntity);
                 commonMessageService.sendMessage(messagecontrolEntity);
             }
         }
     }
 
-    private List<TXfExceptionReportEntity> getExportData(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum,long lastId){
+    private List<TXfExceptionReportEntity> getExportData(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum, long lastId) {
         TXfExceptionReportEntity entity = exceptionReportMapper.toEntity(request);
         entity.setType(typeEnum.getType());
         final String startDeductDate = request.getStartDeductDate();
         final LambdaQueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.lambdaQuery(entity);
 
-        wrapper.gt(TXfExceptionReportEntity::getId,lastId);
+        wrapper.gt(TXfExceptionReportEntity::getId, lastId);
         if (StringUtils.isNotBlank(startDeductDate)) {
             wrapper.gt(TXfExceptionReportEntity::getCreateTime, startDeductDate);
         }
@@ -248,7 +256,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
      * 获取导出成功内容
      *
      * @return
-     * @since           1.0
+     * @since 1.0
      */
     public String getSuccContent() {
         String createDate = DateUtils.format(new Date());
@@ -261,9 +269,8 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
      * 获取导出失败的内容
      *
      * @param errmsg 错误信息
-     *
      * @return
-     * @since           1.0
+     * @since 1.0
      */
     public String getFailContent(String errmsg) {
         StringBuilder content = new StringBuilder();
@@ -272,5 +279,51 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         content.append(createDate);
         content.append("。申请导出失败，请重新申请！");
         return content.toString();
+    }
+
+
+    /**
+     * 获取excel下载连接
+     *
+     * @param id
+     * @return
+     * @since 1.0
+     */
+    public String getUrl(long id) {
+        String url = downLoadurl + "?serviceType=2&downloadId=" + id;
+        return url;
+    }
+
+
+    private Map<String, String> excelHeadEPD() {
+        Map<String, String> head = new HashMap<>();
+        head.put("code", "例外CODE");
+        head.put("description", "例外说明");
+        head.put("sellerNo", "供应商编号");
+        head.put("sellerName", "供应商名称");
+        head.put("purchaserNo", "扣款公司编号");
+        head.put("amountWithTax", "含税金额");
+        head.put("agreementTypeCode", "协议类型编码");
+        head.put("billNo", "协议号");
+        head.put("taxCode", "税码");
+        head.put("deductDate", "扣款日期");
+        head.put("taxRate", "税率");
+        return head;
+    }
+
+    private Map<String, String> excelHeadClaim() {
+        Map<String, String> head = new HashMap<>();
+        head.put("code", "例外CODE");
+        head.put("description", "例外说明");
+        head.put("sellerNo", "供应商编号");
+        head.put("sellerName", "供应商名称");
+        head.put("purchaserNo", "扣款公司编号");
+        head.put("amountWithoutTax", "成本金额(不含税)");
+        head.put("agreementTypeCode", "协议类型编码");
+        head.put("billNo", "索赔号/换货号");
+        head.put("taxCode", "税码");
+        head.put("verdictDate", "定案日期");
+        head.put("taxRate", "税率");
+        return head;
     }
 }

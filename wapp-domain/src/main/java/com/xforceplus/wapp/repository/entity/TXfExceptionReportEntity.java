@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
@@ -15,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-11
+ * @since 2021-10-20
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -151,6 +152,24 @@ public class TXfExceptionReportEntity extends BaseEntity {
     @TableField("type")
     private Integer type;
 
+    /**
+     * 定案日期、入账日期
+     */
+    @TableField("verdict_date")
+    private Date verdictDate;
+
+    /**
+     * 含税金额
+     */
+    @TableField("amount_with_tax")
+    private BigDecimal amountWithTax;
+
+    /**
+     * 不含税金额
+     */
+    @TableField("amount_without_tax")
+    private BigDecimal amountWithoutTax;
+
 
     public static final String ID = "id";
 
@@ -193,5 +212,11 @@ public class TXfExceptionReportEntity extends BaseEntity {
     public static final String UPDATE_USER = "update_user";
 
     public static final String TYPE = "type";
+
+    public static final String VERDICT_DATE = "verdict_date";
+
+    public static final String AMOUNT_WITH_TAX = "amount_with_tax";
+
+    public static final String AMOUNT_WITHOUT_TAX = "amount_without_tax";
 
 }

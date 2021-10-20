@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExcelExportLogService extends ServiceImpl<TDxExcelExportlogDao, TDxExcelExportlogEntity> {
 
+    public static final String REQUEST = "1";
     public static final String OK = "2";
     public static final String FAIL = "3";
 
