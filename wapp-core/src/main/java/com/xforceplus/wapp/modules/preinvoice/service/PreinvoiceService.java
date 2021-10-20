@@ -77,7 +77,7 @@ public class PreinvoiceService {
     @Autowired
     private RestTemplate restTemplate;
     // 配置访问域名
-    private String domainUrl= "";
+    private String domainUrl= "http://localhost:8080/12/invoice/v1/pre-invoices?appId=12&returnMode=sync&taxDeviceType=2";
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
     @Autowired
@@ -86,7 +86,7 @@ public class PreinvoiceService {
     private IDSequence idSequence;
     @PostConstruct
     public void initData() {
-    // splitPreInvoice("settlementNo1853061001646081","172164");
+        splitPreInvoice("settlementNo1853061001646081","172164");
     }
 
     /**
