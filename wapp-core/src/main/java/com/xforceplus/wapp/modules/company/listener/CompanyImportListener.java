@@ -3,10 +3,12 @@ package com.xforceplus.wapp.modules.company.listener;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.google.common.collect.Lists;
+import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import com.xforceplus.wapp.modules.blackwhitename.util.RegUtils;
 
 import java.util.List;
 
@@ -32,7 +34,12 @@ public class CompanyImportListener extends AnalysisEventListener<CompanyImportDt
 
     @Override
     public void invoke(CompanyImportDto companyImportDto, AnalysisContext analysisContext) {
-        validInvoices.add(companyImportDto);
+        if(StringUtils.isEmpty(checkData(companyImportDto))){
+            validInvoices.add(companyImportDto);
+        }else{
+            invalidInvoices.add(companyImportDto);
+        }
+
     }
 
     @Override
@@ -40,34 +47,44 @@ public class CompanyImportListener extends AnalysisEventListener<CompanyImportDt
 
     }
 
-    public boolean checkData(CompanyImportDto companyImportDto){
-        if(StringUtils.isEmpty(companyImportDto.getSupplierTaxNo())){
-            return false;
-        }
-
+    public String checkData(CompanyImportDto companyImportDto){
+        StringBuilder builder = new StringBuilder();
         if(StringUtils.isEmpty(companyImportDto.getSupplierCode())){
-            return false;
+            builder.append("供应商6D编码/沃尔玛公司代码不能为空 ,");
+        }
+        if(StringUtils.isEmpty(companyImportDto.getSupplierName())){
+            builder.append("公司名称不能为空 ,");
         }
 
         if(StringUtils.isEmpty(companyImportDto.getSupplierTaxNo())){
-            return false;
+            builder.append("供应商6D编码/沃尔玛公司代码不能为空 ,");
         }
-
-        if(StringUtils.isEmpty(companyImportDto.getSupplierName())){
-            return false;
+        if(StringUtils.isEmpty(companyImportDto.getTelePhoneNo())){
+            builder.append("电话不能为空 ,");
+            if(RegUtils.isMoblie(companyImportDto.getTelePhoneNo())){
+                builder.append("电话格式错误 ,");
+            }
         }
-
-        if(StringUtils.isEmpty(companyImportDto.getAccount())){
-            return false;
+        if(StringUtils.isEmpty(companyImportDto.getAddress())){
+            builder.append("地址不能为空 ,");
         }
-
+        if(StringUtils.isEmpty(companyImportDto.getEmaiAdress())){
+            if(RegUtils.isEmail(companyImportDto.getEmaiAdress())){
+                builder.append("邮箱格式错误 ,");
+            }
+        }
         if(StringUtils.isEmpty(companyImportDto.getBank())){
-            return false;
+            builder.append("开户银行不能为空 ,");
         }
-
+        if(null==companyImportDto.getQuota()){
+            builder.append("开票限额不能为空 ,");
+        }
         if(StringUtils.isEmpty(companyImportDto.getOrgType())){
-            return false;
+            builder.append("类型不能为空 ,");
+            if(!companyImportDto.getOrgType().equals(Constants.COMPANY_TYPE_SUPPLIER)&&!companyImportDto.getOrgType().equals(Constants.COMPANY_TYPE_SUPPLIER)){
+                builder.append("类型填写错误，只能为5/8 ,");
+            }
         }
-        return true;
+        return builder.toString();
     }
 }

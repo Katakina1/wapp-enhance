@@ -16,7 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,7 +67,7 @@ public class CompanyController {
             return R.fail("文件不能为空");
         }
         long start = System.currentTimeMillis();
-        Either<String, Integer> result = companyService.importData(file.getInputStream());
+        Either<String, Integer> result = companyService.importData(file);
         log.info("抬头信息导入,耗时:{}ms", System.currentTimeMillis() - start);
         return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据", result.get())) : R.fail(result.getLeft());
     }
@@ -72,5 +79,49 @@ public class CompanyController {
         final List<TAcOrgEntity> purchaserOrgs = companyService.getPurchaserOrgs();
         return R.ok(Collections.singletonMap("orgs",purchaserOrgs));
     }
+    @ApiOperation(value = "获取抬头模板")
+    @GetMapping(value = "/template")
+    public void template(HttpServletResponse res, HttpServletRequest req){
+        try {
+            String name = "抬头信息导入模板";
+            String fileName = name+".xlsx";
+            ServletOutputStream out;
+            res.setContentType("multipart/form-data");
+            res.setCharacterEncoding("UTF-8");
+            res.setContentType("text/html");
+            String filePath = getClass().getResource("/excl/" + fileName).getPath();
+            String userAgent = req.getHeader("User-Agent");
+            if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
+                fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
+            } else {
+                // 非IE浏览器的处理：
+                fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
+            }
+            filePath = URLDecoder.decode(filePath, "UTF-8");
+            res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
+            FileInputStream inputStream = null;
 
+            inputStream = new FileInputStream(filePath);
+
+            out = res.getOutputStream();
+            int b = 0;
+            byte[] buffer = new byte[1024];
+            while ((b = inputStream.read(buffer)) != -1) {
+                // 4.写到输出流(out)中
+                out.write(buffer, 0, b);
+            }
+            inputStream.close();
+
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

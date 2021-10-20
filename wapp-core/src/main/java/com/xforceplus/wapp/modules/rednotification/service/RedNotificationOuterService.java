@@ -1,7 +1,9 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
+import com.xforceplus.wapp.common.enums.LockFlag;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
 import com.xforceplus.wapp.modules.rednotification.model.QueryModel;
@@ -12,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RedNotificationOuterService {
@@ -67,6 +71,29 @@ public class RedNotificationOuterService {
         tXfRedNotificationEntity.setUpdateDate(new Date());
         redNotificationService.getBaseMapper().updateById(tXfRedNotificationEntity);
         return Response.ok("修改成功");
+    }
+
+    /**
+     * 根据结算号
+     * 查询待申请的红字信息预制发票id
+     */
+    public List<Long> getWaitApplyPreIds(String settlementNo){
+         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+         queryWrapper.eq(TXfRedNotificationEntity::getBillNo,settlementNo).eq(TXfRedNotificationEntity::getLockFlag, LockFlag.NORMAL.getValue()).eq(TXfRedNotificationEntity::getStatus,1);
+         List<TXfRedNotificationEntity> entityList = redNotificationService.getBaseMapper().selectList(queryWrapper);
+         List<Long> list = entityList.stream().map(item->Long.parseLong(item.getPid())).collect(Collectors.toList());
+         return list ;
+     }
+
+    /**
+     * 删除待申请的红字信息
+     */
+    public void deleteRednotification(List<Long> pidList){
+         LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+         updateWrapper.in(TXfRedNotificationEntity::getPid , pidList);
+         TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+         record.setStatus(0);
+         redNotificationService.getBaseMapper().update(record,updateWrapper);
     }
 
 

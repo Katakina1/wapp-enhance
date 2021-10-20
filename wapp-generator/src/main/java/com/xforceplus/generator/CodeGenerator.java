@@ -29,7 +29,7 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
-                "t_xf_bill_deduct",
+//                "t_xf_bill_deduct",
                 //"t_xf_elec_upload_record_detail",
                 // by kenny start
                 // "t_xf_bill_job",
@@ -39,8 +39,9 @@ public class CodeGenerator {
                 // "t_xf_origin_claim_bill",
                 // "t_xf_origin_claim_item_hyper",
                 // "t_xf_origin_claim_item_sams"
-                "t_dx_excel_exportlog",
-                "t_dx_messagecontrol"
+//                "t_dx_excel_exportlog",
+//                "t_dx_messagecontrol"
+                "t_xf_exception_report"
                 );
 //         generateMainCode();
         // generateItemCode();

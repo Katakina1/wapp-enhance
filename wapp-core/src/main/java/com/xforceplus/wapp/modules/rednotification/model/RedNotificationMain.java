@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.rednotification.model;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -78,6 +79,13 @@ public class RedNotificationMain {
     private BigDecimal taxAmount;
 
 
+    /**
+     * 扣除额
+     */
+    @ApiModelProperty("扣除额")
+    private BigDecimal deduction;
+
+
     @ApiModelProperty("单号")
     private String billNo;
 
@@ -109,6 +117,13 @@ public class RedNotificationMain {
     @ApiModelProperty("扣款时间")
     private Date paymentTime;
 
+    //申请人  申请电话
+    @ApiModelProperty("申请人")
+    private String applyPerson;
+
+    @ApiModelProperty("申请人电话")
+    private String applyPersonTel;
+
 
     /**
      * 申请流水号
@@ -119,5 +134,7 @@ public class RedNotificationMain {
     //============== 新增不需要====
     @ApiModelProperty("红字信息主键")
     private Long id;
+
+
 
 }

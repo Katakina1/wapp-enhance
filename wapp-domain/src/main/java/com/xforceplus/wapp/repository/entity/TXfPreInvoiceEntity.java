@@ -31,7 +31,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
      * 结算单id
      */
     @TableField("settlement_id")
-    private String settlementId;
+    private Long settlementId;
 
     /**
      * 结算单编码
@@ -257,12 +257,6 @@ public class TXfPreInvoiceEntity extends BaseEntity {
      */
     @TableField("red_notification_no")
     private String redNotificationNo;
-
-    /**
-     * 红字信息编号申请状态0未申请  1-发起申请 2-已申请
-     */
-    @TableField("red_notification_flag")
-    private Integer redNotificationFlag;
 
     @TableField(value="update_time", update="now(3)" )
     private Date updateTime;
