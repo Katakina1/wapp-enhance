@@ -24,5 +24,8 @@ public class SpecialCompanyImportDto {
     @ExcelProperty(value = "供应商税号", index = 3)
     private String supplierTaxNo;
 
+    @ExcelProperty( index = 4)
+    private String errorMessage;
+
 
 }

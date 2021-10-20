@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel("结算单信息")
-public class Statement {
+public class Settlement {
     @ApiModelProperty("唯一id")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;

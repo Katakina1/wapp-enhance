@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel("结算单tab数量信息")
-public class StatementCount {
+public class SettlementCount {
     @ApiModelProperty("状态")
     private String status;
     @ApiModelProperty("数量")

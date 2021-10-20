@@ -126,4 +126,7 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
 
     public static final String UPDATE_USER = "update_user";
 
+    public static final String SUPPLIER_TAX_NO = "supplier_taxNo";
+
+
 }
