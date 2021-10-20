@@ -13,6 +13,9 @@ import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.common.utils.ExcelExportUtil;
+import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
+import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.listener.ExcelListener;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.RedNotificationMainMapper;
@@ -60,6 +63,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     IDSequence iDSequence;
     @Autowired
     CommSettlementService commSettlementService;
+    @Autowired
+    ExportCommonService exportCommonService;
+    @Autowired
+    private FtpUtilService ftpUtilService;
 
     private static final Integer MAX_PDF_RED_NO_SIZE = 500;
 
@@ -640,6 +647,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      * @return
      */
     public Response export(RedNotificationExportPdfRequest request) {
+        Tuple2<Long, Long> tuple2 = exportCommonService.insertRequest(request);
 
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
@@ -667,23 +675,29 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         List<ExportItemInfo> itemInfos = redNotificationMainMapper.detailEntityToExportInfoList(tXfRedNotificationDetailEntities);
 
-        String s = writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo());
+        return writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo(),tuple2);
 
-        return Response.ok("导出成功,请在消息中心查看",s);
     }
 
 
 
-    private String writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2) {
+    private Response writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2,Tuple2<Long, Long> tuple2) {
+        Long userId =tuple2._2;
+        Long logId =tuple2._1;
 
         String fileName = "红字信息表";
         String sheetName = "红字信息主信息";
         String sheetName2 = "红字信息明细";
 
-        String businessId = String.valueOf(System.currentTimeMillis());
-        String filePath = "file/" + "walmart" + "/" + DateUtils.curDateMselStr17() + "/"  + fileName + "导出" + businessId + ".xlsx";
-        ;
-        File localFile = new File(filePath);
+//        String businessId = String.valueOf(System.currentTimeMillis());
+//        String filePath = "file/" + "walmart" + "/" + DateUtils.curDateMselStr17() + "/"  + fileName + "导出" + businessId + ".xlsx";
+
+        //推送sftp
+        final String excelFileName = ExcelExportUtil.getExcelFileName(userId, "红字信息表导出");
+        String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String ftpFilePath = ftpPath + "/" + excelFileName;
+        log.info("文件ftp路径{}",ftpFilePath);
+        File localFile = new File(ftpFilePath);
         if (!localFile.getParentFile().exists()) {
             localFile.getParentFile().mkdirs();
         }
@@ -708,15 +722,23 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         writer.write(list2, sheet2);
 
-        writer.finish();
+        String s = exportCommonService.putFile(ftpPath, excelFileName);
 
+        writer.finish();
         try {
             out.close();
         } catch (IOException ioException) {
             log.info(" out.close() err!");
         }
-
-        return DownloadUrlUtils.putFile(filePath);
+        if(s!=null){
+            String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.FAIL, ftpFilePath);
+            exportCommonService.sendMessage(userName,"红字信息表导出成功",exportCommonService.getSuccContent());
+            return Response.failed(s);
+        }else {
+            String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.OK,ftpFilePath);
+            exportCommonService.sendMessage(userName,"红字信息表导出失败",exportCommonService.getFailContent(s));
+            return Response.ok("导出成功,请在消息中心查看");
+        }
 
     }
 
