@@ -6,6 +6,7 @@ import com.xforceplus.phoenix.split.model.*;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
+import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
@@ -617,6 +618,7 @@ public class PreinvoiceService {
             List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = new ArrayList<>();
             BeanUtil.copyProperties(splitPreInvoiceInfo.getPreInvoiceMain(), tXfPreInvoiceEntity);
             tXfPreInvoiceEntity.setSettlementType(tXfSettlementEntity.getSettlementType());
+            tXfPreInvoiceEntity.setSettlementId(tXfSettlementEntity.getId() );
             tXfPreInvoiceEntity.setInvoiceCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCheckCode(StringUtils.EMPTY);
@@ -625,13 +627,14 @@ public class PreinvoiceService {
             tXfPreInvoiceEntity.setUpdateTime(date);
             tXfPreInvoiceEntity.setCreateUserId(0L);
             tXfPreInvoiceEntity.setUpdateUserId(0L);
+            tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
             tXfPreInvoiceEntity.setMachineCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setOriginInvoiceCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setOriginInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setOriginInvoiceType(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setOriginPaperDrawDate(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setRedNotificationNo(StringUtils.EMPTY);
-             tXfPreInvoiceEntity.setId(idSequence.nextId());
+            tXfPreInvoiceEntity.setId(idSequence.nextId());
             tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
