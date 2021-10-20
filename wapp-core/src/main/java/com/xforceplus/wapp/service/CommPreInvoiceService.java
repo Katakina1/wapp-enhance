@@ -35,7 +35,6 @@ public class CommPreInvoiceService {
         tXfPreInvoiceEntity.setId(preInvoiceId);
         tXfPreInvoiceEntity.setRedNotificationNo(redNotification);
         tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
-        tXfPreInvoiceEntity.setRedNotificationFlag(2);
         tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
     }
 

@@ -5,6 +5,7 @@ import com.xforceplus.phoenix.split.model.*;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
+import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
@@ -120,6 +121,7 @@ public class PreinvoiceService {
             List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = new ArrayList<>();
             BeanUtil.copyProperties(splitPreInvoiceInfo, tXfPreInvoiceEntity);
             tXfPreInvoiceEntity.setId(idSequence.nextId());
+            tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
             tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
