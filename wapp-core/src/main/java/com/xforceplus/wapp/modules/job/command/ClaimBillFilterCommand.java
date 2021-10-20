@@ -157,7 +157,7 @@ public class ClaimBillFilterCommand implements Command {
                     new QueryWrapper<TXfOriginClaimBillEntity>()
                             .lambda()
                             .eq(TXfOriginClaimBillEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginClaimBillEntity::getId)
+                            .orderByAsc(TXfOriginClaimBillEntity::getId)
             );
             // 总页数
             pages = page.getPages();
@@ -193,7 +193,7 @@ public class ClaimBillFilterCommand implements Command {
                     new QueryWrapper<TXfOriginClaimItemHyperEntity>()
                             .lambda()
                             .eq(TXfOriginClaimItemHyperEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginClaimItemHyperEntity::getId)
+                            .orderByAsc(TXfOriginClaimItemHyperEntity::getId)
             );
             // 总页数
             pages = page.getPages();
@@ -229,7 +229,7 @@ public class ClaimBillFilterCommand implements Command {
                     new QueryWrapper<TXfOriginClaimItemSamsEntity>()
                             .lambda()
                             .eq(TXfOriginClaimItemSamsEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginClaimItemSamsEntity::getId)
+                            .orderByAsc(TXfOriginClaimItemSamsEntity::getId)
             );
             // 总页数
             pages = page.getPages();
