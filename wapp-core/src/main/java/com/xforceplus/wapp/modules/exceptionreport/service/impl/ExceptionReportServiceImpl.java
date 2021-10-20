@@ -8,19 +8,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
-import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.export.ExportHandlerEnum;
 import com.xforceplus.wapp.export.IExportHandler;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
-import com.xforceplus.wapp.modules.backFill.model.FileUploadResult;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
-import com.xforceplus.wapp.modules.messagecontrol.service.MessageControlService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.mq.ActiveMqProducer;
 import com.xforceplus.wapp.repository.dao.TXfExceptionReportDao;
@@ -31,24 +28,15 @@ import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommonMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.text.ParseException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -93,6 +81,14 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     @Autowired
     private FtpUtilService ftpUtilService;
 
+    private final Map<String, String> headClaim;
+    private final Map<String, String> headEPD;
+
+    public ExceptionReportServiceImpl() {
+        headClaim = excelHeadClaim();
+        headEPD = excelHeadEPD();
+    }
+
     @Override
     public void add4Claim(TXfExceptionReportEntity entity) {
         entity.setType(ExceptionReportTypeEnum.CLAIM.getType());
@@ -114,6 +110,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     private void saveExceptionReport(TXfExceptionReportEntity entity) {
 
         entity.setId(idSequence.nextId());
+        entity.setStatus("1");
         this.save(entity);
 
     }
@@ -173,10 +170,9 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     }
 
 
-    public void doExport(ExceptionReportExportDto exportDto){
-            ExceptionReportRequest request=exportDto.getRequest();
-        ExceptionReportTypeEnum typeEnum=exportDto.getType();
-        List<TXfExceptionReportEntity> list = getExportData(request, typeEnum, 0);
+    public void doExport(ExceptionReportExportDto exportDto) {
+        ExceptionReportRequest request = exportDto.getRequest();
+        ExceptionReportTypeEnum typeEnum = exportDto.getType();
         //这里的userAccount是userid
         final TDxExcelExportlogEntity excelExportlogEntity = excelExportLogService.getById(exportDto.getLogId());
         excelExportlogEntity.setEndDate(new Date());
@@ -187,7 +183,10 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         messagecontrolEntity.setUserAccount(exportDto.getLoginName());
         messagecontrolEntity.setContent(getSuccContent());
 
+        List<TXfExceptionReportEntity> list = getExportData(request, typeEnum, 0);
         try (BigExcelWriter bigExcelWriter = new BigExcelWriter()) {
+            Map<String, String> head = typeEnum == ExceptionReportTypeEnum.CLAIM ? headClaim : headEPD;
+            bigExcelWriter.setHeaderAlias(head);
             while (CollectionUtils.isNotEmpty(list)) {
                 bigExcelWriter.write(list);
                 long lastId = list.get(list.size() - 1).getId();
@@ -288,10 +287,43 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
      *
      * @param id
      * @return
-     * @since           1.0
+     * @since 1.0
      */
     public String getUrl(long id) {
         String url = downLoadurl + "?serviceType=2&downloadId=" + id;
         return url;
+    }
+
+
+    private Map<String, String> excelHeadEPD() {
+        Map<String, String> head = new HashMap<>();
+        head.put("code", "例外CODE");
+        head.put("description", "例外说明");
+        head.put("sellerNo", "供应商编号");
+        head.put("sellerName", "供应商名称");
+        head.put("purchaserNo", "扣款公司编号");
+        head.put("amountWithTax", "含税金额");
+        head.put("agreementTypeCode", "协议类型编码");
+        head.put("billNo", "协议号");
+        head.put("taxCode", "税码");
+        head.put("deductDate", "扣款日期");
+        head.put("taxRate", "税率");
+        return head;
+    }
+
+    private Map<String, String> excelHeadClaim() {
+        Map<String, String> head = new HashMap<>();
+        head.put("code", "例外CODE");
+        head.put("description", "例外说明");
+        head.put("sellerNo", "供应商编号");
+        head.put("sellerName", "供应商名称");
+        head.put("purchaserNo", "扣款公司编号");
+        head.put("amountWithoutTax", "成本金额(不含税)");
+        head.put("agreementTypeCode", "协议类型编码");
+        head.put("billNo", "索赔号/换货号");
+        head.put("taxCode", "税码");
+        head.put("verdictDate", "定案日期");
+        head.put("taxRate", "税率");
+        return head;
     }
 }

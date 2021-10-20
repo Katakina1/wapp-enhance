@@ -30,10 +30,6 @@ public class NewExceptionReportEvent {
      */
     private ExceptionReportTypeEnum type;
 
-    /**
-     * 例外说明
-     */
-    private String description;
 
     /**
      * 例外报告代码
