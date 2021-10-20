@@ -11,5 +11,5 @@ import org.mapstruct.Mapping;
 @Mapper(config = GlobalConfig.class, uses = BaseConverter.class)
 public interface InvoiceConverter {
     @Mapping(target = "paperDrewDate", source = "paperDrewDate", dateFormat = "yyyyMMdd")
-    TXfInvoiceEntity map(InvoiceVo data);
+    TXfInvoiceEntity map(InvoiceVo.Invoice data);
 }

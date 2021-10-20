@@ -1,25 +1,22 @@
 package com.xforceplus.wapp.modules.blackwhitename.controller;
 
-import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
-import com.xforceplus.wapp.modules.blackwhitename.util.ExcelUtil;
-import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 /**
  * 索赔单业务逻辑
@@ -45,23 +42,21 @@ public class SpecialCompanyController {
     }
 
     @ApiOperation("黑白名单信息导入")
-    @PostMapping("/import")
+    @PutMapping("/import")
     public R batchImport(@ApiParam("导入的文件") @RequestParam(required = true) MultipartFile file,
-                         @ApiParam("导入类型 0黑名单 1白名单") @RequestParam(required = true, defaultValue = "0") String type) {
-        Workbook workbook = ExcelUtil.getWorkBook(file);
-        List<TXfBlackWhiteCompanyEntity> resultList = speacialCompanyService.parseExcel(workbook);
-        resultList.stream().forEach(entity -> {
-            if (StringUtils.isNotEmpty(entity.getSupplier6d())) {
-                entity.setSupplierType(type);
-                TXfBlackWhiteCompanyEntity result = speacialCompanyService.getBlackListBy6D(entity.getSupplier6d(),type);
-                if (null != result) {
-                    entity.setId(result.getId());
-                }
-
-            }
-        });
-        speacialCompanyService.saveOrUpdateBatch(resultList);
-        return R.ok();
+                         @ApiParam("导入类型 0黑名单 1白名单") @RequestParam(required = true) String type) throws IOException {
+        if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
+            return R.fail("文件格式不正确");
+        } else if (file.isEmpty()) {
+            return R.fail("文件不能为空");
+        }
+        if(StringUtils.isEmpty(type)){
+            return R.fail("导入类型不能为空");
+        }
+        long start = System.currentTimeMillis();
+        Either<String, Integer> result = speacialCompanyService.importData(file.getInputStream(),type);
+        log.info("黑白名单信息导入,耗时:{}ms", System.currentTimeMillis() - start);
+        return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据", result.get())) : R.fail(result.getLeft());
     }
 
 

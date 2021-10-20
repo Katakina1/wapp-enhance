@@ -123,7 +123,7 @@ public class TaxCodeEntity {
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
-    private String createTime;
+    private Date createTime;
 
     /**
      * 更新用户
