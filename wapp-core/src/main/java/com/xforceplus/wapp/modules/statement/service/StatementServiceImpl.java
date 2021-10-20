@@ -7,12 +7,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.preinvoice.converters.PreInvoiceConverter;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
+import com.xforceplus.wapp.modules.statement.models.BaseInformation;
+import com.xforceplus.wapp.modules.statement.models.PreInvoice;
 import com.xforceplus.wapp.modules.statement.models.Statement;
 import com.xforceplus.wapp.modules.statement.models.StatementCount;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -35,10 +40,14 @@ import java.util.stream.Collectors;
 public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettlementEntity> {
     private final StatementConverter statementConverter;
     private final TXfBillDeductExtDao billDeductExtDao;
+    private final PreinvoiceService preinvoiceService;
+    private final PreInvoiceConverter preInvoiceConverter;
 
-    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao) {
+    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter) {
         this.statementConverter = statementConverter;
         this.billDeductExtDao = billDeductExtDao;
+        this.preinvoiceService = preinvoiceService;
+        this.preInvoiceConverter = preInvoiceConverter;
     }
 
     public Tuple2<List<Statement>, Page<?>> page(Long current, Long size, @NonNull Integer type, Integer settlementStatus,
@@ -123,5 +132,23 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                         (k, v) -> new StatementCount(it.get("status").toString(), (Integer) it.get("total"))));
         log.debug("结算单tab统计,结果:{}", tabMap.values());
         return Lists.newArrayList(tabMap.values());
+    }
+
+    public Tuple2<List<PreInvoice>, Page<?>> awaitingInvoicePage(Long current, Long size, @NonNull String settlementNo) {
+        log.info("待开票列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
+        Page<TXfPreInvoiceEntity> page = new LambdaQueryChainWrapper<>(preinvoiceService.getBaseMapper())
+                .eq(TXfPreInvoiceEntity::getSettlementNo, settlementNo)
+                .page(new Page<>(current, size));
+        log.debug("待开票列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
+        return Tuple.of(preInvoiceConverter.map(page.getRecords()), page);
+    }
+
+    public Tuple2<List<BaseInformation>, Page<?>> baseInformationClaimPage(Long current, Long size, @NonNull Integer type, @NonNull String settlementNo) {
+        
+        return null;
+    }
+    public Tuple2<List<BaseInformation>, Page<?>> baseInformationAgreementPage(Long current, Long size, @NonNull Integer type, @NonNull String settlementNo) {
+
+        return null;
     }
 }
