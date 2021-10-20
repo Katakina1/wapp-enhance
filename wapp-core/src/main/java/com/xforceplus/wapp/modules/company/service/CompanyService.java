@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.CompanyTypeEnum;
-import com.xforceplus.wapp.modules.blackwhitename.Constants.Constants;
+import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
 import com.xforceplus.wapp.modules.company.convert.CompanyConverter;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;

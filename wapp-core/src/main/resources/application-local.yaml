@@ -29,8 +29,64 @@ wapp:
       tcp: 443
   db2:
     base-url: 127.0.0.1
+  export_success_queue_gfone: cn.wm.host.export.success.queue.gfone
+
+activemq:
+  queue-name:
+    export-request: cn.wm.host.enhance.export-request.queue # 导出申请
 
 taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+#图片存储路径
+filePathConstan:
+  remoteImageRootPath: /home/wappftp/jxfp/image/
+  remoteCostFileRootPath: /home/wappftp/jxfp/cost/
+  remoteKnowFileRootPath: /home/wappftp/jxfp/knowCenter/
+  remoteAnnouncementRootPath: /home/wappftp/jxfp/announcement/
+  remoteQuestionPaperFileRootPath: /home/wappftp/jxfp/question/
+  remoteQuestionPaperFileTempRootPath: /home/wappftp/jxfp/temp/question/
+  remoteCostFileTempRootPath: /home/wappftp/jxfp/temp/cost/
+  remoteExcelFileRootPath: /home/wappftp/wapp/excel/
+  remoteFixedRootPath: /jxfp/fixed/ #供应商红票remoteFixedRootPath
+  remoteFixedTempRootPath: /jxfp/temp/fixed/ #供应商红票远程文件临时存放路径
+  localImageRootPath: /home/vn03qsx/jxfp/image/
+  tempPath: /home/wappftp/jxfp/temp/zip/      # 文件暂存路径
+  depositPath: /home/wappftp/jxfp/zipto/ # 文件存储路
+  tempImgPath: /home/wappftp/jxfp/temp/imgzip/      # 图片临时存储路径
+  signInImgPath: /home/wappftp/jxfp/temp/image/     #扫码签收图片暂存路径
+  tempDir: /home/wappftp/jxfp/temp/excelZip/
+  sapRemoteRootPath: /jxfp/sap/source/   #sap源文件目录
+  sapRemoteBakPath: /jxfp/sap/bak/       #sap备份目录
+  sapLocalTempPath: /home/wappftp/jxfp/sap/temp/         #sap本地临时目录
+  aribatempPath: /usr/users/dxhy152/wapp/jxfp/temp/zip/      # 文件暂存路径
+  aribadepositPath: /usr/users/dxhy152/wapp/jxfp/zipto/ # 文件存储路
+  erweimaPath: /usr/users/dxhy152/wapp/jxfp/QRCode/image/
+  orderSapRemoteRootPath: /jxfp/order/sap/source/   #sap源文件目录（订单获取）
+  orderSapRemoteBakPath: /jxfp/order/sap/bak/       #sap备份目录（订单获取）
+  orderSapLocalTempPath: /usr/users/dxhy152/wapp/jxfp/order/sap/temp/
+  vendorRemoteRootPath: /jxfp/vendor/source/   #vendor源文件目录(导入10位供应商号)
+  vendorRemoteBakPath: /jxfp/vendor/bak/       #vendor备份目录
+  vendorLocalTempPath: /usr/users/dxhy152/wapp/jxfp/vendor/temp/         #vendor本地临时目录
+  localFixedRootPath: /usr/users/dxhy152/wapp/jxfp/fixed/temp/ #供应商红票本地文件存放路径
+  sso: d:/sso/sso.txt
+
+
+
+#sftp配置
+pro:
+  sftp:
+    host: 10.100.2.16  #10.44.100.123
+    username: wappftp
+    password: testwapp123
+    # 授权方式：公私钥和密码选择一个，测试时选择密码
+    auth-method: password
+    default:
+      port: 22
+      timeout: 60000
+
+      privateKey: /home/wappftp/.ssh/id_rsa
+      passphrase:

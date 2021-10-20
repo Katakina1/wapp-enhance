@@ -16,4 +16,14 @@ import lombok.Setter;
 public class ExceptionReportExportDto {
     private ExceptionReportTypeEnum type;
     private ExceptionReportRequest request;
+
+    private Long logId;
+
+    private Long userId;
+
+
+    /**
+     *
+     */
+    private String loginName;
 }

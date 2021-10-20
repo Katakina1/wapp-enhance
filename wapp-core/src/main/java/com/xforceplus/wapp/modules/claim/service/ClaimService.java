@@ -89,7 +89,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
 
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(wrapper);
 
         //修改预制发票状态
@@ -136,7 +136,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改预制发票状态
@@ -186,6 +186,9 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         List<TXfBillDeductEntity> tXfBillDeductEntityList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
         if (CollectionUtils.isEmpty(tXfBillDeductEntityList)) {
             throw new EnhanceRuntimeException("索赔单不存在");
+        }
+        if (tXfBillDeductEntityList.size() != billDeductIdList.size()) {
+            throw new EnhanceRuntimeException("索赔单缺失");
         }
         List<String> settlementNoList = tXfBillDeductEntityList.stream().map(TXfBillDeductEntity::getRefSettlementNo).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(settlementNoList)) {

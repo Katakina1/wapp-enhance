@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.blackwhitename.Constants;
+package com.xforceplus.wapp.modules.blackwhitename.constants;
 
 public interface Constants {
 
