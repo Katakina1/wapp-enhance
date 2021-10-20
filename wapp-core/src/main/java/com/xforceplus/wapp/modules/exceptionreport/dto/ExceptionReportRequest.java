@@ -42,15 +42,6 @@ public class ExceptionReportRequest extends PageViewRequest {
     @ApiModelProperty("单据号：索赔单号，协议号，EPD号")
     private String billNo;
 
-    @ApiModelProperty(hidden = true)
-    private Long userId;
-
-
-    /**
-     *
-     */
-    @ApiModelProperty(hidden = true)
-    private String userName;
 
 
 }
