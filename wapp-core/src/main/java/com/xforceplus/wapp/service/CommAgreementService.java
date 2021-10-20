@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +58,9 @@ public class CommAgreementService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-
+        if(!Objects.equals(tXfSettlementEntity.getSettlementStatus(),TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())){
+            throw new EnhanceRuntimeException("结算单已上传红票不能操作");
+        }
         //协议单
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
         billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
@@ -89,8 +92,6 @@ public class CommAgreementService {
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-            // 作废红字信息
-            commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //释放结算单蓝票
