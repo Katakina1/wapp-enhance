@@ -1,27 +1,23 @@
 package com.xforceplus.wapp.modules.blackwhitename.service;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
-import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.blackwhitename.convert.SpeacialCompanyConverter;
-import com.xforceplus.wapp.modules.blackwhitename.util.ExcelUtil;
+import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
+import com.xforceplus.wapp.modules.blackwhitename.listener.SpeclialCompanyImportListener;
 import com.xforceplus.wapp.repository.dao.TXfBlackWhiteCompanyDao;
 import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
-import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -37,68 +33,41 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
     }
 
     public Tuple2<List<TXfBlackWhiteCompanyEntity>, Page<TXfBlackWhiteCompanyEntity>> page(Long current, Long size) {
-        LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
-        Page<TXfBlackWhiteCompanyEntity> page = wrapper.page(new Page<>(current, size));
-        log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
-        return Tuple.of(companyConverter.map(page.getRecords()), page);
+//        LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
+//        Page<TXfBlackWhiteCompanyEntity> page = wrapper.page(new Page<>(current, size));
+//        log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
+//        return Tuple.of(companyConverter.map(page.getRecords()), page);
+        return null;
     }
-    public TXfBlackWhiteCompanyEntity getBlackListBy6D(String supplier6d,String supplierType){
+
+    public TXfBlackWhiteCompanyEntity getBlackListBy6D(String supplier6d, String supplierType) {
         QueryWrapper<TXfBlackWhiteCompanyEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_6D,supplier6d);
-        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE,supplierType);
+        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_6D, supplier6d);
+        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, supplierType);
         return getOne(wrapper);
 
     }
-    public List<TXfBlackWhiteCompanyEntity> parseExcel(Workbook workbook) {
-        Sheet sheet = workbook.getSheetAt(0);
-        List<TXfBlackWhiteCompanyEntity> importEntitiyList = new ArrayList<>();
-        for (Row row : sheet) {
-            if (row.getRowNum() == 0) {
-                continue;
-            }
-            TXfBlackWhiteCompanyEntity tXfBlackWhiteCompanyEntity = new TXfBlackWhiteCompanyEntity();
-            String no = null;
-            String type = null;
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < row.getLastCellNum(); i++) {
-                Cell cell = row.getCell(i);
 
-                String cellValue = ExcelUtil.getCellData(row, i);
-                switch (i) {
-                    case 0:
-                        if (StringUtils.isEmpty(cellValue)) {
-                            builder.append("第" + row.getRowNum() + "行" + "供应商6D为空");
-                        }
-                        tXfBlackWhiteCompanyEntity.setSupplier6d(cellValue);
-                        break;
-                    case 1:
-                        if (StringUtils.isEmpty(cellValue)) {
-                            builder.append("第" + row.getRowNum() + "行" + "SAP编码为空");
-                        }
-                        tXfBlackWhiteCompanyEntity.setSapNo(cellValue);
-                        break;
-                    case 2:
-                        if (StringUtils.isEmpty(cellValue)) {
-                            builder.append("第" + row.getRowNum() + "行" + "供应商名称为空");
-                        }
-                        tXfBlackWhiteCompanyEntity.setCompanyName(cellValue);
-
-                    case 3:
-                        if (StringUtils.isEmpty(cellValue)) {
-                            tXfBlackWhiteCompanyEntity.setOpenDate(DateUtils.strToDate(cellValue));
-                        }
-                    case 4:
-                        if (StringUtils.isEmpty(cellValue)) {
-                            tXfBlackWhiteCompanyEntity.setCloseDate(DateUtils.strToDate(cellValue));
-                        }
-                    default:
-                        break;
-                }
-
-            }
-            importEntitiyList.add(tXfBlackWhiteCompanyEntity);
+    /**
+     * 导入抬头信息
+     *
+     * @param is
+     * @return
+     */
+    public Either<String, Integer> importData(InputStream is,String type) {
+        QueryWrapper wrapper = new QueryWrapper<>();
+        SpeclialCompanyImportListener listener = new SpeclialCompanyImportListener();
+        EasyExcel.read(is, SpecialCompanyImportDto.class, listener).sheet().doRead();
+        if (CollectionUtils.isEmpty(listener.getValidInvoices())) {
+            return Either.left("未解析到数据");
         }
-        return importEntitiyList;
+        log.info("导入数据解析条数:{}", listener.getRows());
+        List<TXfBlackWhiteCompanyEntity> validList=companyConverter.reverse(listener.getValidInvoices(), 1L);
+        validList.stream().forEach( e ->{
+            e.setSupplierType(type);
+        });
+        boolean save = saveBatch(validList);
+        return save ? Either.right(listener.getValidInvoices().size()) : Either.right(0);
     }
 
 
@@ -106,10 +75,10 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * 判断供应商是否在黑白名单中
      *
      * @param supplierType {@link String} 0-黑名单 1-白名单
-     * @param memo 供应商6D
+     * @param memo         供应商6D
      * @return
      */
-    public boolean hitBlackOrWhiteList(String supplierType, String memo){
+    public boolean hitBlackOrWhiteList(String supplierType, String memo) {
         return 0 == count(
                 new QueryWrapper<TXfBlackWhiteCompanyEntity>()
                         .lambda()

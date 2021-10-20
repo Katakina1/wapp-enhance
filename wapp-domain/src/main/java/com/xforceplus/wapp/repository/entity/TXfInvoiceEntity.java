@@ -1,27 +1,27 @@
 package com.xforceplus.wapp.repository.entity;
 
 import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
 /**
  * <p>
-    * 发票表
-    * </p>
+ * 发票表
+ * </p>
  *
  * @author malong@xforceplus.com
  * @since 2021-10-19
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper=true)
-@TableName(value="t_xf_invoice")
+@ToString(callSuper = true)
+@TableName(value = "t_xf_invoice")
 public class TXfInvoiceEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -30,6 +30,7 @@ public class TXfInvoiceEntity extends BaseEntity {
      * id
      */
     @TableField("id")
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -48,7 +49,7 @@ public class TXfInvoiceEntity extends BaseEntity {
      * 开票日期
      */
     @TableField("paper_drew_date")
-    private Date paperDrewDate;
+    private String paperDrewDate;
 
     /**
      * 购方名称
@@ -263,13 +264,13 @@ public class TXfInvoiceEntity extends BaseEntity {
     /**
      * 创建日期
      */
-    @TableField("create_time")
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新日期
      */
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
 

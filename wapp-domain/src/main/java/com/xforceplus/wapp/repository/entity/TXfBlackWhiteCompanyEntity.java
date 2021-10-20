@@ -1,11 +1,10 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -44,6 +43,11 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
     private String supplier6d;
 
     /**
+     * 供应商税号
+     */
+    @TableField("supplier_taxNo")
+    private String supplierTaxNo;
+    /**
      * sap编号
      */
     @TableField("sap_no")
@@ -76,25 +80,25 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
     /**
      * 创建时间
      */
-    @TableField("create_time")
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 创建人
      */
-    @TableField("create_user")
+    @TableField(value = "create_user",fill = FieldFill.INSERT)
     private String createUser;
 
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time" ,fill = FieldFill.UPDATE)
     private Date updateTime;
 
     /**
      * 更新人
      */
-    @TableField("update_user")
+    @TableField(value ="update_user" ,fill = FieldFill.UPDATE)
     private String updateUser;
 
 

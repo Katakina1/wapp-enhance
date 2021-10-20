@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.HttpUtils;
@@ -179,6 +180,8 @@ public class TaxWareService {
                 if(SUCCESSFUL_PROCESS_FLAG.equals(redMessageInfo.getProcessFlag())){
                     tXfRedNotificationEntity.setRedNotificationNo(redMessageInfo.getRedNotificationNo());
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
+                    // 更新申请日期
+                    tXfRedNotificationEntity.setInvoiceDate(DateUtils.getCurentIssueDate());
                     redNotificationMainService.updateById(tXfRedNotificationEntity);
                     tXfRedNotificationLogEntity.setProcessRemark("申请成功");
                     tXfRedNotificationLogEntity.setStatus(2);

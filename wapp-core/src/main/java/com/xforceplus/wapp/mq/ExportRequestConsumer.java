@@ -13,7 +13,8 @@ import javax.jms.JMSException;
 import javax.jms.TextMessage;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+
+import static com.xforceplus.wapp.export.IExportHandler.KEY_OF_HANDLER_NAME;
 
 
 /**
@@ -26,20 +27,16 @@ import java.util.Optional;
 @Slf4j
 public class ExportRequestConsumer {
 
-    private final ApplicationContext applicationContext;
-
-    public static final String KEY_OF_HANDLER_NAME = "handlerName";
 
     final Map<String, IExportHandler> exportHandlers = new HashMap<>();
 
     public ExportRequestConsumer(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
         final Map<String, IExportHandler> beansOfType = applicationContext.getBeansOfType(IExportHandler.class);
         beansOfType.forEach((k, v) -> exportHandlers.put(v.handlerName(), v));
     }
 
     @JmsListener(destination = "${activemq.queue-name.export-request}")
-    public boolean doListen(Message<String> message, TextMessage textMessage) {
+    public void doListen(Message<String> message, TextMessage textMessage) {
 
         final MessageHeaders headers = message.getHeaders();
         final String s = headers.get(KEY_OF_HANDLER_NAME, String.class);
@@ -59,6 +56,5 @@ public class ExportRequestConsumer {
                 log.info("处理器名称:[{}]未匹配到相应处理器", s);
             }
         }
-        return true;
     }
 }

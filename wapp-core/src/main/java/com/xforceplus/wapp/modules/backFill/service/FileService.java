@@ -1,6 +1,8 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
 import cn.hutool.core.codec.Base64Encoder;
+import com.alibaba.fastjson.JSON;
+import com.xforceplus.wapp.modules.backFill.model.FileUploadResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +52,12 @@ public class FileService {
         String s = restTemplate.postForObject(uploadUrl, files, String.class);
         log.info("上传文件返回结果:{}", s);
         return s;
+    }
+
+    public FileUploadResult upload(byte[] fileBytes,String  originalFilename) throws IOException {
+        final String s = uploadFile(fileBytes, originalFilename);
+        final FileUploadResult fileUploadResult = JSON.parseObject(s, FileUploadResult.class);
+        return fileUploadResult;
     }
 
     public byte[] downLoadFile4ByteArray(String uploadId)  {

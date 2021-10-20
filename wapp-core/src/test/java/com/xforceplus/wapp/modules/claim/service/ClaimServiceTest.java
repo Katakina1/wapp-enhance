@@ -10,34 +10,40 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Arrays;
+
 @Slf4j
 public class ClaimServiceTest extends BaseUnitTest {
 
     @Autowired
-    private DeductViewService claimService;
+    private ClaimService claimService;
+    @Autowired
+    private DeductViewService deductViewService;
 
     @Test
     public void testApplyClaimVerdict() {
-       // claimService.applyClaimVerdict();
+        // claimService.applyClaimVerdict(1L);
     }
 
     @Test
     public void testRejectClaimVerdict() {
+        //  claimService.rejectClaimVerdict(1L);
     }
 
     @Test
     public void testAgreeClaimVerdict() {
+        //  claimService.agreeClaimVerdict(1L);
     }
 
     @Test
     public void testApplyClaimVerdictByBillDeductId() {
+        // claimService.applyClaimVerdictByBillDeductId(Arrays.asList(1L));
     }
 
     @Test
     public void testDeductByPage() {
-        DeductListRequest request=new DeductListRequest();
-        final PageResult<DeductListResponse> result = claimService.deductClaimByPage(request);
-
-        System.out.println("r:"+JSON.toJSONString(result));
+        DeductListRequest request = new DeductListRequest();
+        final PageResult<DeductListResponse> result = deductViewService.deductClaimByPage(request);
+        System.out.println("r:" + JSON.toJSONString(result));
     }
 }
