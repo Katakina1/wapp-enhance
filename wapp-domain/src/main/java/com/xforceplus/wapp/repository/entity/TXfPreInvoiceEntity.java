@@ -31,7 +31,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
      * 结算单id
      */
     @TableField("settlement_id")
-    private String settlementId;
+    private Long settlementId;
 
     /**
      * 结算单编码

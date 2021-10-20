@@ -276,10 +276,9 @@ public class CommSettlementService {
         if (tXfPreInvoiceEntityList.size() != preInvoiceIdList.size()) {
             throw new EnhanceRuntimeException("预制发票缺失");
         }
-        List<String> settlementNoList = tXfPreInvoiceEntityList.stream().map(TXfPreInvoiceEntity::getSettlementNo).distinct().collect(Collectors.toList());
-        QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
-        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
+        List<Long> settlementIdList = tXfPreInvoiceEntityList.stream()
+                .map(TXfPreInvoiceEntity::getId).distinct().collect(Collectors.toList());
+        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectBatchIds(settlementIdList);
         if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
@@ -308,10 +307,9 @@ public class CommSettlementService {
         if (tXfPreInvoiceEntityList.size() != preInvoiceIdList.size()) {
             throw new EnhanceRuntimeException("预制发票缺失");
         }
-        List<String> settlementNoList = tXfPreInvoiceEntityList.stream().map(TXfPreInvoiceEntity::getSettlementNo).distinct().collect(Collectors.toList());
-        QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in(TXfSettlementEntity.SETTLEMENT_NO, settlementNoList);
-        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectList(queryWrapper);
+        List<Long> settlementIdList = tXfPreInvoiceEntityList.stream()
+                .map(TXfPreInvoiceEntity::getSettlementId).distinct().collect(Collectors.toList());
+        List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectBatchIds(settlementIdList);
         if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
