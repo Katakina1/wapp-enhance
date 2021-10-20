@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.taxcode.converters;
 
 import com.xforceplus.wapp.converters.BaseConverter;
 import com.xforceplus.wapp.converters.GlobalConfig;
+import com.xforceplus.wapp.handle.vo.TaxCodeVO;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import com.xforceplus.wapp.modules.overdue.models.Overdue;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
@@ -19,4 +20,6 @@ public interface TaxCodeConverter {
     List<TaxCode> map(List<TaxCodeEntity> entity);
 
     TaxCode map(TaxCodeEntity entity);
+
+    TaxCodeEntity map(TaxCodeVO taxCode);
 }

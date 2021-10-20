@@ -13,5 +13,6 @@ public class CommClaimServiceTest extends BaseUnitTest {
 
     @Test
     public void testDestroyClaimSettlement() {
+       // commClaimService.destroyClaimSettlement(1L);
     }
 }

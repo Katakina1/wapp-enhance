@@ -1,32 +1,21 @@
-package com.xforceplus.wapp.repository.entity;
+package com.xforceplus.wapp.handle.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * @author mashaopeng@xforceplus.com
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@TableName(value = "t_xf_tax_code")
-public class TaxCodeEntity {
-    /**
-     * 主键
-     */
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private Long id;
-
+public class TaxCodeVO {
     /**
      * 税编转换代码
      */
+    @JsonProperty("taxConvertCode")
+    @JSONField(name = "taxConvertCode")
     private String itemNo;
 
     /**
@@ -113,30 +102,4 @@ public class TaxCodeEntity {
      * 单位
      */
     private String quantityUnit;
-
-    /**
-     * 创建用户
-     */
-    private Long createUser;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 更新用户
-     */
-    private Long updateUser;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    private String deleteFlag;
-
-    private static final long serialVersionUID = 1L;
 }

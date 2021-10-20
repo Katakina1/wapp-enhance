@@ -1,6 +1,6 @@
 package com.xforceplus.wapp.modules.blackwhitename.util;
 
-import com.xforceplus.wapp.modules.blackwhitename.Constants.Constants;
+import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;

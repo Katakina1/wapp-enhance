@@ -935,4 +935,14 @@ public class DateUtils {
         return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
     }
 
+    /**
+     * 获取开票日期格式
+     * yyyyMMdd
+     */
+    public static String getCurentIssueDate() {
+       SimpleDateFormat formatter2  = new SimpleDateFormat("yyyyMMdd");
+       return formatter2.format(new Date());
+    }
+
+
 }
