@@ -6,6 +6,7 @@ import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,9 @@ public class CommClaimService {
     @Autowired
     private CommRedNotificationService commRedNotificationService;
     @Autowired
-    private TXfInvoiceDao tXfInvoiceDao;;
+    private TXfInvoiceDao tXfInvoiceDao;
+    @Autowired
+    private PreinvoiceService preinvoiceService;
 
     /**
      * 作废整个索赔单流程
@@ -143,5 +146,21 @@ public class CommClaimService {
         //删除蓝票关系
         //释放索赔单蓝票额度（作废的索赔单）
         tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
+    }
+
+    /**
+     * 索赔单[确认]按钮相关逻辑
+     * 结算单明细拆成预制发票（红字信息）
+     * 底层逻辑调用产品服务(拆票、申请红字信息)
+     * @param settlementId
+     */
+    @Transactional
+    public void splitPreInvoice(Long settlementId) {
+        //结算单
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
+        if (tXfSettlementEntity == null) {
+            throw new EnhanceRuntimeException("结算单不存在");
+        }
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
     }
 }
