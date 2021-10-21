@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.IsDealEnum;
@@ -31,21 +32,20 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class RecordInvoiceService {
+public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRecordInvoiceEntity> {
     @Autowired
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
     @Autowired
     private TDxInvoiceDao tDxInvoiceDao;
 
-    public PageResult<RecordInvoiceResponse> getPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
+    public PageResult<RecordInvoiceResponse> queryPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
         Page<TDxRecordInvoiceEntity> page=new Page<>(pageNo,pageSize);
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
         BeanUtil.copyList(pageResult.getRecords(),response,RecordInvoiceResponse.class);
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
-
     }
 
 
@@ -102,5 +102,6 @@ public class RecordInvoiceService {
         return wrapper;
 
     }
+
 
 }

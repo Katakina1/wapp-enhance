@@ -1,6 +1,12 @@
 package com.xforceplus.wapp.enums;
 
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.Getter;
+import lombok.NonNull;
+import org.apache.commons.lang3.EnumUtils;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * 业务单状态
@@ -40,5 +46,10 @@ public enum TXfBillDeductStatusEnum {
     TXfBillDeductStatusEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
+    }
+
+    public static  TXfBillDeductStatusEnum getEnumByCode(@NonNull Integer code) {
+        return Stream.of(TXfBillDeductStatusEnum.values())
+                .filter(t -> t.getCode().equals(code)).findFirst().orElseGet( null);
     }
 }

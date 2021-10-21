@@ -85,6 +85,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/export")
     public Response export(@RequestBody RedNotificationExportPdfRequest request){
+
         return rednotificationService.export(request);
     }
 

@@ -23,5 +23,6 @@ public class Claim extends BaseInformation {
     @ApiModelProperty("更新时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long updateDate;
+    @ApiModelProperty("索赔明细")
     private List<ClaimItem> items;
 }
