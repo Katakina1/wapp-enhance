@@ -15,10 +15,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -131,9 +128,9 @@ public class RedNotificationController {
             }
             filePath = URLDecoder.decode(filePath, "UTF-8");
             res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
-            FileInputStream inputStream = null;
+            InputStream inputStream = null;
 
-                inputStream = new FileInputStream(filePath);
+            inputStream = this.getClass().getResourceAsStream(filePath);
 
             out = res.getOutputStream();
             int b = 0;
