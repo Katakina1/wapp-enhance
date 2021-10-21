@@ -83,6 +83,12 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     @TableField("update_date")
     private Date updateDate;
 
+    /**
+     * 状态;0正常;1撤销
+     */
+    @TableField("status")
+    private Integer status;
+
 
     public static final String DEDUCT_ID = "deduct_id";
 
@@ -105,5 +111,7 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     public static final String CREATE_DATE = "create_date";
 
     public static final String UPDATE_DATE = "update_date";
+
+    public static final String STATUS = "status";
 
 }
