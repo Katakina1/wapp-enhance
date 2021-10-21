@@ -180,6 +180,15 @@ public class BlueInvoiceService {
         );
         BigDecimal accumulatedAmount = BigDecimal.ZERO;
         for (TXfInvoiceItemEntity item : items) {
+            // 顺序不能颠倒
+            if (accumulatedAmount.compareTo(lastDeductedAmount) < 0
+                    && accumulatedAmount.add(item.getAmountWithoutTax()).compareTo(lastDeductedAmount) > 0) {
+                item.setAmountWithoutTax(lastDeductedAmount.subtract(accumulatedAmount));
+            }
+            if (accumulatedAmount.compareTo(totalDeductedAmount) < 0
+                    && accumulatedAmount.add(item.getAmountWithoutTax()).compareTo(totalDeductedAmount) > 0) {
+                item.setAmountWithoutTax(totalAmountWithoutTax.subtract(accumulatedAmount));
+            }
             accumulatedAmount = accumulatedAmount.add(item.getAmountWithoutTax());
             if (accumulatedAmount.compareTo(lastDeductedAmount) > 0) {
                 list.add(item);
@@ -187,12 +196,13 @@ public class BlueInvoiceService {
             if (accumulatedAmount.compareTo(totalDeductedAmount) >= 0) {
                 return list;
             }
+            // 顺序不能颠倒
         }
         return list;
     }
 
     /**
-     * 撤回抵扣的发票，将抵扣金额返还到原有发票上
+     * 撤回抵扣的发票金额，将抵扣金额返还到原有发票上
      *
      * @param list
      * @return
@@ -209,9 +219,7 @@ public class BlueInvoiceService {
                         }
                 )
                 .collect(Collectors.toList());
-        // TODO by kenny
-        // return invoiceService.update().updateBatchById(invoices);
-        return false;
+        return invoiceService.withdrawRemainingAmountById(invoices);
     }
 
     @Data
