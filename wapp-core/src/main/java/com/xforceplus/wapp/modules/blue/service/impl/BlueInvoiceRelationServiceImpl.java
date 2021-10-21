@@ -1,9 +1,9 @@
 package com.xforceplus.wapp.modules.blue.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.modules.backFill.model.BackFillVerifyBean;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
-import com.xforceplus.wapp.modules.rednotification.mapstruct.IdGenerator;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBlueRelationDao;
 import com.xforceplus.wapp.repository.entity.TXfBlueRelationEntity;
@@ -44,5 +44,20 @@ public class BlueInvoiceRelationServiceImpl extends ServiceImpl<TXfBlueRelationD
             return entity;
         }).collect(Collectors.toList());
         return super.saveBatch(collect);
+    }
+
+    /**
+     * 查询对应蓝字发票是否存在
+     *
+     * @param blueInvoiceNo 蓝字发票号码
+     * @param blueInvoiceCode 蓝字发票代码
+     * @return
+     */
+    @Override
+    public boolean existsByBlueInvoice(String blueInvoiceNo, String blueInvoiceCode) {
+        LambdaQueryWrapper<TXfBlueRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TXfBlueRelationEntity::getBlueInvoiceNo, blueInvoiceNo);
+        wrapper.eq(TXfBlueRelationEntity::getBlueInvoiceCode, blueInvoiceCode);
+        return super.count(wrapper) > 0;
     }
 }
