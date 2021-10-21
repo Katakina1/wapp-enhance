@@ -72,7 +72,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
 
 
-    public String add(AddRedNotificationRequest request) {
+    public Response add(AddRedNotificationRequest request) {
 
        // 保存红字信息 进入待审核
         List<TXfRedNotificationEntity> listMain = Lists.newLinkedList();
@@ -98,8 +98,37 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         saveBatch(listMain);
         redNotificationItemService.saveBatch(listItem);
+        //判断是否自动申请
+        if(request.getAutoApplyFlag() ==0){
+            // 申请请求
+            RedNotificationApplyReverseRequest applyRequest = new RedNotificationApplyReverseRequest();
 
-        return "" ;
+            RedNotificationMain rednotificationMain = request.getRedNotificationInfoList().get(0).getRednotificationMain();
+            // 获取在线终端
+            GetTerminalResponse terminalResponse = taxWareService.getTerminal(rednotificationMain.getPurchaserTaxNo());
+            if (Objects.equals(TaxWareCode.SUCCESS,terminalResponse.getCode())) {
+
+                for (GetTerminalResponse.ResultDTO.TerminalListDTO item : terminalResponse.getResult().getTerminalList()) {
+                    GetTerminalResponse.ResultDTO.DeviceDTO deviceDTO = !CollectionUtils.isEmpty(item.getOnlineDeviceList()) ? item.getOnlineDeviceList().get(0) : null;
+                    if (deviceDTO != null) {
+                        applyRequest.setDeviceUn(deviceDTO.getDeviceUn());
+                        applyRequest.setTerminalUn(item.getTerminalUn());
+                        break;
+                    }
+                }
+            }
+            if (!StringUtils.isEmpty(applyRequest.getDeviceUn())){
+                QueryModel queryModel = new QueryModel();
+                List<Long> pidList = request.getRedNotificationInfoList().stream().map(item -> Long.parseLong(item.getRednotificationMain().getPid())).collect(Collectors.toList());
+                queryModel.setPidList(pidList);
+                applyRequest.setQueryModel(queryModel);
+            }else {
+                throw new RRException(String.format("未获取税号[%s]的在线终端",rednotificationMain.getPurchaserTaxNo()));
+            }
+            //申请
+            return applyByPage(applyRequest);
+        }
+        return Response.ok("新增成功");
     }
 
     public Response applyByPage(RedNotificationApplyReverseRequest request) {
@@ -249,8 +278,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (queryModel.getPaymentTime()!=null){
             queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime, queryModel.getPaymentTime());
         }
-        if (queryModel.getPid() !=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getPid,queryModel.getPid());
+        if (!CollectionUtils.isEmpty(queryModel.getPidList())){
+            queryWrapper.in(TXfRedNotificationEntity::getPid,queryModel.getPidList());
         }
         if (queryModel.getApproveStatus()!=null){
             queryWrapper.eq(TXfRedNotificationEntity::getApproveStatus,queryModel.getApproveStatus());

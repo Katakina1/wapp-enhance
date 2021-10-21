@@ -11,10 +11,10 @@ public class ApplyOperationRequest {
     @ApiModelProperty("结算单号")
     private String settlementNo;
 
-    @ApiModelProperty("结算单号")
+    @ApiModelProperty("结算单id")
     private String settlementId;
 
-    @ApiModelProperty("操作类型 1 修改税编 2 修改限额 3 修改商品")
+    @ApiModelProperty("操作类型 1 修改税编 2 不做任何修改 3 修改商品")
     private int applyOperationType;
 
     /**
