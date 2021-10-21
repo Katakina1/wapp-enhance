@@ -39,6 +39,6 @@ public class ExportItemInfo extends BaseRowModel {
     @ExcelProperty(value = "税率", index = 9)
     private String taxRate;
 
-    @ExcelProperty(value = "不含税单价", index = 8)
+    @ExcelProperty(value = "不含税单价", index = 10)
     private String unitPrice;
 }

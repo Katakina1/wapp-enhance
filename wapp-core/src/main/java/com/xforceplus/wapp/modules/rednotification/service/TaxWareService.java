@@ -237,6 +237,8 @@ public class TaxWareService {
 
             }
             redNotificationMainService.updateById(record);
+            redNotificationLogService.updateById(logEntity);
+
 
         }
 
