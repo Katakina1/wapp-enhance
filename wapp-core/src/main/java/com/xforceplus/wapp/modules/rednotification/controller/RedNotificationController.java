@@ -118,7 +118,7 @@ public class RedNotificationController {
             res.setContentType("multipart/form-data");
             res.setCharacterEncoding("UTF-8");
             res.setContentType("text/html");
-            String filePath = getClass().getResource("/excl/" + fileName).getPath();
+            String filePath = "/excl/" + fileName;
             String userAgent = req.getHeader("User-Agent");
             if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
             fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
@@ -126,11 +126,9 @@ public class RedNotificationController {
             // 非IE浏览器的处理：
             fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
             }
-            filePath = URLDecoder.decode(filePath, "UTF-8");
+//            filePath = URLDecoder.decode(filePath, "UTF-8");
             res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
-            InputStream inputStream = null;
-
-            inputStream = this.getClass().getResourceAsStream(filePath);
+            InputStream inputStream = this.getClass().getResourceAsStream(filePath);
 
             out = res.getOutputStream();
             int b = 0;
