@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-16
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -68,6 +68,12 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     @TableField("amount_with_tax")
     private BigDecimal amountWithTax;
 
+    /**
+     * 是否删除;0:正常;1:撤销
+     */
+    @TableField("status")
+    private Integer status;
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -91,6 +97,8 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     public static final String TAX_AMOUNT = "tax_amount";
 
     public static final String AMOUNT_WITH_TAX = "amount_with_tax";
+
+    public static final String STATUS = "status";
 
     public static final String ID = "id";
 

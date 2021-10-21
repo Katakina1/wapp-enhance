@@ -36,7 +36,7 @@ import java.util.function.Function;
  * @Author ZZW
  * @Date 2021/10/12 11:38
  */
-@Service
+@Service("DeductClaimService")
 @Slf4j
 public class ClaimService extends DeductService{
 

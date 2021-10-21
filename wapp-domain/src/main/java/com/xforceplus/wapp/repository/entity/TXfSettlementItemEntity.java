@@ -155,7 +155,7 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableField("item_flag")
     private Integer itemFlag;
 
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)

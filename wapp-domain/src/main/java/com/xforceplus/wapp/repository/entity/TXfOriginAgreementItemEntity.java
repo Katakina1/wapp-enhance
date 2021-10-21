@@ -52,7 +52,7 @@ public class TXfOriginAgreementItemEntity extends BaseEntity {
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     @TableField("amount_with_tax")

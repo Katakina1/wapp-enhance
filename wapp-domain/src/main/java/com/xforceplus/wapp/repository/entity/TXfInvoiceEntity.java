@@ -1,37 +1,30 @@
 package com.xforceplus.wapp.repository.entity;
 
 import java.math.BigDecimal;
-
-import com.baomidou.mybatisplus.annotation.*;
-
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
-
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
 /**
  * <p>
- * 发票表
- * </p>
+    * 发票表
+    * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-19
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-@TableName(value = "t_xf_invoice")
+@ToString(callSuper=true)
+@TableName(value="t_xf_invoice")
 public class TXfInvoiceEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * id
-     */
-    @TableField("id")
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private Long id;
 
     /**
      * 发票代码
@@ -256,7 +249,7 @@ public class TXfInvoiceEntity extends BaseEntity {
     private BigDecimal effectiveTaxAmount;
 
     /**
-     * 剩余可匹配的额度
+     * 剩余可匹配的额度 默认与不含税金额相同
      */
     @TableField("remaining_amount")
     private BigDecimal remainingAmount;
@@ -264,17 +257,18 @@ public class TXfInvoiceEntity extends BaseEntity {
     /**
      * 创建日期
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @TableField("create_time")
     private Date createTime;
 
     /**
      * 更新日期
      */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
+    @TableField("id")
+    private Long id;
 
-    public static final String ID = "id";
 
     public static final String INVOICE_CODE = "invoice_code";
 
@@ -355,5 +349,7 @@ public class TXfInvoiceEntity extends BaseEntity {
     public static final String CREATE_TIME = "create_time";
 
     public static final String UPDATE_TIME = "update_time";
+
+    public static final String ID = "id";
 
 }
