@@ -67,11 +67,7 @@ public class AgreementService extends DeductService{
             TXfBillDeductEntity negativeBill = tXfBillDeductExtDao.querySpecialNegativeBill(tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(), deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode());
             if (negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) > 0) {
                 try {
-                    batchUpdateMergeBill(deductionEnum,tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
-                    //匹配蓝票
-                    //匹配税编
-                    //更新结算状态为- 1.存在锁定、取消的协议单、EPD进行->撤销-- 2.税编匹配失败 ->待确认税编 3,存在反算明细->待确认明细 4->结算单进入待拆票状态
-
+                    excuteMerge(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
                 } catch (Exception e) {
                     log.error("{}单合并异常 购方:{}，购方:{}，税率:{}", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate());
                 }
@@ -81,7 +77,18 @@ public class AgreementService extends DeductService{
         }
         return false;
     }
+    @Transactional
+    public void excuteMerge(XFDeductionBusinessTypeEnum deductionEnum,TXfBillDeductEntity tmp,TXfBillDeductEntity negativeBill, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfBillDeductStatusEnum targetSatus) {
+        TXfSettlementEntity tXfSettlementEntity = batchUpdateMergeBill(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetSatus);
+        //匹配蓝票
+        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfSettlementEntity.getSettlementNo());
+        if (CollectionUtils.isEmpty(matchResList)) {
+            throw new RuntimeException("");
+        }
+        //匹配税编
+        //更新结算状态为- 1.存在锁定、取消的协议单、EPD进行->撤销-- 2.税编匹配失败 ->待确认税编 3,存在反算明细->待确认明细 4->结算单进入待拆票状态
 
+    }
 
     /**
      * 批量进行更新操作 保证单进程操作
@@ -92,7 +99,7 @@ public class AgreementService extends DeductService{
      * @return
      */
     @Transactional
-    public boolean batchUpdateMergeBill(XFDeductionBusinessTypeEnum deductionEnum,TXfBillDeductEntity tmp,TXfBillDeductEntity negativeBill, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfBillDeductStatusEnum targetSatus) {
+    public TXfSettlementEntity batchUpdateMergeBill(XFDeductionBusinessTypeEnum deductionEnum,TXfBillDeductEntity tmp,TXfBillDeductEntity negativeBill, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfBillDeductStatusEnum targetSatus) {
         String purchaserNo = tmp.getPurchaserNo();
         String sellerNo = tmp.getSellerNo();
         BigDecimal taxRate = tmp.getTaxRate();
@@ -115,6 +122,9 @@ public class AgreementService extends DeductService{
              */
             throw new RuntimeException("");
         }
-        return true;
+        return tXfSettlementEntity;
     }
+
+
+
 }

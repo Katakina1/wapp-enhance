@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import com.xforceplus.phoenix.split.model.*;
 import com.xforceplus.wapp.common.utils.BeanUtil;
@@ -43,7 +44,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class PreinvoiceService {
+public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoiceEntity> {
     static final String RULE_INFO = " {\n" +
             "\t\t\"amountSplitRule\": \"2\",\n" +
             "\t\t\"cargoNameLength\": 92,\n" +
@@ -92,7 +93,7 @@ public class PreinvoiceService {
     private IDSequence idSequence;
     @PostConstruct
     public void initData() {
-        splitPreInvoice("settlementNo1853061001646081","172164");
+      //  splitPreInvoice("settlementNo1853061001646081","172164");
     }
 
     /**
