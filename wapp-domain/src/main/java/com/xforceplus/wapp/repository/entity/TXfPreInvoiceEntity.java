@@ -28,6 +28,12 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 结算单id
+     */
+    @TableField("settlement_id")
+    private Long settlementId;
+
+    /**
      * 结算单编码
      */
     @TableField("settlement_no")
@@ -184,7 +190,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
      */
     @TableField("tax_rate")
-    private Double taxRate;
+    private BigDecimal taxRate;
 
     /**
      * 备注
@@ -252,12 +258,6 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     @TableField("red_notification_no")
     private String redNotificationNo;
 
-    /**
-     * 红字信息编号申请状态0未申请  1-发起申请 2-已申请
-     */
-    @TableField("red_notification_flag")
-    private Integer redNotificationFlag;
-
     @TableField(value="update_time", update="now(3)" )
     private Date updateTime;
 
@@ -275,6 +275,8 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
 
     public static final String SETTLEMENT_NO = "settlement_no";
+
+    public static final String SETTLEMENT_ID = "settlement_id";
 
     public static final String PURCHASER_NO = "purchaser_no";
 

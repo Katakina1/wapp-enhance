@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 
 public class InvoiceServiceTest extends BaseUnitTest {
     @Autowired
-    InvoiceService invoiceService;
+    InvoiceServiceImpl invoiceService;
 
     @Test
     public void detail() {

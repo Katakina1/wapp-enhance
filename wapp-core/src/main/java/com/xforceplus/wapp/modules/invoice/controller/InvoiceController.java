@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.invoice.controller;
 
 import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
-import com.xforceplus.wapp.modules.invoice.service.InvoiceService;
+import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvoiceController {
 
     @Autowired
-    InvoiceService invoiceService;
+    InvoiceServiceImpl invoiceService;
 
     @ApiOperation(value = "发票详情", notes = "", response = Response.class, tags = {"发票池",})
     @ApiResponses(value = {

@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,10 +18,12 @@ public class PageViewRequest {
     /**
      * 页码默认1
      */
+    @ApiModelProperty("页码，默认1，不适用于导出")
     private int page = 1;
 
     /**
      * 每页默认显示50条
      */
+    @ApiModelProperty("每页数量，默认50，不适用于导出")
     private int size = 50;
 }

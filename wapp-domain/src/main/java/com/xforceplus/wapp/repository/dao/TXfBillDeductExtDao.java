@@ -102,4 +102,102 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     @Select(" update t_xf_bill_deduct set status = #{targetStatus},ref_settlement_no=#{settlementNo}    where  purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and  business_type = #{type} and status = #{status} and create_date >= dateadd(d,-day(getdate())+1,getdate()) ")
     public Integer updateSuitableClaimBill(@Param("type")Integer type, @Param("status")Integer status, @Param("targetStatus") Integer targetStatus, @Param("settlementNo")String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo);
 
+    @Select("<script>"+
+            "select d.* from t_xf_bill_deduct d\n" +
+            "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
+            "where 1=1\n" +
+            "<if test='businessNo!=null'>"+
+            "and business_no = #{businessNo}\n"+
+             "</if>"+
+            "<if test='businessType!=null'>"+
+            "and business_type = #{businessType}\n"+
+            "</if>"+
+            "<if test='sellerNo!=null'>"+
+            "and seller_no = #{sellerNo}\n"+
+            "</if>"+
+            "<if test='sellerName!=null'>"+
+            "and seller_name = #{sellerName}\n"+
+            "</if>"+
+            "<if test='businessNo!=null'>"+
+            "and business_no = #{businessNo}\n"+
+            "</if>"+
+            "<if test='deductDate!=null'>"+
+            "and format(deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
+            "</if>"+
+            "<if test='purchaserNo!=null'>"+
+            "and purchaser_no= #{deductDate}\n"+
+            "</if>"+
+            "<if test='key == 0'>"+
+            "and s.settlement_status = 8\n"+
+            "</if>"+
+            "<if test='key == 1'>"+
+            "and s.settlement_status = 2\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "</if>"+
+            "<if test='key == 2'>"+
+            "and s.settlement_status = 2\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "</if>"+
+            "<if test='key == 3'>"+
+            "and s.settlement_status = 4\n"+
+            "</if>"+
+            "<if test='key == 4 and businessType ==2'>"+
+            "and d.status = 206\n"+
+            "</if>"+
+            "<if test='key == 4 and businessType ==3'>"+
+            "and d.status = 304\n"+
+            "</if>"+
+            "<if test='offset != null and next !=null'>"+
+            "order by id offset #{offset} rows fetch next #{next} rows only\n"+
+            "</if>"+
+            "</script>")
+    List<TXfBillDeductEntity> queryBillPage(@Param("offset")int offset,@Param("next")int next,@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
+
+    @Select("<script>"+
+            "select count(d.id) from t_xf_bill_deduct d\n" +
+            "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
+            "where 1=1\n" +
+            "<if test='businessNo!=null'>"+
+            "and business_no = #{businessNo}\n"+
+            "</if>"+
+            "<if test='businessType!=null'>"+
+            "and business_type = #{businessType}\n"+
+            "</if>"+
+            "<if test='sellerNo!=null'>"+
+            "and seller_no = #{sellerNo}\n"+
+            "</if>"+
+            "<if test='sellerName!=null'>"+
+            "and seller_name = #{sellerName}\n"+
+            "</if>"+
+            "<if test='businessNo!=null'>"+
+            "and business_no = #{businessNo}\n"+
+            "</if>"+
+            "<if test='deductDate!=null'>"+
+            "and format(deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
+            "</if>"+
+            "<if test='purchaserNo!=null'>"+
+            "and purchaser_no= #{deductDate}\n"+
+            "</if>"+
+            "<if test='key == 0'>"+
+            "and s.settlement_status = 8\n"+
+            "</if>"+
+            "<if test='key == 1'>"+
+            "and s.settlement_status = 2\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "</if>"+
+            "<if test='key == 2'>"+
+            "and s.settlement_status = 2\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "</if>"+
+            "<if test='key == 3'>"+
+            "and s.settlement_status = 4\n"+
+            "</if>"+
+            "<if test='key == 4 and businessType ==2'>"+
+            "and d.status = 206\n"+
+            "</if>"+
+            "<if test='key == 4 and businessType ==3'>"+
+            "and d.status = 304\n"+
+            "</if>"+
+            "</script>")
+    int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 }

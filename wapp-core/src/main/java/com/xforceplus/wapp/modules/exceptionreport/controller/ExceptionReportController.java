@@ -7,8 +7,10 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportDto;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
+import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
 import io.swagger.annotations.Api;
@@ -32,6 +34,9 @@ public class ExceptionReportController {
 
     @Autowired
     private ExceptionReportService exceptionReportService;
+
+    @Autowired
+    private ExceptionReportMapper exceptionReportMapper;
 
     @GetMapping("claim")
     @ApiOperation("列外报告-索赔单")
@@ -92,8 +97,9 @@ public class ExceptionReportController {
         return R.ok("单据导出正在处理，请在消息中心");
     }
 
-    private static <T> PageResult<T> toPageResult(Page<T> page) {
-        return PageResult.of(page.getRecords(), page.getTotal(), page.getPages(), page.getSize());
+    private PageResult<ExceptionReportDto> toPageResult(Page<TXfExceptionReportEntity> page) {
+        final List<ExceptionReportDto> exceptionReportDtos = exceptionReportMapper.toDto(page.getRecords());
+        return PageResult.of(exceptionReportDtos, page.getTotal(), page.getPages(), page.getSize());
     }
 
 

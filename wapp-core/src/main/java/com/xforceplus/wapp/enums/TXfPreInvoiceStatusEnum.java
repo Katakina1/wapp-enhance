@@ -12,6 +12,7 @@ public enum TXfPreInvoiceStatusEnum {
     UPLOAD_RED_INVOICE(3,"已开红票"),
     WAIT_CHECK(4,"待审核"),
     DESTROY(5,"已作废"),
+    APPLY_RED_NOTIFICATION_ING(6,"正在申请红字信息中"),
     ;
 
     @Getter

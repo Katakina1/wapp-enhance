@@ -32,8 +32,8 @@ public class ExceptionReportExportHandler implements IExportHandler {
         final String payload = message.getPayload();
         try {
             final ExceptionReportExportDto exportDto = objectMapper.readValue(payload, ExceptionReportExportDto.class);
-            exceptionReportService.export(exportDto.getRequest(),exportDto.getType());
-        } catch (IOException e) {
+            exceptionReportService.doExport(exportDto);
+        } catch (Exception e) {
             log.error("例外报告导出参数反序列化出错:"+e.getMessage(),e);
         }
 

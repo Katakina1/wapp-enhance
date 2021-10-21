@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +58,9 @@ public class CommAgreementService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-
+        if(!Objects.equals(tXfSettlementEntity.getSettlementStatus(),TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())){
+            throw new EnhanceRuntimeException("结算单已上传红票不能操作");
+        }
         //协议单
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
         billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
@@ -65,7 +68,7 @@ public class CommAgreementService {
 
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         List<TXfPreInvoiceEntity> pPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改作废状态====
@@ -89,8 +92,6 @@ public class CommAgreementService {
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-            // 作废红字信息
-            commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //释放结算单蓝票
@@ -116,8 +117,8 @@ public class CommAgreementService {
     }
 
     /**
-     * 修改后的结算单的中的部门预制发票明细重新去拆票
-     * 删除之前的预制发票
+     * 这个主要是针对作废的预制发票明细处理
+     * 修改后的结算单的中的部分预制发票明细重新去拆票（申请红字信息），删除之前的预制发票
      *
      * @param settlementId
      * @param preInvoiceItemList
@@ -136,7 +137,22 @@ public class CommAgreementService {
         QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
         preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
         tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
+    }
 
+    /**
+     * 协议单[确认]按钮相关逻辑，这个主要是针对结算单明细拆票
+     * 结算单明细拆成预制发票（红字信息）
+     * 底层逻辑调用产品服务(拆票、申请红字信息)
+     * @param settlementId
+     */
+    @Transactional
+    public void splitPreInvoice(Long settlementId) {
+        //结算单
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
+        if (tXfSettlementEntity == null) {
+            throw new EnhanceRuntimeException("结算单不存在");
+        }
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
     }
 
 }
