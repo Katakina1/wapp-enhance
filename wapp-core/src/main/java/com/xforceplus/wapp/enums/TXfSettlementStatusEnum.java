@@ -3,6 +3,8 @@ package com.xforceplus.wapp.enums;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * 结算单状态
  */
@@ -34,4 +36,14 @@ public enum TXfSettlementStatusEnum implements ValueEnum<Integer> {
     public Integer getValue() {
         return code;
     }
+
+    public static TXfSettlementStatusEnum getTXfSettlementStatusEnum(int code) {
+        for (TXfSettlementStatusEnum value : TXfSettlementStatusEnum.values()) {
+            if (Objects.equals(value.getCode(), code)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
 }

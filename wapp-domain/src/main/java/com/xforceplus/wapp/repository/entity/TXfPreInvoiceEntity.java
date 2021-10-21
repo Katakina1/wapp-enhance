@@ -1,9 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -17,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -26,12 +25,6 @@ import lombok.ToString;
 public class TXfPreInvoiceEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 结算单id
-     */
-    @TableField("settlement_id")
-    private Long settlementId;
 
     /**
      * 结算单编码
@@ -199,13 +192,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private String remark;
 
     /**
-     * 预制发票状态
-待申请红字信息表  1
-待上传 2 
-已上传 3
-待审核 4
-已撤销 5
-
+     * 预制发票状态;待申请红字信息表:1;待上传:2;已上传:3;待审核:4;已作废:5
      */
     @TableField("pre_invoice_status")
     private Integer preInvoiceStatus;
@@ -258,7 +245,13 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     @TableField("red_notification_no")
     private String redNotificationNo;
 
-    @TableField(value="update_time", update="now(3)" )
+    /**
+     * 结算单id
+     */
+    @TableField("settlement_id")
+    private Long settlementId;
+
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     @TableField("create_time")
@@ -275,8 +268,6 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
 
     public static final String SETTLEMENT_NO = "settlement_no";
-
-    public static final String SETTLEMENT_ID = "settlement_id";
 
     public static final String PURCHASER_NO = "purchaser_no";
 
@@ -346,7 +337,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
     public static final String RED_NOTIFICATION_NO = "red_notification_no";
 
-    public static final String RED_NOTIFICATION_FLAG = "red_notification_flag";
+    public static final String SETTLEMENT_ID = "settlement_id";
 
     public static final String UPDATE_TIME = "update_time";
 

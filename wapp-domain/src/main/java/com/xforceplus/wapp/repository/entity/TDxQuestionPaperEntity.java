@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
@@ -15,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -95,7 +96,7 @@ public class TDxQuestionPaperEntity extends BaseEntity {
      * 总金额
      */
     @TableField("totalAmount")
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     /**
      * 问题原因

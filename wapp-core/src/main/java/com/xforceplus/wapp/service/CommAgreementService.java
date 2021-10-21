@@ -113,7 +113,9 @@ public class CommAgreementService {
             tXfInvoiceDao.updateById(updateTXfInvoiceEntity);
         });
         //删除结算单蓝票关系
-        tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
+        TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
+        updateTXfBillDeductInvoiceEntity.setStatus(1);
+        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity,tXfBillDeductInvoiceWrapper);
     }
 
     /**
@@ -133,10 +135,13 @@ public class CommAgreementService {
         preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), preInvoiceItemList);
         //删除之前的预制发票，避免申请逻辑状态判断问题
         List<Long> preInvoiceIdList = preInvoiceItemList.stream().map(TXfPreInvoiceItemEntity::getPreInvoiceId).collect(Collectors.toList());
-        tXfPreInvoiceDao.deleteBatchIds(preInvoiceIdList);
-        QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
-        preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
-        tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
+
+        TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+        updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
+
+        QueryWrapper<TXfPreInvoiceEntity> deletePreInvoiceWrapper = new QueryWrapper<>();
+        deletePreInvoiceWrapper.in(TXfPreInvoiceEntity.ID,preInvoiceIdList);
+        tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity,deletePreInvoiceWrapper);
     }
 
     /**

@@ -120,7 +120,10 @@ public class CommClaimService {
             updateTXfBillDeductItemEntity.setRemainingAmount(tXfBillDeductItemRefEntity.getUseAmount().add(tXfBillDeductItemEntity.getRemainingAmount()));
             tXfBillDeductItemDao.updateById(updateTXfBillDeductItemEntity);
             //删除匹配关系
-            tXfBillDeductItemRefDao.deleteById(tXfBillDeductItemRefEntity.getId());
+            TXfBillDeductItemRefEntity updateTXfBillDeductItemRefEntity = new TXfBillDeductItemRefEntity();
+            updateTXfBillDeductItemRefEntity.setId(tXfBillDeductItemRefEntity.getId());
+            updateTXfBillDeductItemRefEntity.setStatus(1);
+            tXfBillDeductItemRefDao.updateById(updateTXfBillDeductItemRefEntity);
         });
 
         //释放索赔单蓝票（作废的索赔单）
@@ -145,7 +148,9 @@ public class CommClaimService {
 
         //删除蓝票关系
         //释放索赔单蓝票额度（作废的索赔单）
-        tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
+        TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
+        updateTXfBillDeductInvoiceEntity.setStatus(1);
+        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity,tXfBillDeductInvoiceWrapper);
     }
 
     /**

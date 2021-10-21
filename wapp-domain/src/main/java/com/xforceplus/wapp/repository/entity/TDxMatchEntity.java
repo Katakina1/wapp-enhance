@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
@@ -15,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-13
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -59,7 +60,7 @@ public class TDxMatchEntity extends BaseEntity {
      * 结算金额
      */
     @TableField("settlementamount")
-    private Double settlementamount;
+    private BigDecimal settlementamount;
 
     /**
      * 匹配备注
@@ -71,13 +72,13 @@ public class TDxMatchEntity extends BaseEntity {
      * po总金额
      */
     @TableField("po_amount")
-    private Double poAmount;
+    private BigDecimal poAmount;
 
     /**
      * 索赔总金额
      */
     @TableField("claim_amount")
-    private Double claimAmount;
+    private BigDecimal claimAmount;
 
     /**
      * 匹配日期
@@ -119,7 +120,7 @@ public class TDxMatchEntity extends BaseEntity {
      * 发票金额
      */
     @TableField("invoice_amount")
-    private Double invoiceAmount;
+    private BigDecimal invoiceAmount;
 
     /**
      * 购方税号；
@@ -143,7 +144,7 @@ public class TDxMatchEntity extends BaseEntity {
      * 匹配差额
      */
     @TableField("match_cover")
-    private Double matchCover;
+    private BigDecimal matchCover;
 
     /**
      * 扫描匹配失败原因

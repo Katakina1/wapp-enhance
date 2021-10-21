@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.preinvoice.controller;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import com.xforceplus.wapp.modules.preinvoice.dto.SplitAgainRequest;
+import com.xforceplus.wapp.modules.preinvoice.dto.UndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.preinvoice.service.PreInvoiceDaoService;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import io.swagger.annotations.ApiOperation;
@@ -50,5 +51,14 @@ public class PreInvoiceController {
 //        return  null ;
 //    }
 
+
+
+    @PostMapping(value = "/undo-notification")
+    public Response undoRedNotificationByInvoice(@RequestBody UndoRedNotificationRequest request){
+
+
+        return Response.ok("申请成功！请等待购方审核或操作！");
+
+    }
 
 }
