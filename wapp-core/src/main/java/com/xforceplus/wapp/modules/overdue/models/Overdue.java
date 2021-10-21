@@ -37,6 +37,5 @@ public class Overdue {
     private Integer overdueDay;
     
     @ApiModelProperty("更新时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long updateTime;
 }

@@ -18,7 +18,6 @@ public class ClaimItem {
     private Long id;
 
     @ApiModelProperty("定案日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long verdictDate;
 
     @ApiModelProperty("门店编码")
@@ -91,6 +90,5 @@ public class ClaimItem {
     private BigDecimal amountWithoutTax;
 
     @ApiModelProperty("更新时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long updateDate;
 }
