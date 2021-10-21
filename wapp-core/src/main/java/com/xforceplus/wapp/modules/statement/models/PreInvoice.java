@@ -1,11 +1,13 @@
 package com.xforceplus.wapp.modules.statement.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -94,6 +96,7 @@ public class PreInvoice {
     @ApiModelProperty("红字信息编号申请状态:0.未申请、1.发起申请、2.已申请")
     private Integer redNotificationFlag;
     @ApiModelProperty("更新时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long updateTime;
+    @ApiModelProperty("明细列表")
+    private List<PreInvoiceItem> items;
 }

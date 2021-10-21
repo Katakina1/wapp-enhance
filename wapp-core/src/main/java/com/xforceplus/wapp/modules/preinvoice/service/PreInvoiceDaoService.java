@@ -2,16 +2,21 @@ package com.xforceplus.wapp.modules.preinvoice.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.JsonUtil;
+import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
+import com.xforceplus.wapp.modules.preinvoice.dto.ExistRedInvoiceResult;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import com.xforceplus.wapp.modules.preinvoice.dto.SplitAgainRequest;
 import com.xforceplus.wapp.modules.preinvoice.mapstruct.PreInvoiceMapper;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommAgreementService;
 import com.xforceplus.wapp.service.CommEpdService;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +38,9 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
     RedNotificationOuterService redNotificationOuterService;
     @Autowired
     PreInvoiceItemDaoService preInvoiceItemDaoService;
+    @Autowired    PreInvoiceMapper  preInvoiceMapper;
     @Autowired
-    PreInvoiceMapper  preInvoiceMapper;
+    TXfSettlementDao tXfSettlementDao;
 
 
     public Response<PreInvoiceItem> applyOperation(ApplyOperationRequest request) {
@@ -47,12 +53,40 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
                 //获取重新作废明细重新拆票，重新申请红字信息
                 return retryApplyRednotification(request);
             case 3:
+                //判断结算单 是否有红票
                 return rollBackSettlement(request);
             default:
                 return Response.failed("操作类型不正确, 1 修改税编 2 修改限额 3 修改商品明细");
         }
-
     }
+
+    /**
+     * 判断是否有已存在的红票
+     * @param request
+     * @return
+     */
+//    public Response<ExistRedInvoiceResult> existRedInvoice(ApplyOperationRequest request){
+//        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(request.getSettlementId());
+//        if (tXfSettlementEntity == null) {
+//            Response.failed("结算单不存在");
+//        }
+//
+//        ExistRedInvoiceResult existRedInvoiceResult = new ExistRedInvoiceResult();
+//        existRedInvoiceResult.setExistRedInvoice(false);
+//        String message = "点击确定，本结算单将被撤销，已勾选协议单，已关联蓝票及明细会被释放。你可以重新勾选协议单，再次匹配需要的发票及明细，请确认是否处理？";
+//
+//        if (tXfSettlementEntity.getSettlementStatus()== TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getValue()
+//          || tXfSettlementEntity.getSettlementStatus()== TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getValue()
+//        ){
+//            existRedInvoiceResult.setExistRedInvoice(true);
+//            message ="本结算单已经上传了红字发票，请全部删除";
+//        }
+//
+//        return Response.ok(message ,existRedInvoiceResult);
+//
+//    }
+
+
 
     // 结算单类型:1索赔单,2:协议单；3:EPD单
     private Response<PreInvoiceItem> rollBackSettlement(ApplyOperationRequest request) {

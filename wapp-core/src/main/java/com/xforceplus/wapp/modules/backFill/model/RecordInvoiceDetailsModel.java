@@ -1,8 +1,9 @@
-package com.xforceplus.wapp.repository.entity;
+package com.xforceplus.wapp.modules.backFill.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +12,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+@ApiModel("发票详情实体")
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@TableName(value="t_dx_record_invoice_detail")
-public class RecordInvoiceDetailsEntity {
-    @TableId(value = "id", type = IdType.AUTO)
+public class RecordInvoiceDetailsModel {
     private Long id;
 
     /**

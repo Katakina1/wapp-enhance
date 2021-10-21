@@ -1,9 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -13,11 +12,11 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 /**
  * <p>
-    * 
+    * 结算单明细
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -40,7 +39,7 @@ public class TXfSettlementItemEntity extends BaseEntity {
     private String salesbillItemNo;
 
     /**
-     * 明细编码
+     * 明细代码
      */
     @TableField("item_code")
     private String itemCode;
@@ -150,6 +149,12 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableField("item_status")
     private Integer itemStatus;
 
+    /**
+     * 0 正常 1 待匹配税编 2 待确认金额
+     */
+    @TableField("item_flag")
+    private Integer itemFlag;
+
     @TableField(value="update_time", update="now(3)" )
     private Date updateTime;
 
@@ -208,6 +213,8 @@ public class TXfSettlementItemEntity extends BaseEntity {
     public static final String GOODS_NO_VER = "goods_no_ver";
 
     public static final String ITEM_STATUS = "item_status";
+
+    public static final String ITEM_FLAG = "item_flag";
 
     public static final String UPDATE_TIME = "update_time";
 

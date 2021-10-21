@@ -29,6 +29,8 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
+               "t_dx_record_invoice",
+                "t_dx_record_invoice_detail",
 //                "t_xf_bill_deduct",
                 //"t_xf_elec_upload_record_detail",
                 // by kenny start

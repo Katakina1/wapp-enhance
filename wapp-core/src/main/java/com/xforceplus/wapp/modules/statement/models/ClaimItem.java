@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.modules.statement.models;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,7 +18,6 @@ public class ClaimItem {
     private Long id;
 
     @ApiModelProperty("定案日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long verdictDate;
 
     @ApiModelProperty("门店编码")
@@ -91,7 +89,6 @@ public class ClaimItem {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal amountWithoutTax;
 
-    @TableField("update_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @ApiModelProperty("更新时间")
     private Long updateDate;
 }

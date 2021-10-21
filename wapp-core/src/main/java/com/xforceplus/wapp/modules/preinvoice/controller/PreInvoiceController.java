@@ -41,6 +41,16 @@ public class PreInvoiceController {
         return preInvoiceDaoService.splitAgain(request);
     }
 
+//    @ApiOperation(value = "判断是否有已匹配的红票", notes = "", response = Response.class, tags = {"预制发票"})
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "response", response = Response.class)})
+//    @PostMapping(value = "/exist-red-invoice")
+//    public Response<String> existRedInvoice(@RequestBody ApplyOperationRequest request){
+//
+////        return preInvoiceDaoService.splitAgain(request);
+//        return  null ;
+//    }
+
 
 
     @PostMapping(value = "/undo-notification")
