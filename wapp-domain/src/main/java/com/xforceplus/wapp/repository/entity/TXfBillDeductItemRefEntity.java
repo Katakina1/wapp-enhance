@@ -68,12 +68,6 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     @TableField("amount_with_tax")
     private BigDecimal amountWithTax;
 
-    /**
-     * 是否删除;0:正常;1:撤销
-     */
-    @TableField("status")
-    private Integer status;
-
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -112,6 +106,5 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
 
     public static final String UPDATE_DATE = "update_date";
 
-    public static final String STATUS = "status";
 
 }
