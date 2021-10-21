@@ -41,8 +41,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/add")
     public Response<String> add(@RequestBody AddRedNotificationRequest request){
-        String taskId = rednotificationService.add(request);
-        return Response.ok("成功",taskId);
+        return rednotificationService.add(request);
     }
 
     @ApiOperation(value = "红字信息表列表统计", notes = "", response = Response.class, tags = {"red-notification",})

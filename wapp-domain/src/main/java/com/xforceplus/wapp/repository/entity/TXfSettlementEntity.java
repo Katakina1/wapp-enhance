@@ -1,9 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -13,11 +12,11 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 /**
  * <p>
-    * 
+    * 结算单表
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -46,7 +45,7 @@ public class TXfSettlementEntity extends BaseEntity {
     private String sellerTaxNo;
 
     /**
-     * 供应商编码
+     * 供应商电话
      */
     @TableField("seller_tel")
     private String sellerTel;
@@ -166,7 +165,7 @@ public class TXfSettlementEntity extends BaseEntity {
     private String settlementNo;
 
     /**
-     * 结算单类型:协议单 2 EPD 3
+     * 结算单类型:索赔1、协议单2、EPD3
      */
     @TableField("settlement_type")
     private Integer settlementType;
@@ -194,6 +193,12 @@ public class TXfSettlementEntity extends BaseEntity {
     @TableField("tax_rate")
     private BigDecimal taxRate;
 
+    /**
+     * 1 索赔 2 协议 3 EPD
+     */
+    @TableField("business_type")
+    private Integer businessType;
+
     @TableField("update_user")
     private Long updateUser;
 
@@ -206,7 +211,7 @@ public class TXfSettlementEntity extends BaseEntity {
     @TableField("price_method")
     private Integer priceMethod;
 
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     @TableField("create_user")
@@ -262,6 +267,8 @@ public class TXfSettlementEntity extends BaseEntity {
     public static final String SETTLEMENT_STATUS = "settlement_status";
 
     public static final String TAX_RATE = "tax_rate";
+
+    public static final String BUSINESS_TYPE = "business_type";
 
     public static final String UPDATE_USER = "update_user";
 

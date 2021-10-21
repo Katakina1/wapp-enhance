@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
- * 类描述：
+ * 类描述： 根据金额匹配 蓝票
  *
  * @ClassName BuleInvoiceService
  * @Description TODO

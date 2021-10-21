@@ -83,7 +83,7 @@ public class ${entity} implements Serializable {
     <#elseif field.columnType.type == 'BillExtendMap' >
     @TableField(value="${field.name}", typeHandler = BillExtendTypeHandler.class)
     <#elseif field.name == 'update_time' >
-    @TableField(value="${field.name}", update="now(3)" )
+    @TableField(value="${field.name}", update="getdate()" )
     <#elseif field.convert>
     @TableField("${field.name}")
     </#if>

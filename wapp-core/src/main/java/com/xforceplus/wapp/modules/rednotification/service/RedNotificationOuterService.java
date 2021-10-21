@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.LockFlag;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
@@ -13,6 +14,7 @@ import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,8 +28,7 @@ public class RedNotificationOuterService {
      * 新增红字信息
      */
     public Response<String> add(AddRedNotificationRequest request) {
-      String taskId = redNotificationService.add(request);
-      return Response.ok("成功",taskId);
+        return redNotificationService.add(request);
     }
 
     /**
@@ -37,7 +38,8 @@ public class RedNotificationOuterService {
     public Response<String> rollback(Long pid) {
         RedNotificationApplyReverseRequest redNotificationApplyReverseRequest = new RedNotificationApplyReverseRequest();
         QueryModel queryModel = new QueryModel();
-        queryModel.setPid(pid);
+        ArrayList<Long> pidList = Lists.newArrayList(pid);
+        queryModel.setPidList(pidList);
         redNotificationApplyReverseRequest.setQueryModel(queryModel);
         return redNotificationService.rollback(redNotificationApplyReverseRequest);
     }
