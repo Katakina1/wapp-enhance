@@ -49,14 +49,14 @@ public class StatementController {
     public R<PageResult<Settlement>> getStatement(@ApiParam("页数") @RequestParam(required = false, defaultValue = "1") Long current,
                                                   @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
                                                   @ApiParam(value = "查询类型 1.索赔、2.协议、3.EPD", required = true)
-                                                 @RequestParam Integer type,
+                                                  @RequestParam Integer type,
                                                   @ApiParam("结算单状态") @RequestParam(required = false) Integer settlementStatus,
                                                   @ApiParam("结算单号") @RequestParam(required = false) String settlementNo,
                                                   @ApiParam("购方编号") @RequestParam(required = false) String purchaserNo,
                                                   @ApiParam("发票类型（枚举值与结果实体枚举值相同）")
-                                                 @RequestParam(required = false) String invoiceType,
+                                                  @RequestParam(required = false) String invoiceType,
                                                   @ApiParam("单据号（索赔、协议、EPD）")
-                                                 @RequestParam(required = false) String businessNo,
+                                                  @RequestParam(required = false) String businessNo,
                                                   @ApiParam("税率") @RequestParam(required = false) String taxRate) {
         long start = System.currentTimeMillis();
         if (StringUtils.isNotBlank(invoiceType) && !ValueEnum.isValid(InvoiceTypeEnum.class, invoiceType)) {
@@ -77,12 +77,12 @@ public class StatementController {
     @ApiOperation("结算单分页查询")
     @GetMapping("/settlement/count")
     public R<Collection<SettlementCount>> getStatementCount(@ApiParam(value = "查询类型 1.索赔、2.协议、3.EPD", required = true)
-                                                           @RequestParam Integer type,
+                                                            @RequestParam Integer type,
                                                             @ApiParam("结算单号") @RequestParam(required = false) String settlementNo,
                                                             @ApiParam("结算单号") @RequestParam(required = false) String purchaserNo,
                                                             @ApiParam("发票类型") @RequestParam(required = false) String invoiceType,
                                                             @ApiParam("单据号（索赔、协议、EPD）")
-                                                           @RequestParam(required = false) String businessNo,
+                                                            @RequestParam(required = false) String businessNo,
                                                             @ApiParam("税率") @RequestParam(required = false) String taxRate) {
         long start = System.currentTimeMillis();
         if (StringUtils.isNotBlank(invoiceType) && !ValueEnum.isValid(InvoiceTypeEnum.class, invoiceType)) {
@@ -108,6 +108,15 @@ public class StatementController {
         val page = statementService.awaitingInvoicePage(current, size, settlementNo);
         log.info("待开票列表查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
+    }
+
+    @ApiOperation("结算单详情-开票预览-待开票详情")
+    @GetMapping("/settlement/invoice/detail/{invoiceId}")
+    public R<PreInvoice> preInvoiceDetail(@ApiParam(value = "发票ID", required = true) @PathVariable Long invoiceId) {
+        long start = System.currentTimeMillis();
+        val invoice = statementService.preInvoice(invoiceId);
+        log.info("待开票详情查询,耗时:{}ms", System.currentTimeMillis() - start);
+        return invoice.map(R::ok).orElseGet(() -> R.fail("未查询到数据"));
     }
 
     @ApiOperation("结算单详情-基本信息")

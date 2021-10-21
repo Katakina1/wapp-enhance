@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.backFill.model;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import lombok.Setter;
  **/
 @Setter
 @Getter
+@ApiModel("发票详情实体")
 public class InvoiceDetail {
     /**
      * 货名

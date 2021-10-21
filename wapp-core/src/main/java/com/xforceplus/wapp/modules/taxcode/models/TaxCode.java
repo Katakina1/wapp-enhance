@@ -80,7 +80,6 @@ public class TaxCode {
     private String quantityUnit;
 
     @ApiModelProperty("更新时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long updateTime;
 
     private static final long serialVersionUID = 1L;

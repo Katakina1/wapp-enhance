@@ -23,7 +23,7 @@ public class RecordInvoiceController extends AbstractController {
     @Autowired
     RecordInvoiceService recordInvoiceService;
 
-    @ApiOperation(value = "结算单详情发票列表")
+    @ApiOperation(value = "结算单发票列表")
     @GetMapping(value = "/list")
     public R<PageResult<RecordInvoiceResponse>> list(
             @ApiParam(value = "页码") @RequestParam long pageNo,
@@ -31,15 +31,22 @@ public class RecordInvoiceController extends AbstractController {
             @ApiParam(value = "结算单号") @RequestParam(required = false) String settlementNo,
             @ApiParam(value = "发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常 5-蓝冲") @RequestParam(required = false) String invoiceStatus){
         logger.info("结算单详情发票列表--入参：{}", settlementNo +"--"+invoiceStatus);
-        return R.ok(recordInvoiceService.getPageList(pageNo,pageSize,settlementNo, invoiceStatus,getUser().getUsercode()));
+        return R.ok(recordInvoiceService.queryPageList(pageNo,pageSize,settlementNo, invoiceStatus,getUser().getUsercode()));
     }
 
-    @ApiOperation(value = "结算单详情发票列表tab")
+    @ApiOperation(value = "结算单发票列表tab")
     @GetMapping(value = "/count")
     public R count(@ApiParam(value = "结算单号") @RequestParam(required = false) String settlementNo,
                     @ApiParam(value = "发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常 5-蓝冲") @RequestParam(required = false) String invoiceStatus){
         logger.info("结算单详情发票列表tab--入参：{}", settlementNo +"--"+invoiceStatus);
         return R.ok(recordInvoiceService.getCountBySettlementNo(settlementNo, invoiceStatus,getUser().getUsercode()));
+    }
+
+    @ApiOperation(value = "结算单发票列表详情")
+    @GetMapping(value = "/detail/{id}")
+    public R detail(@ApiParam(value = "主键",required = true) @PathVariable Long id){
+        logger.info("结算单发票列表详情--入参：{}", id);
+        return R.ok(recordInvoiceService.getInvoiceById(id));
     }
 
     @ApiOperation(value = "红票删除")

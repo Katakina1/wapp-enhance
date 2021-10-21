@@ -118,7 +118,7 @@ public class AgreementBillFilterCommand implements Command {
                     new QueryWrapper<TXfOriginAgreementBillEntity>()
                             .lambda()
                             .eq(TXfOriginAgreementBillEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginAgreementBillEntity::getId)
+                            .orderByAsc(TXfOriginAgreementBillEntity::getId)
             );
             // 总页数
             pages = page.getPages();

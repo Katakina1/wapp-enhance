@@ -2,13 +2,18 @@ package com.xforceplus.wapp.modules.deduct.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
@@ -40,6 +45,10 @@ import java.util.function.Function;
 public class DeductService   {
     @Autowired
     private TXfBillDeductExtDao  tXfBillDeductExtDao;
+
+    @Autowired
+    private TXfBillDeductDao   xfBillDeductDao;
+
     @Autowired
     private TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
 
@@ -397,7 +406,15 @@ public class DeductService   {
      * @param status {@link TXfBillDeductStatusEnum} 业务单状态
      * @return {boolean} true-更新成功, false-更新失败
      */
-    private boolean updateBillStatus(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfBillDeductStatusEnum status) {
+    public boolean updateBillStatus(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfBillDeductStatusEnum status) {
+        if(tXfBillDeductEntity.getId() == null){
+            log.error("Id不能为空");
+            return false;
+        }
+        if(tXfBillDeductEntity.getStatus() == null){
+            log.error("结算单状态不能为空");
+            return false;
+        }
         if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
                 if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
@@ -420,6 +437,9 @@ public class DeductService   {
                     return false;
                 }
             }
+        }else {
+            log.info("非法结算单类型");
+            return false;
         }
         if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
             tXfBillDeductEntity.setLockFlag(status.getCode());
@@ -897,4 +917,45 @@ public class DeductService   {
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
         return tXfBillDeductEntity;
     }
+
+    public TXfBillDeductEntity getDeductById(Long id){
+        return xfBillDeductDao.selectById(id);
+    }
+
+    public PageResult<QueryDeductListResponse> queryPageList(QueryDeductListRequest request){
+        int offset = (request.getPageNo() -1) * request.getPageSize();
+        int next = offset+request.getPageSize();
+        int count = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductDate(), request.getPurchaserNo(), request.getKey());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductDate(), request.getPurchaserNo(), request.getKey());
+        List<QueryDeductListResponse> response = new ArrayList<>();
+        BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
+        return PageResult.of(response,count, request.getPageNo(), request.getPageSize());
+
+    }
+
+    private QueryWrapper<TXfBillDeductEntity>  getQueryWrapper(QueryDeductListRequest   request){
+        QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
+        if(StringUtils.isNotEmpty(request.getBusinessNo())){
+            wrapper.eq(TXfBillDeductEntity.BUSINESS_NO,request.getBusinessNo());
+        }
+        if(StringUtils.isNotEmpty(request.getPurchaserNo())){
+            wrapper.eq(TXfBillDeductEntity.PURCHASER_NO,request.getPurchaserNo());
+        }
+        if(StringUtils.isNotEmpty(request.getSellerName())){
+            wrapper.eq(TXfBillDeductEntity.SELLER_NAME,request.getSellerName());
+        }
+        if(StringUtils.isNotEmpty(request.getSellerNo())){
+            wrapper.eq(TXfBillDeductEntity.SELLER_NO,request.getSellerNo());
+        }
+        if(request.getBusinessType() != null){
+            wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE,request.getBusinessType());
+        }
+        if(request.getDeductDate() != null){
+            wrapper.apply("format(deduct_date,'yyyy-MM-dd') = {0}",request.getDeductDate());
+        }
+        return wrapper;
+    }
+
 }
