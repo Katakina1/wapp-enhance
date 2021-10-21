@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-19
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -161,6 +161,18 @@ EPD单:301待匹配结算单;302已匹配结算单
     @TableField("lock_flag")
     private Integer lockFlag;
 
+    /**
+     * 批次号
+     */
+    @TableField("batch_no")
+    private String batchNo;
+
+    /**
+     * 来源id，唯一标识
+     */
+    @TableField("source_id")
+    private Long sourceId;
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
@@ -214,6 +226,10 @@ EPD单:301待匹配结算单;302已匹配结算单
     public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
     public static final String LOCK_FLAG = "lock_flag";
+
+    public static final String BATCH_NO = "batch_no";
+
+    public static final String SOURCE_ID = "source_id";
 
     public static final String ID = "id";
 
