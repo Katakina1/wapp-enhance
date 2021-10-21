@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import com.xforceplus.phoenix.split.model.*;
 import com.xforceplus.wapp.common.utils.BeanUtil;
@@ -38,7 +39,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class PreinvoiceService {
+public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoiceEntity> {
     static final String RULE_INFO = " {\n" +
             "\t\t\"amountSplitRule\": \"2\",\n" +
             "\t\t\"cargoNameLength\": 92,\n" +
@@ -80,8 +81,6 @@ public class PreinvoiceService {
     // 配置访问域名
     private String domainUrl= "";
     @Autowired
-    private TXfPreInvoiceDao tXfPreInvoiceDao;
-    @Autowired
     private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
     @Autowired
     private IDSequence idSequence;
@@ -122,7 +121,7 @@ public class PreinvoiceService {
             BeanUtil.copyProperties(splitPreInvoiceInfo, tXfPreInvoiceEntity);
             tXfPreInvoiceEntity.setId(idSequence.nextId());
             tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
-            tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
+            save(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
                 BeanUtil.copyProperties(preInvoiceItem, tXfPreInvoiceItemEntity);
