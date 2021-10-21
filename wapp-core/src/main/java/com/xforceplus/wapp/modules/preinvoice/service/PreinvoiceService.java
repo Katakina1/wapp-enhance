@@ -747,4 +747,8 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     public String updateSplitInvoiceRule(String sellerNo, String ruleInfo) {
         return StringUtils.EMPTY;
     }
+
+    public void undoNotification(){
+
+    }
 }
