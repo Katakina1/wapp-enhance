@@ -96,7 +96,6 @@ public class PreInvoice {
     @ApiModelProperty("红字信息编号申请状态:0.未申请、1.发起申请、2.已申请")
     private Integer redNotificationFlag;
     @ApiModelProperty("更新时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long updateTime;
     @ApiModelProperty("明细列表")
     private List<PreInvoiceItem> items;
