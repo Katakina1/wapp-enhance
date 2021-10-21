@@ -173,7 +173,6 @@ public class SFTPRemoteManager {
      * @throws SftpException
      */
     public void downloadFile(String path, String fileName, String localPath) throws SftpException, IOException {
-        createFolderIfNonExist(localPath);
         // 进入并设置为当前目录
         sftp.cd(path);
         // 下载
