@@ -114,4 +114,10 @@ public class ExceptionReportDto {
      */
     @ApiModelProperty("创建时间")
     private Date createTime;
+
+    /**
+     * 定案日期、入账日期
+     */
+    @ApiModelProperty("定案日期、入账日期")
+    private Date verdictDate;
 }
