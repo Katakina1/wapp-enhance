@@ -39,24 +39,17 @@ import java.util.function.Function;
 @Slf4j
 public class DeductService   {
     @Autowired
-    private TXfBillDeductExtDao  tXfBillDeductExtDao;
+    protected TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
-    private TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
-
-    @Autowired
-    private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
+    protected TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
     @Autowired
     private TXfSettlementDao tXfSettlementDao;
     @Autowired
     private TXfSettlementItemDao tXfSettlementItemDao;
     @Autowired
-    private  IDSequence idSequence;
+    protected   IDSequence idSequence;
     @Autowired
-    private TaxRateConfig taxRateConfig;
-    @Autowired
-    private TaxCodeServiceImpl taxCodeService;
-    @Autowired
-    private CompanyService companyService;
+    protected CompanyService companyService;
     @PostConstruct
     public void initData() {
         int no = 1001121107;
