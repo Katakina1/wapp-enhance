@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -16,6 +17,9 @@ import java.util.Date;
 @Mapper(config = GlobalConfig.class)
 public interface BaseConverter {
     default Long mapDateToLong(Date date) {
+        if (Objects.isNull(date)) {
+            return null;
+        }
         return date.getTime();
     }
 

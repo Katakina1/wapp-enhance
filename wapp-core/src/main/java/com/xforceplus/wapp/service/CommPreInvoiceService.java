@@ -35,7 +35,22 @@ public class CommPreInvoiceService {
         tXfPreInvoiceEntity.setId(preInvoiceId);
         tXfPreInvoiceEntity.setRedNotificationNo(redNotification);
         tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
-        tXfPreInvoiceEntity.setRedNotificationFlag(2);
+        tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
+    }
+
+    /**
+     * 沃尔玛申请红字信息失败
+     * @param preInvoiceId
+     */
+    @Transactional
+    public void applyPreInvoiceRedNotificationFail(Long preInvoiceId) {
+        if (preInvoiceId == null) {
+            throw new EnhanceRuntimeException("参数异常");
+        }
+        //修改预制发票表
+        TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+        tXfPreInvoiceEntity.setId(preInvoiceId);
+        tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
         tXfPreInvoiceDao.updateById(tXfPreInvoiceEntity);
     }
 

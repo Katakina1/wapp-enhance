@@ -8,6 +8,7 @@ import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.service.CommSettlementService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -30,6 +31,9 @@ public class SettlementController {
     @Autowired
     private ClaimService claimService;
 
+    @Autowired
+    private CommSettlementService commSettlementService;
+
     @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
@@ -42,7 +46,7 @@ public class SettlementController {
     @PostMapping("undo-red-notification")
     @ApiOperation(value = "撤销红字信息表")
     public R undoRedNotification(@RequestBody SettlementUndoRedNotificationRequest request){
-        claimService.agreeClaimVerdict(request.getSettlementId());
+        commSettlementService.applyDestroySettlementPreInvoice(request.getSettlementId());
         return R.ok("撤销红字信息表申请已提交成功");
     }
 

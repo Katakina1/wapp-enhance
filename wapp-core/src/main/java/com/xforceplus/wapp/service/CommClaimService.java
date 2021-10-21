@@ -6,6 +6,7 @@ import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -38,7 +40,9 @@ public class CommClaimService {
     @Autowired
     private CommRedNotificationService commRedNotificationService;
     @Autowired
-    private TXfInvoiceDao tXfInvoiceDao;;
+    private TXfInvoiceDao tXfInvoiceDao;
+    @Autowired
+    private PreinvoiceService preinvoiceService;
 
     /**
      * 作废整个索赔单流程
@@ -52,6 +56,9 @@ public class CommClaimService {
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
+        }
+        if(!Objects.equals(tXfSettlementEntity.getSettlementStatus(),TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())){
+            throw new EnhanceRuntimeException("结算单已上传红票不能操作");
         }
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper1 = new QueryWrapper<>();
@@ -75,10 +82,7 @@ public class CommClaimService {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
-            updateTXfPreInvoiceEntity.setRedNotificationNo("");
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-            // 作废红字信息
-            commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
         });
 
         //修改结算单状态
@@ -142,5 +146,21 @@ public class CommClaimService {
         //删除蓝票关系
         //释放索赔单蓝票额度（作废的索赔单）
         tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
+    }
+
+    /**
+     * 索赔单[确认]按钮相关逻辑
+     * 结算单明细拆成预制发票（红字信息）
+     * 底层逻辑调用产品服务(拆票、申请红字信息)
+     * @param settlementId
+     */
+    @Transactional
+    public void splitPreInvoice(Long settlementId) {
+        //结算单
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
+        if (tXfSettlementEntity == null) {
+            throw new EnhanceRuntimeException("结算单不存在");
+        }
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
     }
 }

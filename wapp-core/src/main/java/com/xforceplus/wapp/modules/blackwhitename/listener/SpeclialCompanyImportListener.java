@@ -2,10 +2,13 @@ package com.xforceplus.wapp.modules.blackwhitename.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.read.metadata.holder.ReadHolder;
+import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -18,7 +21,6 @@ public class SpeclialCompanyImportListener extends AnalysisEventListener<Special
     private Integer rows;
     private Integer validRows;
     private Integer invalidRows;
-    private StringBuilder builder;
     private final List<SpecialCompanyImportDto> validInvoices = Lists.newArrayList();
     private final List<SpecialCompanyImportDto> invalidInvoices = Lists.newArrayList();
 
@@ -30,13 +32,35 @@ public class SpeclialCompanyImportListener extends AnalysisEventListener<Special
 
 
     @Override
-    public void invoke(SpecialCompanyImportDto SpecialCompanyImportDto, AnalysisContext analysisContext) {
-        validInvoices.add(SpecialCompanyImportDto);
+    public void invoke(SpecialCompanyImportDto specialCompanyImportDto, AnalysisContext analysisContext) {
+        if(StringUtils.isEmpty(checkData(specialCompanyImportDto))){
+            validInvoices.add(specialCompanyImportDto);
+        }else{
+            specialCompanyImportDto.setErrorMessage(checkData(specialCompanyImportDto));
+            invalidInvoices.add(specialCompanyImportDto);
+        }
+
     }
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
 
+    }
+    public String checkData(SpecialCompanyImportDto SpecialCompanyImportDto){
+        StringBuilder builder = new StringBuilder();
+        if(StringUtils.isEmpty(SpecialCompanyImportDto.getSupplier6d())){
+            builder.append("供应商6D编号不能为空");
+        }
+        if(StringUtils.isEmpty(SpecialCompanyImportDto.getSapNo())){
+            builder.append("SAP编号不能为空");
+        }
+        if(StringUtils.isEmpty(SpecialCompanyImportDto.getCompanyName())){
+            builder.append("供应商名称不能为空");
+        }
+        if(StringUtils.isEmpty(SpecialCompanyImportDto.getSupplierTaxNo())){
+            builder.append("供应商税号不能为空");
+        }
+        return builder.toString();
     }
 
 }
