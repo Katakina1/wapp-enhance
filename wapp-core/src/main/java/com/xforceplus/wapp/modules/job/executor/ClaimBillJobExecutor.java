@@ -12,6 +12,7 @@ import org.apache.commons.chain.Chain;
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +36,7 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
     @Autowired
     private DeductService deductService;
 
-    // TODO 添加异步处理
+    @Async
     @Scheduled(cron = "* * 0 * * ?")
     @Override
     public void execute() {

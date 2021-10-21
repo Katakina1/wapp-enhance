@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +42,7 @@ public class EpdBillJobGenerator extends AbstractBillJobGenerator {
     @Value("epdBill.remote.fileNameKeyWords")
     private String fileNameKeyWords;
 
-    // TODO 添加异步处理
+    @Async
     @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {

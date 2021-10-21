@@ -57,9 +57,14 @@ public class SFTPRemoteManager {
 
     @Value("${pro.sftp.username}")
     private String userName;
+    @Value("${pro.sftp.password}")
+    private String password;
 
     @Value("${pro.sftp.default.timeout}")
     private int timeout;
+
+    @Value("${pro.sftp.auth-method}")
+    private String authMethod;
 
     /**
      * 判断SFTP channel是否正常连接
@@ -89,20 +94,25 @@ public class SFTPRemoteManager {
         // 创建JSch对象
         JSch jsch = new JSch();
 
-        if (StringUtils.isNotBlank(privateKey)) {
-            //使用密钥验证方式，密钥可以使有口令的密钥，也可以是没有口令的密钥
-            if ("".equals(passphrase)) {
-                jsch.addIdentity(privateKey, passphrase);
+        if (Objects.equals(authMethod, "private")) {
+            if (StringUtils.isNotBlank(privateKey)) {
+                //使用密钥验证方式，密钥可以使有口令的密钥，也可以是没有口令的密钥
+                if ("".equals(passphrase)) {
+                    jsch.addIdentity(privateKey, passphrase);
+                } else {
+                    jsch.addIdentity(privateKey);
+                }
             } else {
-                jsch.addIdentity(privateKey);
+                throw new JSchException(String.format("密钥错误privateKey=%s,SFTP连接初始化失败", privateKey));
             }
-        } else {
-            throw new JSchException(String.format("密钥错误privateKey=%s,SFTP连接初始化失败", privateKey));
         }
 
         // 通过 用户名，主机地址，端口 获取一个Session对象
         session = jsch.getSession(userName, host, port);
-
+        // 设置密码
+        if (Objects.equals(authMethod, "password") && password != null) {
+            this.session.setPassword(password);
+        }
         // 为Session对象设置properties
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
