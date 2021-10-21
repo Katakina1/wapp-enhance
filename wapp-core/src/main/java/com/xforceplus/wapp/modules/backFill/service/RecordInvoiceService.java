@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.IsDealEnum;
@@ -36,7 +37,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class RecordInvoiceService {
+public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRecordInvoiceEntity> {
     @Autowired
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
@@ -121,5 +122,6 @@ public class RecordInvoiceService {
         return wrapper;
 
     }
+
 
 }

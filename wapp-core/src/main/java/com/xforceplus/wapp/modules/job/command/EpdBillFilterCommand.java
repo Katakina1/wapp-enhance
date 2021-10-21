@@ -137,7 +137,7 @@ public class EpdBillFilterCommand implements Command {
                     new QueryWrapper<TXfOriginEpdBillEntity>()
                             .lambda()
                             .eq(TXfOriginEpdBillEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginEpdBillEntity::getId)
+                            .orderByAsc(TXfOriginEpdBillEntity::getId)
             );
             // 总页数
             pages = page.getPages();

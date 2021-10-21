@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
-import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
+import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     private SFTPRemoteManager sftpRemoteManager;
 
     @Autowired
-    private TXfBillJobDao tXfBillJobDao;
+    private BillJobService billJobService;
 
     @Value("claimBill.remote.path")
     private String remotePath;
@@ -73,9 +73,9 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
                     tXfBillJobEntity.setCreateTime(now);
                     tXfBillJobEntity.setUpdateTime(now);
                     // 如果数据不存在则插入
-                    if (tXfBillJobDao.selectCount(new QueryWrapper<TXfBillJobEntity>().lambda().eq(TXfBillJobEntity::getJobName, fileName)) == 0) {
+                    if (billJobService.count(new QueryWrapper<TXfBillJobEntity>().lambda().eq(TXfBillJobEntity::getJobName, fileName)) == 0) {
                         log.info("创建新索赔单任务={}", fileName);
-                        tXfBillJobDao.insert(tXfBillJobEntity);
+                        billJobService.save(tXfBillJobEntity);
                     } else {
                         log.info("跳过已存在的索赔单任务={}", fileName);
                     }
