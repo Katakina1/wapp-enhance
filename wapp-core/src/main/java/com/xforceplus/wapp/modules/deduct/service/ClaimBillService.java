@@ -38,7 +38,7 @@ import java.util.function.Function;
  */
 @Service
 @Slf4j
-public class ClaimService extends DeductService{
+public class ClaimBillService extends DeductService{
 
     @Autowired
     private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
@@ -74,7 +74,6 @@ public class ClaimService extends DeductService{
                 matchAmount = Objects.isNull(matchAmount) ? BigDecimal.ZERO : matchAmount;
                 BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
                 billAmount = billAmount.subtract(matchAmount);
-
                 List<TXfBillDeductItemEntity> matchItem = new ArrayList<>();
                 /**
                  * 查询符合条件的明细

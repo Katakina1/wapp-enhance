@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Arrays;
 
 @Slf4j
-public class ClaimServiceTest extends BaseUnitTest {
+public class ClaimBillServiceTest extends BaseUnitTest {
 
     @Autowired
     private ClaimService claimService;

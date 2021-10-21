@@ -75,5 +75,8 @@ public class ClaimBillItemData {
      *不含税金额
      */
     private BigDecimal amountWithoutTax;
-
+    /**
+     * 资源id
+     */
+    private Long id;
 }

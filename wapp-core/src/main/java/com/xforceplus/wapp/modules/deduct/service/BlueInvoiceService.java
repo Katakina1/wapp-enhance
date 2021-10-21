@@ -43,7 +43,7 @@ public class BlueInvoiceService {
     @Autowired
     private RecordInvoiceService recordInvoiceService;
 
-    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo) {
+    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo,String sellerTaxNo) {
         switch (deductionEnum) {
             case AGREEMENT_BILL:
                 return obtainAgreementInvoices(amount, settlementNo);
@@ -303,31 +303,36 @@ public class BlueInvoiceService {
         /**
          * 数量
          */
-        private String num;
+        private BigDecimal num;
 
         /**
          * 单价
          */
-        private String unitPrice;
+        private BigDecimal unitPrice;
 
         /**
          * 金额
          */
-        private String detailAmount;
+        private BigDecimal detailAmount;
 
         /**
          * 税率
          */
-        private String taxRate;
+        private BigDecimal taxRate;
 
         /**
          * 税额
          */
-        private String taxAmount;
+        private BigDecimal taxAmount;
 
         /**
          * 商品编码
          */
         private String goodsNum;
+        /**
+         * 发票明细ID
+         */
+        private Long itemId;
+
     }
 }

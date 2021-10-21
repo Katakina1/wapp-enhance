@@ -64,4 +64,9 @@ public class DeductBillBaseData {
      * 批次号
      */
     private String batchNo;
+    /**
+     * 资源id
+     */
+    private Long id;
+
 }
