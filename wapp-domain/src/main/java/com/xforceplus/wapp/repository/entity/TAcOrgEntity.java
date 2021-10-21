@@ -270,5 +270,7 @@ public class TAcOrgEntity extends BaseEntity {
 
     public static final String ORG_ID = "orgId";
 
+    public static final String TAX_NO = "taxno";
+
 
 }

@@ -177,7 +177,7 @@ public class BackFillService  {
         return R.ok(batchNo);
     }
 
-    private VerificationResponse parseOfd(byte[] ofd) {
+    public VerificationResponse parseOfd(byte[] ofd) {
         OfdParseRequest request = new OfdParseRequest();
         request.setOfdEncode(Base64.encodeBase64String(ofd));
         request.setTenantCode(tenantCode);

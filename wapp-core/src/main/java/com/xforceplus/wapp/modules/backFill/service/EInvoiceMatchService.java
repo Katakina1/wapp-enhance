@@ -7,9 +7,12 @@ import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.common.utils.InvoiceUtil;
+import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
 import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
+import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
@@ -31,17 +34,16 @@ import java.util.function.Supplier;
 
 
 /**
- *
  * t_dx_record_invoice
  * qs_type 5 pdf上传
- * 		4 手工签收
- * 		3 导入签收
- * 		2 app签收
- * 		1 扫描仪签收
- * 		0 扫码签收
+ * 4 手工签收
+ * 3 导入签收
+ * 2 app签收
+ * 1 扫描仪签收
+ * 0 扫码签收
  * qs_status
- * 		1 签收成功
- * 		0 签收失败
+ * 1 签收成功
+ * 0 签收失败
  *
  * @author malong@xforceplus.com
  * @program wapp-web
@@ -71,14 +73,19 @@ public class EInvoiceMatchService {
     @Autowired
     private InvoiceFileService invoiceFileService;
 
-    private static final SimpleDateFormat sdf=new SimpleDateFormat();
+
+    private static final SimpleDateFormat sdf = new SimpleDateFormat();
 
     @Autowired
     private TransactionalService transactionalService;
 
     @Autowired
     private TDxInvoiceDao tDxInvoiceDao;
+    @Autowired
+    private NoneBusinessService noneBusinessService;
 
+    @Autowired
+    private CompanyService companyService;
 
     @Value("${wapp.org-check:false}")
     private boolean needOrgCheck;
@@ -89,18 +96,106 @@ public class EInvoiceMatchService {
 
 
     @Transactional
-    public void   matchResultAfterVerify(VerificationBack verificationBack, SealedMessage.Header header) {
+    public void matchResultAfterVerify(VerificationBack verificationBack, SealedMessage.Header header) {
         String taskId = verificationBack.getTaskId();
         final TXfElecUploadRecordDetailEntity electronicUploadRecordDetailEntity = electronicUploadRecordDetailService.getByVerifyTaskId(taskId);
-        if (!verificationBack.isOK()) {
-            verifyFailure(verificationBack.getMessage(), header, electronicUploadRecordDetailEntity);
-            return;
+        if (null != electronicUploadRecordDetailEntity) {
+            if (!verificationBack.isOK()) {
+                verifyFailure(verificationBack.getMessage(), header, electronicUploadRecordDetailEntity);
+                return;
+            }
+            try {
+                verifySucceed(verificationBack, header, electronicUploadRecordDetailEntity);
+            } catch (EnhanceRuntimeException e) {
+                verifyFailure(e.getMessage(), header, electronicUploadRecordDetailEntity);
+            }
+            //查询非商上传的电票验真数据
+        } else {
+            final TXfNoneBusinessUploadDetailEntity tXfNoneBusinessUploadDetailEntity = noneBusinessService.getObjByVerifyTaskId(taskId);
+            if (null == tXfNoneBusinessUploadDetailEntity) {
+                return;
+            }
+            if (!verificationBack.isOK()) {
+                verifyNoneBusFailed(verificationBack, header, tXfNoneBusinessUploadDetailEntity);
+            } else {
+                verifyNoneBusSucess(verificationBack, header, tXfNoneBusinessUploadDetailEntity);
+            }
         }
-        try {
-            verifySucceed(verificationBack, header, electronicUploadRecordDetailEntity);
-        } catch (EnhanceRuntimeException e) {
-            verifyFailure(e.getMessage(), header, electronicUploadRecordDetailEntity);
+
+    }
+
+    private void verifyNoneBusSucess(VerificationBack verificationBack, SealedMessage.Header header, TXfNoneBusinessUploadDetailEntity tXfNoneBusinessUploadDetailEntity) {
+        final InvoiceMain invoiceMain = verificationBack.getResult().getInvoiceMain();
+        final List<InvoiceDetail> invoiceDetails = verificationBack.getResult().getInvoiceDetails();
+        TXfNoneBusinessUploadDetailEntity successEntity = new TXfNoneBusinessUploadDetailEntity();
+        successEntity.setId(tXfNoneBusinessUploadDetailEntity.getId());
+        successEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_SUCCESSE);
+        successEntity.setReason(verificationBack.getMessage());
+        successEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
+        successEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
+        successEntity.setInvoiceDate(invoiceMain.getPaperDrewDate());
+        successEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
+        noneBusinessService.updateById(successEntity);
+        TAcOrgEntity purEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getPurchaserTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
+        TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
+        Map<String, Object> map = new HashMap<>();
+        if (null != purEntity) {
+            map.put("venderid", sellerEntity.getOrgCode());
+            map.put("gfName", sellerEntity.getOrgName());
         }
+        if (null != sellerEntity) {
+            map.put("jvcode", purEntity.getOrgCode());
+            map.put("companyCode", purEntity.getOrgName());
+        }
+        map.put("invoiceNo", invoiceMain.getInvoiceNo());
+        map.put("invoiceCode", invoiceMain.getInvoiceCode());
+        map.put("invoiceAmount", invoiceMain.getAmountWithoutTax());
+        map.put("invoiceDate", invoiceMain.getPaperDrewDate());
+        map.put("totalAmount", invoiceMain.getAmountWithTax());
+        map.put("taxAmount", invoiceMain.getTaxAmount());
+        map.put("taxRate", invoiceDetails.get(0).getTaxRate());
+        map.put("invoiceType", InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode()));
+        map.put("gfTaxno", invoiceMain.getPurchaserTaxNo());
+        map.put("checkNo", invoiceMain.getCheckCode());
+        map.put("xfName", invoiceMain.getSellerName());
+        map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
+        List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
+        String uuid = invoiceMain.getInvoiceCode() + "" + invoiceMain.getInvoiceNo();
+        map.put("uuid", uuid);
+        List<InvoiceEntity> list1 = matchDao.ifExist(map);
+        if (CollectionUtils.isEmpty(list1)) {
+            if ("04".equals(CommonUtil.getFplx((String) invoiceMain.getInvoiceCode()))) {
+                electronicInvoiceDao.saveInvoicePP(map);
+            } else {
+                this.electronicInvoiceDao.saveInvoice(map);
+            }
+            // 新增发票情况下才会将明细入库
+            successSuppliers.add(() -> {
+                saveOrUpdateRecordInvoiceDetail(invoiceDetails, invoiceMain.getInvoiceNo(), invoiceMain.getInvoiceCode());
+                return true;
+            });
+        } else {
+            if ("04".equals(CommonUtil.getFplx((String) invoiceMain.getInvoiceCode()))) {
+                matchDao.allUpdatePP(map);
+            } else {
+                matchDao.allUpdate(map);
+            }
+        }
+    }
+
+    /**
+     * 非商验真失败
+     *
+     * @param verificationBack
+     * @param tXfNoneBusinessUploadDetailEntity
+     */
+    void verifyNoneBusFailed(VerificationBack verificationBack, SealedMessage.Header header, TXfNoneBusinessUploadDetailEntity tXfNoneBusinessUploadDetailEntity) {
+        log.warn("非商发票验真异步结果》》验真失败:header:{},失败消息{}", header, verificationBack.getMessage());
+        TXfNoneBusinessUploadDetailEntity failEntity = new TXfNoneBusinessUploadDetailEntity();
+        failEntity.setId(tXfNoneBusinessUploadDetailEntity.getId());
+        failEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
+        failEntity.setReason(verificationBack.getMessage());
+        noneBusinessService.updateById(failEntity);
     }
 
     void verifyFailure(String message, SealedMessage.Header header, TXfElecUploadRecordDetailEntity electronicUploadRecordDetailEntity) {
@@ -123,8 +218,8 @@ public class EInvoiceMatchService {
         electronicUploadRecordDetailEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
         electronicUploadRecordDetailEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
         electronicUploadRecordDetailEntity.setStatus(true);
-        validateOrg(invoiceMain,recordEntity,orgEntity);
-        validateTax(invoiceMain,invoiceDetails);
+        validateOrg(invoiceMain, recordEntity, orgEntity);
+        validateTax(invoiceMain, invoiceDetails);
 
         //TODO 结果存储-大象记录表
         Map<String, Object> map = new HashMap<>();
@@ -145,16 +240,16 @@ public class EInvoiceMatchService {
         map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
         map.put("companyCode", orgEntity.getCompany());
 //        底账来源  0-采集 1-查验 2-录入
-        map.put("sourceSystem","1");
+        map.put("sourceSystem", "1");
 
 //        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
-        map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(),invoiceMain.getRedFlag()));
-        map.put("remark",invoiceMain.getRemark());
+        map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
+        map.put("remark", invoiceMain.getRemark());
         //从备注里截取红字信息编号
-        if(Float.valueOf(invoiceMain.getAmountWithoutTax()) <0){
-            String redNo = StringUtils.substringBetween(invoiceMain.getRemark(),"信息表编号","单据编号").trim();
-            if(StringUtils.isNotEmpty(redNo)){
-                map.put("redNoticeNumber",redNo.trim());
+        if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
+            String redNo = StringUtils.substringBetween(invoiceMain.getRemark(), "信息表编号", "单据编号").trim();
+            if (StringUtils.isNotEmpty(redNo)) {
+                map.put("redNoticeNumber", redNo.trim());
             }
         }
         successSuppliers.add(() -> {
@@ -163,7 +258,7 @@ public class EInvoiceMatchService {
                     electronicUploadRecordService.increaseSucceed(electronicUploadRecordDetailEntity.getBatchNo());
                     //保存发票号码代码到上传详情
                     electronicUploadRecordDetailService.updateById(electronicUploadRecordDetailEntity);
-                    if(electronicUploadRecordDetailEntity.getFileType() != null && StringUtils.isNotEmpty(invoiceMain.getOfdPreviewUrl())){
+                    if (electronicUploadRecordDetailEntity.getFileType() != null && StringUtils.isNotEmpty(invoiceMain.getOfdPreviewUrl())) {
                         invoiceFileService.save(electronicUploadRecordDetailEntity, invoiceMain);
                     }
                     return true;
@@ -171,7 +266,7 @@ public class EInvoiceMatchService {
         );
         int result = this.saveOrUpdateRecordInvoice(map);
         //只有红票才入库
-        if(new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0){
+        if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0) {
             saveOrUpdateInvoice(map);
         }
         if (result == 0) {
@@ -185,7 +280,7 @@ public class EInvoiceMatchService {
         transactionalService.execute(successSuppliers);
     }
 
-    private void validateOrg(InvoiceMain invoiceMain,TXfElecUploadRecordEntity recordEntity,OrgEntity gfOrg){
+    private void validateOrg(InvoiceMain invoiceMain, TXfElecUploadRecordEntity recordEntity, OrgEntity gfOrg) {
         if (needOrgCheck) {
             final String jvCode = recordEntity.getJvCode();
             OrgEntity orgEntity = matchDao.getXfMessage(recordEntity.getVendorId());
@@ -195,7 +290,7 @@ public class EInvoiceMatchService {
                 stringBuilder.append("发票销方税号与供应商主体税号不一致;");
             }
 
-            if (!Objects.equals(invoiceMain.getPurchaserTaxNo(),gfOrg.getTaxno())){
+            if (!Objects.equals(invoiceMain.getPurchaserTaxNo(), gfOrg.getTaxno())) {
                 stringBuilder.append("发票购方税号与所选订单不一致;");
             }
 
@@ -218,7 +313,6 @@ public class EInvoiceMatchService {
     }
 
     /**
-     *
      * @param map
      * @return 0 插入，1更新
      */
@@ -234,7 +328,7 @@ public class EInvoiceMatchService {
 //        String companyCode = matchDao.getCompanyCode(jvcode);
 //        map.put("companyCode", companyCode);
         OrgEntity orgEntity = matchDao.getXfMessage((String) map.get("venderid"));
-        int result=0;
+        int result = 0;
         try {
             //判断uuid是否存在
             if (CollectionUtils.isEmpty(list1)) {
@@ -249,8 +343,9 @@ public class EInvoiceMatchService {
                     flag = this.electronicInvoiceDao.saveInvoice(map) > 0;
                 }
 
+
             } else {
-                result=1;
+                result = 1;
                 //存在数据
                 String source = list1.get(0).getSystemSource();
                 String matchstatus = list1.get(0).getDxhyMatchStatus();
@@ -328,20 +423,21 @@ public class EInvoiceMatchService {
 
     /**
      * 保存明细
+     *
      * @param details
      * @param invoiceNo
      * @param invoiceCode
      */
-    private void saveOrUpdateRecordInvoiceDetail(List<InvoiceDetail> details,String invoiceNo,String invoiceCode){
-        if (!CollectionUtils.isEmpty(details)){
-            List<TDxRecordInvoiceDetailEntity> recordDetails =new ArrayList<>();
+    private void saveOrUpdateRecordInvoiceDetail(List<InvoiceDetail> details, String invoiceNo, String invoiceCode) {
+        if (!CollectionUtils.isEmpty(details)) {
+            List<TDxRecordInvoiceDetailEntity> recordDetails = new ArrayList<>();
             for (int i = 0; i < details.size(); i++) {
-                final InvoiceDetail  x= details.get(i);
-                TDxRecordInvoiceDetailEntity detail=new TDxRecordInvoiceDetailEntity();
+                final InvoiceDetail x = details.get(i);
+                TDxRecordInvoiceDetailEntity detail = new TDxRecordInvoiceDetailEntity();
                 detail.setInvoiceNo(invoiceNo);
                 detail.setInvoiceCode(invoiceCode);
-                detail.setUuid(invoiceCode+invoiceNo);
-                detail.setDetailNo(String.valueOf(i+1));
+                detail.setUuid(invoiceCode + invoiceNo);
+                detail.setDetailNo(String.valueOf(i + 1));
                 detail.setDetailAmount(x.getAmountWithoutTax());
                 detail.setGoodsName(x.getCargoName());
                 detail.setTaxAmount(x.getTaxAmount());
@@ -357,7 +453,6 @@ public class EInvoiceMatchService {
     }
 
     /**
-     *
      * @param map
      * @return 扫描表 0 插入，1更新
      */
@@ -367,12 +462,12 @@ public class EInvoiceMatchService {
         String no = map.get("invoiceNo").toString();
         String uuid = code + "" + no;
         QueryWrapper<TDxInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TDxInvoiceEntity.UUID,uuid);
+        wrapper.eq(TDxInvoiceEntity.UUID, uuid);
         TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(wrapper);
         String jvcode = (String) map.get("jvcode");
         OrgEntity orgEntity = matchDao.getXfMessage((String) map.get("venderid"));
         boolean flag = false;
-        int result=0;
+        int result = 0;
         try {
             //判断uuid是否存在
             if (tDxInvoiceEntity != null) {
@@ -386,9 +481,9 @@ public class EInvoiceMatchService {
 
                 }
                 TDxInvoiceEntity entity = JSONObject.parseObject(JSONObject.toJSONString(map), TDxInvoiceEntity.class);
-                flag = tDxInvoiceDao.insert(entity) >0;
+                flag = tDxInvoiceDao.insert(entity) > 0;
             } else {
-                result=1;
+                result = 1;
                 //存在数据
                 String flowType = tDxInvoiceEntity.getFlowType();
                 BigDecimal invoiceAmount = tDxInvoiceEntity.getInvoiceAmount();
@@ -407,11 +502,11 @@ public class EInvoiceMatchService {
         return result;
     }
 
-    private static String  convertStatus(String status,String redFlag){
-        if (Objects.equals(redFlag,InvoiceMain.ALREADY_RED)){
+    private static String convertStatus(String status, String redFlag) {
+        if (Objects.equals(redFlag, InvoiceMain.ALREADY_RED)) {
             return "3";
         }
-        switch (status){
+        switch (status) {
             case "1":
                 return "0";
             case "0":
