@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -14,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-13
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -136,13 +137,13 @@ public class TDxRecordInvoiceDetailEntity extends BaseEntity {
      * 红冲金额
      */
     @TableField("red_rush_amount")
-    private Double redRushAmount;
+    private BigDecimal redRushAmount;
 
     /**
      * 红冲单价
      */
     @TableField("red_rush_price")
-    private Double redRushPrice;
+    private BigDecimal redRushPrice;
 
     /**
      * 红冲序列号
@@ -154,7 +155,7 @@ public class TDxRecordInvoiceDetailEntity extends BaseEntity {
      * 红冲税额
      */
     @TableField("red_rush_tax_amount")
-    private Double redRushTaxAmount;
+    private BigDecimal redRushTaxAmount;
 
     @TableField("category1")
     private String category1;
