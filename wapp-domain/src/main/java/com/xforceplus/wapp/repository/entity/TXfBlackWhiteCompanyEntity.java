@@ -1,21 +1,20 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 /**
  * <p>
-    * 黑白名单
-    * </p>
+ * 黑白名单表
+ * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-14
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -44,11 +43,10 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
     private String supplier6d;
 
     /**
-     * 供应商6D税号
+     * 供应商税号
      */
     @TableField("supplier_taxNo")
-    private String supplierTaxno;
-
+    private String supplierTaxNo;
     /**
      * sap编号
      */
@@ -80,27 +78,27 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
     private String supplierStatus;
 
     /**
-     * createTime
+     * 创建时间
      */
-    @TableField("create_time")
+    @TableField(value = "create_time",fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
-     * createUser
+     * 创建人
      */
-    @TableField("create_user")
+    @TableField(value = "create_user",fill = FieldFill.INSERT)
     private String createUser;
 
     /**
-     * updateTime
+     * 更新时间
      */
-    @TableField(value="update_time", update="getdate()" )
+    @TableField(value="update_time" ,fill = FieldFill.UPDATE)
     private Date updateTime;
 
     /**
-     * updateUser
+     * 更新人
      */
-    @TableField("update_user")
+    @TableField(value ="update_user" ,fill = FieldFill.UPDATE)
     private String updateUser;
 
 
@@ -109,8 +107,6 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
     public static final String COMPANY_NAME = "company_name";
 
     public static final String SUPPLIER_6D = "supplier_6D";
-
-    public static final String SUPPLIER_TAXNO = "supplier_taxNo";
 
     public static final String SAP_NO = "sap_no";
 
@@ -129,5 +125,8 @@ public class TXfBlackWhiteCompanyEntity extends BaseEntity {
     public static final String UPDATE_TIME = "update_time";
 
     public static final String UPDATE_USER = "update_user";
+
+    public static final String SUPPLIER_TAX_NO = "supplier_taxNo";
+
 
 }
