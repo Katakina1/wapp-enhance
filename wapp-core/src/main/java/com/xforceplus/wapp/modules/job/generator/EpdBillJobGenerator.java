@@ -36,25 +36,22 @@ public class EpdBillJobGenerator extends AbstractBillJobGenerator {
     @Autowired
     private BillJobService billJobService;
 
-    @Value("epdBill.remote.path")
+    @Value("${epdBill.remote.path}")
     private String remotePath;
-
-    @Value("epdBill.remote.fileNameKeyWords")
-    private String fileNameKeyWords;
 
     @Async
     @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {
-        List<String> fileNames = scanFiles(remotePath, fileNameKeyWords);
+        List<String> fileNames = scanFiles(remotePath);
         createJob(EPD_BILL_JOB.getJobType(), fileNames);
     }
 
     @Override
-    public List<String> scanFiles(String remotePath, String fileNameKeyWords) {
+    public List<String> scanFiles(String remotePath) {
         try {
             sftpRemoteManager.openChannel();
-            return sftpRemoteManager.getFileNames(remotePath, fileNameKeyWords);
+            return sftpRemoteManager.listFiles(remotePath);
         } catch (JSchException | SftpException e) {
             log.error("获取远程EPD单文件列表故障", e);
         }

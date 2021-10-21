@@ -39,11 +39,11 @@ public class ClaimItemSamsSaveCommand implements Command {
     private BillJobService billJobService;
     @Autowired
     private OriginClaimItemSamsService service;
-    @Value("claimBill.remote.path")
+    @Value("${claimBill.remote.path}")
     private String remotePath;
-    @Value("claimBill.local.path")
+    @Value("${claimBill.local.path}")
     private String localPath;
-    @Value("claimBill.item.samsSheetName")
+    @Value("${claimBill.item.samsSheetName}")
     private String sheetName;
 
     @Override

@@ -28,9 +28,9 @@ public class EpdBillDownloadCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private BillJobService billJobService;
-    @Value("epdBill.remote.path")
+    @Value("${epdBill.remote.path}")
     private String remotePath;
-    @Value("epdBill.local.path")
+    @Value("${epdBill.local.path}")
     private String localPath;
 
     @Override

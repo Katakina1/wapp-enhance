@@ -36,25 +36,22 @@ public class AgreementBillJobGenerator extends AbstractBillJobGenerator {
     @Autowired
     private BillJobService billJobService;
 
-    @Value("agreementBill.remote.path")
+    @Value("${agreementBill.remote.path}")
     private String remotePath;
-
-    @Value("agreementBill.remote.fileNameKeyWords")
-    private String fileNameKeyWords;
 
     @Async
     @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {
-        List<String> fileNames = scanFiles(remotePath, fileNameKeyWords);
+        List<String> fileNames = scanFiles(remotePath);
         createJob(AGREEMENT_BILL_JOB.getJobType(), fileNames);
     }
 
     @Override
-    public List<String> scanFiles(String remotePath, String fileNameKeyWords) {
+    public List<String> scanFiles(String remotePath) {
         try {
             sftpRemoteManager.openChannel();
-            return sftpRemoteManager.getFileNames(remotePath, fileNameKeyWords);
+            return sftpRemoteManager.listFiles(remotePath);
         } catch (JSchException | SftpException e) {
             log.error("获取远程协议单文件列表故障", e);
         }

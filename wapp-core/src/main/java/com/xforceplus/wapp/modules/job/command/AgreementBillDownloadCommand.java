@@ -28,9 +28,9 @@ public class AgreementBillDownloadCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private BillJobService billJobService;
-    @Value("agreementBill.remote.path")
+    @Value("${agreementBill.remote.path}")
     private String remotePath;
-    @Value("agreementBill.local.path")
+    @Value("${agreementBill.local.path}")
     private String localPath;
 
     @Override

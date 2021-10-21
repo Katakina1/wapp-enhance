@@ -38,11 +38,11 @@ public class EpdBillSaveCommand implements Command {
     private BillJobService billJobService;
     @Autowired
     private OriginEpdBillService service;
-    @Value("epdBill.remote.path")
+    @Value("${epdBill.remote.path}")
     private String remotePath;
-    @Value("epdBill.local.path")
+    @Value("${epdBill.local.path}")
     private String localPath;
-    @Value("epdBill.sheetName")
+    @Value("${epdBill.sheetName}")
     private String sheetName;
 
     @Override

@@ -19,10 +19,9 @@ public interface BillJobGenerator {
      * 扫描单据的文件列表
      *
      * @param remotePath
-     * @param fileNameKeyWords
      * @return
      */
-    List<String> scanFiles(String remotePath, String fileNameKeyWords);
+    List<String> scanFiles(String remotePath);
 
     /**
      * 创建单据任务

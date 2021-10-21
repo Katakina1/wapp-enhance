@@ -39,11 +39,11 @@ public class ClaimItemHyperSaveCommand implements Command {
     private BillJobService billJobService;
     @Autowired
     private OriginClaimItemHyperService service;
-    @Value("claimBill.remote.path")
+    @Value("${claimBill.remote.path}")
     private String remotePath;
-    @Value("claimBill.local.path")
+    @Value("${claimBill.local.path}")
     private String localPath;
-    @Value("claimBill.item.hyperSheetName")
+    @Value("${claimBill.item.hyperSheetName}")
     private String sheetName;
 
     @Override

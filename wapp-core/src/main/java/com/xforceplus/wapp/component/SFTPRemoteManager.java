@@ -142,34 +142,27 @@ public class SFTPRemoteManager {
     /**
      * 返回SFTP指定目录下所有文件名
      *
-     * @param path             文件路径
-     * @param fileNameKeyWords 文件名关键字
+     * @param path 文件路径
      * @return
      * @throws JSchException
      * @throws SftpException
      */
-    public List<String> getFileNames(String path, String fileNameKeyWords) throws SftpException, JSchException {
+    public List<String> listFiles(String path) throws SftpException, JSchException {
         if (!isChannelConnected()) {
             throw new JSchException("SFTP连接故障，请重新连接");
         }
         // 进入目录
-        try {
-            sftp.cd(path);
-        } catch (SftpException e) {
-            if (ChannelSftp.SSH_FX_NO_SUCH_FILE == e.id) {
-                sftp.mkdir(path);
-                sftp.cd(path);
-            } else {
-                throw e;
-            }
-        }
-        List<String> fileNames = new ArrayList<>();
+        sftp.cd(path);
+        List<String> files = new ArrayList<>();
         // 根据名称关键字查询所有文件名
-        Vector<LsEntry> vector = sftp.ls(fileNameKeyWords);
+        Vector<LsEntry> vector = sftp.ls(path);
         for (LsEntry lsEntry : vector) {
-            fileNames.add(lsEntry.getFilename());
+            if (".".equals(lsEntry.getFilename()) || "..".equals(lsEntry.getFilename())) {
+                continue;
+            }
+            files.add(lsEntry.getFilename());
         }
-        return fileNames;
+        return files;
     }
 
     /**

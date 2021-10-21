@@ -38,11 +38,11 @@ public class AgreementBillSaveCommand implements Command {
     private BillJobService billJobService;
     @Autowired
     private OriginAgreementBillService service;
-    @Value("agreementBill.remote.path")
+    @Value("${agreementBill.remote.path}")
     private String remotePath;
-    @Value("agreementBill.local.path")
+    @Value("${agreementBill.local.path}")
     private String localPath;
-    @Value("agreementBill.sheetName")
+    @Value("${agreementBill.sheetName}")
     private String sheetName;
 
     @Override

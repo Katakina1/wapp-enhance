@@ -93,14 +93,12 @@ Esb:
 agreementBill:
   remote:
     path: /home/wappftp/wapp/vendor/agreement
-    fileNameKeyWords:
   local:
     path: /wapp/vendor/agreement
   sheetName: 原始协议单
 claimBill:
   remote:
     path: /home/wappftp/wapp/vendor/claim
-    fileNameKeyWords:
   local:
     path: /wapp/vendor/claim
   sheetName: 原始索赔单
@@ -110,7 +108,6 @@ claimBill:
 epdBill:
   remote:
     path: /home/wappftp/wapp/vendor/epd
-    fileNameKeyWords:
   local:
     path: /wapp/vendor/epd
   sheetName: 原始EPD单

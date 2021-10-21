@@ -28,9 +28,9 @@ public class ClaimBillDownloadCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private BillJobService billJobService;
-    @Value("claimBill.remote.path")
+    @Value("${claimBill.remote.path}")
     private String remotePath;
-    @Value("claimBill.local.path")
+    @Value("${claimBill.local.path}")
     private String localPath;
 
     @Override
