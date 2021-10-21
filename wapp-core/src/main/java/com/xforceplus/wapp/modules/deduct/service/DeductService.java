@@ -929,10 +929,6 @@ public class DeductService   {
                 request.getDeductDate(), request.getPurchaserNo(), request.getKey());
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
                 request.getDeductDate(), request.getPurchaserNo(), request.getKey());
-        //过滤掉key为2和3的结果
-
-
-        PageResult<QueryDeductListResponse> pageResult = new PageResult<>();
         List<QueryDeductListResponse> response = new ArrayList<>();
         BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
         return PageResult.of(response,count, request.getPageNo(), request.getPageSize());

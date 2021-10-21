@@ -45,7 +45,6 @@ public class RecordInvoiceService {
         List<RecordInvoiceResponse> response = new ArrayList<>();
         BeanUtil.copyList(pageResult.getRecords(),response,RecordInvoiceResponse.class);
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
-
     }
 
 
