@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import com.xforceplus.phoenix.split.model.*;
@@ -17,6 +18,7 @@ import com.xforceplus.wapp.repository.dao.TXfSettlementItemExtDao;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommRedNotificationService;
+import com.xforceplus.wapp.service.CommSettlementService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +47,10 @@ import java.util.Map;
 @Service
 @Slf4j
 public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoiceEntity> {
+
+    @Autowired
+    private CommSettlementService commSettlementService;
+
     static final String RULE_INFO = " {\n" +
             "\t\t\"amountSplitRule\": \"2\",\n" +
             "\t\t\"cargoNameLength\": 92,\n" +
@@ -748,7 +754,12 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         return StringUtils.EMPTY;
     }
 
-    public void undoNotification(){
 
+    public void applyDestroyPreInvoiceAndRedNotification(String invoiceNo,String invoiceCode){
+        LambdaQueryWrapper<TXfPreInvoiceEntity> wrapper=new LambdaQueryWrapper<>();
+        wrapper.select(TXfPreInvoiceEntity::getId).eq(TXfPreInvoiceEntity::getInvoiceNo,invoiceNo)
+                .eq(TXfPreInvoiceEntity::getInvoiceCode,invoiceCode);
+        final TXfPreInvoiceEntity one = super.getOne(wrapper);
+        commSettlementService.applyDestroyPreInvoiceAndRedNotification(one.getId());
     }
 }

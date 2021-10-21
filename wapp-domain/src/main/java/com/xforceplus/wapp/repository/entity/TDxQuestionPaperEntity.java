@@ -113,7 +113,7 @@ public class TDxQuestionPaperEntity extends BaseEntity {
     /**
      * 主键
      */
-    @TableField("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
