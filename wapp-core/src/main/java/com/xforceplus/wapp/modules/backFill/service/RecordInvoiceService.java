@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -100,6 +101,17 @@ public class RecordInvoiceService {
             wrapper.eq(TDxRecordInvoiceEntity.INVOICE_STATUS,invoiceStatus);
         }
         return wrapper;
+
+    }
+
+
+    public boolean blue4RedInvoice(String redInvoiceNo,String redInvoiceCode){
+        TDxRecordInvoiceEntity entity=new TDxRecordInvoiceEntity();
+        entity.setInvoiceStatus("5");
+        LambdaUpdateWrapper<TDxRecordInvoiceEntity> wrapper=new LambdaUpdateWrapper<>();
+        wrapper.eq(TDxRecordInvoiceEntity::getUuid,redInvoiceCode+redInvoiceNo);
+        tDxRecordInvoiceDao.update(entity,wrapper);
+        return true;
 
     }
 

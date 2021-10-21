@@ -40,7 +40,6 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-
 #图片存储路径
 filePathConstan:
   remoteImageRootPath: /home/wappftp/jxfp/image/

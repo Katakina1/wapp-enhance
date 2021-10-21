@@ -41,7 +41,7 @@ public class CodeGenerator {
                 // "t_xf_origin_claim_item_sams"
 //                "t_dx_excel_exportlog",
 //                "t_dx_messagecontrol"
-                "t_xf_exception_report"
+                "t_xf_blue_relation"
                 );
 //         generateMainCode();
         // generateItemCode();
