@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.modules.claim.dto;
 
-import io.swagger.annotations.ApiResponse;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +22,7 @@ public class DeductListResponse {
     /**
      * 业务单据编号
      */
-    private String businessNo;
+    private String billNo;
 
     /**
      * 业务单据类型;1:索赔;2:协议;3:EPD
@@ -133,4 +132,10 @@ public class DeductListResponse {
     private Date createDate;
 
     private Date updateDate;
+
+    /**
+     * 批次号
+     */
+    private String batchNo;
+
 }
