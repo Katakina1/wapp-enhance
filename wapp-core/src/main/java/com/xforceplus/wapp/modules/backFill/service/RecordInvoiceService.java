@@ -38,14 +38,13 @@ public class RecordInvoiceService {
     @Autowired
     private TDxInvoiceDao tDxInvoiceDao;
 
-    public PageResult<RecordInvoiceResponse> getPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
+    public PageResult<RecordInvoiceResponse> queryPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
         Page<TDxRecordInvoiceEntity> page=new Page<>(pageNo,pageSize);
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
         BeanUtil.copyList(pageResult.getRecords(),response,RecordInvoiceResponse.class);
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
-
     }
 
 

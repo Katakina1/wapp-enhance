@@ -117,6 +117,7 @@ public class CommAgreementService {
     }
 
     /**
+     * 这个主要是针对作废的预制发票明细处理
      * 修改后的结算单的中的部分预制发票明细重新去拆票（申请红字信息），删除之前的预制发票
      *
      * @param settlementId
@@ -136,6 +137,22 @@ public class CommAgreementService {
         QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
         preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
         tXfPreInvoiceItemDao.delete(preInvoiceItemWrapper);
+    }
+
+    /**
+     * 协议单[确认]按钮相关逻辑，这个主要是针对结算单明细拆票
+     * 结算单明细拆成预制发票（红字信息）
+     * 底层逻辑调用产品服务(拆票、申请红字信息)
+     * @param settlementId
+     */
+    @Transactional
+    public void splitPreInvoice(Long settlementId) {
+        //结算单
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
+        if (tXfSettlementEntity == null) {
+            throw new EnhanceRuntimeException("结算单不存在");
+        }
+        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
     }
 
 }
