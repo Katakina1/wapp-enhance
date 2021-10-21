@@ -58,6 +58,25 @@ public class BlueInvoiceService {
     }
 
     private List<MatchRes> obtainAgreementInvoices(BigDecimal amount, String settlementNo) {
+        return obtainInvoices(amount, settlementNo, true);
+    }
+
+    private List<MatchRes> obtainClaimInvoices(BigDecimal amount, String settlementNo) {
+        return obtainInvoices(amount, settlementNo, false);
+    }
+
+    private List<MatchRes> obtainEpdInvoices(BigDecimal amount, String settlementNo) {
+        return obtainInvoices(amount, settlementNo, true);
+    }
+
+    /**
+     *
+     * @param amount
+     * @param settlementNo
+     * @param withItems
+     * @return
+     */
+    private List<MatchRes> obtainInvoices(BigDecimal amount, String settlementNo, boolean withItems) {
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         TXfInvoiceEntity tXfInvoiceEntity;
@@ -95,18 +114,27 @@ public class BlueInvoiceService {
                                         .eq(TXfInvoiceEntity::getId, tXfInvoiceEntity.getId())
                                         .eq(TXfInvoiceEntity::getRemainingAmount, lastRemainingAmount))) {
                             leftAmount.updateAndGet(v1 -> v1.subtract(lastRemainingAmount));
-                            List<TXfInvoiceItemEntity> items = obtainAvailableItems(tXfInvoiceEntity.getId(), tXfInvoiceEntity.getAmountWithoutTax(), lastRemainingAmount, lastRemainingAmount);
-                            list.add(MatchRes.builder()
-                                    .invoiceId(tXfInvoiceEntity.getId())
-                                    .invoiceNo(tXfInvoiceEntity.getInvoiceNo())
-                                    .invoiceCode(tXfInvoiceEntity.getInvoiceCode())
-                                    .deductedAmount(lastRemainingAmount)
-                                    .invoiceItems(
-                                            items
-                                                    .stream()
-                                                    .map(TXfInvoiceItemEntityConvertor.INSTANCE::toSettlementItem)
-                                                    .collect(Collectors.toList()))
-                                    .build());
+                            if (withItems) {
+                                List<TXfInvoiceItemEntity> items = obtainAvailableItems(tXfInvoiceEntity.getId(), tXfInvoiceEntity.getAmountWithoutTax(), lastRemainingAmount, lastRemainingAmount);
+                                list.add(MatchRes.builder()
+                                        .invoiceId(tXfInvoiceEntity.getId())
+                                        .invoiceNo(tXfInvoiceEntity.getInvoiceNo())
+                                        .invoiceCode(tXfInvoiceEntity.getInvoiceCode())
+                                        .deductedAmount(lastRemainingAmount)
+                                        .invoiceItems(items
+                                                .stream()
+                                                .map(TXfInvoiceItemEntityConvertor.INSTANCE::toSettlementItem)
+                                                .collect(Collectors.toList())
+                                        )
+                                        .build());
+                            } else {
+                                list.add(MatchRes.builder()
+                                        .invoiceId(tXfInvoiceEntity.getId())
+                                        .invoiceNo(tXfInvoiceEntity.getInvoiceNo())
+                                        .invoiceCode(tXfInvoiceEntity.getInvoiceCode())
+                                        .deductedAmount(lastRemainingAmount)
+                                        .build());
+                            }
                         } else {
                             log.warn("锁定并更新发票剩余可用金额失败，跳过此发票处理，发票id={} 更新前剩余可用金额={} 更新后剩余可用金额={}",
                                     tXfInvoiceEntity.getId(), lastRemainingAmount, newTxfInvoiceEntity.getRemainingAmount());
@@ -122,18 +150,28 @@ public class BlueInvoiceService {
                                         .eq(TXfInvoiceEntity::getId, tXfInvoiceEntity.getId())
                                         .eq(TXfInvoiceEntity::getRemainingAmount, lastRemainingAmount))) {
                             leftAmount.set(BigDecimal.ZERO);
-                            List<TXfInvoiceItemEntity> items = obtainAvailableItems(tXfInvoiceEntity.getId(), tXfInvoiceEntity.getAmountWithoutTax(), lastRemainingAmount, deductedAmount);
-                            list.add(MatchRes.builder()
-                                    .invoiceId(tXfInvoiceEntity.getId())
-                                    .invoiceNo(tXfInvoiceEntity.getInvoiceNo())
-                                    .invoiceCode(tXfInvoiceEntity.getInvoiceCode())
-                                    .deductedAmount(deductedAmount)
-                                    .invoiceItems(
-                                            items
-                                                    .stream()
-                                                    .map(TXfInvoiceItemEntityConvertor.INSTANCE::toSettlementItem)
-                                                    .collect(Collectors.toList()))
-                                    .build());
+                            if (withItems) {
+                                List<TXfInvoiceItemEntity> items = obtainAvailableItems(tXfInvoiceEntity.getId(), tXfInvoiceEntity.getAmountWithoutTax(), lastRemainingAmount, deductedAmount);
+                                list.add(MatchRes.builder()
+                                        .invoiceId(tXfInvoiceEntity.getId())
+                                        .invoiceNo(tXfInvoiceEntity.getInvoiceNo())
+                                        .invoiceCode(tXfInvoiceEntity.getInvoiceCode())
+                                        .deductedAmount(deductedAmount)
+                                        .invoiceItems(
+                                                items
+                                                        .stream()
+                                                        .map(TXfInvoiceItemEntityConvertor.INSTANCE::toSettlementItem)
+                                                        .collect(Collectors.toList())
+                                        )
+                                        .build());
+                            } else {
+                                list.add(MatchRes.builder()
+                                        .invoiceId(tXfInvoiceEntity.getId())
+                                        .invoiceNo(tXfInvoiceEntity.getInvoiceNo())
+                                        .invoiceCode(tXfInvoiceEntity.getInvoiceCode())
+                                        .deductedAmount(deductedAmount)
+                                        .build());
+                            }
                         } else {
                             log.warn("锁定并更新发票剩余可用金额失败，跳过此发票处理，发票id={} 更新前剩余可用金额={} 更新后剩余可用金额={}",
                                     tXfInvoiceEntity.getId(), lastRemainingAmount, newTxfInvoiceEntity.getRemainingAmount());
@@ -146,15 +184,6 @@ public class BlueInvoiceService {
             throw new NoSuchInvoiceException();
         }
         return list;
-    }
-
-    private List<MatchRes> obtainClaimInvoices(BigDecimal amount, String settlementNo) {
-        // TODO by kenny
-        return null;
-    }
-
-    private List<MatchRes> obtainEpdInvoices(BigDecimal amount, String settlementNo) {
-        return obtainAgreementInvoices(amount, settlementNo);
     }
 
     /**
