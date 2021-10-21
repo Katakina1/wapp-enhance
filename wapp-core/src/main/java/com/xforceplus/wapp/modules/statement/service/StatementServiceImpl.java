@@ -11,6 +11,7 @@ import com.xforceplus.wapp.modules.billdeduct.converters.BillDeductConverter;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductServiceImpl;
 import com.xforceplus.wapp.modules.preinvoice.converters.PreInvoiceConverter;
+import com.xforceplus.wapp.modules.preinvoice.service.PreInvoiceItemDaoService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.settlement.converters.SettlementItemConverter;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
@@ -47,8 +48,9 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     private final BillDeductServiceImpl billDeductService;
     private final BillDeductConverter billDeductConverter;
     private final BillDeductItemServiceImpl billDeductItemService;
+    private final PreInvoiceItemDaoService preInvoiceItemDaoService;
 
-    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService) {
+    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
         this.statementConverter = statementConverter;
         this.billDeductExtDao = billDeductExtDao;
         this.preinvoiceService = preinvoiceService;
@@ -58,6 +60,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         this.billDeductService = billDeductService;
         this.billDeductConverter = billDeductConverter;
         this.billDeductItemService = billDeductItemService;
+        this.preInvoiceItemDaoService = preInvoiceItemDaoService;
     }
 
     public Tuple2<List<Settlement>, Page<?>> page(Long current, Long size, @NonNull Integer type, Integer settlementStatus,
@@ -154,7 +157,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     }
 
     public Tuple2<List<? extends BaseInformation>, Page<?>> baseInformationClaimPage(Long current, Long size,
-                                                                           @NonNull String settlementNo) {
+                                                                                     @NonNull String settlementNo) {
         log.info("索赔明细列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
         val page = new LambdaQueryChainWrapper<>(billDeductService.getBaseMapper())
                 .eq(TXfBillDeductEntity::getRefSettlementNo, settlementNo)
@@ -170,12 +173,24 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     }
 
     public Tuple2<List<? extends BaseInformation>, Page<?>> baseInformationAgreementPage(Long current, Long size,
-                                                                               @NonNull String settlementNo) {
+                                                                                         @NonNull String settlementNo) {
         log.info("协议明细列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
         val page = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
                 .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
                 .page(new Page<>(current, size));
         log.debug("协议明细列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(settlementItemConverter.map(page.getRecords()), page);
+    }
+
+    public Optional<PreInvoice> preInvoice(@NonNull Long invoiceId) {
+        log.info("预制发票详情信息查询,入参,invoiceId:{}", invoiceId);
+        TXfPreInvoiceEntity invoice = preinvoiceService.getById(invoiceId);
+        if (Objects.isNull(invoice)) {
+            return Optional.empty();
+        }
+        List<TXfPreInvoiceItemEntity> items = preInvoiceItemDaoService.getByInvoiceId(invoiceId);
+        PreInvoice map = preInvoiceConverter.map(invoice, items);
+        log.debug("预制发票详情信息:{}", "");
+        return Optional.ofNullable(map);
     }
 }
