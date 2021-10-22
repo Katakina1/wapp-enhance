@@ -166,6 +166,11 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         String post = "";
         try {
             post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),"");
+            JSONObject res = JSONObject.parseObject(post);
+
+            if (res.get("code").equals("BSCTZZ0001") || res.get("result").equals("[]")) {
+                log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
