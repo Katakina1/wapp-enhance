@@ -101,7 +101,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         saveBatch(listMain);
         redNotificationItemService.saveBatch(listItem);
         //判断是否自动申请
-        if(request.getAutoApplyFlag() ==0){
+        if(request.getAutoApplyFlag() ==1){
             // 申请请求
             RedNotificationApplyReverseRequest applyRequest = new RedNotificationApplyReverseRequest();
 
