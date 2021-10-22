@@ -23,7 +23,7 @@ public class CommonMessageService {
     private ActiveMqProducer activeMqProducer;
     @Autowired
     private MessageControlService messageControlService;
-    @Value("${wapp.export_success_queue_gfone}")
+    @Value("${activemq.queue-name.export-success-queue-gfone}")
     private String gfoneQueue;
 
     public void sendMessage(TDxMessagecontrolEntity messagecontrolEntity){
