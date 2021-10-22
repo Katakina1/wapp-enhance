@@ -168,6 +168,12 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableField("create_user")
     private Long createUser;
 
+    @TableField("item_flag")
+    private Integer itemFlag;
+
+    @TableField("thrid_id")
+    private Long thridId;
+
 
     public static final String SETTLEMENT_NO = "settlement_no";
 
