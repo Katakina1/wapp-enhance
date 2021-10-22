@@ -23,6 +23,7 @@ import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -168,7 +169,7 @@ public class StatementController {
     @PostMapping("/settlement/confirm/{confirmType}")
     public R<Boolean> settlementConfirm(@ApiParam(value = "确认类型 1.单价不变、3.数量不变", required = true)
                                         @PathVariable Integer confirmType,
-                                        @RequestBody ConfirmDto dto) {
+                                        @Validated @RequestBody ConfirmDto dto) {
         long start = System.currentTimeMillis();
         val r = ValueEnum.getEnumByValue(TXfAmountSplitRuleEnum.class, confirmType)
                 .map(it -> R.ok(statementService.confirmItem(dto.getSettlementNo(), dto.getSellerNo(), dto.getIds(), it)))
