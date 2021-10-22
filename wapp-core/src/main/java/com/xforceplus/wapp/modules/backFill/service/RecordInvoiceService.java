@@ -76,23 +76,31 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectById(id);
         InvoiceDetailResponse response = new InvoiceDetailResponse();
         if(invoiceEntity != null){
-            QueryWrapper<TDxRecordInvoiceDetailEntity> wrapper = new QueryWrapper<>();
-            wrapper.eq(TDxRecordInvoiceDetailEntity.UUID,invoiceEntity.getUuid());
-            List<TDxRecordInvoiceDetailEntity> tDxRecordInvoiceDetailEntities = recordInvoiceDetailsDao.selectList(wrapper);
-            if(CollectionUtils.isNotEmpty(tDxRecordInvoiceDetailEntities)){
-                List<InvoiceDetail> list = new ArrayList<>();
-                BeanUtil.copyList(tDxRecordInvoiceDetailEntities,list,InvoiceDetail.class);
-                response.setInvoiceDetailList(list);
-            }
+            List<InvoiceDetail> invoiceDetails = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
+            response.setInvoiceDetailList(invoiceDetails);
             BeanUtil.copyProperties(invoiceEntity,response);
         }
         return response;
+    }
+
+    public List<InvoiceDetail> queryInvoiceDetailByUuid(String uuid){
+        QueryWrapper<TDxRecordInvoiceDetailEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TDxRecordInvoiceDetailEntity.UUID,uuid);
+        List<TDxRecordInvoiceDetailEntity> tDxRecordInvoiceDetailEntities = recordInvoiceDetailsDao.selectList(wrapper);
+        List<InvoiceDetail> list = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(tDxRecordInvoiceDetailEntities)){
+            BeanUtil.copyList(tDxRecordInvoiceDetailEntities,list,InvoiceDetail.class);
+        }
+        return list;
     }
 
     public Integer getCountBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
         return tDxRecordInvoiceDao.selectCount(wrapper);
     }
+
+
+
 
     /**
      * 删除红票
@@ -134,10 +142,33 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         }
     }
 
+    /**
+     * 发票列表
+     * @param settlementNo,invoiceStatus,venderid
+     * @return R
+     */
+    public List<InvoiceDetailResponse> queryInvoiceList(String settlementNo,String invoiceStatus,String venderid){
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
+        List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(wrapper);
+        List<InvoiceDetailResponse> response = new ArrayList<>();
+        InvoiceDetailResponse invoice;
+        for (TDxRecordInvoiceEntity tDxRecordInvoiceEntity : tDxRecordInvoiceEntities) {
+            invoice = new InvoiceDetailResponse();
+            List<InvoiceDetail> list = queryInvoiceDetailByUuid(tDxRecordInvoiceEntity.getUuid());
+            invoice.setInvoiceDetailList(list);
+            BeanUtil.copyProperties(tDxRecordInvoiceEntity,invoice);
+            response.add(invoice);
+        }
+        return response;
+    }
+
+
     private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus,String venderid){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO.getValue())
-        .eq(TDxRecordInvoiceEntity.VENDERID,venderid);
+        wrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO.getValue());
+        if(StringUtils.isNotEmpty(venderid)){
+            wrapper.eq(TDxRecordInvoiceEntity.VENDERID,venderid);
+        }
         if(StringUtils.isNotEmpty(settlementNo)){
             wrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,settlementNo);
         }
@@ -156,6 +187,13 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         wrapper.eq(TDxRecordInvoiceEntity::getUuid,redInvoiceCode+redInvoiceNo);
         tDxRecordInvoiceDao.update(entity,wrapper);
         return true;
+
+    }
+
+
+
+
+    public void convert(List<TDxRecordInvoiceDetailEntity> entities){
 
     }
 

@@ -44,49 +44,49 @@ import java.util.List;
      * 购方税号
      */
     @ApiModelProperty("购方税号")
-    private String gfTaxNo;
+    private String purchaserTaxNo;
 
     /**
      * 购方名称
      */
     @ApiModelProperty("购方名称")
-    private String gfName;
+    private String purchaserName;
 
     /**
      * 购方地址电话
      */
     @ApiModelProperty("购方地址电话")
-    private String gfAddressAndPhone;
+    private String purchaserAddressAndPhone;
 
     /**
      * 购方开户行及账号
      */
     @ApiModelProperty("购方开户行及账号")
-    private String gfBankAndNo;
+    private String purchaserBankAndNo;
 
     /**
      * 销方税号
      */
     @ApiModelProperty("销方税号")
-    private String xfTaxNo;
+    private String sellerTaxNo;
 
     /**
      * 销方名称
      */
     @ApiModelProperty("销方名称")
-    private String xfName;
+    private String sellerName;
 
     /**
      * 销方地址及电话
      */
     @ApiModelProperty("销方地址及电话")
-    private String xfAddressAndPhone;
+    private String sellerAddressAndPhone;
 
     /**
      * 销方开户行及账号
      */
     @ApiModelProperty("销方开户行及账号")
-    private String xfBankAndNo;
+    private String sellerBankAndNo;
 
     /**
      * 金额
