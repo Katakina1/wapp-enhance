@@ -1,6 +1,7 @@
 wapp:
   integration:
     authentication: walmart-wapp-fat20211014092441131056839
+    authentication-split: bill-split-service20211020170354134751573
     client-id: T3950544920211014092441131056783
     customer-no: T3950544920211014092441131056783
     tenant-id: 4882809030005538709
