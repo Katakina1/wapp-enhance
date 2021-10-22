@@ -256,11 +256,22 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             TXfSettlementItemEntity entity = new TXfSettlementItemEntity();
             entity.setId(it.getId());
             entity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getValue());
+            entity.setAmountWithoutTax(it.getAmountWithoutTax());
+            entity.setQuantity(it.getQuantity());
+            entity.setUnitPrice(it.getUnitPrice());
             build.get(type).accept(entity);
             return entity;
         }).collect(Collectors.toList());
         settlementItemService.updateBatchById(entities);
-        preinvoiceService.splitPreInvoice(settlementNo, sellerNo);
+        try {
+            log.info("调用拆票方法参数,settlementNo:{},sellerNo:{}", settlementNo, sellerNo);
+            long pStart = System.currentTimeMillis();
+            preinvoiceService.splitPreInvoice(settlementNo, sellerNo);
+            log.info("调用拆票方法耗时:{}", System.currentTimeMillis() - pStart);
+        } catch (Exception e) {
+            log.error("拆票方法异常,", e);
+            throw new RuntimeException("拆票方法异常");
+        }
         return true;
     }
 }
