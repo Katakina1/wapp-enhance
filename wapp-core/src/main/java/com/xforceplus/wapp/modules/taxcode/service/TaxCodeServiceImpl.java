@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.client.WappDb2Client;
 import com.xforceplus.wapp.modules.taxcode.converters.TaxCodeConverter;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
+import com.xforceplus.wapp.modules.taxcode.models.TaxCodeTree;
 import com.xforceplus.wapp.repository.dao.TaxCodeDao;
 import com.xforceplus.wapp.repository.entity.TaxCodeEntity;
 import io.vavr.Tuple;
@@ -16,10 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -36,9 +36,9 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
     }
 
     public Tuple2<List<TaxCode>, Page<TaxCodeEntity>> page(Long current, Long size,
-                                                           String goodsTaxNo, String itemName, String itemNo, String largeCategoryCode) {
-        log.debug("税编分页查询,入参,goodsTaxNo:{},itemName:{},itemNo:{},largeCategoryCode:{},分页数据,current:{},size:{}",
-                goodsTaxNo, itemName, itemNo, largeCategoryCode, current, size);
+                                                           String goodsTaxNo, String itemName, String itemNo, String medianCategoryCode) {
+        log.debug("税编分页查询,入参,goodsTaxNo:{},itemName:{},itemNo:{},medianCategoryCode:{},分页数据,current:{},size:{}",
+                goodsTaxNo, itemName, itemNo, medianCategoryCode, current, size);
         LambdaQueryChainWrapper<TaxCodeEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(TaxCodeEntity::getDeleteFlag);
         if (StringUtils.isNotBlank(goodsTaxNo)) {
@@ -50,8 +50,8 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
         if (StringUtils.isNotBlank(itemNo)) {
             wrapper.eq(TaxCodeEntity::getItemNo, itemNo);
         }
-        if (StringUtils.isNotBlank(largeCategoryCode)) {
-            wrapper.eq(TaxCodeEntity::getLargeCategoryCode, largeCategoryCode);
+        if (StringUtils.isNotBlank(medianCategoryCode)) {
+            wrapper.eq(TaxCodeEntity::getMedianCategoryCode, medianCategoryCode);
         }
         Page<TaxCodeEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("税编分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
@@ -70,5 +70,11 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
         }
         log.debug("通过itemNo[{}]查询税编,结果:{}", itemNo, taxCode);
         return Optional.ofNullable(taxCode);
+    }
+
+    public List<TaxCodeTree> tree() {
+        return new LambdaQueryChainWrapper<>(getBaseMapper()).isNull(TaxCodeEntity::getDeleteFlag).list()
+                .stream().collect(Collectors.groupingBy(TaxCodeEntity::getLargeCategoryCode)).values()
+                .stream().map(it -> taxCodeConverter.map(it.get(0), it)).collect(Collectors.toList());
     }
 }

@@ -9,7 +9,9 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.ServiceTypeEnum;
+import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.statement.dto.ConfirmDto;
 import com.xforceplus.wapp.modules.statement.models.*;
 import com.xforceplus.wapp.modules.statement.service.StatementServiceImpl;
 import io.swagger.annotations.Api;
@@ -21,6 +23,7 @@ import io.vavr.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -142,11 +145,11 @@ public class StatementController {
     }
 
     @ApiOperation("结算单确认列表")
-    @GetMapping("/settlement/confirm/{settlementNo}")
-    public R<List<? extends BaseConfirm>> settlementConfirm(@ApiParam(value = "结算单号", required = true)
-                                                            @PathVariable String settlementNo,
-                                                            @ApiParam(value = "查询类型 1.索赔、2.协议、3.EPD", required = true)
-                                                            @RequestParam Integer type) {
+    @GetMapping("/settlement/confirm/{type}/{settlementNo}")
+    public R<List<? extends BaseConfirm>> settlementConfirmList(@ApiParam(value = "结算单号", required = true)
+                                                                @PathVariable String settlementNo,
+                                                                @ApiParam(value = "查询类型 1.索赔、2.协议、3.EPD", required = true)
+                                                                @PathVariable Integer type) {
         long start = System.currentTimeMillis();
         if (Objects.isNull(type) || !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
             return R.fail("查询类型不正确");
@@ -154,12 +157,25 @@ public class StatementController {
         val typeMap = ImmutableMap
                 .<Integer, Function<String, List<? extends BaseConfirm>>>builder()
                 .put(ServiceTypeEnum.CLAIM.getValue(), statementService::claimConfirmItem)
-                .put(ServiceTypeEnum.AGREEMENT.getValue(), statementService::confirmItem)
-                .put(ServiceTypeEnum.EPD.getValue(), statementService::confirmItem)
+                .put(ServiceTypeEnum.AGREEMENT.getValue(), statementService::confirmItemList)
+                .put(ServiceTypeEnum.EPD.getValue(), statementService::confirmItemList)
                 .build();
         val confirm = typeMap.getOrDefault(type, (n) -> Lists.newArrayList()).apply(settlementNo);
         log.info("待开票详情查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(confirm);
+    }
+
+    @ApiOperation("结算单确认列表")
+    @PostMapping("/settlement/confirm/{confirmType}")
+    public R<Boolean> settlementConfirm(@ApiParam(value = "确认类型 1.单价不变、3.数量不变", required = true)
+                                        @PathVariable Integer confirmType,
+                                        @Validated @RequestBody ConfirmDto dto) {
+        long start = System.currentTimeMillis();
+        val r = ValueEnum.getEnumByValue(TXfAmountSplitRuleEnum.class, confirmType)
+                .map(it -> R.ok(statementService.confirmItem(dto.getSettlementNo(), dto.getSellerNo(), dto.getIds(), it)))
+                .orElseGet(() -> R.fail("确认类型不正确"));
+        log.info("待开票详情查询,耗时:{}ms", System.currentTimeMillis() - start);
+        return r;
     }
 
 }

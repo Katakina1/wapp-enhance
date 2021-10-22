@@ -12,6 +12,6 @@ import java.util.List;
 @Data
 public class IdsDto {
     @NotNull
-    @Length(min = 1, message = "删除数据不能为空")
+    @Length(min = 1, message = "数据不能为空")
     private List<Long> ids;
 }
