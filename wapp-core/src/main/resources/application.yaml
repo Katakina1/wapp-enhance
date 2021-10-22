@@ -102,7 +102,7 @@ claimBill:
   local:
     path: /wapp/vendor/claim
   sheetName: 原始索赔单
-  Item:
+  item:
     hyperSheetName: 原始索赔单Hyper明细
     samsSheetName: 原始索赔单Sams明细
 epdBill:

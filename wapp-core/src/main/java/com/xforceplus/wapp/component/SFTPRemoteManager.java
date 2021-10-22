@@ -12,8 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static com.xforceplus.wapp.util.LocalFileSystemManager.createFolderIfNonExist;
-
 /**
  * sftp链接工具类
  *
@@ -172,13 +170,15 @@ public class SFTPRemoteManager {
      * @param fileName 文件名
      * @throws SftpException
      */
-    public void downloadFile(String path, String fileName, String localPath) throws SftpException, IOException {
+    public void downloadFile(String path, String fileName, String localPath) throws SftpException, JSchException, IOException {
         // 进入并设置为当前目录
         sftp.cd(path);
         // 下载
         File file = new File(localPath, fileName);
-        FileOutputStream out = new FileOutputStream(file);
-        sftp.get(path, out);
-        out.close();
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            sftp.get(fileName, out);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }

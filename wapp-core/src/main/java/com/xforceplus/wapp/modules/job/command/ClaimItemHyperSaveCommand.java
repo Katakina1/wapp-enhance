@@ -15,6 +15,7 @@ import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM_SAMS;
  * @create: 2021-10-14 13:54
  **/
 @Slf4j
+@Component
 public class ClaimItemHyperSaveCommand implements Command {
 
     @Autowired

@@ -5,9 +5,9 @@ import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.converters.TXfInvoiceItemEntityConvertor;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
+import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceItemServiceImpl;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
-import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceItemEntity;
 import lombok.Builder;
@@ -36,12 +36,26 @@ import java.util.stream.Collectors;
 @Service
 public class BlueInvoiceService {
 
+    /**
+     * 云砺底账数据表
+     */
     @Autowired
     private InvoiceServiceImpl invoiceService;
+    /**
+     * 云砺底账明细表
+     */
     @Autowired
     private InvoiceItemServiceImpl invoiceItemService;
+    /**
+     * 大象底账业务表
+     */
     @Autowired
     private RecordInvoiceService recordInvoiceService;
+    /**
+     * 蓝冲用途的发票服务
+     */
+    @Autowired
+    private BlueInvoiceRelationService blueInvoiceRelationService;
 
     public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo) {
         switch (deductionEnum) {
@@ -70,7 +84,6 @@ public class BlueInvoiceService {
     }
 
     /**
-     *
      * @param amount
      * @param settlementNo
      * @param withItems
@@ -93,16 +106,17 @@ public class BlueInvoiceService {
                             .orderByAsc(TXfInvoiceEntity::getPaperDrewDate)
             );
             if (Objects.nonNull(tXfInvoiceEntity)) {
-                TDxRecordInvoiceEntity tDxRecordInvoiceEntity = recordInvoiceService.getOne(new QueryWrapper<TDxRecordInvoiceEntity>()
-                        .lambda()
-                        .eq(TDxRecordInvoiceEntity::getInvoiceNo, tXfInvoiceEntity.getInvoiceNo())
-                        .eq(TDxRecordInvoiceEntity::getInvoiceCode, tXfInvoiceEntity.getInvoiceCode())
-                );
-                if (Objects.nonNull(tDxRecordInvoiceEntity)
-                        // 排除蓝冲用途的发票（正常的发票）
-                        && "0".equals(tDxRecordInvoiceEntity.getInvoiceStatus())
-                        // 排除未完成付款的蓝票(已付款) TODO 待确认是否需要移除此判断，会导致results的获取没有意义
-                        && "1".equals(tDxRecordInvoiceEntity.getBpmsPayStatus())) {
+                // TDxRecordInvoiceEntity tDxRecordInvoiceEntity = recordInvoiceService.getOne(
+                //         new QueryWrapper<TDxRecordInvoiceEntity>()
+                //         .lambda()
+                //         .eq(TDxRecordInvoiceEntity::getInvoiceNo, tXfInvoiceEntity.getInvoiceNo())
+                //         .eq(TDxRecordInvoiceEntity::getInvoiceCode, tXfInvoiceEntity.getInvoiceCode())
+                // );
+                // 排除蓝冲用途的发票（正常的发票）
+                if (!blueInvoiceRelationService.existsByBlueInvoice(tXfInvoiceEntity.getInvoiceNo(), tXfInvoiceEntity.getInvoiceCode())
+                    // TODO 待确认是否需要添加排除未完成付款的蓝票(已付款)
+                    // && "1".equals(tDxRecordInvoiceEntity.getBpmsPayStatus())
+                ) {
                     BigDecimal lastRemainingAmount = tXfInvoiceEntity.getRemainingAmount();
                     if (leftAmount.get().compareTo(lastRemainingAmount) >= 0) {
                         // 如果蓝票的剩余可用金额不够抵扣的
