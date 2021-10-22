@@ -45,7 +45,7 @@ public class ClaimBillService extends DeductService{
          * 查询未匹配明细的索赔单
          */
         Long deductId = 1L;
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,startDate, limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
                 String sellerNo = tXfBillDeductEntity.getSellerNo();
@@ -103,7 +103,7 @@ public class ClaimBillService extends DeductService{
             /**
              * 执行下一批匹配
              */
-            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,startDate,  limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null,  limit, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         }
         return true;
     }
@@ -182,6 +182,41 @@ public class ClaimBillService extends DeductService{
     }
 
     /**
+     * 索赔单 匹配蓝票
+     *
+     * @return
+     */
+    public boolean claimMatchBlueInvoice() {
+        Long deductId = 1L;
+        Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
+
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 100, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+        while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
+            for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
+                //索赔单 金额 大于 剩余发票金额
+                if (nosuchInvoiceSeller.containsKey(tXfBillDeductEntity.getSellerNo()) && nosuchInvoiceSeller.get(tXfBillDeductEntity.getSellerNo()).compareTo(tXfBillDeductEntity.getAmountWithoutTax()) < 0) {
+                    log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 单号 {}", "索赔单", tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getBusinessNo());
+                    continue;
+                }
+                TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(tXfBillDeductEntity.getSellerNo(), true);
+                TAcOrgEntity tAcPurcharserOrgEntity = queryOrgInfo(tXfBillDeductEntity.getPurchaserNo(), false);
+
+                List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfBillDeductEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfBillDeductEntity.getBusinessNo(),tAcSellerOrgEntity.getTaxNo(),tAcPurcharserOrgEntity.getTaxNo());
+                if (CollectionUtils.isEmpty(matchResList)) {
+                    log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 单号 {}", "索赔单", tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getBusinessNo());
+                    nosuchInvoiceSeller.put(tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getAmountWithoutTax());
+                    continue;
+                }
+                matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), XFDeductionBusinessTypeEnum.CLAIM_BILL);
+                tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+            }
+            deductId =  tXfBillDeductEntities.stream().mapToLong(TXfBillDeductEntity::getId).max().getAsLong();
+            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 100, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+        }
+        return true;
+    }
+
+    /**
      * 合并 索赔单为结算单
      * @return
      */
@@ -197,8 +232,8 @@ public class ClaimBillService extends DeductService{
             try {
                 doMergeClaim(tXfBillDeductEntity);
             } catch (Exception e) {
-                e.printStackTrace();
-                log.error("索赔单组合结算失败: purchase_no :{} ,seller_no:{} status: {}",tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getSellerNo(),TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getDesc());
+
+                log.error("索赔单组合结算失败: purchase_no :{} ,seller_no:{} status: {} Exception:{}",tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getSellerNo(),TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getDesc(),e);
             }
         }
         return true;

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -153,7 +154,7 @@ public class CommEpdService {
      * @param settlementId
      */
     @Transactional
-    public void splitPreInvoice(Long settlementId) {
+    public void splitPreInvoice(Long settlementId) throws IOException {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
