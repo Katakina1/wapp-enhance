@@ -111,6 +111,34 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
        splitPreInvoice("settlementNo1853061001646081","172164");
     }
 
+
+    /**
+     *
+     * @param settlementNo
+     * @param sellerNo
+     * @return
+     */
+    public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo)   {
+        //查询待拆票算单主信息，
+        //查询结算单明细信息
+        //查询开票信息
+        //组装拆票请求
+        //调用拆票请求
+        //保存拆票结果
+        //调用红字请求
+        TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo(0l, settlementNo,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode() );
+        if (Objects.isNull(tXfSettlementEntity)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
+        TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
+        List<BillItem> billItems = new ArrayList<>();
+        BeanUtil.copyList( tXfSettlementItemEntities,billItems,BillItem.class);
+        CreatePreInvoiceParam createPreInvoiceParam  =  assembleParam(tXfSettlementEntity, tXfSettlementItemEntities, tAcOrgEntity);
+
+        return doSplit(createPreInvoiceParam, tXfSettlementEntity);
+    }
+
     /**
      *
      * @param createPreInvoiceParam
@@ -118,7 +146,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @return
      */
     public List<SplitPreInvoiceInfo> doSplit (CreatePreInvoiceParam createPreInvoiceParam,TXfSettlementEntity tXfSettlementEntity) {
-         Map<String, String> defaultHeader = new HashMap<>();
+        Map<String, String> defaultHeader = new HashMap<>();
         defaultHeader.put("tenantId", tenantId);
         defaultHeader.put("Authentication", authentication);
         defaultHeader.put("accept", "application/json");
@@ -179,31 +207,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             }
         }
         return splitPreInvoiceInfos;
-    }
-
-    /**
-     *
-     * @param settlementNo
-     * @param sellerNo
-     * @return
-     */
-    public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo)   {
-        //查询待拆票算单主信息，
-        //查询结算单明细信息
-        //查询开票信息
-        //组装拆票请求
-        //调用拆票请求
-        //保存拆票结果
-        //调用红字请求
-        TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo(0l, settlementNo,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode() );
-        if (Objects.isNull(tXfSettlementEntity)) {
-            return Collections.EMPTY_LIST;
-        }
-        List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
-        TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
-        CreatePreInvoiceParam createPreInvoiceParam  =  assembleParam(tXfSettlementEntity, tXfSettlementItemEntities, tAcOrgEntity);
-
-        return doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
 
     /**
@@ -284,61 +287,12 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         tXfSettlementEntity.setTaxAmount(taxAmount);
         tXfSettlementEntity.setAmountWithoutTax(amountWithOutTax);
         tXfSettlementEntity.setAmountWithTax(amountWithTax);
-        CreatePreInvoiceParam createPreInvoiceParam = assembleByPreInvoice(tXfSettlementEntity, items, tAcOrgEntity);
+        List<TXfSettlementItemEntity> list = new ArrayList<>();
+        BeanUtil.copyList( items,list,TXfSettlementItemEntity.class);
+        CreatePreInvoiceParam createPreInvoiceParam = assembleParam(tXfSettlementEntity, list, tAcOrgEntity);
         return   doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
 
-    private CreatePreInvoiceParam assembleByPreInvoice(TXfSettlementEntity tXfSettlementEntity,List<TXfPreInvoiceItemEntity> items,TAcOrgEntity tAcOrgEntity) {
-        CreatePreInvoiceParam createPreInvoiceParam = new CreatePreInvoiceParam();
-        BillInfo billInfo = new BillInfo();
-        BeanUtil.copyProperties(tXfSettlementEntity, billInfo);
-        billInfo.setPriceMethod(1);
-        billInfo.setPurchaserId(0L);
-        billInfo.setPurchaserGroupId(0L);
-        billInfo.setPurchaserTenantId(0l);
-        billInfo.setSellerId(0L);
-        billInfo.setSellerTenantId(0l);
-        billInfo.setSellerGroupId(0l);
-        billInfo.setInvoiceType("s");
-        billInfo.setSalesbillId(tXfSettlementEntity.getSettlementNo());
-
-        List<BillItem> billItems = new ArrayList<>();
-        BeanUtil.copyList( items,billItems,BillItem.class);
-        String settlementNo = tXfSettlementEntity.getSettlementNo();
-        int i = 0;
-        for (BillItem billItem : billItems) {
-            billItem.setSalesbillId(settlementNo );
-            billItem.setSalesbillItemId(settlementNo + i);
-            billItem.setSalesbillNo(settlementNo);
-            billItem.setSalesbillItemNo(settlementNo + i);
-
-            billItem.setInnerPrepayAmountTax(BigDecimal.ZERO);
-            billItem.setInnerPrepayAmountWithoutTax(BigDecimal.ZERO);
-            billItem.setInnerPrepayAmountWithTax(BigDecimal.ZERO);
-
-            billItem.setInnerDiscountTax(BigDecimal.ZERO);
-            billItem.setInnerDiscountWithTax(BigDecimal.ZERO);
-            billItem.setInnerDiscountWithoutTax(BigDecimal.ZERO);
-
-            billItem.setOutterDiscountTax(BigDecimal.ZERO);
-            billItem.setOutterDiscountWithoutTax(BigDecimal.ZERO);
-            billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
-
-            billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
-            billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
-            billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
-
-            billItem.setDeductions(BigDecimal.ZERO);
-        }
-        billInfo.setBillItems(billItems);
-        SplitRule splitRule =    JSONObject.parseObject(RULE_INFO, SplitRule.class);
-        splitRule.setInvoiceLimit(BigDecimal.valueOf(tAcOrgEntity.getQuota()));
-        createPreInvoiceParam.setBillInfo(billInfo);
-        createPreInvoiceParam.setRule(splitRule);
-        createPreInvoiceParam.setRoutingKey("");
-
-        return createPreInvoiceParam;
-     }
     /**
      * 查询拆票规则
      * @param sellerNo
