@@ -12,6 +12,7 @@ import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
 import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.settlement.dto.InvoiceMatchedRequest;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.service.CommSettlementService;
@@ -57,9 +58,16 @@ public class SettlementController {
     }
 
 
-    @GetMapping("matched-invoice")
+    @GetMapping("{settlementId}/matched-invoice")
     @ApiOperation("获取指定协议单已匹配的发票")
-    public R invoiceList(@RequestParam String settlementNo) {
+    public R invoiceList(@PathVariable Long settlementId) {
+        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
+        return R.ok();
+    }
+
+    @PostMapping("{settlementId}/matched-invoice")
+    @ApiOperation("获取指定协议单已匹配的发票")
+    public R saveInvoice(@PathVariable Long settlementId, InvoiceMatchedRequest request) {
         PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
         return R.ok();
     }

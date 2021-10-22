@@ -149,22 +149,6 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         return Collections.emptyMap();
     }
 
-    public List<InvoiceMatchListResponse> invoice(InvoiceRecommendListRequest request){
-
-        final Long billId = request.getId();
-        final TXfBillDeductEntity byId = this.getById(billId);
-        if (Objects.isNull(byId)){
-            throw new EnhanceRuntimeException("参数有误，协议单/EPD不存在");
-        }
-        final Integer status = byId.getStatus();
-
-        final String sellerNo = byId.getSellerNo();
-        final String purchaserNo = byId.getPurchaserNo();
-        final BigDecimal taxRate = byId.getTaxRate();
-
-
-        return null;
-    }
 
     public Long makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type){
 //         TODO  张振伟提供接口

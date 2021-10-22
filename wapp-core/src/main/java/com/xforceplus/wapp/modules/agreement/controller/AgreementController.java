@@ -7,8 +7,6 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
@@ -49,17 +47,6 @@ public class AgreementController {
         request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(page);
-    }
-
-
-
-    @GetMapping("recommend-invoice")
-    @ApiOperation("指定协议单推荐发票")
-    public R recommendInvoiceList( InvoiceRecommendListRequest request) {
-        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
-        final String usercode = UserUtil.getUser().getUsercode();
-        deductService.invoice(request);
-        return R.ok();
     }
 
 
