@@ -7,6 +7,7 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.dto.UpdateBillStatusRequest;
@@ -19,6 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author malong@xforceplus.com
@@ -59,9 +63,26 @@ public class DeductController {
 
     @ApiOperation(value = "业务单列表")
     @GetMapping(value = "list")
-    public R<PageResult<QueryDeductListResponse>> queryPageList(QueryDeductListRequest request){
+    public R<PageResult<QueryDeductListResponse>> queryPageList(@ApiParam(value = "业务单列表请求",required = true) QueryDeductListRequest request){
         logger.info("查询业务单列表--请求参数{}", JSONObject.toJSONString(request));
         return R.ok(deductService.queryPageList(request));
     }
+
+    @ApiOperation(value = "业务单详情")
+    @GetMapping(value = "detail/{id}")
+    public R<DeductDetailResponse> getDeductDetail(@ApiParam(value = "主键",required = true) @PathVariable Long id){
+        logger.info("查询业务单列表--请求参数{}", id);
+        return R.ok(deductService.getDeductDetailById(id));
+    }
+
+    @ApiOperation(value = "业务单列表tab")
+    @GetMapping(value = "tab")
+    public R<List<JSONObject>> queryPageTab(@ApiParam(value = "业务单列表tab请求",required = true) QueryDeductListRequest request){
+        logger.info("查询业务单列表--请求参数{}", JSONObject.toJSONString(request));
+        return R.ok(deductService.queryPageTab(request));
+    }
+
+
+
 
 }

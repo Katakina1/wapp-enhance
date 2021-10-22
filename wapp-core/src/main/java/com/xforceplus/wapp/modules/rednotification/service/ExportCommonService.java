@@ -13,6 +13,7 @@ import com.xforceplus.wapp.repository.entity.TDxMessagecontrolEntity;
 import com.xforceplus.wapp.service.CommonMessageService;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public class ExportCommonService {
      * @param request
      * @return
      */
-    public Tuple2<Long,Long> insertRequest(Object request) {
+    public Tuple3<Long,Long,String> insertRequest(Object request) {
         final Long userId = UserUtil.getUserId();
 
         TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
@@ -59,7 +60,7 @@ public class ExportCommonService {
         excelExportlogEntity.setServiceType(SERVICE_TYPE);
 
         this.excelExportLogService.save(excelExportlogEntity);
-        return Tuple.of(excelExportlogEntity.getId(),userId);
+        return Tuple.of(excelExportlogEntity.getId(),userId,UserUtil.getLoginName());
     }
 
     /**
@@ -81,19 +82,21 @@ public class ExportCommonService {
 
     /**
      * 上传文件ftp服务器
-     * @param ftpPath
-     * @param fileName
+     * @param ftpPath  目录
+     * @param localFilePath 本地文件
+     * @param fileName 文件名称
      * @return
      */
-    public  String putFile(String ftpPath ,String  fileName) {
+    public  String putFile(String ftpPath ,String localFilePath,String  fileName) {
         File localFile = null;
         try {
-            localFile = new File(ftpPath);
+            localFile = new File(localFilePath);
             if (!localFile.getParentFile().exists()) {
                 localFile.getParentFile().mkdirs();
             }
 
             FileInputStream inputStream = FileUtils.openInputStream(localFile);
+
             ftpUtilService.uploadFile(ftpPath, fileName, inputStream);
 
             FileUtils.deleteQuietly(localFile);

@@ -15,10 +15,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -121,7 +118,7 @@ public class RedNotificationController {
             res.setContentType("multipart/form-data");
             res.setCharacterEncoding("UTF-8");
             res.setContentType("text/html");
-            String filePath = getClass().getResource("/excl/" + fileName).getPath();
+            String filePath = "/excl/" + fileName;
             String userAgent = req.getHeader("User-Agent");
             if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
             fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
@@ -129,11 +126,9 @@ public class RedNotificationController {
             // 非IE浏览器的处理：
             fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
             }
-            filePath = URLDecoder.decode(filePath, "UTF-8");
+//            filePath = URLDecoder.decode(filePath, "UTF-8");
             res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
-            FileInputStream inputStream = null;
-
-                inputStream = new FileInputStream(filePath);
+            InputStream inputStream = this.getClass().getResourceAsStream(filePath);
 
             out = res.getOutputStream();
             int b = 0;

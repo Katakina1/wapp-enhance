@@ -77,6 +77,7 @@ public class ShiroConfig {
         filterMap.put("/analysis/materialInvoicesSubmitStatistics/export", "anon");
         filterMap.put("/analysis/materialInvoicesSubmitStatistics/exportByEasy", "anon");
         filterMap.put("/claimOpeation/downLoadTemplate", "anon");
+        filterMap.put("/api/red-notification/template", "anon");
 
         filterMap.put("/**/*.css", "anon");
         filterMap.put("/**/*.js", "anon");

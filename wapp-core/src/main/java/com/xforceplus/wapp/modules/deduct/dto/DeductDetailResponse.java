@@ -1,18 +1,23 @@
 package com.xforceplus.wapp.modules.deduct.dto;
 
+import com.xforceplus.wapp.modules.deduct.model.DeductBillItemModel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
- * Created by SunShiyong on 2021/10/20.
+ * Created by SunShiyong on 2021/10/21.
  */
-@ApiModel(description = "查询业务单响应对象")
+@ApiModel("业务单详情对象")
 @Data
-public class QueryDeductListResponse {
+public class DeductDetailResponse {
+
+    @ApiModelProperty("业务单明细列表")
+    private List<DeductBillItemModel> deductBillItemList;
 
     /**
      * 业务单据编号
@@ -40,9 +45,9 @@ public class QueryDeductListResponse {
     @ApiModelProperty("扣款日期")
     private Date deductDate;
     /**
-     * 扣款公司jv_code
+     * 门店编码
      */
-    @ApiModelProperty("扣款公司jv_code")
+    @ApiModelProperty("门店编码")
     private String purchaserNo;
 
     @ApiModelProperty("协议供应商6D")
@@ -73,5 +78,8 @@ public class QueryDeductListResponse {
 
     @ApiModelProperty("发票类型")
     private String invoiceType;
+
+
+
 
 }

@@ -3,9 +3,6 @@ package com.xforceplus.wapp.modules.company.convert;
 import com.xforceplus.wapp.converters.BaseConverter;
 import com.xforceplus.wapp.converters.GlobalConfig;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
-import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
-import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
-import com.xforceplus.wapp.repository.entity.OverdueEntity;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import org.mapstruct.*;
 
