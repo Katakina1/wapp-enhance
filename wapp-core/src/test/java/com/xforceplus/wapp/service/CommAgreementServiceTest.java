@@ -20,4 +20,9 @@ public class CommAgreementServiceTest extends BaseUnitTest {
     public void testAgainSplitPreInvoice() {
        // commAgreementService.againSplitPreInvoice(1L);
     }
+
+    @Test
+    public void testSplitPreInvoice() {
+       // commAgreementService.splitPreInvoice(1L);
+    }
 }

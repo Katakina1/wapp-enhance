@@ -15,4 +15,9 @@ public class CommClaimServiceTest extends BaseUnitTest {
     public void testDestroyClaimSettlement() {
        // commClaimService.destroyClaimSettlement(1L);
     }
+
+    @Test
+    public void testSplitPreInvoice() {
+        // commClaimService.splitPreInvoice(1L);
+    }
 }
