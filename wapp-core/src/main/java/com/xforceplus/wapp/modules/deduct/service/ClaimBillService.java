@@ -1,32 +1,20 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.modules.company.service.CompanyService;
-import com.xforceplus.wapp.modules.deduct.model.*;
-import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
-import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * 类描述：扣除单通用方法
@@ -36,7 +24,7 @@ import java.util.function.Function;
  * @Author ZZW
  * @Date 2021/10/12 11:38
  */
-@Service("DeductClaimService")
+@Service
 @Slf4j
 public class ClaimBillService extends DeductService{
 
