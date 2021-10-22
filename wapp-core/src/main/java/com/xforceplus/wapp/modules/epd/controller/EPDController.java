@@ -59,7 +59,6 @@ public class EPDController {
     @ApiOperation("指定EPD单推荐发票")
     public R recommendInvoiceList(@PathVariable long id, InvoiceRecommendListRequest request) {
         PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
-        deductService.invoice(request);
         return R.ok();
     }
 
