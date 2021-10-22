@@ -10,10 +10,7 @@ import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.modules.statement.models.BaseInformation;
-import com.xforceplus.wapp.modules.statement.models.PreInvoice;
-import com.xforceplus.wapp.modules.statement.models.Settlement;
-import com.xforceplus.wapp.modules.statement.models.SettlementCount;
+import com.xforceplus.wapp.modules.statement.models.*;
 import com.xforceplus.wapp.modules.statement.service.StatementServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -62,7 +60,7 @@ public class StatementController {
         if (StringUtils.isNotBlank(invoiceType) && !ValueEnum.isValid(InvoiceTypeEnum.class, invoiceType)) {
             return R.fail("发票类型不正确");
         }
-        if (Objects.nonNull(type) && !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
+        if (Objects.isNull(type) || !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
             return R.fail("查询类型不正确");
         }
         if (Objects.nonNull(settlementStatus) && !ValueEnum.isValid(TXfSettlementStatusEnum.class, settlementStatus)) {
@@ -88,7 +86,7 @@ public class StatementController {
         if (StringUtils.isNotBlank(invoiceType) && !ValueEnum.isValid(InvoiceTypeEnum.class, invoiceType)) {
             return R.fail("发票类型不正确");
         }
-        if (Objects.nonNull(type) && !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
+        if (Objects.isNull(type) || !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
             return R.fail("查询类型不正确");
         }
         val count = statementService.count(type, settlementNo, purchaserNo,
@@ -127,7 +125,7 @@ public class StatementController {
                                                                     @RequestParam Integer type,
                                                                     @ApiParam(value = "结算单号", required = true) @PathVariable String settlementNo) {
         long start = System.currentTimeMillis();
-        if (Objects.nonNull(type) && !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
+        if (Objects.isNull(type) || !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
             return R.fail("查询类型不正确");
         }
         val typeMap = ImmutableMap
@@ -142,4 +140,26 @@ public class StatementController {
         log.info("基本信息列表查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
     }
+
+    @ApiOperation("结算单确认列表")
+    @GetMapping("/settlement/confirm/{settlementNo}")
+    public R<List<? extends BaseConfirm>> settlementConfirm(@ApiParam(value = "结算单号", required = true)
+                                                            @PathVariable String settlementNo,
+                                                            @ApiParam(value = "查询类型 1.索赔、2.协议、3.EPD", required = true)
+                                                            @RequestParam Integer type) {
+        long start = System.currentTimeMillis();
+        if (Objects.isNull(type) || !ValueEnum.isValid(ServiceTypeEnum.class, type)) {
+            return R.fail("查询类型不正确");
+        }
+        val typeMap = ImmutableMap
+                .<Integer, Function<String, List<? extends BaseConfirm>>>builder()
+                .put(ServiceTypeEnum.CLAIM.getValue(), statementService::claimConfirmItem)
+                .put(ServiceTypeEnum.AGREEMENT.getValue(), statementService::confirmItem)
+                .put(ServiceTypeEnum.EPD.getValue(), statementService::confirmItem)
+                .build();
+        val confirm = typeMap.getOrDefault(type, (n) -> Lists.newArrayList()).apply(settlementNo);
+        log.info("待开票详情查询,耗时:{}ms", System.currentTimeMillis() - start);
+        return R.ok(confirm);
+    }
+
 }

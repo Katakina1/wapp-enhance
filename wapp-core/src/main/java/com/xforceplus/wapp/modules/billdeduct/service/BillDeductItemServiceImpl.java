@@ -14,7 +14,7 @@ import lombok.val;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,10 +32,16 @@ public class BillDeductItemServiceImpl extends ServiceImpl<TXfBillDeductItemDao,
         this.billDeductItemRefDao = billDeductItemRefDao;
     }
 
+    public List<TXfBillDeductItemRefEntity> listByRefItemIds(Collection<Long> refItemIds) {
+        return new LambdaQueryChainWrapper<>(billDeductItemRefDao)
+                .in(TXfBillDeductItemRefEntity::getDeductItemId, refItemIds)
+                .select(TXfBillDeductItemRefEntity::getDeductItemId, TXfBillDeductItemRefEntity::getDeductId)
+                .list();
+    }
+
     public List<TXfBillDeductItemEntity> listByDeductId(Long billDeductId) {
         Set<Long> itemIds = new LambdaQueryChainWrapper<>(billDeductItemRefDao)
                 .eq(TXfBillDeductItemRefEntity::getDeductId, billDeductId)
-                .select(TXfBillDeductItemRefEntity::getDeductItemId)
                 .list().stream().map(TXfBillDeductItemRefEntity::getDeductItemId)
                 .collect(Collectors.toSet());
         if (CollectionUtils.isEmpty(itemIds)) {
