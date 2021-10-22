@@ -77,7 +77,7 @@ public class CodeGenerator {
 //                "t_xf_tax_code","t_dx_match",
 //                "t_ac_org","t_dx_question_paper",
 //                "t_dx_record_invoice_detail","t_dx_invoice","t_xf_bill_deduct_item","t_xf_origin_agreement_item"
-                "t_dx_question_paper"
+                "t_xf_bill_deduct_invoice"
                 );
 //         generateMainCode();
         // generateItemCode();

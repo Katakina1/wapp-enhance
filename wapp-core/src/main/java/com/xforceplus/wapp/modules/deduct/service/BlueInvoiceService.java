@@ -100,7 +100,7 @@ public class BlueInvoiceService {
                     new QueryWrapper<TXfInvoiceEntity>()
                             .lambda()
                             .eq(TXfInvoiceEntity::getSellerTaxNo, sellerTaxNo)
-                            .eq(TXfInvoiceEntity::getPurchaserNo, purchserTaxNo)
+                            .eq(TXfInvoiceEntity::getPurchaserTaxNo, purchserTaxNo)
                             // 排除状态异常的发票（只要正常的发票）
                             .eq(TXfInvoiceEntity::getStatus, "1")
                             // 排除非专票（只要增值税专票）
