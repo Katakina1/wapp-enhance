@@ -278,7 +278,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             queryWrapper.eq(TXfRedNotificationEntity::getBillNo, queryModel.getBillNo());
         }
         if (queryModel.getPaymentTime()!=null){
-            queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime, queryModel.getPaymentTime());
+            // 1634860800000
+            queryWrapper.eq(TXfRedNotificationEntity::getPaymentTime,  new Date(queryModel.getPaymentTime()));
         }
         if (!CollectionUtils.isEmpty(queryModel.getPidList())){
             queryWrapper.in(TXfRedNotificationEntity::getPid,queryModel.getPidList());

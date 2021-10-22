@@ -37,6 +37,8 @@ CREATE TABLE
     special_invoice_flag   smallint,
     payment_time datetime,
     customer_no nvarchar(50),
+    apply_person nvarchar(50),
+    apply_person_tel nvarchar(50),
     create_date datetime,
     update_date datetime,
     user_account nvarchar(50),
@@ -44,6 +46,8 @@ CREATE TABLE
     user_id   bigint
     PRIMARY KEY (id)
 );
+
+
 go
 exec sp_addextendedproperty 'MS_Description', '红字信息表', 'SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification';
 go
@@ -118,8 +122,14 @@ go
 exec sp_addextendedproperty 'MS_Description', '客户编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'customer_no';
 
 go
-exec sp_addextendedproperty 'MS_Description', '扣款时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'payment_time';
+exec sp_addextendedproperty 'MS_Description', '申请人','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'apply_person';
 
+go
+exec sp_addextendedproperty 'MS_Description', '申请人电话','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'apply_person_tel';
+
+
+go
+exec sp_addextendedproperty 'MS_Description', '扣款时间','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'payment_time';
 go
 exec sp_addextendedproperty 'MS_Description', '创建日期','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'create_date';
 go

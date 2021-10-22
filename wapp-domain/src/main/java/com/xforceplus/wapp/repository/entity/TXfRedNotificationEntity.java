@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-22
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -231,6 +231,18 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private String customerNo;
 
     /**
+     * 申请人
+     */
+    @TableField("apply_person")
+    private String applyPerson;
+
+    /**
+     * 申请人电话
+     */
+    @TableField("apply_person_tel")
+    private String applyPersonTel;
+
+    /**
      * 创建日期
      */
     @TableField("create_date")
@@ -254,11 +266,11 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
-    @TableField("remark")
-    private String remark;
-
     @TableField("user_id")
     private Long userId;
+
+    @TableField("remark")
+    private String remark;
 
     @TableField("terminal_type")
     private Integer terminalType;
@@ -332,6 +344,10 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String CUSTOMER_NO = "customer_no";
 
+    public static final String APPLY_PERSON = "apply_person";
+
+    public static final String APPLY_PERSON_TEL = "apply_person_tel";
+
     public static final String CREATE_DATE = "create_date";
 
     public static final String UPDATE_DATE = "update_date";
@@ -340,9 +356,9 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
-    public static final String REMARK = "remark";
-
     public static final String USER_ID = "user_id";
+
+    public static final String REMARK = "remark";
 
     public static final String TERMINAL_TYPE = "terminal_type";
 
