@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @Slf4j
-public class ClaimServiceTest extends BaseUnitTest {
+public class ClaimBillServiceTest extends BaseUnitTest {
 
     @Autowired
     private ClaimService claimService;

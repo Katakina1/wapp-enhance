@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-public class CommAgreementServiceTest extends BaseUnitTest {
+public class CommAgreementBillServiceTest extends BaseUnitTest {
 
     @Autowired
     private CommAgreementService commAgreementService;
