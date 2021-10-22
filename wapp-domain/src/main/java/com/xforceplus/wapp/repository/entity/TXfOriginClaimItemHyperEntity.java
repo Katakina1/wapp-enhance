@@ -64,7 +64,7 @@ public class TXfOriginClaimItemHyperEntity extends BaseEntity {
     @TableField("vendor_stock_id")
     private String vendorStockId;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @TableField("claim_nbr")

@@ -84,7 +84,7 @@ Esb:
 
 # 注意事项
 # 1、请从研发团队获取标准的EXCEL模板
-# 1、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
+# 2、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
 agreementBill:
   remote:
     path: /home/wappftp/wapp/vendor/agreement

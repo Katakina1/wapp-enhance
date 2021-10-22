@@ -79,7 +79,7 @@ public class TXfOriginEpdLogItemEntity extends BaseEntity {
     @TableField("before_payment_block")
     private String beforePaymentBlock;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @TableField("year")

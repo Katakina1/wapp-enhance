@@ -145,7 +145,7 @@ public class TXfOriginAgreementBillEntity extends BaseEntity {
     @TableField("tax_amount")
     private String taxAmount;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
 
