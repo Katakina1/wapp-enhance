@@ -86,7 +86,7 @@ public class AgreementBillService extends DeductService{
         TXfSettlementEntity tXfSettlementEntity = batchUpdateMergeBill(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetSatus);
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
-        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfSettlementEntity.getSettlementNo(),sellerTaxNo);
+        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo());
         if (CollectionUtils.isEmpty(matchResList)) {
             log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
             throw new NoSuchInvoiceException();

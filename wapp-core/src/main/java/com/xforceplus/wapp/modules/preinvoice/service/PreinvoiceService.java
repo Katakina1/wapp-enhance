@@ -169,6 +169,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // check 拆票失败
         Date date = new Date();
         List<SplitPreInvoiceInfo> splitPreInvoiceInfos = JSON.parseArray(post, SplitPreInvoiceInfo.class);
         for (SplitPreInvoiceInfo splitPreInvoiceInfo : splitPreInvoiceInfos) {
@@ -269,7 +270,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         splitRule.setInvoiceLimit(BigDecimal.valueOf(tAcOrgEntity.getQuota()));
         createPreInvoiceParam.setBillInfo(billInfo);
         createPreInvoiceParam.setRule(splitRule);
-        createPreInvoiceParam.setRoutingKey("");
+        createPreInvoiceParam.setRoutingKey("12");
         return createPreInvoiceParam;
     }
     /**

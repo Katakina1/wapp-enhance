@@ -250,7 +250,6 @@ public class DeductService   {
             tmp.setRemainingAmount(claimBillItemData.getAmountWithoutTax());
             tmp.setGoodsNoVer("33.0");
             tmp.setUpdateDate(tmp.getCreateDate());
-            tmp = fixTaxCode(tmp);
             list.add(tmp);
         }
         return list;
@@ -504,11 +503,8 @@ public class DeductService   {
                 tXfSettlementItemEntity.setCreateUser(0L);
                 tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
                 tXfSettlementItemEntity.setUpdateUser(tXfSettlementItemEntity.getCreateUser());
-                if(!partMatch){
-                    if (tXfBillDeductItemEntity.getRemainingAmount().compareTo(BigDecimal.ZERO) < 0) {
-                        partMatch = true;
-                    }
-                }
+                tXfSettlementItemEntity.setThridId(tXfBillDeductItemEntity.getId());
+                tXfSettlementItemEntity = checkItem(tXfSettlementItemEntity);
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
             }
         }
@@ -559,6 +555,7 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementReference(tmp.getReference());
             tXfBillDeductEntity.setAgreementTaxCode(tmp.getTaxCode());
             tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
+            tXfBillDeductEntity.setBusinessNo(tmp.getReference());
             tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
             return tXfBillDeductEntity;
         }),
@@ -730,7 +727,7 @@ public class DeductService   {
         excelExportlogEntity.setStartDate(new Date());
         excelExportlogEntity.setExportStatus(ExcelExportLogService.REQUEST);
         excelExportlogEntity.setServiceType(SERVICE_TYPE);
-        this.excelExportLogService.save(excelExportlogEntity);
+       // this.excelExportLogService.save(excelExportlogEntity);
         dto.setLogId(excelExportlogEntity.getId());
         ExportDeductCallable callable = new ExportDeductCallable(this,dto,typeEnum);
         ThreadPoolManager.submitCustomL1(callable);
