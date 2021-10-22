@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.modules.job.dto.OriginClaimItemHyperDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -130,13 +131,12 @@ public class ClaimItemHyperSaveCommand implements Command {
         File file = new File(localPath, fileName);
         OriginClaimItemHyperDataListener readListener = new OriginClaimItemHyperDataListener(jobId, cursor, service);
         try {
-            EasyExcel.read(file, readListener)
+            EasyExcel.read(file, OriginClaimItemHyperDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM_SAMS.getCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
-            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

@@ -32,6 +32,7 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
                         .eq(TXfBillJobEntity::getJobType, jobType)
                         .ne(TXfBillJobEntity::getJobStatus, BillJobStatusEnum.DONE.getJobStatus())
                         .eq(TXfBillJobEntity::getJobLockStatus, UNLOCKED.getLockStatus())
+                        .orderByAsc(TXfBillJobEntity::getCreateTime)
         );
     }
 

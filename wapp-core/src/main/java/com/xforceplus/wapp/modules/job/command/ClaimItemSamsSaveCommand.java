@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.modules.job.dto.OriginClaimItemSamsDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemSamsDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -125,13 +126,12 @@ public class ClaimItemSamsSaveCommand implements Command {
         File file = new File(localPath, fileName);
         OriginClaimItemSamsDataListener readListener = new OriginClaimItemSamsDataListener(jobId, cursor, service);
         try {
-            EasyExcel.read(file, readListener)
+            EasyExcel.read(file, OriginClaimItemSamsDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
-            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             context.put(TXfBillJobEntity.REMARK, e.getMessage());

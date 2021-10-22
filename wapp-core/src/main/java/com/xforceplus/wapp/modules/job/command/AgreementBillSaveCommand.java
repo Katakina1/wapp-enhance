@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -129,14 +130,13 @@ public class AgreementBillSaveCommand implements Command {
         File file = new File(localPath, fileName);
         OriginAgreementBillDataListener readListener = new OriginAgreementBillDataListener(jobId, cursor, service);
         try {
-            EasyExcel.read(file, readListener)
+            EasyExcel.read(file, OriginAgreementBillDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
             // 正常处理结束，清空游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
-            // deleteFile(localPath, fileName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标

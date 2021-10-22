@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ import java.util.List;
  * @create: 2021-10-15 14:28
  **/
 @Slf4j
-public class OriginEpdBillDataListener extends AnalysisEventListener<List<OriginEpdBillDto>> {
+public class OriginEpdBillDataListener extends AnalysisEventListener<OriginEpdBillDto> {
     /**
      * 每隔1000条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
@@ -40,8 +41,8 @@ public class OriginEpdBillDataListener extends AnalysisEventListener<List<Origin
     }
 
     @Override
-    public void invoke(List<OriginEpdBillDto> data, AnalysisContext context) {
-        list.addAll(data);
+    public void invoke(OriginEpdBillDto data, AnalysisContext context) {
+        list.add(data);
         if (list.size() >= BATCH_COUNT) {
             saveData();
             // 存储完成清理 list
@@ -59,11 +60,14 @@ public class OriginEpdBillDataListener extends AnalysisEventListener<List<Origin
      */
     private void saveData() {
         List<TXfOriginEpdBillEntity> entities = new ArrayList<>(list.size());
+        Date now = new Date();
         list.forEach(
                 v1 -> {
                     TXfOriginEpdBillEntity v2 = new TXfOriginEpdBillEntity();
                     BeanUtils.copyProperties(v1, v2);
                     v2.setJobId(jobId);
+                    v2.setCreateTime(now);
+                    v2.setUpdateTime(now);
                     entities.add(v2);
                 }
         );

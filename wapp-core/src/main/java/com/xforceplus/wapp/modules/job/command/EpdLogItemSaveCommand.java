@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.modules.job.dto.OriginEpdLogItemDto;
 import com.xforceplus.wapp.modules.job.listener.OriginEpdLogItemDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -131,7 +132,7 @@ public class EpdLogItemSaveCommand implements Command {
         File file = new File(localPath, fileName);
         OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service);
         try {
-            EasyExcel.read(file, readListener)
+            EasyExcel.read(file, OriginEpdLogItemDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
