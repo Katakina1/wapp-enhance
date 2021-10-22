@@ -21,6 +21,8 @@ wapp:
       genredpdf: E96F0AB61D35F93BF48928D568A97C5B
       #识别
       discern: 043F1FF00631D5E8F0261CD532D2F477
+      #下载附件
+      downLoadAction: 150DA7230F31582EC8F1B164E91DB0E4
       discern-callbackUrl: inte-janus.melete
     host:
       tcp: janus-tcp-inte.xforceplus.com
