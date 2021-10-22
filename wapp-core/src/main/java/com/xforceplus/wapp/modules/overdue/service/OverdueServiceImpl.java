@@ -15,16 +15,14 @@ import com.xforceplus.wapp.repository.entity.OverdueEntity;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Either;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
@@ -59,6 +57,22 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         Page<OverdueEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("超期配置分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(overdueConverter.map(page.getRecords()), page);
+    }
+
+    public Optional<Overdue> oneOptBySellerNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerNo) {
+        log.info("超期配置查询,入参：{}", sellerNo);
+        return new LambdaQueryChainWrapper<>(getBaseMapper())
+                .isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getType, typeEnum.getValue())
+                .eq(OverdueEntity::getSellerNo, sellerNo).oneOpt().map(overdueConverter::map);
+    }
+
+    public Optional<Overdue> oneOptBySellerTaxNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerTaxNo) {
+        log.info("超期配置查询,入参：{}", sellerTaxNo);
+        return new LambdaQueryChainWrapper<>(getBaseMapper())
+                .isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getType, typeEnum.getValue())
+                .eq(OverdueEntity::getSellerTaxNo, sellerTaxNo).oneOpt().map(overdueConverter::map);
     }
 
     public Either<String, Integer> export(ServiceTypeEnum typeEnum, InputStream is) {

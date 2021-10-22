@@ -30,4 +30,6 @@ public interface OverdueConverter {
     @Mapping(target = "sellerNo", ignore = true)
     @Mapping(target = "type", ignore = true)
     OverdueEntity map(OverdueDto overdue);
+
+    Overdue map(OverdueEntity overdue);
 }
