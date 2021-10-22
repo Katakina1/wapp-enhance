@@ -1,11 +1,12 @@
 package com.xforceplus.wapp.enums;
 
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.Getter;
 
 /**
  *  拆票规则枚举
  */
-public enum TXfAmountSplitRuleEnum {
+public enum TXfAmountSplitRuleEnum implements ValueEnum<Integer> {
       SplitQuantity(1,"按单价拆数量"),
       SplitPrice(3,"按数量拆单价"),
 
@@ -19,5 +20,10 @@ public enum TXfAmountSplitRuleEnum {
     TXfAmountSplitRuleEnum(Integer code, String desc){
         this.code = code;
         this.desc = desc;
+    }
+
+    @Override
+    public Integer getValue() {
+        return code;
     }
 }

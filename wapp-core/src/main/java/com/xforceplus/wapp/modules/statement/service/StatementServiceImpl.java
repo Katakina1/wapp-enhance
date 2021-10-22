@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
+import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.billdeduct.converters.BillDeductConverter;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
@@ -15,6 +18,7 @@ import com.xforceplus.wapp.modules.preinvoice.service.PreInvoiceItemDaoService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.settlement.converters.SettlementItemConverter;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
+import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
 import com.xforceplus.wapp.modules.statement.models.*;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
@@ -26,11 +30,13 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -47,11 +53,12 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     private final SettlementItemServiceImpl settlementItemService;
     private final SettlementItemConverter settlementItemConverter;
     private final BillDeductServiceImpl billDeductService;
+    private final SettlementService settlementService;
     private final BillDeductConverter billDeductConverter;
     private final BillDeductItemServiceImpl billDeductItemService;
     private final PreInvoiceItemDaoService preInvoiceItemDaoService;
 
-    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
+    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, SettlementService settlementService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
         this.statementConverter = statementConverter;
         this.billDeductExtDao = billDeductExtDao;
         this.preinvoiceService = preinvoiceService;
@@ -59,6 +66,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         this.settlementItemService = settlementItemService;
         this.settlementItemConverter = settlementItemConverter;
         this.billDeductService = billDeductService;
+        this.settlementService = settlementService;
         this.billDeductConverter = billDeductConverter;
         this.billDeductItemService = billDeductItemService;
         this.preInvoiceItemDaoService = preInvoiceItemDaoService;
@@ -231,10 +239,30 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                 .collect(Collectors.toList());
     }
 
-    public List<? extends BaseConfirm> confirmItem(@NonNull String settlementNo) {
+    public List<? extends BaseConfirm> confirmItemList(@NonNull String settlementNo) {
         val items = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
                 .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
-                .eq(TXfSettlementItemEntity::getItemFlag, 2).list();
+                .eq(TXfSettlementItemEntity::getItemFlag, TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getValue())
+                .list();
         return settlementItemConverter.mapItem(items);
+    }
+
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean confirmItem(String settlementNo, String sellerNo, List<Long> ids, @NonNull TXfAmountSplitRuleEnum type) {
+        val build = ImmutableMap
+                .<TXfAmountSplitRuleEnum, Consumer<TXfSettlementItemEntity>>builder()
+                .put(TXfAmountSplitRuleEnum.SplitPrice, entity -> entity.setUnitPrice(entity.getAmountWithoutTax().divide(entity.getQuantity(), 10, RoundingMode.HALF_UP)))
+                .put(TXfAmountSplitRuleEnum.SplitQuantity, entity -> entity.setQuantity(entity.getAmountWithoutTax().divide(entity.getUnitPrice(), 10, RoundingMode.HALF_UP)))
+                .build();
+        List<TXfSettlementItemEntity> entities = settlementItemService.listByIds(ids).stream().map(it -> {
+            TXfSettlementItemEntity entity = new TXfSettlementItemEntity();
+            entity.setId(it.getId());
+            entity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getValue());
+            build.get(type).accept(entity);
+            return entity;
+        }).collect(Collectors.toList());
+        settlementItemService.updateBatchById(entities);
+        settlementService.confirmSettlement(settlementNo, sellerNo, type);
+        return true;
     }
 }
