@@ -285,8 +285,8 @@ public class CommSettlementService {
     }
 
     /**
-     * 供应商调用（主要是索赔使用）
-     * 结算单重新拆分预制发票（红字信息）
+     * 供应商调用
+     * 结算单的预制发票（没有红字信息、作废状态）重新拆分预制发票（红字信息）
      *
      * @param settlementId
      */

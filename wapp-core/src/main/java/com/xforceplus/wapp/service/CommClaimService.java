@@ -57,9 +57,6 @@ public class CommClaimService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if(!Objects.equals(tXfSettlementEntity.getSettlementStatus(),TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())){
-            throw new EnhanceRuntimeException("结算单已上传红票不能操作");
-        }
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper1 = new QueryWrapper<>();
         billDeductEntityWrapper1.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
@@ -89,6 +86,7 @@ public class CommClaimService {
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
+        tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
         //申请中的索赔单修改为：作废

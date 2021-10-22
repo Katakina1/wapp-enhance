@@ -104,6 +104,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_CHECK.getCode());
+        tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
         billDeductList.forEach(tXfBillDeduct -> {
@@ -151,6 +152,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+        tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
         billDeductList.forEach(tXfBillDeduct -> {
