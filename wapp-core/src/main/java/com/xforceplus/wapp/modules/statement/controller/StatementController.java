@@ -141,7 +141,7 @@ public class StatementController {
         return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
     }
 
-    @ApiOperation("结算单确认")
+    @ApiOperation("结算单确认列表")
     @GetMapping("/settlement/confirm/{settlementNo}")
     public R<List<? extends BaseConfirm>> settlementConfirm(@ApiParam(value = "结算单号", required = true)
                                                             @PathVariable String settlementNo,
