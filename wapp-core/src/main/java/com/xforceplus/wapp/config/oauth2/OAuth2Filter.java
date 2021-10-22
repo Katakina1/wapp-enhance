@@ -92,10 +92,12 @@ public class OAuth2Filter extends AuthenticatingFilter {
             token = httpRequest.getParameter("token");
         }
 
-        for (Cookie cookie : httpRequest.getCookies()) {
-            if (Objects.equals(cookie.getName(),TOKEN)){
-                token=cookie.getValue();
-                break;
+        if (Objects.nonNull(httpRequest.getCookies())) {
+            for (Cookie cookie : httpRequest.getCookies()) {
+                if (Objects.equals(cookie.getName(), TOKEN)) {
+                    token = cookie.getValue();
+                    break;
+                }
             }
         }
 
