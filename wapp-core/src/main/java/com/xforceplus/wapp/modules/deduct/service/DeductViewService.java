@@ -7,18 +7,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
-import com.xforceplus.wapp.modules.company.service.CompanyService;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -148,9 +149,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         return Collections.emptyMap();
     }
 
-    public List<InvoiceMatchListResponse> invoice(InvoiceMatchListRequest request){
+    public List<InvoiceMatchListResponse> invoice(InvoiceRecommendListRequest request){
 
-        final Long billId = request.getBillId();
+        final Long billId = request.getId();
         final TXfBillDeductEntity byId = this.getById(billId);
         if (Objects.isNull(byId)){
             throw new EnhanceRuntimeException("参数有误，协议单/EPD不存在");
@@ -165,5 +166,20 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         return null;
     }
 
+    public Long makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type){
+//         TODO  张振伟提供接口
+        final List<String> billNos = request.getBillNos();
+        if(CollectionUtils.isEmpty(billNos)){
+            throw new EnhanceRuntimeException("请至少选择一张业务单据");
+        }
+        final TXfSettlementEntity tXfSettlementEntity = mergeSettlementByManual(billNos, type);
 
+        return tXfSettlementEntity.getId();
+
+    }
+
+
+    public TXfSettlementEntity mergeSettlementByManual(List<String> businessNo, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
+        return null;
+    }
 }
