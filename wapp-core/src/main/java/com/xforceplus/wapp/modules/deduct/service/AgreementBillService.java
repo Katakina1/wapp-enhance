@@ -45,10 +45,9 @@ public class AgreementBillService extends DeductService{
      * @param deductionEnum
      * @param tXfBillDeductStatusEnum
      * @param targetStatus
-     * @param manualChoice 页面手动选择的 单子明细
      * @return
      */
-    public boolean mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, TXfBillDeductStatusEnum targetStatus, List<TXfBillDeductEntity> manualChoice) {
+    public boolean mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, TXfBillDeductStatusEnum targetStatus ) {
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
         int expireScale = -5;
         /**
@@ -57,9 +56,6 @@ public class AgreementBillService extends DeductService{
         Date referenceDate = DateUtils.addDate(DateUtils.getNow(), expireScale);
         //查询大于expireDate， 同一购销对，同一税率 总不含税金额为正的单据
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitablePositiveBill(referenceDate, deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode(),TXfBillDeductStatusEnum.UNLOCK.getCode());
-        if (CollectionUtils.isNotEmpty(manualChoice)) {
-            tXfBillDeductEntities.addAll(manualChoice);
-        }
         for (TXfBillDeductEntity tmp : tXfBillDeductEntities) {
             /**
              * 查询 同一购销对，同一税率 下所有的负数单据
@@ -75,13 +71,12 @@ public class AgreementBillService extends DeductService{
                     excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
                 } catch (NoSuchInvoiceException n ) {
                     nosuchInvoiceSeller.put(tmp.getSellerNo(), negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax()));
-                    log.error(" 销方:{} 蓝票不足，匹配失败 ", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate());
                 }
                 catch (Exception e) {
                     log.error("{}单合并异常 销方:{}，购方:{}，税率:{}", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate());
                 }
             } else {
-                log.warn("{}单合并失败：合并收金额不为负数 购方:{}，购方:{}，税率:{}，手动勾选 {} ", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(),manualChoice);
+                log.warn("{}单合并失败：合并收金额不为负数 购方:{}，购方:{}，税率:{}   ", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate() );
             }
         }
         return false;
@@ -91,12 +86,13 @@ public class AgreementBillService extends DeductService{
         TXfSettlementEntity tXfSettlementEntity = batchUpdateMergeBill(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetSatus);
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
-        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfSettlementEntity.getSettlementNo(),sellerTaxNo);
+        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo());
         if (CollectionUtils.isEmpty(matchResList)) {
+            log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
             throw new NoSuchInvoiceException();
         }
         //匹配税编
-        Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo());
+        Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
         }
@@ -115,72 +111,14 @@ public class AgreementBillService extends DeductService{
         tXfSettlementDao.updateById(updadte);
     }
 
-    private  Integer  matchInfoTransfer(List<BlueInvoiceService.MatchRes> res,String settlementNo) {
-        Date date = new Date();
-        Integer status = TXfSettlementItemFlagEnum.NORMAL.getCode();
-        for (BlueInvoiceService.MatchRes matchRes : res) {
-            for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
-                TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
-                tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
-                tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount());
-                tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
-                tXfSettlementItemEntity.setTaxRate(invoiceItem.getTaxRate());
-                tXfSettlementItemEntity.setAmountWithoutTax(invoiceItem.getDetailAmount());
-                tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
-                tXfSettlementItemEntity.setAmountWithTax(invoiceItem.getDetailAmount().add(invoiceItem.getTaxAmount()));
-                tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
-                tXfSettlementItemEntity.setCreateUser(0l);
-                tXfSettlementItemEntity.setUpdateUser(0l);
-                tXfSettlementItemEntity.setId(idSequence.nextId());
-                tXfSettlementItemEntity.setSettlementNo(settlementNo);
-                tXfSettlementItemEntity.setCreateTime(date);
-                tXfSettlementItemEntity.setUpdateTime(date);
-                tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
-                tXfSettlementItemEntity.setItemCode(invoiceItem.getItemNo());
-                tXfSettlementItemEntity.setThridId(invoiceItem.getItemId());
-                tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
-                tXfSettlementItemEntity.setItemName(invoiceItem.getGoodsName());
-                tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
-                tXfSettlementItemEntity.setGoodsNoVer("33.0");
-                tXfSettlementItemEntity.setZeroTax(StringUtils.EMPTY);
-                tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
-                tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
-                tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
-                if (tXfSettlementItemEntity.getItemFlag() != TXfSettlementItemFlagEnum.NORMAL.getCode()) {
-                    status = tXfSettlementItemEntity.getItemFlag();
-                }
-                tXfSettlementItemDao.insert(tXfSettlementItemEntity);
-            }
-            TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
-            tXfBillDeductInvoiceEntity.setId(idSequence.nextId());
-            tXfBillDeductInvoiceEntity.setBusinessNo(settlementNo);
-            tXfBillDeductInvoiceEntity.setBusinessType(TXfInvoiceDeductTypeEnum.SETTLEMENT.getCode());
-            tXfBillDeductInvoiceEntity.setInvoiceCode(matchRes.invoiceCode);
-            tXfBillDeductInvoiceEntity.setInvoiceNo(matchRes.invoiceNo);
-            tXfBillDeductInvoiceEntity.setCreateDate(date);
-            tXfBillDeductInvoiceEntity.setUpdateDate(date);
-            tXfBillDeductInvoiceEntity.setId(idSequence.nextId());
-            tXfBillDeductInvoiceEntity.setUseAmount(matchRes.deductedAmount);
-            tXfBillDeductInvoiceEntity.setStatus(TXfInvoiceDeductStatusEnum.NORMAL.getCode());
-            tXfBillDeductInvoiceDao.insert(tXfBillDeductInvoiceEntity);
-        }
-        return status;
+    /**
+     * 后动合并结算
+     * @param businessNo
+     * @param xfDeductionBusinessTypeEnum
+     */
+    public TXfSettlementEntity mergeSettlementByManual(List<String> businessNo, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
+        return null;
     }
-
-    private TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
-        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(tXfSettlementItemEntity.getItemCode());
-
-        if (!taxCodeOptional.isPresent()) {
-            tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
-        }
-        BigDecimal ta = tXfSettlementItemEntity.getQuantity().multiply(tXfSettlementItemEntity.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
-        if (ta.compareTo(tXfSettlementItemEntity.getAmountWithoutTax()) !=0) {
-            tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
-        }
-
-        return tXfSettlementItemEntity;
-    }
-
     /**
      * 批量进行更新操作 保证单进程操作
      * @param tmp

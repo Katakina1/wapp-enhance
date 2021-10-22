@@ -1,7 +1,6 @@
 package com.xforceplus.wapp.modules.job.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
 
 /**

@@ -46,9 +46,12 @@ public class ClaimController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/apply-verdict")
     public R claimApplyVerdict(@RequestBody SettlementApplyVerdictRequest request) {
-
         request.setSellerNo(UserUtil.getUser().getUsercode());
-        claimService.applyClaimVerdictByBillDeductId( request.getBillDeductIdList());
+        try {
+            claimService.applyClaimVerdictByBillDeductId(request.getBillDeductIdList());
+        }catch (Exception e){
+            return R.fail(e.getMessage());
+        }
         return R.ok("成功", "");
     }
 

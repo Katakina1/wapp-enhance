@@ -14,27 +14,27 @@ public class CommSettlementServiceTest extends BaseUnitTest {
 
     @Test
     public void testApplyDestroySettlementPreInvoice() {
-        //commSettlementService.applyDestroySettlementPreInvoice(1853061001646080L);
+        // commSettlementService.applyDestroySettlementPreInvoice(1417992416006172L);
     }
 
     @Test
     public void testRejectDestroySettlementPreInvoice() {
-        //commSettlementService.rejectDestroySettlementPreInvoice(1L);
+        //  commSettlementService.rejectDestroySettlementPreInvoice(1417992416006172L);
     }
 
     @Test
     public void testAgreeDestroySettlementPreInvoice() {
-        //commSettlementService.agreeDestroySettlementPreInvoice(1L);
+        // commSettlementService.agreeDestroySettlementPreInvoice(1417992416006172L);
     }
 
     @Test
     public void testAgainSplitSettlementPreInvoice() {
-        //commSettlementService.againSplitSettlementPreInvoice(1L);
+        // commSettlementService.againSplitSettlementPreInvoice(1417992416006172L);
     }
 
     @Test
     public void testAgreeDestroySettlementPreInvoiceByPreInvoiceId() {
-       // commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(Arrays.asList(1L));
+        // commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(Arrays.asList(1L));
     }
 
     @Test
@@ -43,18 +43,18 @@ public class CommSettlementServiceTest extends BaseUnitTest {
     }
 
     @Test
-    public void testDestroyPreInvoice(){
+    public void testDestroyPreInvoice() {
         // commSettlementService.destroyPreInvoice(1L);
     }
 
     @Test
-    public void testApplyDestroyPreInvoiceAndRedNotification(){
-       // commSettlementService.applyDestroyPreInvoiceAndRedNotification(1L);
+    public void testApplyDestroyPreInvoiceAndRedNotification() {
+        // commSettlementService.applyDestroyPreInvoiceAndRedNotification(1L);
     }
 
     @Test
-    public void testCheckAgainSplitSettlementPreInvoice(){
-      //  commSettlementService.checkAgainSplitSettlementPreInvoice(1L);
+    public void testCheckAgainSplitSettlementPreInvoice() {
+        //  commSettlementService.checkAgainSplitSettlementPreInvoice(1L);
     }
 
 }

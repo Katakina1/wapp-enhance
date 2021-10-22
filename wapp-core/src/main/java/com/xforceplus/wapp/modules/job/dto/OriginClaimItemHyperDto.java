@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 索赔单Hyper明细
@@ -25,7 +27,7 @@ public class OriginClaimItemHyperDto extends BaseEntity {
     private String upcNbr;
 
     @ExcelProperty("UNIT_COST")
-    private String unitCost;
+    private BigDecimal unitCost;
 
     @ExcelProperty("VENDOR_STOCK_ID")
     private String vendorStockId;
@@ -49,7 +51,7 @@ public class OriginClaimItemHyperDto extends BaseEntity {
     private String categoryNbr;
 
     @ExcelProperty("VNPK_COST")
-    private String vnpkCost;
+    private BigDecimal vnpkCost;
 
     @ExcelProperty("ITEM_QTY")
     private String itemQty;

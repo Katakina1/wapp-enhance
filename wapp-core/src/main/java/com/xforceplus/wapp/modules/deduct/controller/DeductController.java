@@ -6,12 +6,14 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
-import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
-import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
-import com.xforceplus.wapp.modules.deduct.dto.UpdateBillStatusRequest;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
+import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
+import com.xforceplus.wapp.modules.deduct.dto.*;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,10 +42,13 @@ public class DeductController {
     @Autowired
     private DeductService deductService;
 
+    @Autowired
+    private RecordInvoiceService recordInvoiceService;
+
 
     @ApiOperation(value = "修改业务单状态")
     @PostMapping(value = "/updateBillStatus")
-    public R updateBillStatus(@ApiParam(value = "UpdateBillStatusRequest" ,required=true )@RequestBody UpdateBillStatusRequest request) {
+    public R updateBillStatus(@ApiParam(value = "修改业务单状态请求" ,required=true )@RequestBody UpdateBillStatusRequest request) {
         logger.info("修改业务单状态--请求参数{}", JSONObject.toJSONString(request));
         XFDeductionBusinessTypeEnum deductionEnum = ValueEnum.getEnumByValue(XFDeductionBusinessTypeEnum.class, request.getDeductType()).get();
         TXfBillDeductStatusEnum status = TXfBillDeductStatusEnum.getEnumByCode(request.getDeductStatus());
@@ -82,7 +87,19 @@ public class DeductController {
         return R.ok(deductService.queryPageTab(request));
     }
 
+    @ApiOperation(value = "索赔单发票列表详情")
+    @GetMapping(value = "invoice/{settlementNo}")
+    public R<List<InvoiceDetailResponse>> queryInvoiceList(@ApiParam(value = "结算单号",required = true) @PathVariable String settlementNo){
+        logger.info("索赔单发票列表详情--请求参数{}", settlementNo);
+        return R.ok(recordInvoiceService.queryInvoiceList(settlementNo, TXfInvoiceStatusEnum.NORMAL.getCode(),null));
+    }
 
+    @ApiOperation(value = "业务单导出")
+    @PostMapping("/export")
+    public R export(@ApiParam(value = "业务单导出请求" ,required=true )@RequestBody DeductExportRequest request) {
+        deductService.export(request, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        return R.ok("单据导出正在处理，请在消息中心");
+    }
 
 
 }

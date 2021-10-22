@@ -1,12 +1,11 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillDataListener;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
@@ -37,8 +36,6 @@ public class AgreementBillSaveCommand implements Command {
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private BillJobService billJobService;
-    @Autowired
     private OriginAgreementBillService service;
     @Value("${agreementBill.remote.path}")
     private String remotePath;
@@ -50,6 +47,7 @@ public class AgreementBillSaveCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
+        log.info("开始保存原始协议单文件数据入库fileName={}, sheetName={}", fileName, sheetName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
@@ -60,8 +58,6 @@ public class AgreementBillSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-            } finally {
-                saveContext(context);
             }
         } else {
             log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
@@ -135,14 +131,13 @@ public class AgreementBillSaveCommand implements Command {
         File file = new File(localPath, fileName);
         OriginAgreementBillDataListener readListener = new OriginAgreementBillDataListener(jobId, cursor, service);
         try {
-            EasyExcel.read(file, readListener)
+            EasyExcel.read(file, OriginAgreementBillDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
-            // deleteFile(localPath, fileName);
+            // 正常处理结束，清空游标
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常，记录游标
@@ -150,17 +145,4 @@ public class AgreementBillSaveCommand implements Command {
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }
-
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
-    }
-
 }

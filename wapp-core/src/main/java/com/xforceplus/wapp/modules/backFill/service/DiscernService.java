@@ -276,9 +276,8 @@ public class DiscernService implements IntegrationResultHandler {
             TXfNoneBusinessUploadDetailEntity entity = noneBusinessService.getObjByDiscernTaskId(taskId);
             if (null != entity) {
 
-                log.warn("发票代码:{},发票号码：{}，发票验真请求失败:{}", invoice.getInvoiceCode(), invoice.getInvoiceNo(),
-                        verificationResponse.getMessage());
-                if (!verificationResponse.isOK()) {
+
+                if (verificationResponse.isOK()) {
                     TXfNoneBusinessUploadDetailEntity resultEntity = new TXfNoneBusinessUploadDetailEntity();
                     resultEntity.setId(entity.getId());
                     resultEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_DOING);
@@ -286,6 +285,8 @@ public class DiscernService implements IntegrationResultHandler {
                     noneBusinessService.updateById(resultEntity);
                     return true;
                 } else {
+                    log.warn("发票代码:{},发票号码：{}，发票验真请求失败:{}", invoice.getInvoiceCode(), invoice.getInvoiceNo(),
+                            verificationResponse.getMessage());
                     TXfNoneBusinessUploadDetailEntity resultEntity = new TXfNoneBusinessUploadDetailEntity();
                     resultEntity.setId(entity.getId());
                     resultEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);

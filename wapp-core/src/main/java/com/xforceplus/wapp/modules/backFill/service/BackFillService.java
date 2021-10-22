@@ -212,6 +212,22 @@ public class BackFillService  {
         }
     }
 
+    public OfdResponse signOfd(byte[] ofd) {
+        OfdParseRequest request = new OfdParseRequest();
+        request.setOfdEncode(Base64.encodeBase64String(ofd));
+        request.setTenantCode(tenantCode);
+        // 仅解析和验签
+        request.setType("1");
+        try {
+            final String responseBody = httpClientFactory.post(ofdAction, defaultHeader, JSONObject.toJSONString(request), "");
+            log.info("发送ofd解析结果:{}", responseBody);
+            return JSONObject.parseObject(responseBody, OfdResponse.class);
+        } catch (IOException e) {
+            log.error("ofd解析请求发起失败:" + e.getMessage(), e);
+            throw new EnhanceRuntimeException("ofd解析请求发起失败:" + e.getMessage());
+        }
+    }
+
     public String uploadAndVerify(SpecialElecUploadDto specialElecUploadDto) {
         List<byte[]> pdfs = specialElecUploadDto.getPdfs();
         if (pdfs == null) {

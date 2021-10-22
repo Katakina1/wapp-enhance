@@ -26,9 +26,7 @@ public class EPDDeductScheduler {
     @Autowired
     private DeductService deductService;
 
-
-
-    @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
+   // @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
     public void AgreementDeductDeal(){
 
     }

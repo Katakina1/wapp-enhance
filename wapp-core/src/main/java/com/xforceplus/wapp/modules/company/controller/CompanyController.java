@@ -37,9 +37,7 @@ import java.util.List;
 public class CompanyController {
 
     @Autowired
-    private CompanyService companyService;
-
-    @ApiOperation("抬头信息分页查询")
+    private CompanyService companyService;@ApiOperation("抬头信息分页查询")
     @GetMapping("/list/paged")
     public R<PageResult<TAcOrgEntity>> getOverdue(@ApiParam("页数") @RequestParam(required = false, defaultValue = "1") Long current,
                                                   @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
@@ -49,6 +47,8 @@ public class CompanyController {
         log.info("抬头信息分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
     }
+
+
 
     @ApiOperation("根据税号抬头信息修改")
     @GetMapping("/updateByTaxNo")
