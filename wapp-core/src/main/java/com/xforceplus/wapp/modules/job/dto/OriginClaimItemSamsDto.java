@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 索赔单Sams明细
@@ -28,7 +30,7 @@ public class OriginClaimItemSamsDto extends BaseEntity {
     private String itemTaxPct;
 
     @ExcelProperty("ship_cost")
-    private String shipCost;
+    private BigDecimal shipCost;
 
     @ExcelProperty("item_nbr")
     private String itemNbr;
