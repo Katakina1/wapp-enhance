@@ -5,6 +5,7 @@ import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
@@ -28,24 +29,14 @@ import java.util.*;
 @Component
 @Slf4j
 public class ClaimDeductScheduler {
-    @Autowired
-    private DeductService deductService;
-    @Autowired
-    private TXfBillDeductExtDao tXfBillDeductExtDao;
-    @Autowired
-    private TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
 
     @Autowired
-    private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
-
-    @Autowired
-    private IDSequence idSequence;
-    @Autowired
-    private TaxRateConfig taxRateConfig;
+    private ClaimBillService claimBillService;
 
     @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
     public void AgreementDeductDeal(){
         //matchClaimBill();
+        claimBillService.matchClaimBill();
     }
 
 }

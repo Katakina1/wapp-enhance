@@ -5,6 +5,7 @@ import com.xforceplus.wapp.modules.job.command.EpdBillFilterCommand;
 import com.xforceplus.wapp.modules.job.command.EpdBillSaveCommand;
 import com.xforceplus.wapp.modules.job.command.EpdLogItemSaveCommand;
 import org.apache.commons.chain.impl.ChainBase;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @program: wapp-generator
@@ -14,11 +15,11 @@ import org.apache.commons.chain.impl.ChainBase;
  **/
 public class EpdBillJobChain extends ChainBase {
 
-    public EpdBillJobChain() {
+    public EpdBillJobChain(ApplicationContext applicationContext) {
         super();
-        addCommand(new EpdBillDownloadCommand());
-        addCommand(new EpdLogItemSaveCommand());
-        addCommand(new EpdBillSaveCommand());
-        addCommand(new EpdBillFilterCommand());
+        addCommand(applicationContext.getBean(EpdBillDownloadCommand.class));
+        addCommand(applicationContext.getBean(EpdLogItemSaveCommand.class));
+        addCommand(applicationContext.getBean(EpdBillSaveCommand.class));
+        addCommand(applicationContext.getBean(EpdBillFilterCommand.class));
     }
 }

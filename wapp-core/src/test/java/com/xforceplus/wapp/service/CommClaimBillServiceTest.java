@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-public class CommClaimServiceTest extends BaseUnitTest {
+public class CommClaimBillServiceTest extends BaseUnitTest {
 
     @Autowired
     private CommClaimService commClaimService;
@@ -14,5 +14,10 @@ public class CommClaimServiceTest extends BaseUnitTest {
     @Test
     public void testDestroyClaimSettlement() {
        // commClaimService.destroyClaimSettlement(1L);
+    }
+
+    @Test
+    public void testSplitPreInvoice() {
+        // commClaimService.splitPreInvoice(1L);
     }
 }

@@ -26,6 +26,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -192,5 +193,48 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         PreInvoice map = preInvoiceConverter.map(invoice, items);
         log.debug("预制发票详情信息:{}", "");
         return Optional.ofNullable(map);
+    }
+
+    /**
+     * 1. 通过settlementNo查询 结算单明细表（t_xf_settlement_item）
+     * 2. 获取索赔明细ID和结算单明细ID对应关系
+     * 3. 通过索赔的ID查询业务单匹配关系表（t_xf_bill_deduct_item_ref）获取索赔ID对应的索赔ID
+     * 4. 通过索赔ID查询业务单据信息表（t_xf_bill_deduct）获取业务单编号
+     * 5. 处理数据获取索赔明细ID与业务编号关系
+     * 6. 处理数据获取结算单明细ID与业务编号关系
+     * 7. 组装业务编号与结算单明细列表数据
+     */
+    public List<? extends BaseConfirm> claimConfirmItem(@NonNull String settlementNo) {
+        val items = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
+                .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
+                .eq(TXfSettlementItemEntity::getItemFlag, 2).list();
+        if (CollectionUtils.isEmpty(items)) {
+            return Lists.newArrayList();
+        }
+        Map<Long, TXfSettlementItemEntity> itemMap = items.stream().filter(it -> Objects.nonNull(it.getThridId()))
+                .collect(Collectors.toMap(TXfSettlementItemEntity::getThridId, Function.identity(), (o, n) -> o));
+        if (itemMap.isEmpty()) {
+            return Lists.newArrayList();
+        }
+        Map<Long, List<Long>> deIdAndDeItemIdsMap = billDeductItemService.listByRefItemIds(itemMap.keySet())
+                .stream().collect(Collectors.groupingBy(TXfBillDeductItemRefEntity::getDeductId,
+                        Collectors.mapping(TXfBillDeductItemRefEntity::getDeductItemId, Collectors.toList())));
+        if (deIdAndDeItemIdsMap.isEmpty()) {
+            return Lists.newArrayList();
+        }
+        return billDeductService.listBusinessNoByIds(deIdAndDeItemIdsMap.keySet()).stream()
+                .collect(Collectors.groupingBy(TXfBillDeductEntity::getBusinessNo,
+                        Collectors.mapping(TXfBillDeductEntity::getId, Collectors.toList())))
+                .entrySet().stream()
+                .map(it -> statementConverter.map(it.getKey(), it.getValue().parallelStream().map(deIdAndDeItemIdsMap::get)
+                        .flatMap(List::stream).map(itemMap::get).collect(Collectors.toSet())))
+                .collect(Collectors.toList());
+    }
+
+    public List<? extends BaseConfirm> confirmItem(@NonNull String settlementNo) {
+        val items = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
+                .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
+                .eq(TXfSettlementItemEntity::getItemFlag, 2).list();
+        return settlementItemConverter.mapItem(items);
     }
 }

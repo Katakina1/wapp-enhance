@@ -12,6 +12,8 @@ import org.apache.commons.chain.Chain;
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -34,13 +36,15 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     private BillJobService billJobService;
     @Autowired
     private DeductService deductService;
+    @Autowired
+    private ApplicationContext applicationContext;
 
-    // TODO 添加异步处理
+    @Async
     @Scheduled(cron = "* * 0 * * ?")
     @Override
     public void execute() {
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(AGREEMENT_BILL_JOB.getJobType());
-        Chain chain = new AgreementBillJobChain();
+        Chain chain = new AgreementBillJobChain(applicationContext);
         availableJobs.forEach(
                 availableJob -> {
                     Integer jobId = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));

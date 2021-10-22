@@ -20,4 +20,9 @@ public class CommEpdServiceTest extends BaseUnitTest {
     public void testAgainSplitPreInvoice() {
        // commEpdService.againSplitPreInvoice(1L);
     }
+
+    @Test
+    public void testSplitPreInvoice() {
+      //  commEpdService.splitPreInvoice(1L);
+    }
 }
