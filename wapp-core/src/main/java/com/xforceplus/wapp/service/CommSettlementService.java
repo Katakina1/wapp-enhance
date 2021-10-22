@@ -3,7 +3,6 @@ package com.xforceplus.wapp.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.dao.*;
@@ -286,8 +285,8 @@ public class CommSettlementService {
     }
 
     /**
-     * 供应商调用（主要是索赔使用）
-     * 结算单重新拆分预制发票（红字信息）
+     * 供应商调用
+     * 结算单的预制发票（没有红字信息、作废状态）重新拆分预制发票（红字信息）
      *
      * @param settlementId
      */

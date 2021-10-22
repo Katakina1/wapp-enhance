@@ -14,7 +14,7 @@ public class ApplyOperationRequest {
     @ApiModelProperty("结算单id")
     private String settlementId;
 
-    @ApiModelProperty("操作类型 1 修改税编 2 不做任何修改 3 修改商品")
+    @ApiModelProperty("操作类型   1 修改税编 2 修改限额 3不做任何修改 4 修改商品明细")
     private int applyOperationType;
 
     /**

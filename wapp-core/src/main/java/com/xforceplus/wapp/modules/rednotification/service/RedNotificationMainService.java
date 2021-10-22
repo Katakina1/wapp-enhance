@@ -25,12 +25,14 @@ import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommSettlementService;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.helpers.MessageFormatter;
@@ -162,7 +164,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 //        queryModel.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
         List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
         List<TXfRedNotificationEntity> entityList = filterData.stream().filter(item ->
-                item.getLockFlag() == 0
+                item.getLockFlag() == 1
                         && item.getApplyingStatus() == RedNoApplyingStatus.APPLIED.getValue()
                         && item.getApproveStatus() == ApproveStatus.APPROVE_PASS.getValue()
         ).collect(Collectors.toList());
@@ -526,6 +528,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
     public Response downloadPdf(RedNotificationExportPdfRequest request) {
+        //<logId,userId>
+        Tuple3<Long, Long,String> tuple3 = exportCommonService.insertRequest(request);
         Integer generateModel = request.getGenerateModel();
         QueryModel queryModel = request.getQueryModel();
         queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
@@ -540,11 +544,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, applyList);
         List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
         Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
-        String downLoadUrl = exportRedNoPdf(filterData, listItemMap, generateModel);
+        String downLoadUrl = exportRedNoPdf(filterData, listItemMap, generateModel,tuple3);
         return Response.ok("生成成功",downLoadUrl);
     }
 
-    private String exportRedNoPdf(List<TXfRedNotificationEntity> applies, Map<Long, List<TXfRedNotificationDetailEntity>> detailMap, Integer generateModel){
+    private String exportRedNoPdf(List<TXfRedNotificationEntity> applies, Map<Long, List<TXfRedNotificationDetailEntity>> detailMap, Integer generateModel,Tuple3<Long, Long,String> tuple3){
 
         List<ZipContentInfo> zipInfos = null;
         RedNoGeneratePdfModel pdfModel = ValueEnum.getEnumByValue(RedNoGeneratePdfModel.class, generateModel).orElse(RedNoGeneratePdfModel.Merge_All);
@@ -577,7 +581,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 zipInfos = generateRedNoPdf(groupByPurchaser, detailMap,pdfModel);
                 break;
         }
-        return makeRedNoPdfZip(zipInfos);
+        return makeRedNoPdfZip(zipInfos,tuple3);
     }
 
 
@@ -613,13 +617,29 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         return zipContents;
     }
 
-    private String makeRedNoPdfZip(List<ZipContentInfo> zipContents){
+    private String makeRedNoPdfZip(List<ZipContentInfo> zipContents,Tuple3<Long, Long,String> tuple3){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        String zipFile = format("output/{}/{}/{}.zip",  "invoice-service", "redNoZip",sdf.format(new Date()));
+        String zipFileNameWithOutSubfix = sdf.format(new Date());
+        String zipFile = format("output/{}/{}/{}.zip",  "invoice-service", "redNoZip",zipFileNameWithOutSubfix);
         if(zipContents.size()>0){
             DownloadUrlUtils.commonZipFiles(zipContents,zipFile);
             //发送到消息中心
-            return DownloadUrlUtils.putFile(zipFile);
+//            return DownloadUrlUtils.putFile(zipFile);
+            // 插入日志记录
+            String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+            String zipFileName = zipFileNameWithOutSubfix+".zip";
+            String ftpFilePath = ftpPath+"/"+zipFileName;
+            String s = exportCommonService.putFile(ftpPath,zipFile, zipFileName);
+
+            if(s != null){
+                String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, ftpFilePath);
+                exportCommonService.sendMessage(userName,"红字信息表导出失败",exportCommonService.getSuccContent());
+                return s;
+            }else {
+                String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.OK,ftpFilePath);
+                exportCommonService.sendMessage(tuple3._3,"红字信息表导出成功",exportCommonService.getFailContent(s));
+                return "导出成功,请在消息中心查看";
+            }
         }
         return null;
     }
@@ -676,7 +696,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      * @return
      */
     public Response export(RedNotificationExportPdfRequest request) {
-        Tuple2<Long, Long> tuple2 = exportCommonService.insertRequest(request);
+        Tuple3<Long,Long,String> tuple3 = exportCommonService.insertRequest(request);
 
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
@@ -704,15 +724,15 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         List<ExportItemInfo> itemInfos = redNotificationMainMapper.detailEntityToExportInfoList(tXfRedNotificationDetailEntities);
 
-        return writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo(),tuple2);
+        return writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo(),tuple3);
 
     }
 
 
 
-    private Response writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2,Tuple2<Long, Long> tuple2) {
-        Long userId =tuple2._2;
-        Long logId =tuple2._1;
+    private Response writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2,Tuple3<Long,Long,String> tuple3) {
+        Long userId =tuple3._2;
+        Long logId =tuple3._1;
 
         String fileName = "红字信息表";
         String sheetName = "红字信息主信息";
@@ -726,7 +746,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         String ftpFilePath = ftpPath + "/" + excelFileName;
         log.info("文件ftp路径{}",ftpFilePath);
-        File localFile = new File(ftpFilePath);
+
+        String localFilePath = ftpFilePath.substring(1);
+        File localFile = new File(localFilePath);
         if (!localFile.getParentFile().exists()) {
             localFile.getParentFile().mkdirs();
         }
@@ -751,7 +773,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         writer.write(list2, sheet2);
 
-        String s = exportCommonService.putFile(ftpPath, excelFileName);
+        String s = exportCommonService.putFile(ftpPath,localFilePath, excelFileName);
 
         writer.finish();
         try {
@@ -759,17 +781,27 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         } catch (IOException ioException) {
             log.info(" out.close() err!");
         }
-        if(s!=null){
+        if(s != null){
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.FAIL, ftpFilePath);
-            exportCommonService.sendMessage(userName,"红字信息表导出成功",exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(userName,"红字信息表导出失败",exportCommonService.getSuccContent());
             return Response.failed(s);
         }else {
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.OK,ftpFilePath);
-            exportCommonService.sendMessage(userName,"红字信息表导出失败",exportCommonService.getFailContent(s));
+            exportCommonService.sendMessage(userName,"红字信息表导出成功",exportCommonService.getFailContent(s));
             return Response.ok("导出成功,请在消息中心查看");
         }
 
     }
+
+//
+//    public static void main(String[] args) {
+//        String ftpFilePath = "home/wappftp/wapp/excel/20211021040817/1_红字信息表导出_2021-10-21_1634803697146.xlsx";
+//        File localFile = new File(ftpFilePath);
+//        if (!localFile.getParentFile().exists()) {
+//            boolean mkdirs = localFile.getParentFile().mkdirs();
+//            System.out.println(mkdirs);
+//        }
+//    }
 
 
     /**

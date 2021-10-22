@@ -37,4 +37,29 @@ public interface Constants {
      * 扫描匹配成功
      */
     String SCAN_MATCH_STATUS_SUCCESS="1";
+    /**
+     * 非商验真状态成功
+     */
+    String VERIFY_NONE_BUSINESS_SUCCESSE="2";
+    /**
+     * 非商验真状态失败
+     */
+    String VERIFY_NONE_BUSINESS_FAIL="1";
+
+    /**
+     * 非商验真中
+     */
+    String VERIFY_NONE_BUSINESS_DOING="0";
+    /**
+     * 非商验签中
+     */
+    String SIGN_NONE_BUSINESS_DOING="0";
+    /**
+     * 非商验签成功
+     */
+    String SIGN_NONE_BUSINESS_SUCCESS="2";
+    /**
+     * 非商验签失败
+     */
+    String SIGIN_NONE_BUSINESS_FAIL="1";
 }

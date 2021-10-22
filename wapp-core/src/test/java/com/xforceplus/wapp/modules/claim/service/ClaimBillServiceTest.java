@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 @Slf4j
 public class ClaimBillServiceTest extends BaseUnitTest {
@@ -22,17 +23,17 @@ public class ClaimBillServiceTest extends BaseUnitTest {
 
     @Test
     public void testApplyClaimVerdict() {
-        // claimService.applyClaimVerdict(1L);
+        // claimService.applyClaimVerdict(1853061001646080L, Collections.singletonList(50L));
     }
 
     @Test
     public void testRejectClaimVerdict() {
-        //  claimService.rejectClaimVerdict(1L);
+        //  claimService.rejectClaimVerdict(1853061001646080L);
     }
 
     @Test
     public void testAgreeClaimVerdict() {
-        //  claimService.agreeClaimVerdict(1L);
+         // claimService.agreeClaimVerdict(1853061001646080L);
     }
 
     @Test

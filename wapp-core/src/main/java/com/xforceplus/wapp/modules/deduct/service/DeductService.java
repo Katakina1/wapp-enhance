@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -7,10 +8,12 @@ import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
+import com.xforceplus.wapp.enums.DeductBillTabEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
@@ -25,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -47,7 +50,8 @@ public class DeductService   {
     protected TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
     protected TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
-
+    @Autowired
+    private TXfBillDeductItemDao tXfBillDeductItemDao;
     @Autowired
     private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
     @Autowired
@@ -603,9 +607,15 @@ public class DeductService   {
     }
 
     public TXfBillDeductEntity getDeductById(Long id){
-        return tXfBillDeductExtDao .selectById(id);
+        return tXfBillDeductExtDao.selectById(id);
     }
 
+
+    /**
+     * 业务单列表
+     * @param request
+     * @return PageResult
+     */
     public PageResult<QueryDeductListResponse> queryPageList(QueryDeductListRequest request){
         int offset = (request.getPageNo() -1) * request.getPageSize();
         int next = offset+request.getPageSize();
@@ -616,7 +626,87 @@ public class DeductService   {
         List<QueryDeductListResponse> response = new ArrayList<>();
         BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
         return PageResult.of(response,count, request.getPageNo(), request.getPageSize());
+    }
 
+    /**
+     * 业务单列表tab
+     * @param request
+     * @return PageResult
+     */
+    public List<JSONObject> queryPageTab(QueryDeductListRequest request){
+        List<JSONObject> list = new ArrayList();
+        int key0 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.TO_BE_MATCH.getValue());
+        JSONObject jsonObject0 = new JSONObject();
+        jsonObject0.put("key",DeductBillTabEnum.TO_BE_MATCH.getValue());
+        jsonObject0.put("count",key0);
+        jsonObject0.put("desc",DeductBillTabEnum.TO_BE_MATCH.getDesc());
+        list.add(jsonObject0);
+        int key1 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.MATCHED_TO_BE_MAKE.getValue());
+        JSONObject jsonObject1 = new JSONObject();
+        jsonObject1.put("key",DeductBillTabEnum.MATCHED_TO_BE_MAKE.getValue());
+        jsonObject1.put("count",key1);
+        jsonObject1.put("desc",DeductBillTabEnum.MATCHED_TO_BE_MAKE.getDesc());
+        list.add(jsonObject1);
+        int key2 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.APPLYED_RED_NO.getValue());
+        JSONObject jsonObject2 = new JSONObject();
+        jsonObject2.put("key",DeductBillTabEnum.APPLYED_RED_NO.getValue());
+        jsonObject2.put("count",key2);
+        jsonObject2.put("desc",DeductBillTabEnum.APPLYED_RED_NO.getDesc());
+        list.add(jsonObject2);
+        int key3 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.MAKEED.getValue());
+        JSONObject jsonObject3 = new JSONObject();
+        jsonObject3.put("key",DeductBillTabEnum.MAKEED.getValue());
+        jsonObject3.put("count",key3);
+        jsonObject3.put("desc",DeductBillTabEnum.MAKEED.getDesc());
+        list.add(jsonObject3);
+        if(!XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue().equals(request.getBusinessType())){
+            int key4 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+            request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.CANCELED.getValue());
+            JSONObject jsonObject4 = new JSONObject();
+            jsonObject4.put("key",DeductBillTabEnum.CANCELED.getValue());
+            jsonObject4.put("count",key4);
+            jsonObject4.put("desc",DeductBillTabEnum.CANCELED.getDesc());
+            list.add(jsonObject4);
+
+        }
+        return list;
+    }
+
+    /**
+     * 业务单明细
+     * @param id
+     * @return DeductDetailResponse
+     */
+    public DeductDetailResponse getDeductDetailById(Long id){
+        TXfBillDeductEntity deductById = getDeductById(id);
+        DeductDetailResponse response = new DeductDetailResponse();
+        if(deductById != null){
+            QueryWrapper<TXfBillDeductItemRefEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq(TXfBillDeductItemRefEntity.DEDUCT_ID,id);
+            List<TXfBillDeductItemRefEntity> tXfBillDeductItemRefEntities = tXfBillDeductItemRefDao.selectList(wrapper);
+            List<DeductBillItemModel> deductBillItemList = new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(tXfBillDeductItemRefEntities)){
+                for (TXfBillDeductItemRefEntity tXfBillDeductItemRefEntity : tXfBillDeductItemRefEntities) {
+                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
+                    DeductBillItemModel deductBillItemModel;
+                    if(itemEntity != null){
+                        deductBillItemModel = new DeductBillItemModel();
+                        BeanUtil.copyProperties(itemEntity,deductBillItemModel);
+                        deductBillItemList.add(deductBillItemModel);
+                    }
+                }
+                response.setDeductBillItemList(deductBillItemList);
+            }
+            response.setVerdictDate(deductById.getVerdictDate());
+            response.setBusinessNo(deductById.getBusinessNo());
+            response.setPurchaserNo(deductById.getPurchaserNo());
+            response.setSellerNo(deductById.getSellerNo());
+        }
+        return response;
     }
 
     private QueryWrapper<TXfBillDeductEntity>  getQueryWrapper(QueryDeductListRequest   request){
