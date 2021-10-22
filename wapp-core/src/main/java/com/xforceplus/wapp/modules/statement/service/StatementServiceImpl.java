@@ -53,12 +53,11 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     private final SettlementItemServiceImpl settlementItemService;
     private final SettlementItemConverter settlementItemConverter;
     private final BillDeductServiceImpl billDeductService;
-    private final SettlementService settlementService;
     private final BillDeductConverter billDeductConverter;
     private final BillDeductItemServiceImpl billDeductItemService;
     private final PreInvoiceItemDaoService preInvoiceItemDaoService;
 
-    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, SettlementService settlementService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
+    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
         this.statementConverter = statementConverter;
         this.billDeductExtDao = billDeductExtDao;
         this.preinvoiceService = preinvoiceService;
@@ -66,7 +65,6 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         this.settlementItemService = settlementItemService;
         this.settlementItemConverter = settlementItemConverter;
         this.billDeductService = billDeductService;
-        this.settlementService = settlementService;
         this.billDeductConverter = billDeductConverter;
         this.billDeductItemService = billDeductItemService;
         this.preInvoiceItemDaoService = preInvoiceItemDaoService;
@@ -262,7 +260,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             return entity;
         }).collect(Collectors.toList());
         settlementItemService.updateBatchById(entities);
-        settlementService.confirmSettlement(settlementNo, sellerNo, type);
+        preinvoiceService.splitPreInvoice(settlementNo, sellerNo);
         return true;
     }
 }
