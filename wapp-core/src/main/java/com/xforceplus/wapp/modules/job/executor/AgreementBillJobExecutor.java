@@ -44,6 +44,7 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     @Scheduled(cron = "* * 0 * * ?")
     @Override
     public void execute() {
+        log.info("启动原始协议单任务执行器");
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(AGREEMENT_BILL_JOB.getJobType());
         Chain chain = new AgreementBillJobChain(applicationContext);
         availableJobs.forEach(

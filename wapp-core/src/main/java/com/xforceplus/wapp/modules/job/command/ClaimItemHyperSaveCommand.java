@@ -48,6 +48,7 @@ public class ClaimItemHyperSaveCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
+        log.info("开始保存原始索赔单文件Hyper明细数据入库fileName={}, sheetName={}", fileName, sheetName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
@@ -136,13 +137,13 @@ public class ClaimItemHyperSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM_SAMS.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            // 正常处理结束，清空游标
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
-            // 正常处理结束，记录游标
             // 处理出现异常，记录游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }
 

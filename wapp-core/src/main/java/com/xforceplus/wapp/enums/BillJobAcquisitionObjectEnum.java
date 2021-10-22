@@ -22,8 +22,8 @@ public enum BillJobAcquisitionObjectEnum {
     @Getter
     private final int code;
 
-    BillJobAcquisitionObjectEnum(int billObjectCode) {
-        this.code = billObjectCode;
+    BillJobAcquisitionObjectEnum(int code) {
+        this.code = code;
     }
 
     public static BillJobAcquisitionObjectEnum fromCode(int billObjectCode) {

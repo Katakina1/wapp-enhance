@@ -42,6 +42,7 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
     @Scheduled(cron = "* * 0 * * ?")
     @Override
     public void execute() {
+        log.info("启动原始索赔单任务执行器");
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(CLAIM_BILL_JOB.getJobType());
         Chain chain = new ClaimBillJobChain(applicationContext);
         availableJobs.forEach(

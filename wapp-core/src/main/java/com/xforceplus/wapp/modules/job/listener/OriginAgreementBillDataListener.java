@@ -73,6 +73,6 @@ public class OriginAgreementBillDataListener extends AnalysisEventListener<Origi
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条数据！", jobId, cursor);
+        log.info("jobId={}, 已入库{}条原始协议单数据！", jobId, cursor);
     }
 }

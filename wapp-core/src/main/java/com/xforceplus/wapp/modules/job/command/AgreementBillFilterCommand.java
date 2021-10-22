@@ -46,6 +46,7 @@ public class AgreementBillFilterCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
+        log.info("开始过滤原始协议单文件数据入业务表={}", fileName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus)) {
             int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));

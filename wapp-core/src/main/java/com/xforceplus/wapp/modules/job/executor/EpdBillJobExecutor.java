@@ -42,6 +42,7 @@ public class EpdBillJobExecutor extends AbstractBillJobExecutor {
     @Scheduled(cron = "* * 0 * * ?")
     @Override
     public void execute() {
+        log.info("启动原始EPD单任务执行器");
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(EPD_BILL_JOB.getJobType());
         Chain chain = new EpdBillJobChain(applicationContext);
         availableJobs.forEach(

@@ -73,6 +73,6 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条数据！", jobId, cursor);
+        log.info("jobId={}, 已入库{}条原始索赔单Hyper明细数据！", jobId, cursor);
     }
 }
