@@ -124,6 +124,11 @@ public class RedNotificationMain {
     @ApiModelProperty("申请人电话")
     private String applyPersonTel;
 
+    @ApiModelProperty("申请日期")
+    private String invoiceDate;
+
+
+
 
     /**
      * 申请流水号

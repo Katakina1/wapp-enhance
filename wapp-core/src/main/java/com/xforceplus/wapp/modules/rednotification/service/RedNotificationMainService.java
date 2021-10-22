@@ -101,7 +101,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         saveBatch(listMain);
         redNotificationItemService.saveBatch(listItem);
         //判断是否自动申请
-        if(request.getAutoApplyFlag() ==0){
+        if(request.getAutoApplyFlag() ==1){
             // 申请请求
             RedNotificationApplyReverseRequest applyRequest = new RedNotificationApplyReverseRequest();
 
@@ -278,7 +278,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             queryWrapper.eq(TXfRedNotificationEntity::getBillNo, queryModel.getBillNo());
         }
         if (queryModel.getPaymentTime()!=null){
-            queryWrapper.gt(TXfRedNotificationEntity::getPaymentTime, queryModel.getPaymentTime());
+            // 1634860800000
+            queryWrapper.eq(TXfRedNotificationEntity::getPaymentTime,  new Date(queryModel.getPaymentTime()));
         }
         if (!CollectionUtils.isEmpty(queryModel.getPidList())){
             queryWrapper.in(TXfRedNotificationEntity::getPid,queryModel.getPidList());
