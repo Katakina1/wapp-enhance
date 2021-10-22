@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-15
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -884,6 +884,18 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("settlementNo")
     private String settlementNo;
 
+    /**
+     * 机器码
+     */
+    @TableField("machine_code")
+    private String machineCode;
+
+    /**
+     * 密文
+     */
+    @TableField("cipher_text")
+    private String cipherText;
+
     @TableField("host_taxRate")
     private BigDecimal hostTaxrate;
 
@@ -1239,6 +1251,10 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     public static final String PACKING_ADDRESS = "packing_address";
 
     public static final String SETTLEMENTNO = "settlementNo";
+
+    public static final String MACHINE_CODE = "machine_code";
+
+    public static final String CIPHER_TEXT = "cipher_text";
 
     public static final String HOST_TAXRATE = "host_taxRate";
 

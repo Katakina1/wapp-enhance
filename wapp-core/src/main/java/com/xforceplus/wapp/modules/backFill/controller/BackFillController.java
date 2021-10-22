@@ -46,7 +46,7 @@ public class BackFillController  extends AbstractController {
         return backFillService.commitVerify(request);
     }
 
-    @ApiOperation(value = "电票发票上传")
+    @ApiOperation(value = "电票发票上传" )
     @PostMapping("/upload")
     public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid) {
         if (files.length == 0) {
@@ -166,7 +166,13 @@ public class BackFillController  extends AbstractController {
             return R.fail("上传过程中出现错误，请重试");
         }
 
+    }
 
+    @PostMapping("re-split")
+    public R reSplit(){
+
+
+        return R.ok();
     }
 
 

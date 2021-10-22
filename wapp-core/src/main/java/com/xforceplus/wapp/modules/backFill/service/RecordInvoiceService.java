@@ -1,8 +1,10 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.IsDealEnum;
@@ -10,12 +12,19 @@ import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDetailDao;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,13 +40,24 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class RecordInvoiceService {
+public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRecordInvoiceEntity> {
     @Autowired
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
     @Autowired
     private TDxInvoiceDao tDxInvoiceDao;
 
+    @Autowired
+    private TDxRecordInvoiceDetailDao recordInvoiceDetailsDao;
+
+    @Autowired
+    private TXfPreInvoiceDao tXfPreInvoiceDao;
+
+    /**
+     * 正式发票列表
+     * @param
+     * @return PageResult
+     */
     public PageResult<RecordInvoiceResponse> queryPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
         Page<TDxRecordInvoiceEntity> page=new Page<>(pageNo,pageSize);
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
@@ -47,10 +67,26 @@ public class RecordInvoiceService {
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
     }
 
-
-    public List<TDxRecordInvoiceEntity> getListBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
-        return tDxRecordInvoiceDao.selectList(wrapper);
+    /**
+     * 正式发票详情
+     * @param
+     * @return InvoiceDetailResponse
+     */
+    public InvoiceDetailResponse getInvoiceById(Long id){
+        TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectById(id);
+        InvoiceDetailResponse response = new InvoiceDetailResponse();
+        if(invoiceEntity != null){
+            QueryWrapper<TDxRecordInvoiceDetailEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq(TDxRecordInvoiceDetailEntity.UUID,invoiceEntity.getUuid());
+            List<TDxRecordInvoiceDetailEntity> tDxRecordInvoiceDetailEntities = recordInvoiceDetailsDao.selectList(wrapper);
+            if(CollectionUtils.isNotEmpty(tDxRecordInvoiceDetailEntities)){
+                List<InvoiceDetail> list = new ArrayList<>();
+                BeanUtil.copyList(tDxRecordInvoiceDetailEntities,list,InvoiceDetail.class);
+                response.setInvoiceDetailList(list);
+            }
+            BeanUtil.copyProperties(invoiceEntity,response);
+        }
+        return response;
     }
 
     public Integer getCountBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
@@ -58,6 +94,11 @@ public class RecordInvoiceService {
         return tDxRecordInvoiceDao.selectCount(wrapper);
     }
 
+    /**
+     * 删除红票
+     * @param id
+     * @return R
+     */
     @Transactional
     public R deleteInvoice(Long id){
         TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(id);
@@ -81,7 +122,12 @@ public class RecordInvoiceService {
         UpdateWrapper<TDxInvoiceEntity> wrapper = new UpdateWrapper<>();
         wrapper.eq(TDxInvoiceEntity.UUID,entity.getUuid());
         int count1 = tDxInvoiceDao.update(tDxInvoiceEntity,wrapper);
-        if(count > 0 && count1 >0){
+        //修改预制发票状态为待上传
+        QueryWrapper<TXfPreInvoiceEntity> preWrapper = new QueryWrapper<>();
+        preWrapper.eq(TXfPreInvoiceEntity.INVOICE_CODE,entity.getInvoiceCode());
+        preWrapper.eq(TXfPreInvoiceEntity.INVOICE_NO,entity.getInvoiceNo());
+        int count2 = tXfPreInvoiceDao.delete(preWrapper);
+        if(count > 0 && count1 >0 && count2>0){
             return R.ok("删除成功");
         }else {
             return R.fail("删除失败");
@@ -99,6 +145,17 @@ public class RecordInvoiceService {
             wrapper.eq(TDxRecordInvoiceEntity.INVOICE_STATUS,invoiceStatus);
         }
         return wrapper;
+
+    }
+
+
+    public boolean blue4RedInvoice(String redInvoiceNo,String redInvoiceCode){
+        TDxRecordInvoiceEntity entity=new TDxRecordInvoiceEntity();
+        entity.setInvoiceStatus("5");
+        LambdaUpdateWrapper<TDxRecordInvoiceEntity> wrapper=new LambdaUpdateWrapper<>();
+        wrapper.eq(TDxRecordInvoiceEntity::getUuid,redInvoiceCode+redInvoiceNo);
+        tDxRecordInvoiceDao.update(entity,wrapper);
+        return true;
 
     }
 

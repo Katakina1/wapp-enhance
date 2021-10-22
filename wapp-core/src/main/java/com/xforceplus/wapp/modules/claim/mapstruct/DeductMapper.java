@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.claim.mapstruct;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -11,5 +12,6 @@ public interface DeductMapper {
 
     List<DeductListResponse> toResponse(List<TXfBillDeductEntity> entities);
 
+    @Mapping(target = "billNo",source = "businessNo")
     DeductListResponse toResponse(TXfBillDeductEntity entity);
 }

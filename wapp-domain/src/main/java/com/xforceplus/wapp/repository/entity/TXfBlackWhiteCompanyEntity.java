@@ -10,8 +10,8 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 /**
  * <p>
-    * 黑白名单表
-    * </p>
+ * 黑白名单表
+ * </p>
  *
  * @author malong@xforceplus.com
  * @since 2021-10-14

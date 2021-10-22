@@ -62,4 +62,12 @@ public class RedNotificationFactory {
         return null;
     }
 
+    /**
+     * 获取税编版本
+     */
+    public static String getGoodsNoVer(){
+        return "33.0";
+    }
+
+
 }

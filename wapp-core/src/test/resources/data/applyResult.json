@@ -1,16 +1,16 @@
 {
   "redApplyResultList": [
     {
-      "applyDate": "20211015",
+      "applyDate": "20211021",
       "diskNo": "33",
-      "pid": "5854698276003504133",
+      "pid": "2556821894524928",
       "processFlag": "1",
       "processRemark": "红字信息表上传成功",
-      "redNotificationNo": "4420211015512410",
-      "requestBillNo": "20200911202110155124",
+      "redNotificationNo": "4420211021133993",
+      "requestBillNo": "20200911202110211339",
       "statusCode": "0000",
       "statusMsg": "成功"
     }
   ],
-  "serialNo": "5854698276003504136"
+  "serialNo": "2560660890644480"
 }

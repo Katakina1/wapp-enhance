@@ -4,6 +4,7 @@ import com.xforceplus.wapp.modules.job.command.AgreementBillDownloadCommand;
 import com.xforceplus.wapp.modules.job.command.AgreementBillFilterCommand;
 import com.xforceplus.wapp.modules.job.command.AgreementBillSaveCommand;
 import org.apache.commons.chain.impl.ChainBase;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @program: wapp-generator
@@ -13,11 +14,12 @@ import org.apache.commons.chain.impl.ChainBase;
  **/
 public class AgreementBillJobChain extends ChainBase {
 
-    public AgreementBillJobChain() {
+    public AgreementBillJobChain(ApplicationContext applicationContext) {
         super();
-        addCommand(new AgreementBillDownloadCommand());
-        addCommand(new AgreementBillSaveCommand());
-        addCommand(new AgreementBillFilterCommand());
+
+        addCommand(applicationContext.getBean(AgreementBillDownloadCommand.class));
+        addCommand(applicationContext.getBean(AgreementBillSaveCommand.class));
+        addCommand(applicationContext.getBean(AgreementBillFilterCommand.class));
     }
 
 }

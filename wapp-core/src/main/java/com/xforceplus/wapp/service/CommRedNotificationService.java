@@ -60,6 +60,14 @@ public class CommRedNotificationService {
         redNotificationOuterService.rollback(preInvoiceId);
     }
 
+    /**
+     * 删除申请红字信息记录
+     * @param preInvoiceId
+     */
+    public void deleteRedNotification(Long preInvoiceId){
+        redNotificationOuterService.deleteRednotification(Collections.singletonList(preInvoiceId));
+    }
+
     private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {
 
         TXfPreInvoiceEntity preInvoice = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity();

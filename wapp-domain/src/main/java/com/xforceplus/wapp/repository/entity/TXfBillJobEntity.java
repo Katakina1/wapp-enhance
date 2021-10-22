@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-18
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -88,7 +88,7 @@ public class TXfBillJobEntity extends BaseEntity {
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     /**
@@ -98,7 +98,7 @@ public class TXfBillJobEntity extends BaseEntity {
     private Boolean jobLockStatus;
 
     /**
-     * 原始数据处理对象 依次为 2-单据明细（EPD单log明细或索赔单Hyper明细） 3-单据明细（索赔单Sams明细）
+     * 原始数据处理对象 依次为 1-单据 2-单据明细（EPD单log明细或索赔单Hyper明细） 3-单据明细（索赔单Sams明细）
      */
     @TableField("job_entry_object")
     private Integer jobEntryObject;

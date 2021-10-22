@@ -41,4 +41,20 @@ public class CommSettlementServiceTest extends BaseUnitTest {
     public void testRejectDestroySettlementPreInvoiceByPreInvoiceId() {
         //commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(Arrays.asList(1L));
     }
+
+    @Test
+    public void testDestroyPreInvoice(){
+        // commSettlementService.destroyPreInvoice(1L);
+    }
+
+    @Test
+    public void testApplyDestroyPreInvoiceAndRedNotification(){
+       // commSettlementService.applyDestroyPreInvoiceAndRedNotification(1L);
+    }
+
+    @Test
+    public void testCheckAgainSplitSettlementPreInvoice(){
+      //  commSettlementService.checkAgainSplitSettlementPreInvoice(1L);
+    }
+
 }

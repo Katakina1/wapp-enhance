@@ -32,7 +32,7 @@ public class RedNotificationMainServiceTest extends BaseUnitTest {
     public void add() throws IOException {
         String json = readJsonFromFile("data/AddRedNotificationRequest.json");
         AddRedNotificationRequest request = JsonUtil.fromJson(json, AddRedNotificationRequest.class);
-        String add = redNotificationMainService.add(request);
+        redNotificationMainService.add(request);
     }
 
     @Test

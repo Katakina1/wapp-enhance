@@ -6,11 +6,13 @@ import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -22,15 +24,16 @@ import java.util.Objects;
  * @create: 2021-10-14 13:45
  **/
 @Slf4j
+@Component
 public class EpdBillDownloadCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private BillJobService billJobService;
-    @Value("epdBill.remote.path")
+    @Value("${epdBill.remote.path}")
     private String remotePath;
-    @Value("epdBill.local.path")
+    @Value("${epdBill.local.path}")
     private String localPath;
 
     @Override
@@ -85,6 +88,7 @@ public class EpdBillDownloadCommand implements Command {
      * @throws SftpException
      */
     private void downloadFile(String remotePath, String fileName, String localPath) throws Exception {
+        LocalFileSystemManager.deleteFile(localPath, fileName);
         sftpRemoteManager.openChannel();
         sftpRemoteManager.downloadFile(remotePath, fileName, localPath);
     }

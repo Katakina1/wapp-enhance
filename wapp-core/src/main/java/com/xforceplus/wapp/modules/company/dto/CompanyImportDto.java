@@ -1,18 +1,8 @@
 package com.xforceplus.wapp.modules.company.dto;
 
-import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.xforceplus.wapp.modules.overdue.valid.OverdueCreateValidGroup;
-import com.xforceplus.wapp.modules.overdue.valid.OverdueUpdateValidGroup;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 
 /**
  * @author aiwentao@xforceplus.com

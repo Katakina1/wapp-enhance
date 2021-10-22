@@ -57,9 +57,6 @@ public class CommClaimService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if(!Objects.equals(tXfSettlementEntity.getSettlementStatus(),TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())){
-            throw new EnhanceRuntimeException("结算单已上传红票不能操作");
-        }
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper1 = new QueryWrapper<>();
         billDeductEntityWrapper1.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
@@ -89,6 +86,7 @@ public class CommClaimService {
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.DESTROY.getCode());
+        tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
         //申请中的索赔单修改为：作废
@@ -120,7 +118,10 @@ public class CommClaimService {
             updateTXfBillDeductItemEntity.setRemainingAmount(tXfBillDeductItemRefEntity.getUseAmount().add(tXfBillDeductItemEntity.getRemainingAmount()));
             tXfBillDeductItemDao.updateById(updateTXfBillDeductItemEntity);
             //删除匹配关系
-            tXfBillDeductItemRefDao.deleteById(tXfBillDeductItemRefEntity.getId());
+            TXfBillDeductItemRefEntity updateTXfBillDeductItemRefEntity = new TXfBillDeductItemRefEntity();
+            updateTXfBillDeductItemRefEntity.setId(tXfBillDeductItemRefEntity.getId());
+            updateTXfBillDeductItemRefEntity.setStatus(1);
+            tXfBillDeductItemRefDao.updateById(updateTXfBillDeductItemRefEntity);
         });
 
         //释放索赔单蓝票（作废的索赔单）
@@ -145,7 +146,9 @@ public class CommClaimService {
 
         //删除蓝票关系
         //释放索赔单蓝票额度（作废的索赔单）
-        tXfBillDeductInvoiceDao.delete(tXfBillDeductInvoiceWrapper);
+        TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
+        updateTXfBillDeductInvoiceEntity.setStatus(1);
+        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity,tXfBillDeductInvoiceWrapper);
     }
 
     /**

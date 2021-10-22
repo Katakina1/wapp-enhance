@@ -50,7 +50,7 @@ public class QueryModel {
     private String redNotificationNo;
 
     @ApiModelProperty("预制发票id")
-    private Long pid;
+    private List<Long> pidList;
 
 
     @ApiModelProperty("审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批")

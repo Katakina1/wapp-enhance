@@ -31,4 +31,9 @@ public class BackFillMatchRequest {
     @JsonProperty("verifyBeanList")
     @ApiModelProperty("回填发票列表")
     private List<BackFillVerifyBean> verifyBeanList = new ArrayList<BackFillVerifyBean>();
+
+    @ApiModelProperty("原始红字发票号码")
+    private String originInvoiceNo;
+    @ApiModelProperty("原始红字发票代码")
+    private String originInvoiceCode;
 }

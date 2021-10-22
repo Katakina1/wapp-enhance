@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-15
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -94,7 +94,7 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     /**

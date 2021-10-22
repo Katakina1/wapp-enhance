@@ -3,6 +3,8 @@ package com.xforceplus.wapp.enums;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * 结算单状态
  */
@@ -16,8 +18,10 @@ public enum TXfSettlementStatusEnum implements ValueEnum<Integer> {
     WAIT_CHECK(6,"待审核"),
     DESTROY(7,"已作废"),
     WAIT_MATCH_BLUE_INVOICE(8,"待匹配蓝票"),
-    WAIT_SPLIT_INVOICE(9,"待拆票"),
 
+    WAIT_SPLIT_INVOICE(9,"待拆票"),
+    WAIT_MATCH_TAX_CODE(10,"待匹配税编"),
+    WAIT_MATCH_CONFIRM_AMOUNT(10,"待确认金额"),
     ;
 
     @Getter
@@ -34,4 +38,14 @@ public enum TXfSettlementStatusEnum implements ValueEnum<Integer> {
     public Integer getValue() {
         return code;
     }
+
+    public static TXfSettlementStatusEnum getTXfSettlementStatusEnum(int code) {
+        for (TXfSettlementStatusEnum value : TXfSettlementStatusEnum.values()) {
+            if (Objects.equals(value.getCode(), code)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
 }

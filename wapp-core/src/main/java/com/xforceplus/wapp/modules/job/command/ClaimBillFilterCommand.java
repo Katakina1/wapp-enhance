@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
  * @create: 2021-10-14 14:01
  **/
 @Slf4j
+@Component
 public class ClaimBillFilterCommand implements Command {
 
     @Autowired
@@ -157,7 +159,7 @@ public class ClaimBillFilterCommand implements Command {
                     new QueryWrapper<TXfOriginClaimBillEntity>()
                             .lambda()
                             .eq(TXfOriginClaimBillEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginClaimBillEntity::getId)
+                            .orderByAsc(TXfOriginClaimBillEntity::getId)
             );
             // 总页数
             pages = page.getPages();
@@ -187,18 +189,17 @@ public class ClaimBillFilterCommand implements Command {
         }
         // 先获取分页总数
         long pages;
-        List<String> negativeExchangeNos = obtainNegativeExchangeNos(jobId, HYPER);
         do {
             Page<TXfOriginClaimItemHyperEntity> page = itemHyperService.page(
                     new Page<>(++last, BATCH_COUNT),
                     new QueryWrapper<TXfOriginClaimItemHyperEntity>()
                             .lambda()
                             .eq(TXfOriginClaimItemHyperEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginClaimItemHyperEntity::getId)
+                            .orderByAsc(TXfOriginClaimItemHyperEntity::getId)
             );
             // 总页数
             pages = page.getPages();
-            filterItemHyper(negativeExchangeNos, page.getRecords());
+            filterItemHyper(page.getRecords());
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
         // 全部处理完成后清空处理进度
@@ -224,18 +225,17 @@ public class ClaimBillFilterCommand implements Command {
         }
         // 先获取分页总数
         long pages;
-        List<String> negativeExchangeNos = obtainNegativeExchangeNos(jobId, SAMS);
         do {
             Page<TXfOriginClaimItemSamsEntity> page = itemSamsService.page(
                     new Page<>(++last, BATCH_COUNT),
                     new QueryWrapper<TXfOriginClaimItemSamsEntity>()
                             .lambda()
                             .eq(TXfOriginClaimItemSamsEntity::getJobId, jobId)
-                            .orderBy(true, true, TXfOriginClaimItemSamsEntity::getId)
+                            .orderByAsc(TXfOriginClaimItemSamsEntity::getId)
             );
             // 总页数
             pages = page.getPages();
-            filterItemSams(negativeExchangeNos, page.getRecords());
+            filterItemSams(page.getRecords());
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
     }
@@ -248,8 +248,8 @@ public class ClaimBillFilterCommand implements Command {
     private void filterBill(List<TXfOriginClaimBillEntity> list) {
         List<DeductBillBaseData> newList = list
                 .stream()
-                // 索赔单不含税金额为负数
-                .filter(v -> v.getCostAmount().startsWith(NEGATIVE_SYMBOL))
+                // 索赔单不含税金额为正数
+                .filter(v -> !v.getCostAmount().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
                 .collect(Collectors.toList());
         deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
@@ -258,16 +258,13 @@ public class ClaimBillFilterCommand implements Command {
     /**
      * 过滤转换入库
      *
-     * @param negativeExchangeNos
      * @param list
      */
-    private void filterItemHyper(List<String> negativeExchangeNos, List<TXfOriginClaimItemHyperEntity> list) {
+    private void filterItemHyper(List<TXfOriginClaimItemHyperEntity> list) {
         List<ClaimBillItemData> newList = list
                 .stream()
-                // 索赔单不含税金额为负数
-                .filter(v -> negativeExchangeNos.contains(v.getClaimNbr()))
                 // 索赔单明细不含税金额为负数
-                .filter(v -> v.getLineCost().startsWith(NEGATIVE_SYMBOL))
+                // .filter(v -> v.getLineCost().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimItemHyperEntityConvertor.INSTANCE::toClaimBillItemData)
                 .collect(Collectors.toList());
         deductService.receiveItemData(newList, null);
@@ -276,38 +273,16 @@ public class ClaimBillFilterCommand implements Command {
     /**
      * 过滤转换入库
      *
-     * @param negativeExchangeNos
      * @param list
      */
-    private void filterItemSams(List<String> negativeExchangeNos, List<TXfOriginClaimItemSamsEntity> list) {
+    private void filterItemSams(List<TXfOriginClaimItemSamsEntity> list) {
         List<ClaimBillItemData> newList = list
                 .stream()
-                // 索赔单不含税金额为负数
-                .filter(v -> negativeExchangeNos.contains(v.getClaimNumber()))
                 // 索赔单明细不含税金额为负数
-                .filter(v -> v.getShipCost().startsWith(NEGATIVE_SYMBOL))
+                // .filter(v -> v.getShipCost().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimItemSamsEntityConvertor.INSTANCE::toClaimBillItemData)
                 .collect(Collectors.toList());
         deductService.receiveItemData(newList, null);
     }
 
-    /**
-     * 获取负数的索赔号列表
-     *
-     * @param jobId
-     * @param storeType
-     * @return
-     */
-    private List<String> obtainNegativeExchangeNos(int jobId, String storeType) {
-        return service.list(
-                new QueryWrapper<TXfOriginClaimBillEntity>()
-                        .lambda()
-                        .eq(TXfOriginClaimBillEntity::getJobId, jobId)
-                        .eq(TXfOriginClaimBillEntity::getStoreType, storeType)
-                        .likeLeft(TXfOriginClaimBillEntity::getAmountWithTax, NEGATIVE_SYMBOL)
-        )
-                .stream()
-                .map(TXfOriginClaimBillEntity::getExchangeNo)
-                .collect(Collectors.toList());
-    }
 }

@@ -1,9 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
@@ -17,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-14
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -326,6 +325,12 @@ public class TDxInvoiceEntity extends BaseEntity {
      */
     @TableField("belongs_to")
     private String belongsTo;
+
+    /**
+     * 剩余可匹配的额度，初始值与invoice_amount一致
+     */
+    @TableField("remaining_amount")
+    private BigDecimal remainingAmount;
 
     @TableField("ariba_confirm_date")
     private Date aribaConfirmDate;

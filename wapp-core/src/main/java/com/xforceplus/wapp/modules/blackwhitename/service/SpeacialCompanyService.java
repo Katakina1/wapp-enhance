@@ -9,9 +9,8 @@ import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
 import com.xforceplus.wapp.modules.blackwhitename.convert.SpeacialCompanyConverter;
 import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import com.xforceplus.wapp.modules.blackwhitename.listener.SpeclialCompanyImportListener;
-import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBlackWhiteCompanyDao;
-import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
 import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.xforceplus.wapp.modules.sys.util.UserUtil;
 
 /**
- * 索赔的结算单相关逻辑操作
+ * 黑白名单相关逻辑操作
  */
 @Service
 @Slf4j
@@ -43,7 +41,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         this.companyConverter = companyConverter;
     }
 
-    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size,String taxNo,String companyName ) {
+    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size,String taxNo,String companyName,String type) {
         LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
         wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED);
         if(StringUtils.isNotEmpty(taxNo)){
@@ -51,6 +49,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         }
         if(StringUtils.isNotEmpty(companyName)){
             wrapper.like(TXfBlackWhiteCompanyEntity::getCompanyName,companyName);
+        }
+        if(StringUtils.isNotEmpty(type)){
+            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierType,type);
         }
         Page<TXfBlackWhiteCompanyEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("黑白名单信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
