@@ -1,12 +1,10 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemSamsDataListener;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
@@ -22,8 +20,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM_SAMS;
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM_SAMS;
 
 /**
  * @program: wapp-generator
@@ -37,8 +35,6 @@ public class ClaimItemSamsSaveCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
-    @Autowired
-    private BillJobService billJobService;
     @Autowired
     private OriginClaimItemSamsService service;
     @Value("${claimBill.remote.path}")
@@ -61,8 +57,6 @@ public class ClaimItemSamsSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-            } finally {
-                saveContext(context);
             }
         } else {
             log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
@@ -148,15 +142,4 @@ public class ClaimItemSamsSaveCommand implements Command {
         }
     }
 
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
-    }
 }

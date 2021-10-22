@@ -1,12 +1,10 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
@@ -38,8 +36,6 @@ public class ClaimItemHyperSaveCommand implements Command {
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private BillJobService billJobService;
-    @Autowired
     private OriginClaimItemHyperService service;
     @Value("${claimBill.remote.path}")
     private String remotePath;
@@ -62,8 +58,6 @@ public class ClaimItemHyperSaveCommand implements Command {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 context.put(TXfBillJobEntity.REMARK, e.getMessage());
-            } finally {
-                saveContext(context);
             }
         } else {
             log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
@@ -152,15 +146,4 @@ public class ClaimItemHyperSaveCommand implements Command {
         }
     }
 
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
-    }
 }

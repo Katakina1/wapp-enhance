@@ -1,10 +1,8 @@
 package com.xforceplus.wapp.modules.job.command;
 
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +27,6 @@ public class EpdBillDownloadCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
-    @Autowired
-    private BillJobService billJobService;
     @Value("${epdBill.remote.path}")
     private String remotePath;
     @Value("${epdBill.local.path}")
@@ -46,8 +42,6 @@ public class EpdBillDownloadCommand implements Command {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 context.put(TXfBillJobEntity.REMARK, e.getMessage());
-            } finally {
-                saveContext(context);
             }
         } else {
             log.info("跳过文件下载步骤，当前任务={}, 状态={}", fileName, jobStatus);
@@ -93,14 +87,4 @@ public class EpdBillDownloadCommand implements Command {
         sftpRemoteManager.downloadFile(remotePath, fileName, localPath);
     }
 
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
-    }
 }

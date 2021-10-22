@@ -19,22 +19,19 @@ import java.util.List;
  * @create: 2021-10-15 14:28
  **/
 @Slf4j
-public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEpdLogItemDto> {
+public class OriginEpdLogItemDataListener extends AnalysisEventListener<List<OriginEpdLogItemDto>> {
     /**
      * 每隔1000条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 1000;
+    private final int jobId;
+    private final OriginEpdLogItemService service;
     /**
      * 缓存的数据
      */
     private List<OriginEpdLogItemDto> list = new ArrayList<>();
-
-    private final int jobId;
-
     @Getter
     private long cursor;
-
-    private final OriginEpdLogItemService service;
 
     public OriginEpdLogItemDataListener(int jobId, long cursor, OriginEpdLogItemService service) {
         this.jobId = jobId;
@@ -43,8 +40,8 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
     }
 
     @Override
-    public void invoke(OriginEpdLogItemDto data, AnalysisContext context) {
-        list.add(data);
+    public void invoke(List<OriginEpdLogItemDto> data, AnalysisContext context) {
+        list.addAll(data);
         if (list.size() >= BATCH_COUNT) {
             saveData();
             // 存储完成清理 list

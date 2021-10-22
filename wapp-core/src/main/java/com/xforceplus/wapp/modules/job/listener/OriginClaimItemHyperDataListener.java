@@ -19,22 +19,19 @@ import java.util.List;
  * @create: 2021-10-15 14:28
  **/
 @Slf4j
-public class OriginClaimItemHyperDataListener extends AnalysisEventListener<OriginClaimItemHyperDto> {
+public class OriginClaimItemHyperDataListener extends AnalysisEventListener<List<OriginClaimItemHyperDto>> {
     /**
      * 每隔1000条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 1000;
+    private final int jobId;
+    private final OriginClaimItemHyperService service;
     /**
      * 缓存的数据
      */
     private List<OriginClaimItemHyperDto> list = new ArrayList<>();
-
-    private final int jobId;
-
     @Getter
     private long cursor;
-
-    private final OriginClaimItemHyperService service;
 
     public OriginClaimItemHyperDataListener(int jobId, long cursor, OriginClaimItemHyperService service) {
         this.jobId = jobId;
@@ -43,8 +40,8 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
     }
 
     @Override
-    public void invoke(OriginClaimItemHyperDto data, AnalysisContext context) {
-        list.add(data);
+    public void invoke(List<OriginClaimItemHyperDto> data, AnalysisContext context) {
+        list.addAll(data);
         if (list.size() >= BATCH_COUNT) {
             saveData();
             // 存储完成清理 list

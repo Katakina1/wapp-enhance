@@ -1,8 +1,6 @@
 package com.xforceplus.wapp.modules.job.executor;
 
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.chain.AgreementBillJobChain;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
@@ -11,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Chain;
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
@@ -23,6 +22,8 @@ import java.util.Map;
 import static com.xforceplus.wapp.enums.BillJobTypeEnum.AGREEMENT_BILL_JOB;
 
 /**
+ * sa
+ *
  * @program: wapp-enhance
  * @description: 执行协议单任务
  * @author: Kenny Wong
@@ -52,7 +53,7 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
                     try {
                         if (billJobService.lockJob(jobId)) {
                             if (chain.execute(context)) {
-                                executePostAction(context);
+                                context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DONE.getJobStatus());
                             }
                         } else {
                             log.warn("协议单job任务锁定失败，放弃执行，jobId={}", jobId);
@@ -60,17 +61,11 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     } finally {
+                        saveContext(context);
                         billJobService.unlockJob(jobId);
                     }
                 }
         );
-    }
-
-    private void executePostAction(Context context) {
-        context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DONE.getJobStatus());
-        saveContext(context);
-        // 触发下游任务
-     //   deductService.receiveDone(XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
     }
 
     /**
@@ -80,7 +75,22 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
      * @return
      */
     private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
+        TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
+        tXfBillJobEntity.setId(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID))));
+        tXfBillJobEntity.setJobStatus(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS))));
+        tXfBillJobEntity.setRemark(String.valueOf(context.get(TXfBillJobEntity.REMARK)));
+        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT)))) {
+            tXfBillJobEntity.setJobAcquisitionObject(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))));
+        }
+        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS)))) {
+            tXfBillJobEntity.setJobAcquisitionProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))));
+        }
+        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT)))) {
+            tXfBillJobEntity.setJobEntryObject(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT))));
+        }
+        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS)))) {
+            tXfBillJobEntity.setJobEntryProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS))));
+        }
         return billJobService.updateById(tXfBillJobEntity);
     }
 

@@ -19,22 +19,19 @@ import java.util.List;
  * @create: 2021-10-15 14:28
  **/
 @Slf4j
-public class OriginClaimItemSamsDataListener extends AnalysisEventListener<OriginClaimItemSamsDto> {
+public class OriginClaimItemSamsDataListener extends AnalysisEventListener<List<OriginClaimItemSamsDto>> {
     /**
      * 每隔1000条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 1000;
+    private final int jobId;
+    private final OriginClaimItemSamsService service;
     /**
      * 缓存的数据
      */
     private List<OriginClaimItemSamsDto> list = new ArrayList<>();
-
-    private final int jobId;
-
     @Getter
     private long cursor;
-
-    private final OriginClaimItemSamsService service;
 
     public OriginClaimItemSamsDataListener(int jobId, long cursor, OriginClaimItemSamsService service) {
         this.jobId = jobId;
@@ -43,8 +40,8 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
     }
 
     @Override
-    public void invoke(OriginClaimItemSamsDto data, AnalysisContext context) {
-        list.add(data);
+    public void invoke(List<OriginClaimItemSamsDto> data, AnalysisContext context) {
+        list.addAll(data);
         if (list.size() >= BATCH_COUNT) {
             saveData();
             // 存储完成清理 list
