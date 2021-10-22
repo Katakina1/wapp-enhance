@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -7,10 +9,11 @@ import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.*;
+import com.xforceplus.wapp.export.dto.DeductBillExportDto;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
+import com.xforceplus.wapp.modules.deduct.dto.DeductExportRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
@@ -258,8 +261,8 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    private TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+    private TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
+        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
         if (taxCodeOptional.isPresent()) {
                 TaxCode taxCode = taxCodeOptional.get();
                 entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
@@ -383,7 +386,7 @@ public class DeductService   {
         }
         if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
                     log.info("只有待匹配结算单的协议单才能撤销");
                     return false;
                 }
@@ -394,7 +397,7 @@ public class DeductService   {
             }
         }else if(XFDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
                     log.info("只有待匹配结算单的EPD才能撤销");
                     return false;
                 }
@@ -693,7 +696,7 @@ public class DeductService   {
             List<DeductBillItemModel> deductBillItemList = new ArrayList<>();
             if(CollectionUtils.isNotEmpty(tXfBillDeductItemRefEntities)){
                 for (TXfBillDeductItemRefEntity tXfBillDeductItemRefEntity : tXfBillDeductItemRefEntities) {
-                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
+                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemExtDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
                     DeductBillItemModel deductBillItemModel;
                     if(itemEntity != null){
                         deductBillItemModel = new DeductBillItemModel();
