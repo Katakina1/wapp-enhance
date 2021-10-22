@@ -156,7 +156,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         defaultHeader.put("action", splitInvoice);
         defaultHeader.put("serialNo", tXfSettlementEntity.getSettlementNo());
         defaultHeader.put("rpcType", "http");
-
+        defaultHeader.put("appId ", "walmart");
         String post = "";
         try {
             post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),"");
