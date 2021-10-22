@@ -20,6 +20,7 @@ public class OfdResponse {
     private String message;
     private OfdResponseResult result;
 
+
     @Setter
     @Getter
     public static class OfdResponseResult {
@@ -29,6 +30,8 @@ public class OfdResponse {
         private String checkComOfd;
         private String checkComOfdInfo;
         private InvoiceMain invoiceMain;
+
+        private String imageUrl;
         private List<InvoiceDetail> invoiceDetails;
     }
 

@@ -3,12 +3,11 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-
+import com.google.common.collect.Maps;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.apollo.msg.SealedMessage.Header;
 import com.xforceplus.apollo.msg.SealedMessage.Payload;
-
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.handle.IntegrationResultHandler;
 import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
@@ -20,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +53,9 @@ public class VerificationService implements IntegrationResultHandler {
 
     @Value("${wapp.integration.customer-no}")
     private String customerNo;
+
+    @Value("${wapp.integration.action.downLoadAction}")
+    private String downLoadAction;
 
     @Autowired
     private EInvoiceMatchService eInvoiceMatchService;
@@ -96,6 +99,22 @@ public class VerificationService implements IntegrationResultHandler {
         } catch (IOException e) {
             log.error("验真发起失败:" + e.getMessage(), e);
             throw new EnhanceRuntimeException("验真发起失败:" + e.getMessage());
+        }
+    }
+
+    public String getBase64ByUrl(String url) {
+
+        try {
+            HashMap<String, Object> paramMeterMap = Maps.newHashMap();
+            String baseUrl=Base64.getEncoder().encodeToString(url.getBytes());
+            paramMeterMap.put("ossUrl",baseUrl);
+            paramMeterMap.put("type","1");
+            final String get = httpClientFactory.get(downLoadAction,paramMeterMap,defaultHeader);
+            log.info("获取下载结果:{}", get);
+            return get;
+        } catch (IOException e) {
+            log.error("获取下载结果:" + e.getMessage(), e);
+            throw new EnhanceRuntimeException("获取下载结果:" + e.getMessage());
         }
     }
 
