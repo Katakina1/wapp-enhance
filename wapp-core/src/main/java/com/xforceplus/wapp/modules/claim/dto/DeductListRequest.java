@@ -49,6 +49,9 @@ public class DeductListRequest {
     @ApiModelProperty("状态")
     private Integer status;
 
+    @ApiModelProperty("是否超期，1超期，0未超期")
+    private Integer overdue;
+
     @ApiModelProperty(hidden = true,value = "销方编号,vendorId,userCode")
     private String sellerNo;
 }

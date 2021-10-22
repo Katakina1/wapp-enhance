@@ -138,4 +138,9 @@ public class DeductListResponse {
      */
     private String batchNo;
 
+    /**
+     * 0 未超期，1超期
+     */
+    private Integer overdue;
+
 }

@@ -10,9 +10,11 @@ import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * oauth2过滤器
@@ -22,6 +24,7 @@ import java.io.IOException;
  * @date 2017-05-20 13:00
  */
 public class OAuth2Filter extends AuthenticatingFilter {
+    public static final String TOKEN="xf-token";
 
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) {
@@ -87,6 +90,13 @@ public class OAuth2Filter extends AuthenticatingFilter {
         //如果header中不存在token，则从参数中获取token
         if (StringUtils.isBlank(token)) {
             token = httpRequest.getParameter("token");
+        }
+
+        for (Cookie cookie : httpRequest.getCookies()) {
+            if (Objects.equals(cookie.getName(),TOKEN)){
+                token=cookie.getValue();
+                break;
+            }
         }
 
         return token;
