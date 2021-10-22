@@ -24,6 +24,8 @@ wapp:
       #识别
       discern: 2C528F63F591A73C65007B9C16CF6E6F
       discern-callbackUrl: inte-janus.melete
+      #下载附件
+      downLoadAction: A9EC3ACD57C452AE933AE67B42E452E2
     host:
       tcp: janus-tcp-inte.xforceplus.com
       http: https://janus-inte.xforceplus.com:443
