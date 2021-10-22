@@ -1,7 +1,6 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.ImmutableMap;
 import com.xforceplus.wapp.converters.TXfOriginEpdBillEntityConvertor;
@@ -11,7 +10,6 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -40,18 +38,6 @@ import java.util.stream.Collectors;
 @Component
 public class EpdBillFilterCommand implements Command {
 
-    @Autowired
-    private BillJobService billJobService;
-
-    @Autowired
-    private OriginEpdBillService service;
-    @Autowired
-    private OriginEpdLogItemService itemService;
-    @Autowired
-    private SpeacialCompanyService speacialCompanyService;
-    @Autowired
-    private DeductService deductService;
-
     // 使用在TXfOriginAgreementBillEntityConvertor 和 TXfOriginEpdBillEntityConvertor
     public static final Map<String, BigDecimal> TAX_CODE_TRANSLATOR =
             ImmutableMap
@@ -64,15 +50,23 @@ public class EpdBillFilterCommand implements Command {
                     .put("TO", BigDecimal.valueOf(0.13))
                     .put("TP", BigDecimal.valueOf(0.09))
                     .build();
-
     /**
      * 一次从数据库中拉取的最大行数
      */
     private static final int BATCH_COUNT = 1000;
+    @Autowired
+    private OriginEpdBillService service;
+    @Autowired
+    private OriginEpdLogItemService itemService;
+    @Autowired
+    private SpeacialCompanyService speacialCompanyService;
+    @Autowired
+    private DeductService deductService;
 
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
+        log.info("开始过滤原始EPD单文件数据入业务表={}", fileName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus)) {
             int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
@@ -82,8 +76,6 @@ public class EpdBillFilterCommand implements Command {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 context.put(TXfBillJobEntity.REMARK, e.getMessage());
-            } finally {
-                saveContext(context);
             }
         } else {
             log.info("跳过数据梳理步骤, 当前任务={}, 状态={}", fileName, jobStatus);
@@ -99,17 +91,6 @@ public class EpdBillFilterCommand implements Command {
      */
     private boolean isValidJobStatus(int jobStatus) {
         return Objects.equals(BillJobStatusEnum.SAVE_COMPLETE.getJobStatus(), jobStatus);
-    }
-
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
     }
 
     /**

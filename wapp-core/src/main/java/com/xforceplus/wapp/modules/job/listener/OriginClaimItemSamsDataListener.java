@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,17 +25,14 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
      * 每隔1000条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 1000;
+    private final int jobId;
+    private final OriginClaimItemSamsService service;
     /**
      * 缓存的数据
      */
     private List<OriginClaimItemSamsDto> list = new ArrayList<>();
-
-    private final int jobId;
-
     @Getter
     private long cursor;
-
-    private final OriginClaimItemSamsService service;
 
     public OriginClaimItemSamsDataListener(int jobId, long cursor, OriginClaimItemSamsService service) {
         this.jobId = jobId;
@@ -62,16 +60,19 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
      */
     private void saveData() {
         List<TXfOriginClaimItemSamsEntity> entities = new ArrayList<>(list.size());
+        Date now = new Date();
         list.forEach(
                 v1 -> {
                     TXfOriginClaimItemSamsEntity v2 = new TXfOriginClaimItemSamsEntity();
                     BeanUtils.copyProperties(v1, v2);
                     v2.setJobId(jobId);
+                    v2.setCreateTime(now);
+                    v2.setUpdateTime(now);
                     entities.add(v2);
                 }
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条数据！", jobId, cursor);
+        log.info("jobId={}, 已入库{}条原始索赔单Sams明细数据！", jobId, cursor);
     }
 }

@@ -1,12 +1,11 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.core.toolkit.BeanUtils;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.modules.job.dto.OriginEpdLogItemDto;
 import com.xforceplus.wapp.modules.job.listener.OriginEpdLogItemDataListener;
-import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
@@ -22,8 +21,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
 
 /**
  * @program: wapp-generator
@@ -38,8 +37,6 @@ public class EpdLogItemSaveCommand implements Command {
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private BillJobService billJobService;
-    @Autowired
     private OriginEpdLogItemService service;
     @Value("${epdBill.remote.path}")
     private String remotePath;
@@ -51,6 +48,7 @@ public class EpdLogItemSaveCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
+        log.info("开始保存原始EPD单文件LOG明细数据入库fileName={}, sheetName={}", fileName, sheetName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             if (!isLocalFileExists(localPath, fileName)) {
@@ -62,8 +60,6 @@ public class EpdLogItemSaveCommand implements Command {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 context.put(TXfBillJobEntity.REMARK, e.getMessage());
-            } finally {
-                saveContext(context);
             }
         } else {
             log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
@@ -137,30 +133,18 @@ public class EpdLogItemSaveCommand implements Command {
         File file = new File(localPath, fileName);
         OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service);
         try {
-            EasyExcel.read(file, readListener)
+            EasyExcel.read(file, OriginEpdLogItemDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
+            // 正常处理结束，清空游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
-            // 正常处理结束，记录游标
             // 处理出现异常，记录游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
-    }
-
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = BeanUtils.mapToBean(context, TXfBillJobEntity.class);
-        return billJobService.updateById(tXfBillJobEntity);
     }
 }
