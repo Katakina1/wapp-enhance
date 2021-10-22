@@ -112,11 +112,11 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
     @Autowired
     private IDSequence idSequence;
-    @PostConstruct
-    public void initData()   {
-       splitPreInvoice("settlementNo1853061001646081","172164");
-    }
-
+//    @PostConstruct
+//    public void initData()   {
+//       splitPreInvoice("settlementNo1853061001646081","172164");
+//    }
+//
 
     /**
      *
