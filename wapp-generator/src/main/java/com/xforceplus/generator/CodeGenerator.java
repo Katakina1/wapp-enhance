@@ -29,8 +29,55 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         generateCode("com.xforceplus.wapp.repository.entity.BaseEntity",
-             //  "t_dx_record_invoice",
-                "t_xf_settlement_item"
+//               "t_dx_record_invoice",
+//                "t_dx_record_invoice_detail",
+//                "t_xf_bill_deduct",
+//                "t_xf_elec_upload_record_detail",
+////                 by kenny start
+//                 "t_xf_bill_job",
+//                 "t_xf_origin_epd_bill",
+//                 "t_xf_origin_epd_log_item",
+//                "t_xf_origin_agreement_bill",
+//                 "t_xf_origin_claim_bill",
+//                 "t_xf_origin_claim_item_hyper",
+//                 "t_xf_origin_claim_item_sams",
+//                "t_dx_excel_exportlog",
+//                "t_dx_messagecontrol",
+//                "t_xf_blue_relation",
+//                "t_xf_bill_deduct_invoice",
+//                "t_xf_bill_deduct_item",
+//                "t_xf_bill_deduct_item_ref",
+//                "t_xf_bill_job",
+//                "t_xf_black_white_company",
+//                "t_xf_blue_relation",
+//                "t_xf_company_info",
+//                "t_xf_default_setting",
+//                "t_xf_elec_upload_record",
+//                "t_xf_elec_upload_record_detail",
+//                "t_xf_exception_report",
+//                "t_xf_invoice",
+//                "t_xf_invoice_file",
+//                "t_xf_invoice_item",
+//                "t_xf_match_relation",
+//                "t_xf_none_business_upload_detail",
+//                "t_xf_origin_agreement_bill",
+//                "t_xf_origin_claim_bill",
+//                "t_xf_origin_claim_item_hyper",
+//                "t_xf_origin_claim_item_sams",
+//                "t_xf_origin_epd_bill",
+//                "t_xf_origin_epd_log_item",
+//                "t_xf_overdue",
+//                "t_xf_pre_invoice",
+//                "t_xf_pre_invoice_item",
+//                "t_xf_red_notification",
+//                "t_xf_red_notification_detail",
+//                "t_xf_red_notification_log",
+//                "t_xf_settlement",
+//                "t_xf_settlement_item",
+//                "t_xf_tax_code","t_dx_match",
+//                "t_ac_org","t_dx_question_paper",
+//                "t_dx_record_invoice_detail","t_dx_invoice","t_xf_bill_deduct_item","t_xf_origin_agreement_item"
+                "t_dx_question_paper"
                 );
 //         generateMainCode();
         // generateItemCode();
@@ -100,7 +147,7 @@ public class CodeGenerator {
         templateConfig.setServiceImpl(null);
         templateConfig.setEntity("/template/entity.java");
 //        templateConfig.setEntity(entityPath);
-        templateConfig.setMapper("/template/mapper.java");
+        templateConfig.setMapper(null);
         mpg.setTemplate(templateConfig);
 
         // 策略配置

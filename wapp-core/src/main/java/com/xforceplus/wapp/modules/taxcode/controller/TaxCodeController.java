@@ -5,6 +5,7 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.dto.IdsDto;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
+import com.xforceplus.wapp.modules.taxcode.models.TaxCodeTree;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.entity.TaxCodeEntity;
 import io.swagger.annotations.Api;
@@ -39,9 +40,9 @@ public class TaxCodeController {
                                              @ApiParam("税收分类编码") @RequestParam(required = false) String goodsTaxNo,
                                              @ApiParam("商品名称") @RequestParam(required = false) String itemName,
                                              @ApiParam("itemNo") @RequestParam(required = false) String itemNo,
-                                             @ApiParam("税编大类编码") @RequestParam(required = false) String largeCategoryCode) {
+                                             @ApiParam("税编中类编码") @RequestParam(required = false) String medianCategoryCode) {
         long start = System.currentTimeMillis();
-        val page = taxCodeService.page(current, size, goodsTaxNo, itemName, itemNo, largeCategoryCode);
+        val page = taxCodeService.page(current, size, goodsTaxNo, itemName, itemNo, medianCategoryCode);
         log.info("税编分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
     }
@@ -59,6 +60,16 @@ public class TaxCodeController {
                 .collect(Collectors.toList());
         boolean update = taxCodeService.updateBatchById(entities);
         log.info("税编批量删除,耗时:{}ms", System.currentTimeMillis() - start);
+        return R.ok(update);
+    }
+
+
+    @ApiOperation("税编树")
+    @GetMapping("/tax/code/tree")
+    public R<List<TaxCodeTree>> overdueTree() {
+        long start = System.currentTimeMillis();
+        List<TaxCodeTree> update = taxCodeService.tree();
+        log.info("税编树查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(update);
     }
 }

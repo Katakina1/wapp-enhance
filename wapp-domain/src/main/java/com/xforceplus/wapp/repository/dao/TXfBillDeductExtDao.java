@@ -106,7 +106,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     public Integer updateSuitableClaimBill(@Param("type")Integer type, @Param("status")Integer status, @Param("targetStatus") Integer targetStatus, @Param("settlementNo")String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo);
 
     @Select("<script>"+
-            "select d.* from t_xf_bill_deduct d\n" +
+            "select d.*,s.invoice_type from t_xf_bill_deduct d\n" +
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
             "<if test='businessNo!=null'>"+
@@ -161,25 +161,25 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
             "<if test='businessNo!=null'>"+
-            "and business_no = #{businessNo}\n"+
+            "and d.business_no = #{businessNo}\n"+
             "</if>"+
             "<if test='businessType!=null'>"+
-            "and business_type = #{businessType}\n"+
+            "and d.business_type = #{businessType}\n"+
             "</if>"+
             "<if test='sellerNo!=null'>"+
-            "and seller_no = #{sellerNo}\n"+
+            "and d.seller_no = #{sellerNo}\n"+
             "</if>"+
             "<if test='sellerName!=null'>"+
-            "and seller_name = #{sellerName}\n"+
+            "and d.seller_name = #{sellerName}\n"+
             "</if>"+
             "<if test='businessNo!=null'>"+
-            "and business_no = #{businessNo}\n"+
+            "and d.business_no = #{businessNo}\n"+
             "</if>"+
             "<if test='deductDate!=null'>"+
-            "and format(deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
+            "and format(d.deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
             "</if>"+
             "<if test='purchaserNo!=null'>"+
-            "and purchaser_no= #{deductDate}\n"+
+            "and d.purchaser_no= #{deductDate}\n"+
             "</if>"+
             "<if test='key == 0'>"+
             "and s.settlement_status = 8\n"+

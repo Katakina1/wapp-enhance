@@ -15,6 +15,7 @@ import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
  * @create: 2021-10-14 13:54
  **/
 @Slf4j
+@Component
 public class AgreementBillSaveCommand implements Command {
 
     @Autowired
@@ -38,11 +40,11 @@ public class AgreementBillSaveCommand implements Command {
     private BillJobService billJobService;
     @Autowired
     private OriginAgreementBillService service;
-    @Value("agreementBill.remote.path")
+    @Value("${agreementBill.remote.path}")
     private String remotePath;
-    @Value("agreementBill.local.path")
+    @Value("${agreementBill.local.path}")
     private String localPath;
-    @Value("agreementBill.sheetName")
+    @Value("${agreementBill.sheetName}")
     private String sheetName;
 
     @Override

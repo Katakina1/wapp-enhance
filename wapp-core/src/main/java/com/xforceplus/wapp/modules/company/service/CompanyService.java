@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.CompanyTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
-import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import com.xforceplus.wapp.modules.company.convert.CompanyConverter;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,6 +87,27 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         QueryWrapper<TAcOrgEntity> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(orgCode)) {
             wrapper.eq(TAcOrgEntity.ORG_CODE, orgCode);
+        }
+        if (StringUtils.isNotBlank(orgType)) {
+            wrapper.eq(TAcOrgEntity.ORG_TYPE, orgType);
+        }
+        return this.getOne(wrapper);
+    }
+
+    /**
+     * 根据orgcode获取公司信息
+     *
+     * @param taxNo --jvcode 或者供应商6d号码
+     * @param orgType 5 沃尔玛公司 8供应商公司
+     * @return
+     */
+    public TAcOrgEntity getOrgInfoByTaxNo(String taxNo, String orgType) {
+        if (StringUtils.isEmpty(taxNo)) {
+            return null;
+        }
+        QueryWrapper<TAcOrgEntity> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(taxNo)) {
+            wrapper.eq(TAcOrgEntity.TAX_NO, taxNo);
         }
         if (StringUtils.isNotBlank(orgType)) {
             wrapper.eq(TAcOrgEntity.ORG_TYPE, orgType);

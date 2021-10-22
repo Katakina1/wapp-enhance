@@ -42,11 +42,6 @@ spring:
     user: admin
     password: admin
 
-# Activemq
-activemq:
-  queue-name:
-    enhance-claim-verdict-queue: cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
-#    export-request: cn.wm.host.enhance.export-request.queue # 导出申请
 # Mybatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath:mapper/daoext/*.xml
@@ -92,27 +87,24 @@ Esb:
 # 1、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
 agreementBill:
   remote:
-    path: /tmp/agrementBill/
-    fileNameKeyWords:
+    path: /home/wappftp/wapp/vendor/agreement
   local:
-    path: /tmp/agrementBill/
+    path: /wapp/vendor/agreement
   sheetName: 原始协议单
 claimBill:
   remote:
-    path: /tmp/claimBill/
-    fileNameKeyWords:
+    path: /home/wappftp/wapp/vendor/claim
   local:
-    path: /tmp/claimBill/
+    path: /wapp/vendor/claim
   sheetName: 原始索赔单
-  Item:
+  item:
     hyperSheetName: 原始索赔单Hyper明细
     samsSheetName: 原始索赔单Sams明细
 epdBill:
   remote:
-    path: /tmp/epdBill/
-    fileNameKeyWords:
+    path: /home/wappftp/wapp/vendor/epd
   local:
-    path: /tmp/epdBill/
+    path: /wapp/vendor/epd
   sheetName: 原始EPD单
   item:
     sheetName: 原始EPD单LOG明细

@@ -1,11 +1,8 @@
 package com.xforceplus.wapp.enums;
 
-import com.xforceplus.wapp.common.enums.ValueEnum;
 import lombok.Getter;
 import lombok.NonNull;
-import org.apache.commons.lang3.EnumUtils;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -24,15 +21,17 @@ public enum TXfBillDeductStatusEnum {
     CLAIM_MATCH_SETTLEMENT(106, "索赔单:已生成结算单"),
     CLAIM_WAIT_CHECK(107, "索赔单:待审核"),
     CLAIM_DESTROY(108, "索赔单:已作废"),
+
     // 初始状态 201，合并后 进入 205，匹配完蓝票后 进入 202
     AGREEMENT_NO_MATCH_SETTLEMENT(201, "协议单:待匹配结算单"),
     AGREEMENT_MATCH_SETTLEMENT(202, "协议单:已匹配结算单"),
     AGREEMENT_NO_MATCH_BLUE_INVOICE(205, "协议单:待匹配蓝票"),
-    AGREEMENT_CANCEL(206, "协议单:已取消"),
+    AGREEMENT_DESTROY(206, "协议单:已作废"),
+
     EPD_NO_MATCH_SETTLEMENT(301, "EPD单:待匹配结算单"),
     EPD_MATCH_SETTLEMENT(302, "EPD单:已匹配结算单"),
     EPD_NO_MATCH_BLUE_INVOICE(303, "EPD单:待匹配蓝票"),
-    EPD_CANCEL(304, "EPD单:已取消"),
+    EPD_DESTROY(304, "EPD单:已作废"),
 
     LOCK(1, " 已锁定"),
     UNLOCK(0, "解锁"),
@@ -48,7 +47,7 @@ public enum TXfBillDeductStatusEnum {
         this.desc = desc;
     }
 
-    public static  TXfBillDeductStatusEnum getEnumByCode(@NonNull Integer code) {
+    public static TXfBillDeductStatusEnum getEnumByCode(@NonNull Integer code) {
         return Stream.of(TXfBillDeductStatusEnum.values())
                 .filter(t -> t.getCode().equals(code)).findFirst().orElseGet( null);
     }

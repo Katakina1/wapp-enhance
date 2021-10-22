@@ -13,7 +13,7 @@ import com.xforceplus.wapp.modules.rednotification.model.*;
 import java.util.Date;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {RedNotificationFactory.class})
+@Mapper(componentModel = "spring", uses = {RedNotificationFactory.class},imports = { ConvertHelper.class})
 public interface RedNotificationMainMapper {
 
     TXfRedNotificationEntity mainInfoToEntity(RedNotificationMain rednotificationMain);
@@ -24,6 +24,7 @@ public interface RedNotificationMainMapper {
     List<RedNotificationMain> entityToMainInfoList(List<TXfRedNotificationEntity> redNotificationEntityList);
 
     @Mapping(target = "id", expression = "java(IdGenerator.generate())")
+    @Mapping(target = "goodsNoVer", expression = "java(ConvertHelper.getGoodsNoVer())")
     TXfRedNotificationDetailEntity itemInfoToEntity(RedNotificationItem redNotificationItem);
 
     List<TXfRedNotificationDetailEntity> itemInfoToEntityList(List<RedNotificationItem> redNotificationItemList);
@@ -42,6 +43,6 @@ public interface RedNotificationMainMapper {
 
     List<RedNotificationItem> importInfoListToItemEntityList(List<ImportInfo> importInfoList);
 
-    @Mapping(target = "taxRate", expression = "java(RedNotificationFactory.handleTaxRate(importInfo.getTaxRate()))")
+    @Mapping(target = "taxRate", expression = "java(ConvertHelper.handleTaxRate(importInfo.getTaxRate()))")
     RedNotificationItem importInfoToRedNotificationItem(ImportInfo importInfo);
 }

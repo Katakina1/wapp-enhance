@@ -13,6 +13,7 @@ public enum TXfPreInvoiceStatusEnum {
     WAIT_CHECK(4,"待审核"),
     DESTROY(5,"已作废"),
     APPLY_RED_NOTIFICATION_ING(6,"正在申请红字信息中"),
+    FINISH_SPLIT(7,"已重新拆票-视同逻辑删除"),
     ;
 
     @Getter

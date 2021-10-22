@@ -22,6 +22,7 @@ import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
  * @create: 2021-10-14 14:01
  **/
 @Slf4j
+@Component
 public class EpdBillFilterCommand implements Command {
 
     @Autowired

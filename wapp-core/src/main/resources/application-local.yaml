@@ -34,14 +34,14 @@ wapp:
       tcp: 443
   db2:
     base-url: 127.0.0.1
-  export_success_queue_gfone: cn.wm.host.export.success.queue.gfone
   export:
       tmp: E:/tomcattmp
 
 activemq:
   queue-name:
-    export-request: cn.wm.host.enhance.export-request.queue # 导出申请
-
+    export-request: local-cn.wm.host.enhance.export-request.queue # 导出申请
+    enhance-claim-verdict-queue: local-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+    export-success-queue-gfone: local-cn.wm.host.export.success.queue.gfone
 taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
 mybatis-plus:
   configuration:
@@ -99,3 +99,30 @@ pro:
 
       privateKey: /home/wappftp/.ssh/id_rsa
       passphrase:
+
+# 注意事项
+# 1、请从研发团队获取标准的EXCEL模板
+# 1、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
+agreementBill:
+  remote:
+    path: /home/wappftp/wapp/vendor/agreement
+  local:
+    path: D:/Workspace/wapp-enhance/wapp-core/target
+  sheetName: 原始协议单
+claimBill:
+  remote:
+    path: /home/wappftp/wapp/vendor/claim
+  local:
+    path: D:/Workspace/wapp-enhance/wapp-core/target
+  sheetName: 原始索赔单
+  item:
+    hyperSheetName: 原始索赔单Hyper明细
+    samsSheetName: 原始索赔单Sams明细
+epdBill:
+  remote:
+    path: /home/wappftp/wapp/vendor/epd
+  local:
+    path: D:/Workspace/wapp-enhance/wapp-core/target
+  sheetName: 原始EPD单
+  item:
+    sheetName: 原始EPD单LOG明细

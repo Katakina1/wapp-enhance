@@ -2,8 +2,6 @@ package com.xforceplus.wapp.modules.blackwhitename.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.excel.read.metadata.holder.ReadHolder;
-import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import lombok.Getter;

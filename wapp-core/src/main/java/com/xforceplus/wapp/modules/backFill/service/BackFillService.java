@@ -14,6 +14,7 @@ import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.*;
+import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDetailDao;
@@ -35,6 +36,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -98,6 +100,12 @@ public class BackFillService  {
 
     @Autowired
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
+
+    @Autowired
+    private BlueInvoiceRelationService blueInvoiceRelationService;
+
+    @Autowired
+    private RecordInvoiceService recordInvoiceService;
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                               String tenantId) {
@@ -169,7 +177,7 @@ public class BackFillService  {
         return R.ok(batchNo);
     }
 
-    private VerificationResponse parseOfd(byte[] ofd) {
+    public VerificationResponse parseOfd(byte[] ofd) {
         OfdParseRequest request = new OfdParseRequest();
         request.setOfdEncode(Base64.encodeBase64String(ofd));
         request.setTenantCode(tenantCode);
@@ -435,15 +443,29 @@ public class BackFillService  {
             }
             tXfSettlementDao.update(settlementEntity,settlementUpdateWrapper);
         }else{
+            log.info("发票蓝冲:invoiceNo:{},invoiceCode:{}",request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
+
+            if (org.apache.commons.lang3.StringUtils.isBlank(request.getOriginInvoiceNo())){
+                throw new EnhanceRuntimeException("原红字发票号码不能为空");
+            }
+
+            if (org.apache.commons.lang3.StringUtils.isBlank(request.getOriginInvoiceCode())){
+                throw new EnhanceRuntimeException("原红字发票代码不能为空");
+            }
+
+            // 保存红蓝关系
+            blueInvoiceRelationService.saveBatch(request.getOriginInvoiceNo(), request.getOriginInvoiceCode(), request.getVerifyBeanList());
+
             //TODO 修改发票状态为已蓝冲
             log.info("蓝票回填后匹配--修改发票状态和预制发票状态和结算单状态");
+            recordInvoiceService.blue4RedInvoice(request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
+
+            //作废预制发票
             UpdateWrapper<TXfPreInvoiceEntity> updateWrapper = new UpdateWrapper<>();
             updateWrapper.set(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
             TXfPreInvoiceEntity preInvoiceEntity = new TXfPreInvoiceEntity();
             preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             preInvoiceDao.update(preInvoiceEntity,updateWrapper);
-
-
 
         }
 

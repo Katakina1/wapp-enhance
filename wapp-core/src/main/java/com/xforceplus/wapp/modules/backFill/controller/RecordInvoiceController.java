@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.backFill.controller;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.system.controller.AbstractController;
@@ -44,7 +45,7 @@ public class RecordInvoiceController extends AbstractController {
 
     @ApiOperation(value = "结算单发票列表详情")
     @GetMapping(value = "/detail/{id}")
-    public R detail(@ApiParam(value = "主键",required = true) @PathVariable Long id){
+    public R<InvoiceDetailResponse> detail(@ApiParam(value = "主键",required = true) @PathVariable Long id){
         logger.info("结算单发票列表详情--入参：{}", id);
         return R.ok(recordInvoiceService.getInvoiceById(id));
     }

@@ -65,4 +65,13 @@ public class QueryDeductListResponse {
     @ApiModelProperty("税率")
     private BigDecimal taxRate;
 
+    @ApiModelProperty("定案日期")
+    private Date verdictDate;
+
+    @ApiModelProperty("批次号")
+    private String batchNo;
+
+    @ApiModelProperty("发票类型")
+    private String invoiceType;
+
 }

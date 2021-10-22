@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,16 +9,13 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-
 /**
  * <p>
     * 
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-12
+ * @since 2021-10-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

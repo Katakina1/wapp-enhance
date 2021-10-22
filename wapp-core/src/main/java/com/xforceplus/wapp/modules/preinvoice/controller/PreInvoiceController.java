@@ -3,7 +3,9 @@ package com.xforceplus.wapp.modules.preinvoice.controller;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import com.xforceplus.wapp.modules.preinvoice.dto.SplitAgainRequest;
+import com.xforceplus.wapp.modules.preinvoice.dto.UndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.preinvoice.service.PreInvoiceDaoService;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -20,6 +22,9 @@ public class PreInvoiceController {
 
     @Autowired
     PreInvoiceDaoService preInvoiceDaoService;
+
+    @Autowired
+    PreinvoiceService preinvoiceService;
 
     @ApiOperation(value = "预制发票申请红字信息", notes = "", response = Response.class, tags = {"预制发票"})
     @ApiResponses(value = {
@@ -50,5 +55,15 @@ public class PreInvoiceController {
 //        return  null ;
 //    }
 
+
+
+    @PostMapping(value = "/undo-notification")
+    public Response undoRedNotificationByInvoice(@RequestBody UndoRedNotificationRequest request){
+
+        this.preinvoiceService.applyDestroyPreInvoiceAndRedNotification(request.getInvoiceNo(), request.getInvoiceCode());
+
+        return Response.ok("申请成功！请等待购方审核或操作！");
+
+    }
 
 }
