@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,16 +13,22 @@ import com.xforceplus.wapp.enums.DeductBillTabEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.export.dto.DeductBillExportDto;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
+import com.xforceplus.wapp.modules.deduct.dto.DeductExportRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
+import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
+import com.xforceplus.wapp.threadpool.ThreadPoolManager;
+import com.xforceplus.wapp.threadpool.callable.ExportDeductCallable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +41,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
+
+import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
 /**
  * 类描述：扣除单通用方法
@@ -68,6 +77,8 @@ public class DeductService   {
     private CompanyService companyService;
     @Autowired
     protected BlueInvoiceService blueInvoiceService;
+    @Autowired
+    private ExcelExportLogService excelExportLogService;
     @PostConstruct
     public void initData() {
         int no = 1001121107;
@@ -632,7 +643,7 @@ public class DeductService   {
      * @return PageResult
      */
     public List<JSONObject> queryPageTab(QueryDeductListRequest request){
-        List<JSONObject> list = new ArrayList();
+        List<JSONObject> list = new ArrayList<>();
         int key0 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
                 request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.TO_BE_MATCH.getValue());
         JSONObject jsonObject0 = new JSONObject();
@@ -706,6 +717,36 @@ public class DeductService   {
         }
         return response;
     }
+
+    public void export(DeductExportRequest request, XFDeductionBusinessTypeEnum typeEnum) {
+        final Long userId = UserUtil.getUserId();
+        DeductBillExportDto dto = new DeductBillExportDto();
+        dto.setType(typeEnum);
+        dto.setRequest(request);
+        dto.setUserId(userId);
+        dto.setLoginName(UserUtil.getLoginName());
+        TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
+        excelExportlogEntity.setCreateDate(new Date());
+        //这里的userAccount是userid
+        excelExportlogEntity.setUserAccount(dto.getUserId().toString());
+        excelExportlogEntity.setUserName(dto.getLoginName());
+        excelExportlogEntity.setConditions(JSON.toJSONString(request));
+        excelExportlogEntity.setStartDate(new Date());
+        excelExportlogEntity.setExportStatus(ExcelExportLogService.REQUEST);
+        excelExportlogEntity.setServiceType(SERVICE_TYPE);
+        this.excelExportLogService.save(excelExportlogEntity);
+        dto.setLogId(excelExportlogEntity.getId());
+        ExportDeductCallable callable = new ExportDeductCallable(this,dto,typeEnum);
+        ThreadPoolManager.submitCustomL1(callable);
+    }
+
+    public boolean doExport(DeductBillExportDto dto, XFDeductionBusinessTypeEnum typeEnum){
+        boolean flag = true;
+
+        return flag;
+    }
+
+
 
     private QueryWrapper<TXfBillDeductEntity>  getQueryWrapper(QueryDeductListRequest   request){
         QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
