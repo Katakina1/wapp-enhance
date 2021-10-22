@@ -151,7 +151,7 @@ public class ClaimDeductScheduler {
        // claimBillService.matchClaimBill();
 
        // claimBillService.claimMatchBlueInvoice();
-       claimBillService.mergeClaimSettlement();
+      // claimBillService.mergeClaimSettlement();
     }
     @Autowired
     private ClaimBillService claimBillService;
