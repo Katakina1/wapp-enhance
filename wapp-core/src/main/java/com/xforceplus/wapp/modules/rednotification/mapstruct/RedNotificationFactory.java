@@ -39,35 +39,9 @@ public class RedNotificationFactory {
     }
 
 
-    /**
-     * 处理税率% 问题
-     */
-    public static   BigDecimal handleTaxRate(String taxRate){
-        //处理带百分号的税率
-        try {
-            //如果是标准的数字格式字符串
-            BigDecimal decimal = new BigDecimal(taxRate);
-            return  decimal;
-        }catch (Exception e){
-            String substring = taxRate.substring(0,taxRate.length()-1);
-            try {
-                BigDecimal decimal = new BigDecimal(substring);
-                BigDecimal divide = decimal.divide(new BigDecimal(100), 3, RoundingMode.HALF_UP);
-                return  divide;
-            }catch (Exception e1) {
-                log.error("field {} value {} e {}", "taxRate", taxRate, e1);
 
-            }
-        }
-        return null;
-    }
 
-    /**
-     * 获取税编版本
-     */
-    public static String getGoodsNoVer(){
-        return "33.0";
-    }
+
 
 
 }
