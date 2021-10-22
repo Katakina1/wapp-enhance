@@ -27,15 +27,4 @@ public class SettlementService {
         //调用拆票请求
         return StringUtils.EMPTY;
     }
-
-    /**
-     * 取消结算单
-     * @param settlementNo
-     * @param xfDeductionBusinessTypeEnum
-     */
-    public void cancleSettlement(String settlementNo, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
-        // epd 协议单 回到 最初状态，回撤蓝票余额
-        return;
-    }
-
 }
