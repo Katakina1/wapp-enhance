@@ -51,19 +51,21 @@ public class DeductService   {
     @Autowired
     private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
     @Autowired
-    private TXfSettlementDao tXfSettlementDao;
+    protected TXfSettlementDao tXfSettlementDao;
     @Autowired
-    private TXfSettlementItemDao tXfSettlementItemDao;
+    protected TXfSettlementItemDao tXfSettlementItemDao;
     @Autowired
     protected   IDSequence idSequence;
     @Autowired
     private TaxRateConfig taxRateConfig;
     @Autowired
-    private TaxCodeServiceImpl taxCodeService;
+    protected TaxCodeServiceImpl taxCodeService;
     @Autowired
     private CompanyService companyService;
     @Autowired
     protected BlueInvoiceService blueInvoiceService;
+    @Autowired
+    protected TXfBillDeductInvoiceDao tXfBillDeductInvoiceDao;
     @PostConstruct
     public void initData() {
         int no = 1001121107;
@@ -520,15 +522,14 @@ public class DeductService   {
         return res;
     }
 
-    private static String defaultValue(String value) {
+    static String defaultValue(String value) {
         return StringUtils.isEmpty(value) ? StringUtils.EMPTY : value;
     }
     private BigDecimal defaultValue(BigDecimal value) {
         return Objects.isNull(value) ? BigDecimal.ZERO : value;
     }
-    private Integer defaultValue(Integer value) {
-        return Objects.isNull(value) ? 0 : value;
-    }
+    private Integer defaultValue(Integer value) { return Objects.isNull(value) ? 0 : value; }
+    static Long defaultValue(Long value) {  return Objects.isNull(value) ? 0L : value; }
 
 
     enum DeductionHandleEnum {
@@ -595,7 +596,8 @@ public class DeductService   {
         tXfBillDeductEntity.setRefSettlementNo(StringUtils.EMPTY);
         tXfBillDeductEntity.setAgreementTaxCode(StringUtils.EMPTY);
         tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
-
+        tXfBillDeductEntity.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
+        tXfBillDeductEntity.setSourceId(defaultValue(deductBillBaseData.getId()));
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
         return tXfBillDeductEntity;
     }

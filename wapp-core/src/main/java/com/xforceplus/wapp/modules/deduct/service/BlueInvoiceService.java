@@ -57,30 +57,30 @@ public class BlueInvoiceService {
     @Autowired
     private BlueInvoiceRelationService blueInvoiceRelationService;
 
-    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo) {
+    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo) {
         switch (deductionEnum) {
             case AGREEMENT_BILL:
-                return obtainAgreementInvoices(amount, settlementNo);
+                return obtainAgreementInvoices(amount, settlementNo, sellerTaxNo);
             case CLAIM_BILL:
-                return obtainClaimInvoices(amount, settlementNo);
+                return obtainClaimInvoices(amount, settlementNo, sellerTaxNo);
             case EPD_BILL:
-                return obtainEpdInvoices(amount, settlementNo);
+                return obtainEpdInvoices(amount, settlementNo, sellerTaxNo);
             default:
                 log.error("未识别的单据类型{}", deductionEnum);
                 return Collections.emptyList();
         }
     }
 
-    private List<MatchRes> obtainAgreementInvoices(BigDecimal amount, String settlementNo) {
-        return obtainInvoices(amount, settlementNo, true);
+    private List<MatchRes> obtainAgreementInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo) {
+        return obtainInvoices(amount, settlementNo, sellerTaxNo,true);
     }
 
-    private List<MatchRes> obtainClaimInvoices(BigDecimal amount, String settlementNo) {
-        return obtainInvoices(amount, settlementNo, false);
+    private List<MatchRes> obtainClaimInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo) {
+        return obtainInvoices(amount, settlementNo, sellerTaxNo, false);
     }
 
-    private List<MatchRes> obtainEpdInvoices(BigDecimal amount, String settlementNo) {
-        return obtainInvoices(amount, settlementNo, true);
+    private List<MatchRes> obtainEpdInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo) {
+        return obtainInvoices(amount, settlementNo, sellerTaxNo, true);
     }
 
     /**
@@ -89,7 +89,7 @@ public class BlueInvoiceService {
      * @param withItems
      * @return
      */
-    private List<MatchRes> obtainInvoices(BigDecimal amount, String settlementNo, boolean withItems) {
+    private List<MatchRes> obtainInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, boolean withItems) {
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         TXfInvoiceEntity tXfInvoiceEntity;
@@ -97,12 +97,14 @@ public class BlueInvoiceService {
             tXfInvoiceEntity = invoiceService.getOne(
                     new QueryWrapper<TXfInvoiceEntity>()
                             .lambda()
-                            // 排除可用金额=0的发票
-                            .gt(TXfInvoiceEntity::getRemainingAmount, BigDecimal.ZERO)
-                            // 排除非专票（只要增值税专票）
-                            .eq(TXfInvoiceEntity::getTaxCategory, "01")
+                            .eq(TXfInvoiceEntity::getSellerTaxNo, sellerTaxNo)
                             // 排除状态异常的发票（只要正常的发票）
                             .eq(TXfInvoiceEntity::getStatus, "1")
+                            // 排除非专票（只要增值税专票）
+                            .eq(TXfInvoiceEntity::getTaxCategory, "01")
+                            // 排除可用金额=0的发票
+                            .gt(TXfInvoiceEntity::getRemainingAmount, BigDecimal.ZERO)
+                            // 按照发票先进先出
                             .orderByAsc(TXfInvoiceEntity::getPaperDrewDate)
             );
             if (Objects.nonNull(tXfInvoiceEntity)) {
@@ -317,31 +319,36 @@ public class BlueInvoiceService {
         /**
          * 数量
          */
-        private String num;
+        private BigDecimal num;
 
         /**
          * 单价
          */
-        private String unitPrice;
+        private BigDecimal unitPrice;
 
         /**
          * 金额
          */
-        private String detailAmount;
+        private BigDecimal detailAmount;
 
         /**
          * 税率
          */
-        private String taxRate;
+        private BigDecimal taxRate;
 
         /**
          * 税额
          */
-        private String taxAmount;
+        private BigDecimal taxAmount;
 
         /**
          * 商品编码
          */
         private String goodsNum;
+        /**
+         * 发票明细ID
+         */
+        private Long itemId;
+
     }
 }
