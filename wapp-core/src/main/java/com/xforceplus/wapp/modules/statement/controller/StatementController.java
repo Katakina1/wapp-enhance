@@ -165,7 +165,7 @@ public class StatementController {
         return R.ok(confirm);
     }
 
-    @ApiOperation("结算单确认列表")
+    @ApiOperation("结算单列表确认")
     @PostMapping("/settlement/confirm/{confirmType}")
     public R<Boolean> settlementConfirm(@ApiParam(value = "确认类型 1.单价不变、3.数量不变", required = true)
                                         @PathVariable Integer confirmType,
