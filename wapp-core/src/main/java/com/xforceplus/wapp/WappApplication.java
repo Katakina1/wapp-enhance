@@ -14,7 +14,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @description
  * @create 2021-09-08 17:25
  **/
-@EnableAsync
+@EnableAsync(proxyTargetClass = true)
 @EnableScheduling
 @EnableSwagger2
 @SpringBootApplication

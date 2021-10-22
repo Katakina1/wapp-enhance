@@ -12,8 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static com.xforceplus.wapp.util.LocalFileSystemManager.createFolderIfNonExist;
-
 /**
  * sftp链接工具类
  *
@@ -57,9 +55,14 @@ public class SFTPRemoteManager {
 
     @Value("${pro.sftp.username}")
     private String userName;
+    @Value("${pro.sftp.password}")
+    private String password;
 
     @Value("${pro.sftp.default.timeout}")
     private int timeout;
+
+    @Value("${pro.sftp.auth-method}")
+    private String authMethod;
 
     /**
      * 判断SFTP channel是否正常连接
@@ -89,20 +92,25 @@ public class SFTPRemoteManager {
         // 创建JSch对象
         JSch jsch = new JSch();
 
-        if (StringUtils.isNotBlank(privateKey)) {
-            //使用密钥验证方式，密钥可以使有口令的密钥，也可以是没有口令的密钥
-            if ("".equals(passphrase)) {
-                jsch.addIdentity(privateKey, passphrase);
+        if (Objects.equals(authMethod, "private")) {
+            if (StringUtils.isNotBlank(privateKey)) {
+                //使用密钥验证方式，密钥可以使有口令的密钥，也可以是没有口令的密钥
+                if ("".equals(passphrase)) {
+                    jsch.addIdentity(privateKey, passphrase);
+                } else {
+                    jsch.addIdentity(privateKey);
+                }
             } else {
-                jsch.addIdentity(privateKey);
+                throw new JSchException(String.format("密钥错误privateKey=%s,SFTP连接初始化失败", privateKey));
             }
-        } else {
-            throw new JSchException(String.format("密钥错误privateKey=%s,SFTP连接初始化失败", privateKey));
         }
 
         // 通过 用户名，主机地址，端口 获取一个Session对象
         session = jsch.getSession(userName, host, port);
-
+        // 设置密码
+        if (Objects.equals(authMethod, "password") && password != null) {
+            this.session.setPassword(password);
+        }
         // 为Session对象设置properties
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
@@ -132,34 +140,27 @@ public class SFTPRemoteManager {
     /**
      * 返回SFTP指定目录下所有文件名
      *
-     * @param path             文件路径
-     * @param fileNameKeyWords 文件名关键字
+     * @param path 文件路径
      * @return
      * @throws JSchException
      * @throws SftpException
      */
-    public List<String> getFileNames(String path, String fileNameKeyWords) throws SftpException, JSchException {
+    public List<String> listFiles(String path) throws SftpException, JSchException {
         if (!isChannelConnected()) {
             throw new JSchException("SFTP连接故障，请重新连接");
         }
         // 进入目录
-        try {
-            sftp.cd(path);
-        } catch (SftpException e) {
-            if (ChannelSftp.SSH_FX_NO_SUCH_FILE == e.id) {
-                sftp.mkdir(path);
-                sftp.cd(path);
-            } else {
-                throw e;
-            }
-        }
-        List<String> fileNames = new ArrayList<>();
+        sftp.cd(path);
+        List<String> files = new ArrayList<>();
         // 根据名称关键字查询所有文件名
-        Vector<LsEntry> vector = sftp.ls(fileNameKeyWords);
+        Vector<LsEntry> vector = sftp.ls(path);
         for (LsEntry lsEntry : vector) {
-            fileNames.add(lsEntry.getFilename());
+            if (".".equals(lsEntry.getFilename()) || "..".equals(lsEntry.getFilename())) {
+                continue;
+            }
+            files.add(lsEntry.getFilename());
         }
-        return fileNames;
+        return files;
     }
 
     /**
@@ -169,14 +170,15 @@ public class SFTPRemoteManager {
      * @param fileName 文件名
      * @throws SftpException
      */
-    public void downloadFile(String path, String fileName, String localPath) throws SftpException, IOException {
-        createFolderIfNonExist(localPath);
+    public void downloadFile(String path, String fileName, String localPath) throws SftpException, JSchException, IOException {
         // 进入并设置为当前目录
         sftp.cd(path);
         // 下载
         File file = new File(localPath, fileName);
-        FileOutputStream out = new FileOutputStream(file);
-        sftp.get(path, out);
-        out.close();
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            sftp.get(fileName, out);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }

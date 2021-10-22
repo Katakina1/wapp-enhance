@@ -19,6 +19,7 @@ import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommAgreementService;
 import com.xforceplus.wapp.service.CommEpdService;
+import com.xforceplus.wapp.service.CommSettlementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,8 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
     @Autowired
     CommEpdService commEpdService;
     @Autowired
+    CommSettlementService commSettlementService;
+    @Autowired
     RedNotificationOuterService redNotificationOuterService;
     @Autowired
     PreInvoiceItemDaoService preInvoiceItemDaoService;
@@ -46,14 +49,17 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
     public Response<PreInvoiceItem> applyOperation(ApplyOperationRequest request) {
         int applyOperationType = request.getApplyOperationType();
 
-        // 操作类型 1 修改税编 2 修改限额 3 修改商品明细
+        // 操作类型 1 修改税编 2 修改限额 3不做任何修改 4 修改商品明细
         switch (applyOperationType){
             case 1:
-            case 2:
                 //获取重新作废明细重新拆票，重新申请红字信息
                 return retryApplyRednotification(request);
+            case 2:
             case 3:
-                //判断结算单 是否有红票
+                //限额 和 不做任何修改
+                commSettlementService.againSplitSettlementPreInvoice(Long.parseLong(request.getSettlementId()));
+            case 4:
+                //撤销结算单
                 return rollBackSettlement(request);
             default:
                 return Response.failed("操作类型不正确, 1 修改税编 2 修改限额 3 修改商品明细");

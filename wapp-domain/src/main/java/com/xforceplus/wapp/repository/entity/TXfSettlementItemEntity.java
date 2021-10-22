@@ -155,7 +155,13 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableField("item_flag")
     private Integer itemFlag;
 
-    @TableField(value="update_time", update="getdate()" )
+    /**
+     * 第三方id  索赔明细Id、蓝票明细ID
+     */
+    @TableField("thrid_id")
+    private Long thridId;
+
+    @TableField(value="update_time", update="now(3)" )
     private Date updateTime;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
@@ -215,6 +221,8 @@ public class TXfSettlementItemEntity extends BaseEntity {
     public static final String ITEM_STATUS = "item_status";
 
     public static final String ITEM_FLAG = "item_flag";
+
+    public static final String THRID_ID = "thrid_id";
 
     public static final String UPDATE_TIME = "update_time";
 

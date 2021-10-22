@@ -195,6 +195,7 @@ public class TaxWareService {
                     tXfRedNotificationLogEntity.setProcessRemark(redMessageInfo.getProcessRemark());
                     tXfRedNotificationLogEntity.setStatus(3);
                     redNotificationLogService.updateById(tXfRedNotificationLogEntity);
+                    commPreInvoiceService.applyPreInvoiceRedNotificationFail(Long.parseLong(tXfRedNotificationEntity.getPid()));
                 }
             }
 
