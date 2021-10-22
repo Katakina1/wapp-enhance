@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 原始EPD单数据
@@ -40,7 +42,7 @@ public class OriginEpdBillDto extends BaseEntity {
     private String clearingDate;
 
     @ExcelProperty("Amount in local currency")
-    private String amountInLocalCurrency;
+    private BigDecimal amountInLocalCurrency;
 
     @ExcelProperty("Reference key 2")
     private String referenceKey2;
