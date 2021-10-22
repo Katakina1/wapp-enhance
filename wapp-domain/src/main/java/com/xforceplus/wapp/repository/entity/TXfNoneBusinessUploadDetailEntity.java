@@ -1,10 +1,11 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
-
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -14,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-22
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -141,13 +142,13 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     /**
      * 创建人
      */
-    @TableField(value = "create_user")
+    @TableField("create_user")
     private String createUser;
 
     /**
      * 创建时间
      */
-    @TableField(value = "create_time",fill = FieldFill.INSERT)
+    @TableField("create_time")
     private Date createTime;
 
     /**
@@ -159,7 +160,7 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     /**
@@ -167,6 +168,12 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
      */
     @TableField("file_type")
     private String fileType;
+
+    /**
+     * 是否提交 0未提交 1 已提交
+     */
+    @TableField("submit_flag")
+    private String submitFlag;
 
     @TableField("invoice_date")
     private String invoiceDate;
@@ -219,6 +226,8 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     public static final String UPDATE_TIME = "update_time";
 
     public static final String FILE_TYPE = "file_type";
+
+    public static final String SUBMIT_FLAG = "submit_flag";
 
     public static final String INVOICE_DATE = "invoice_date";
 

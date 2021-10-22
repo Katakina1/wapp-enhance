@@ -62,4 +62,12 @@ public interface Constants {
      * 非商验签失败
      */
     String SIGIN_NONE_BUSINESS_FAIL="1";
+    /**
+     * 非商是否提交标识 未提交
+     */
+    String SUBMIT_NONE_BUSINESS_UNDO_FLAG="0";
+    /**
+     * 非商是否提交标识 已提交
+     */
+    String SUBMIT_NONE_BUSINESS_DONE_FLAG="1";
 }

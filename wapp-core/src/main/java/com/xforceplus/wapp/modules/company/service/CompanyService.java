@@ -39,6 +39,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
     private final CompanyConverter companyConverter;
     @Value("${wapp.export.tmp}")
     private String tmp;
+
     public CompanyService(CompanyConverter companyConverter) {
         this.companyConverter = companyConverter;
     }
@@ -97,7 +98,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
     /**
      * 根据orgcode获取公司信息
      *
-     * @param taxNo --jvcode 或者供应商6d号码
+     * @param taxNo   --jvcode 或者供应商6d号码
      * @param orgType 5 沃尔玛公司 8供应商公司
      * @return
      */
@@ -192,24 +193,23 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
             }
         });
         boolean save = saveBatch(addList, 2000);
-        if(CollectionUtils.isNotEmpty(updateList)){
-            updateList.stream().forEach(update ->{
+        if (CollectionUtils.isNotEmpty(updateList)) {
+            updateList.stream().forEach(update -> {
                 updateCompanyInfoById(update);
             });
         }
-        if(CollectionUtils.isNotEmpty(listener.getInvalidInvoices())){
-            EasyExcel.write(tmp+file.getOriginalFilename(), CompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
+        if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
+            EasyExcel.write(tmp + file.getOriginalFilename(), CompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
         }
-        return save||CollectionUtils.isNotEmpty(updateList) ? Either.right(list.size()) : Either.right(0);
+        return save || CollectionUtils.isNotEmpty(updateList) ? Either.right(list.size()) : Either.right(0);
     }
 
 
-
-    public List<TAcOrgEntity> getPurchaserOrgs(){
-        LambdaQueryWrapper<TAcOrgEntity> wrapper=new LambdaQueryWrapper<>();
-        wrapper.select(TAcOrgEntity::getOrgName,TAcOrgEntity::getTaxNo,TAcOrgEntity::getOrgCode);
-        wrapper.eq(TAcOrgEntity::getOrgType,5);
+    public List<TAcOrgEntity> getPurchaserOrgs() {
+        LambdaQueryWrapper<TAcOrgEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(TAcOrgEntity::getOrgName, TAcOrgEntity::getTaxNo, TAcOrgEntity::getOrgCode);
+        wrapper.eq(TAcOrgEntity::getOrgType, 5);
 
         return this.list(wrapper);
 
