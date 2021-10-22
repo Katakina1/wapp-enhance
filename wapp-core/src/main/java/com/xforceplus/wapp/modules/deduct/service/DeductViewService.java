@@ -1,5 +1,8 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -7,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
@@ -15,6 +19,8 @@ import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.modules.overdue.models.Overdue;
+import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
@@ -25,6 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +48,11 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
     @Autowired
     private DeductMapper deductMapper;
+
+    @Autowired
+    private OverdueServiceImpl overdueService;
+
+
 
     public List<SummaryResponse> summary(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
 
@@ -71,6 +85,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         summaryResponse.setAll(true);
         summaryResponse.setTaxRateText("全部");
         summaryResponse.setCount(summaryResponses.stream().map(SummaryResponse::getCount).reduce(0, Integer::sum));
+        summaryResponse.setTaxRate("-1");
         summaryResponses.add(0,summaryResponse);
         return summaryResponses;
     }
@@ -80,7 +95,11 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         TXfBillDeductEntity deductEntity=new TXfBillDeductEntity();
         deductEntity.setBusinessNo(request.getBillNo());
         deductEntity.setPurchaserNo(request.getPurchaserNo());
-        deductEntity.setTaxRate(request.getTaxRate());
+        if (request.getTaxRate()!=null &&
+                request.getTaxRate().compareTo(new BigDecimal(-1)) !=0
+        ){
+            deductEntity.setTaxRate(request.getTaxRate());
+        }
 
         deductEntity.setStatus(request.getStatus());
 
@@ -112,6 +131,50 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         if (StringUtils.isNotBlank(verdictDateEnd)){
             final String format = DateUtils.addDayToYYYYMMDD(verdictDateEnd, 1);
             wrapper.le(TXfBillDeductEntity.VERDICT_DATE,format);
+        }
+
+        wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE,typeEnum.getValue());
+
+        //超期判断
+        if (request.getOverdue() != null ) {
+            // TODO
+            ServiceTypeEnum serviceTypeEnum = null;
+            switch (typeEnum){
+                case CLAIM_BILL:
+                    serviceTypeEnum= ServiceTypeEnum.CLAIM;
+                    break;
+                case AGREEMENT_BILL:
+                    serviceTypeEnum=ServiceTypeEnum.AGREEMENT;
+                    break;
+                case EPD_BILL:
+                    serviceTypeEnum=ServiceTypeEnum.EPD;
+                    break;
+                default:
+                    throw new EnhanceRuntimeException("业务单据类型有误:"+typeEnum.getDes());
+            }
+
+            final Optional<Overdue> overdue = overdueService.oneOptBySellerNo(serviceTypeEnum, request.getSellerNo());
+
+
+
+            overdue.ifPresent(x->{
+                final DateTime dateTime = DateUtil.offsetDay(new Date(), -x.getOverdueDay()+1);
+                final Date date = dateTime.setField(DateField.HOUR,0)
+                        .setField(DateField.MINUTE,0)
+                        .setField(DateField.SECOND,0)
+                        .setField(DateField.MILLISECOND,0)
+                        .toJdkDate();
+                switch (request.getOverdue()){
+                    case 1:
+                        wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE,date);
+                        break;
+                    case 0:
+                        wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE,date);
+                        break;
+                }
+            });
+
+
         }
 
 
@@ -146,6 +209,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 // TODO
 
 
+
         return Collections.emptyMap();
     }
 
@@ -166,4 +230,18 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
     public TXfSettlementEntity mergeSettlementByManual(List<String> businessNo, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
         return null;
     }
+
+
+//    public static void main(String[] args) {
+//        final DateTime dateTime = DateUtil.offsetDay(new Date(), -5);
+//        final Date date = dateTime.setField(DateField.HOUR,0)
+//                .setField(DateField.MINUTE,0)
+//                .setField(DateField.SECOND,0)
+//                .setField(DateField.MILLISECOND,0)
+//                .toJdkDate();
+//        // 15 + 5 = 20
+//        // 17 + 5 = 22
+//        //
+//        System.out.println("args = " + date);
+//    }
 }

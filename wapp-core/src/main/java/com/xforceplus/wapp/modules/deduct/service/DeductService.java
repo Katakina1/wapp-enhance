@@ -8,6 +8,11 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.export.dto.DeductBillExportDto;
@@ -18,6 +23,8 @@ import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
+import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
@@ -32,12 +39,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -65,7 +76,8 @@ public class DeductService   {
     protected TXfSettlementItemDao tXfSettlementItemDao;
     @Autowired
     protected   IDSequence idSequence;
-
+    @Autowired
+    private TaxRateConfig taxRateConfig;
     @Autowired
     protected TaxCodeServiceImpl taxCodeService;
     @Autowired
@@ -167,7 +179,6 @@ public class DeductService   {
      */
     public boolean receiveData(List<DeductBillBaseData> deductBillBaseDataList, XFDeductionBusinessTypeEnum deductionEnum) {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
-
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             unlockAndCancel(deductionEnum, tXfBillDeductEntity );
             tXfBillDeductExtDao.insert(tXfBillDeductEntity);
@@ -620,15 +631,71 @@ public class DeductService   {
         excelExportlogEntity.setStartDate(new Date());
         excelExportlogEntity.setExportStatus(ExcelExportLogService.REQUEST);
         excelExportlogEntity.setServiceType(SERVICE_TYPE);
-       // this.excelExportLogService.save(excelExportlogEntity);
+        this.excelExportLogService.save(excelExportlogEntity);
         dto.setLogId(excelExportlogEntity.getId());
-        ExportDeductCallable callable = new ExportDeductCallable(this,dto,typeEnum);
+        ExportDeductCallable callable = new ExportDeductCallable(this,dto);
         ThreadPoolManager.submitCustomL1(callable);
     }
 
-    public boolean doExport(DeductBillExportDto dto, XFDeductionBusinessTypeEnum typeEnum){
+    public boolean doExport(DeductBillExportDto exportDto){
         boolean flag = true;
-
+        DeductExportRequest request = exportDto.getRequest();
+        XFDeductionBusinessTypeEnum typeEnum = exportDto.getType();
+        //这里的userAccount是userid
+        final TDxExcelExportlogEntity excelExportlogEntity = excelExportLogService.getById(exportDto.getLogId());
+        excelExportlogEntity.setEndDate(new Date());
+        excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
+        TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
+        //这里的userAccount是userName
+        messagecontrolEntity.setUserAccount(exportDto.getLoginName());
+        messagecontrolEntity.setContent(getSuccContent());
+        //主信息
+        List<QueryDeductListResponse> queryDeductListResponse = getExportMainData(request);
+        if(CollectionUtils.isEmpty(queryDeductListResponse)){
+            log.info("业务单导出--未查到数据");
+            return false;
+        }
+        final String excelFileName = ExcelExportUtil.getExcelFileName(exportDto.getUserId(), exportDto.getType().getDes());
+        ExcelWriter excelWriter;
+        ByteArrayOutputStream out = null;
+        ByteArrayInputStream in = null;
+        String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        try {
+            out = new ByteArrayOutputStream();
+            excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
+            //创建一个sheet
+            WriteSheet writeSheet = EasyExcel.writerSheet(0, "主信息").build();
+            writeSheet.setClazz(ExportClaimBillModel.class);
+            excelWriter.write(queryDeductListResponse, writeSheet);
+            //只有索赔单有明细信息
+            if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
+                List<DeductDetailResponse> exportItem = getExportItem(queryDeductListResponse.stream().map(QueryDeductListResponse::getId).collect(Collectors.toList()));
+                //创建一个新的sheet
+                WriteSheet writeSheet1 = EasyExcel.writerSheet(1, "明细信息").build();
+                writeSheet1.setClazz(ExportClaimBillItemModel.class);
+                excelWriter.write(exportItem, writeSheet1);
+            }
+            out.flush();
+            excelWriter.finish();
+            out.close();
+            //推送sftp
+            String ftpFilePath = ftpPath + "/" + excelFileName;
+            in = new ByteArrayInputStream(out.toByteArray());
+            ftpUtilService.uploadFile(ftpPath, excelFileName, in);
+            messagecontrolEntity.setUrl(exportCommonService.getUrl(excelExportlogEntity.getId()));
+            excelExportlogEntity.setFilepath(ftpFilePath);
+            messagecontrolEntity.setTitle(exportDto.getType().getDes() + "导出成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(exportDto.getType().getDes()+"导出失败:" + e.getMessage(), e);
+            excelExportlogEntity.setExportStatus(ExcelExportLogService.FAIL);
+            excelExportlogEntity.setErrmsg(e.getMessage());
+            messagecontrolEntity.setTitle( exportDto.getType().getDes() + "导出失败");
+            messagecontrolEntity.setContent(exportCommonService.getFailContent(e.getMessage()));
+            flag = false;
+        } finally {
+            excelExportLogService.updateById(excelExportlogEntity);
+        }
         return flag;
     }
 
@@ -735,6 +802,38 @@ public class DeductService   {
             tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
         }
         return tXfSettlementItemEntity;
+    }
+
+    public String getSuccContent() {
+        String createDate = DateUtils.format(new Date());
+        String content = "申请时间：" + createDate + "。申请导出成功，可以下载！";
+        return content;
+    }
+
+    public List<QueryDeductListResponse> getExportMainData(DeductExportRequest request){
+        if(request.getIdList() != null){
+            QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
+            wrapper.in(TXfBillDeductEntity.ID,request.getIdList());
+            List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.selectList(wrapper);
+            List<QueryDeductListResponse> response = new ArrayList<>();
+            BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
+            return response;
+        }else{
+            PageResult<QueryDeductListResponse> pageResult = queryPageList(request);
+            if(pageResult != null && CollectionUtils.isNotEmpty(pageResult.getRows())){
+                return  pageResult.getRows();
+            }
+        }
+        return null;
+    }
+
+    public List<DeductDetailResponse> getExportItem(List<Long> idList){
+        List<DeductDetailResponse> response = new ArrayList<>();
+        for (Long id : idList) {
+            DeductDetailResponse deductDetailById = getDeductDetailById(id);
+            response.add(deductDetailById);
+        }
+        return response;
     }
 
 }
