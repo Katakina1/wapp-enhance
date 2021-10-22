@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 原始索赔单数据
@@ -85,7 +87,7 @@ public class OriginClaimBillDto extends BaseEntity {
      * 成本金额
      */
     @ExcelProperty("成本金额")
-    private String costAmount;
+    private BigDecimal costAmount;
 
     /**
      * 所扣发票
@@ -103,7 +105,7 @@ public class OriginClaimBillDto extends BaseEntity {
      * 含税金额
      */
     @ExcelProperty("含税金额")
-    private String amountWithTax;
+    private BigDecimal amountWithTax;
 
     /**
      * 店铺类型（Hyper或Sams）

@@ -64,7 +64,7 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
     @TableField("reference_key_1")
     private String referenceKey1;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @TableField("cash_disc_amt_lc")

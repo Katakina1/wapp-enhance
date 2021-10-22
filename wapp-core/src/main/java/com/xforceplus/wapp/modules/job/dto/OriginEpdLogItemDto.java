@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 原始EPD单LOG明细
@@ -73,10 +75,10 @@ public class OriginEpdLogItemDto extends BaseEntity {
     private String cl;
 
     @ExcelProperty("Discount Amount")
-    private String discountAmount;
+    private BigDecimal discountAmount;
 
     @ExcelProperty("Amount")
-    private String amount;
+    private BigDecimal amount;
 
     @ExcelProperty("Date in Format YYYYMMDD")
     private String dateInFormatYyyymmdd;

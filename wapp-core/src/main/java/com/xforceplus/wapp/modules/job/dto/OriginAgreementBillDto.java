@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 原始协议单数据SAP-FBL5N
@@ -28,7 +30,7 @@ public class OriginAgreementBillDto extends BaseEntity {
     private String customerName;
 
     @ExcelProperty("金额(含税)")
-    private String amountWithTax;
+    private BigDecimal amountWithTax;
 
     @ExcelProperty("协议类型编码")
     private String reasonCode;
@@ -64,5 +66,5 @@ public class OriginAgreementBillDto extends BaseEntity {
     private String postingDate;
 
     @ExcelProperty("税额")
-    private String taxAmount;
+    private BigDecimal taxAmount;
 }

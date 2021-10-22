@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(EnhanceApi.BASE_PATH + "/bill/jobs")
 public class BillJobController {
 
+    private static final String DEFAULT_RESPONSE = "已安排执行，请关注日志";
     @Autowired
     private AgreementBillJobGenerator agreementBillJobGenerator;
     @Autowired
@@ -43,8 +44,6 @@ public class BillJobController {
     private ClaimBillJobExecutor claimBillJobExecutor;
     @Autowired
     private EpdBillJobExecutor epdBillJobExecutor;
-
-    private static final String DEFAULT_RESPONSE = "已安排执行，请关注日志";
 
     @ApiOperation("立即触发协议单文件扫描任务")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "response", response = R.class)})
