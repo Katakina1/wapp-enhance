@@ -381,7 +381,7 @@ public class DeductService   {
         }
         if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
                     log.info("只有待匹配结算单的协议单才能撤销");
                     return false;
                 }
@@ -392,7 +392,7 @@ public class DeductService   {
             }
         }else if(XFDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
                     log.info("只有待匹配结算单的EPD才能撤销");
                     return false;
                 }
