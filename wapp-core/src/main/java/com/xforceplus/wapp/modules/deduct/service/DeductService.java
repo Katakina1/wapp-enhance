@@ -78,6 +78,8 @@ public class DeductService   {
     @Autowired
     protected BlueInvoiceService blueInvoiceService;
     @Autowired
+    protected TXfBillDeductInvoiceDao tXfBillDeductInvoiceDao;
+    @Autowired
     private ExcelExportLogService excelExportLogService;
     @PostConstruct
     public void initData() {
@@ -390,7 +392,7 @@ public class DeductService   {
         }
         if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
                     log.info("只有待匹配结算单的协议单才能撤销");
                     return false;
                 }
@@ -401,7 +403,7 @@ public class DeductService   {
             }
         }else if(XFDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
             if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                if(TXfBillDeductStatusEnum.AGREEMENT_CANCEL.equals(status)){
+                if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
                     log.info("只有待匹配结算单的EPD才能撤销");
                     return false;
                 }
@@ -541,9 +543,8 @@ public class DeductService   {
     private BigDecimal defaultValue(BigDecimal value) {
         return Objects.isNull(value) ? BigDecimal.ZERO : value;
     }
-    private Integer defaultValue(Integer value) {
-        return Objects.isNull(value) ? 0 : value;
-    }
+    private Integer defaultValue(Integer value) { return Objects.isNull(value) ? 0 : value; }
+    static Long defaultValue(Long value) {  return Objects.isNull(value) ? 0L : value; }
 
 
     enum DeductionHandleEnum {
@@ -610,7 +611,8 @@ public class DeductService   {
         tXfBillDeductEntity.setRefSettlementNo(StringUtils.EMPTY);
         tXfBillDeductEntity.setAgreementTaxCode(StringUtils.EMPTY);
         tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
-
+        tXfBillDeductEntity.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
+        tXfBillDeductEntity.setSourceId(defaultValue(deductBillBaseData.getId()));
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
         return tXfBillDeductEntity;
     }

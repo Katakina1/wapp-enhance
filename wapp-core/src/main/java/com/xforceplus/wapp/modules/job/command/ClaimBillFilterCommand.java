@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
  * @create: 2021-10-14 14:01
  **/
 @Slf4j
+@Component
 public class ClaimBillFilterCommand implements Command {
 
     @Autowired

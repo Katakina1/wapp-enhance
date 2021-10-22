@@ -7,6 +7,7 @@ import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/red-notification")
+@Slf4j
 public class RedNotificationController {
     @Autowired
     RedNotificationMainService rednotificationService;
@@ -129,6 +131,7 @@ public class RedNotificationController {
 //            filePath = URLDecoder.decode(filePath, "UTF-8");
             res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
             InputStream inputStream = this.getClass().getResourceAsStream(filePath);
+            log.info("文件路径:{}",filePath);
 
             out = res.getOutputStream();
             int b = 0;

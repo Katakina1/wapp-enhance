@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-public class CommAgreementServiceTest extends BaseUnitTest {
+public class CommAgreementBillServiceTest extends BaseUnitTest {
 
     @Autowired
     private CommAgreementService commAgreementService;
@@ -19,5 +19,10 @@ public class CommAgreementServiceTest extends BaseUnitTest {
     @Test
     public void testAgainSplitPreInvoice() {
        // commAgreementService.againSplitPreInvoice(1L);
+    }
+
+    @Test
+    public void testSplitPreInvoice() {
+       // commAgreementService.splitPreInvoice(1L);
     }
 }

@@ -1,11 +1,18 @@
 package com.xforceplus.wapp.modules.settlement.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.claim.dto.ApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.dto.SettlementApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
+import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
+import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.settlement.dto.InvoiceMatchedRequest;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.service.CommSettlementService;
@@ -13,10 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author malong@xforceplus.com
@@ -34,6 +38,9 @@ public class SettlementController {
     @Autowired
     private CommSettlementService commSettlementService;
 
+    @Autowired
+    private InvoiceServiceImpl invoiceService;
+
     @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
@@ -48,6 +55,34 @@ public class SettlementController {
     public R undoRedNotification(@RequestBody SettlementUndoRedNotificationRequest request){
         commSettlementService.applyDestroySettlementPreInvoice(request.getSettlementId());
         return R.ok("撤销红字信息表申请已提交成功");
+    }
+
+
+    @GetMapping("{settlementId}/matched-invoice")
+    @ApiOperation("获取指定协议单已匹配的发票")
+    public R invoiceList(@PathVariable Long settlementId) {
+        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
+        return R.ok();
+    }
+
+    @PostMapping("{settlementId}/matched-invoice")
+    @ApiOperation("获取指定协议单已匹配的发票")
+    public R saveInvoice(@PathVariable Long settlementId, InvoiceMatchedRequest request) {
+        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
+        return R.ok();
+    }
+
+
+
+    @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class, tags = {"发票池",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @GetMapping(value = "{settlementId}/recommended")
+    public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request){
+
+        final PageResult<InvoiceDto> recommend = invoiceService.recommend(settlementId, request);
+
+        return Response.ok("",recommend);
     }
 
 }

@@ -2,8 +2,13 @@ package com.xforceplus.wapp.modules.settlement.service;
 
 import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * 类描述：
@@ -15,6 +20,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SettlementService {
+    @Autowired
+    private TXfSettlementDao settlementDao;
 
     /**
      * 确认结算单
@@ -37,5 +44,12 @@ public class SettlementService {
         // epd 协议单 回到 最初状态，回撤蓝票余额
         return;
     }
+
+    public TXfSettlementEntity getById(Long id){
+        return settlementDao.selectById(id);
+    }
+
+
+
 
 }

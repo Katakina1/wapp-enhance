@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
+ * 推荐发票列表请求
+ *
  * @author malong@xforceplus.com
  * @program wapp-enhance
  * @description
@@ -12,7 +14,7 @@ import lombok.Data;
  **/
 @Data
 @ApiModel
-public class InvoiceMatchListRequest {
+public class InvoiceRecommendListRequest {
 
     /**
      * 开票时间 开始
@@ -25,28 +27,11 @@ public class InvoiceMatchListRequest {
     @ApiModelProperty("开票日期--结束")
     private String invoiceDateEnd;
 
-    /**
-     * 商品名称
-     */
-    @ApiModelProperty("商品名称-仅支持左匹配")
-    private String goodsName;
+    @ApiModelProperty("页码，默认1")
+    private int page = 1;
 
-//    /**
-//     * 税率
-//     */
-//    @ApiModelProperty("税率,小数形式")
-//    private Double taxRate;
+    @ApiModelProperty("每页显示数量")
+    private int size = 50;
 
-    /**
-     * 协议单号/EPD单号
-     */
-    @ApiModelProperty("协议单/EPD单号")
-    private String billNo;
-
-    /**
-     * 协议单号/EPD单ID
-     */
-    @ApiModelProperty("协议单/EPD单ID")
-    private Long billId;
 
 }

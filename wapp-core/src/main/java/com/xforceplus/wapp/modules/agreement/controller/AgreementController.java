@@ -4,19 +4,16 @@ import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListRequest;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -52,10 +49,11 @@ public class AgreementController {
         return R.ok(page);
     }
 
-    @GetMapping("invoice")
-    public R invoiceList(InvoiceMatchListRequest request) {
 
-        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
-        return R.ok();
+    @PostMapping("settlement")
+    @ApiOperation("生成结算单")
+    public R makeSettlement(@RequestBody MakeSettlementRequest request){
+        deductService.makeSettlement(request,XFDeductionBusinessTypeEnum.AGREEMENT_BILL );
+        return R.ok("结算单生成完毕");
     }
 }

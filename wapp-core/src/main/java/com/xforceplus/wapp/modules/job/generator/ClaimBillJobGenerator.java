@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -35,25 +36,22 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Autowired
     private BillJobService billJobService;
 
-    @Value("claimBill.remote.path")
+    @Value("${claimBill.remote.path}")
     private String remotePath;
 
-    @Value("claimBill.remote.fileNameKeyWords")
-    private String fileNameKeyWords;
-
-    // TODO 添加异步处理
+    @Async
     @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {
-        List<String> fileNames = scanFiles(remotePath, fileNameKeyWords);
+        List<String> fileNames = scanFiles(remotePath);
         createJob(CLAIM_BILL_JOB.getJobType(), fileNames);
     }
 
     @Override
-    public List<String> scanFiles(String remotePath, String fileNameKeyWords) {
+    public List<String> scanFiles(String remotePath) {
         try {
             sftpRemoteManager.openChannel();
-            return sftpRemoteManager.getFileNames(remotePath, fileNameKeyWords);
+            return sftpRemoteManager.listFiles(remotePath);
         } catch (JSchException | SftpException e) {
             log.error("获取远程索赔单文件列表故障", e);
         }
