@@ -86,7 +86,12 @@ public class DeductService   {
     protected BlueInvoiceService blueInvoiceService;
     @Autowired
     protected TXfBillDeductInvoiceDao tXfBillDeductInvoiceDao;
-
+    @Autowired
+    private ExcelExportLogService excelExportLogService;
+    @Autowired
+    private FtpUtilService ftpUtilService;
+    @Autowired
+    private ExportCommonService exportCommonService;
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
