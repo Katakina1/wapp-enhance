@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 类描述：扣除单通用方法
@@ -89,24 +90,35 @@ public class AgreementBillService extends DeductService{
             log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
             throw new NoSuchInvoiceException();
         }
-        //匹配税编
-        Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-        if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
-            tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
+        try {
+            //匹配税编
+            Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+            if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+                tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
+            }
+            if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+                tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+            }
+            //更新结算状态为- 1.存在锁定、取消的协议单、EPD进行->撤销-- 2.税编匹配失败 ->待确认税编 3,存在反算明细->待确认明细 4->结算单进入待拆票状态
+            TXfBillDeductEntity checkEntity = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
+            if ( checkEntity.getAmountWithoutTax().compareTo(tXfSettlementEntity.getAmountWithoutTax()) < 0 ) {
+                log.error("{}单 存在锁定、取消的 sellerNo: {} purchaserNo: {} taxRate:{}", deductionEnum.getDes(),tXfSettlementEntity.getSellerNo(), tXfSettlementEntity.getPurchaserNo() );
+                throw new RuntimeException();
+            }
+            TXfSettlementEntity updadte = new TXfSettlementEntity();
+            updadte.setId(tXfSettlementEntity.getId());
+            updadte.setSettlementStatus(tXfSettlementEntity.getSettlementStatus());
+            tXfSettlementDao.updateById(updadte);
+        } catch (Exception e) {
+            if (CollectionUtils.isNotEmpty(matchResList)) {
+                List<String> invoiceList = matchResList.stream().map(x -> x.getInvoiceCode() + "=---" + x.getInvoiceNo()).collect(Collectors.toList());
+                log.error(" 结算匹配蓝票 回撤匹配信息 单  回撤匹配信息:{}", e,invoiceList );
+                blueInvoiceService.withdrawInvoices(matchResList);
+            }
+            log.error("结算单匹配蓝票失败：{}", e);
+            throw e;
         }
-        if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
-            tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
-        }
-        //更新结算状态为- 1.存在锁定、取消的协议单、EPD进行->撤销-- 2.税编匹配失败 ->待确认税编 3,存在反算明细->待确认明细 4->结算单进入待拆票状态
-        TXfBillDeductEntity checkEntity = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
-        if ( checkEntity.getAmountWithoutTax().compareTo(tXfSettlementEntity.getAmountWithoutTax()) < 0 ) {
-            log.error("{}单 存在锁定、取消的 sellerNo: {} purchaserNo: {} taxRate:{}", deductionEnum.getDes(),tXfSettlementEntity.getSellerNo(), tXfSettlementEntity.getPurchaserNo() );
-            throw new RuntimeException();
-        }
-        TXfSettlementEntity updadte = new TXfSettlementEntity();
-        updadte.setId(tXfSettlementEntity.getId());
-        updadte.setSettlementStatus(tXfSettlementEntity.getSettlementStatus());
-        tXfSettlementDao.updateById(updadte);
+
     }
 
     /**
@@ -115,6 +127,7 @@ public class AgreementBillService extends DeductService{
      * @param xfDeductionBusinessTypeEnum
      * @return
      */
+    @Transactional
     public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableBillById(ids, xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         if (CollectionUtils.isEmpty(tXfBillDeductEntities)  ) {
@@ -134,7 +147,7 @@ public class AgreementBillService extends DeductService{
         TXfBillDeductEntity  tmp = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(),TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         checkDeduct(tmp, tXfSettlementEntity, xfDeductionBusinessTypeEnum);
         executeMatch(xfDeductionBusinessTypeEnum, tXfSettlementEntity);
-        return null;
+        return tXfSettlementEntity;
     }
 
         /**
