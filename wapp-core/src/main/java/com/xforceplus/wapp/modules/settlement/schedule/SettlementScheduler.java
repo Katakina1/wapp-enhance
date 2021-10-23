@@ -1,8 +1,6 @@
 package com.xforceplus.wapp.modules.settlement.schedule;
 
-import com.xforceplus.apollo.core.domain.settlementstatus.SettlementStatus;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
@@ -20,6 +18,10 @@ public class SettlementScheduler {
     private SettlementService settlementService;
     @Autowired
     private PreinvoiceService preinvoiceService;
+
+    /**
+     * 调用拆票
+     */
   //  @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
     public void AgreementDeductDeal(){
         Long id = 0L;

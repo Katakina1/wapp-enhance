@@ -1,8 +1,6 @@
 package com.xforceplus.wapp.repository.dao;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -63,6 +61,16 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
      */
     @Select("select item.zero_tax,item.tax_pre_con,item.tax_pre,item.goods_no_ver,item.goods_tax_no,item.cn_desc,item.unit,item.item_no,item.tax_rate,item.item_short_name,item.quantity,ref.price,ref.quantity,ref.use_amount amount_without_tax,item.remaining_amount remaining_amount from t_xf_bill_deduct_item_ref ref, t_xf_bill_deduct_item item,t_xf_bill_deduct deduct where deduct.purchaser_no =#{purchaserNo} and deduct.seller_no = #{sellerNo} and  deduct.business_type = #{type} and deduct.status = #{status} and deduct.create_date >= dateadd(d,-day(getdate())+1,getdate())   and ref.deduct_id = deduct.id and ref.deduct_item_id = item.id")
     public List<TXfBillDeductItemEntity> queryItemsByBill(@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo,@Param("type")Integer type,@Param("status")Integer status);
+
+
+    /**查询索赔单 下关联的 索赔明细信息
+     * @param deductId
+     * @param type
+     * @param status
+     * @return
+     */
+    @Select("select item.zero_tax,item.tax_pre_con,item.tax_pre,item.goods_no_ver,item.goods_tax_no,item.cn_desc,item.unit,item.item_no,item.tax_rate,item.item_short_name,item.quantity,ref.price,ref.quantity,ref.use_amount amount_without_tax,item.remaining_amount remaining_amount from t_xf_bill_deduct_item_ref ref, t_xf_bill_deduct_item item,t_xf_bill_deduct deduct where deduct.id = #{deductId} and deduct.status = #{status}  and ref.deduct_id = deduct.id and ref.deduct_item_id = item.id")
+    public List<TXfBillDeductItemEntity> queryItemsByBillId(@Param("deductId") Long deductId ,@Param("type")Integer type,@Param("status")Integer status);
 
 
 }
