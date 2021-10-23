@@ -1,12 +1,12 @@
 package com.xforceplus.wapp.repository.entity;
 
 import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -161,7 +161,7 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableField("thrid_id")
     private Long thridId;
 
-    @TableField(value="update_time", update="now(3)" )
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
