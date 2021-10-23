@@ -91,6 +91,7 @@ public class ShiroConfig {
         filterMap.put("/websocket/**", "anon");
         filterMap.put("/core/ftp/download", "anon");
         filterMap.put("/swagger-ui.html", "anon");
+        filterMap.put("/item-oe/findByNbrs", "anon");
         filterMap.put("/v2/api-docs", "anon");
         filterMap.put("/swagger-resources/**", "anon");
         filterMap.put("/", "anon");

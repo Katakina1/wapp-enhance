@@ -77,7 +77,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         InvoiceDetailResponse response = new InvoiceDetailResponse();
         if(invoiceEntity != null){
             List<InvoiceDetail> invoiceDetails = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
-            response.setInvoiceDetailList(invoiceDetails);
+            response.setItems(invoiceDetails);
             BeanUtil.copyProperties(invoiceEntity,response);
         }
         return response;
@@ -145,6 +145,8 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
     /**
      * 发票列表
      * @param settlementNo,invoiceStatus,venderid
+     * @param invoiceStatus
+     * @param venderid
      * @return R
      */
     public List<InvoiceDetailResponse> queryInvoiceList(String settlementNo,String invoiceStatus,String venderid){
@@ -155,7 +157,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         for (TDxRecordInvoiceEntity tDxRecordInvoiceEntity : tDxRecordInvoiceEntities) {
             invoice = new InvoiceDetailResponse();
             List<InvoiceDetail> list = queryInvoiceDetailByUuid(tDxRecordInvoiceEntity.getUuid());
-            invoice.setInvoiceDetailList(list);
+            invoice.setItems(list);
             BeanUtil.copyProperties(tDxRecordInvoiceEntity,invoice);
             response.add(invoice);
         }

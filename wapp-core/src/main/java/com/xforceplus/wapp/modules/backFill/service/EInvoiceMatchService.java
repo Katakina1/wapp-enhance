@@ -165,6 +165,7 @@ public class EInvoiceMatchService {
         map.put("checkNo", invoiceMain.getCheckCode());
         map.put("xfName", invoiceMain.getSellerName());
         map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
+        map.put("cipherText",invoiceMain.getCipherText());
         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
         String uuid = invoiceMain.getInvoiceCode() + "" + invoiceMain.getInvoiceNo();
         map.put("uuid", uuid);
