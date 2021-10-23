@@ -25,7 +25,7 @@ public interface TXfSettlementExtDao extends BaseMapper<TXfSettlementEntity> {
      * @return
      */
     @Select("select top ${limit} * from t_xf_settlement " +
-            "where id > #{id}    and status = #{status}  " +
+            "where id > #{id}    and settlement_status = #{status}  " +
             "order by id  ")
     List<TXfSettlementEntity> querySettlementByStatus( @Param("status") Integer status , @Param("id")  Long id, @Param("limit") Integer limit);
 

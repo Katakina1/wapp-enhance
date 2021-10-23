@@ -18,12 +18,15 @@ public class SettlementScheduler {
     private SettlementService settlementService;
     @Autowired
     private PreinvoiceService preinvoiceService;
-
+   // @PostConstruct
+    public void initData() {
+        settlementSplit();
+    }
     /**
      * 调用拆票
      */
   //  @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
-    public void AgreementDeductDeal(){
+    public void settlementSplit(){
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode();
         Integer limit = 100;

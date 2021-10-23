@@ -26,6 +26,7 @@ import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
@@ -137,20 +138,15 @@ public class DeductService   {
      * @return
      */
     protected TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-//        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
-//        if (taxCodeOptional.isPresent()) {
-//                TaxCode taxCode = taxCodeOptional.get();
-//                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-//                entity.setTaxPre(taxCode.getTaxPre());
-//                entity.setTaxPreCon(taxCode.getTaxPreCon());
-//                entity.setZeroTax(taxCode.getZeroTax());
-//                entity.setItemShortName(taxCode.getSmallCategoryName());
-//        }
-        entity.setGoodsTaxNo("123123");
-        entity.setTaxPre(StringUtils.EMPTY);
-        entity.setTaxPreCon(StringUtils.EMPTY);
-        entity.setZeroTax(StringUtils.EMPTY);
-        entity.setItemShortName(StringUtils.EMPTY);
+        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+        if (taxCodeOptional.isPresent()) {
+                TaxCode taxCode = taxCodeOptional.get();
+                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+                entity.setTaxPre(taxCode.getTaxPre());
+                entity.setTaxPreCon(taxCode.getTaxPreCon());
+                entity.setZeroTax(taxCode.getZeroTax());
+                entity.setItemShortName(taxCode.getSmallCategoryName());
+        }
         return entity;
     }
     /**
@@ -159,20 +155,15 @@ public class DeductService   {
      * @return
      */
     protected TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
-//        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
-//        if (taxCodeOptional.isPresent()) {
-//                TaxCode taxCode = taxCodeOptional.get();
-//                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-//                entity.setTaxPre(taxCode.getTaxPre());
-//                entity.setTaxPreCon(taxCode.getTaxPreCon());
-//                entity.setZeroTax(taxCode.getZeroTax());
-//                entity.setItemShortName(taxCode.getSmallCategoryName());
-//        }
-        entity.setGoodsTaxNo("123123");
-        entity.setTaxPre(StringUtils.EMPTY);
-        entity.setTaxPreCon(StringUtils.EMPTY);
-        entity.setZeroTax(StringUtils.EMPTY);
-        entity.setItemShortName(StringUtils.EMPTY);
+        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+        if (taxCodeOptional.isPresent()) {
+                TaxCode taxCode = taxCodeOptional.get();
+                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+                entity.setTaxPre(taxCode.getTaxPre());
+                entity.setTaxPreCon(taxCode.getTaxPreCon());
+                entity.setZeroTax(taxCode.getZeroTax());
+                entity.setItemShortName(taxCode.getSmallCategoryName());
+        }
         return entity;
     }
     /**
@@ -457,7 +448,7 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementTaxCode(tmp.getTaxCode());
             tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
             tXfBillDeductEntity.setVerdictDate(tmp.getDeductDate());
-            tXfBillDeductEntity.setBusinessNo(tmp.getReference());
+            tXfBillDeductEntity.setBusinessNo(defaultValue(tmp.getReference()));
              tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
             return tXfBillDeductEntity;
         }),
@@ -509,6 +500,7 @@ public class DeductService   {
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
         tXfBillDeductEntity.setPurchaserNo(defaultValue(deductBillBaseData.getPurchaserNo()));
         tXfBillDeductEntity.setSellerNo(defaultValue(deductBillBaseData.getSellerNo()));
+        tXfBillDeductEntity.setBusinessNo(defaultValue(deductBillBaseData.getBusinessNo()));
         tXfBillDeductEntity.setAmountWithoutTax(defaultValue(deductBillBaseData.getAmountWithoutTax()));
         tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithoutTax().multiply(deductBillBaseData.getTaxRate()).setScale(2,RoundingMode.HALF_UP));
         tXfBillDeductEntity.setAmountWithTax( tXfBillDeductEntity.getAmountWithoutTax().add(tXfBillDeductEntity.getTaxAmount()));
@@ -753,20 +745,22 @@ public class DeductService   {
                         tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount());
                         tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
                         tXfSettlementItemEntity.setTaxRate(invoiceItem.getTaxRate());
-                        tXfSettlementItemEntity.setAmountWithoutTax(invoiceItem.getDetailAmount());
+                        tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()));
                         tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
+                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
+                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                        //tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
+                          tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setAmountWithTax(invoiceItem.getDetailAmount().add(invoiceItem.getTaxAmount()));
-                        tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
-                        tXfSettlementItemEntity.setCreateUser(0l);
+
+                          tXfSettlementItemEntity.setCreateUser(0l);
                         tXfSettlementItemEntity.setUpdateUser(0l);
                         tXfSettlementItemEntity.setId(idSequence.nextId());
                         tXfSettlementItemEntity.setSettlementNo(settlementNo);
                         tXfSettlementItemEntity.setCreateTime(date);
                         tXfSettlementItemEntity.setUpdateTime(date);
-                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
-                        tXfSettlementItemEntity.setItemCode(invoiceItem.getItemNo());
-                        tXfSettlementItemEntity.setThridId(invoiceItem.getItemId());
-                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                        tXfSettlementItemEntity.setItemCode(defaultValue(invoiceItem.getItemNo()));
+                        tXfSettlementItemEntity.setThridId(defaultValue(invoiceItem.getItemId()));
                         tXfSettlementItemEntity.setItemName(invoiceItem.getGoodsName());
                         tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
                         tXfSettlementItemEntity.setGoodsNoVer("33.0");
