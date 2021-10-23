@@ -71,8 +71,8 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @param flag
      * @return
      */
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate   from t_xf_bill_deduct where id in #{ids}  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag} group by purchaser_no, seller_no,tax_rate")
-    public List<TXfBillDeductEntity> querySuitableBillById(@Param("ids") List<Long> ids,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
+    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate   from t_xf_bill_deduct where id in ${ids}  and business_type = #{type} and status = #{status} and   lock_flag = #{flag} group by purchaser_no, seller_no,tax_rate")
+    public List<TXfBillDeductEntity> querySuitableBillById(@Param("ids") String ids,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
 
     /**
      *  更加ID列表查询同购销对 同税率的 单据合并信息
@@ -82,8 +82,8 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @param flag
      * @return
      */
-    @Select("update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where id  in  #{ids} and status = #{status} and  lock_flag = #{flag} and ref_settlement_no = ''")
-    public List<TXfBillDeductEntity> updateBillById(@Param("ids") List<Long> ids,@Param("settlementNo") String settlementNo,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag,@Param("targetStatus") Integer targetStatus);
+    @Select("update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where id  in  ${ids} and status = #{status} and  lock_flag = #{flag} and ref_settlement_no = ''")
+    public List<TXfBillDeductEntity> updateBillById(@Param("ids") String ids,@Param("settlementNo") String settlementNo,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag,@Param("targetStatus") Integer targetStatus);
 
 
 

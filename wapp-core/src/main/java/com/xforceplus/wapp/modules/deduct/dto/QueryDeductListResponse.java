@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.dto;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,6 +16,9 @@ import java.util.Date;
 public class QueryDeductListResponse {
     @ApiModelProperty("主键")
     private Long id;
+
+    @ApiModelProperty("结算单号")
+    private String refSettlementNo;
     /**
      * 业务单据编号
      */
@@ -77,5 +81,8 @@ public class QueryDeductListResponse {
 
     @ApiModelProperty("发票类型")
     private String invoiceType;
+
+    @ApiModelProperty("红字信息表编号")
+    private String redNotificationNo;
 
 }

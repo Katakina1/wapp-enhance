@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.preinvoice.controller;
 
+import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import com.xforceplus.wapp.modules.preinvoice.dto.SplitAgainRequest;
@@ -12,6 +13,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 预制发票
@@ -30,7 +33,7 @@ public class PreInvoiceController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/apply-operation")
-    public Response<PreInvoiceItem> applyOperation(@RequestBody ApplyOperationRequest request){
+    public R<List<PreInvoiceItem>> applyOperation(@RequestBody ApplyOperationRequest request){
 
         return preInvoiceDaoService.applyOperation(request);
     }
