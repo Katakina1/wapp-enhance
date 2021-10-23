@@ -136,9 +136,8 @@ public class ClaimDeductScheduler {
         claimBillService.receiveData(dataList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
         claimBillService.receiveItemData(res,"");
         claimBillService.matchClaimBill();
-
         claimBillService.claimMatchBlueInvoice();
-       claimBillService.mergeClaimSettlement();
+        claimBillService.mergeClaimSettlement();
     }
     @Autowired
     private ClaimBillService claimBillService;

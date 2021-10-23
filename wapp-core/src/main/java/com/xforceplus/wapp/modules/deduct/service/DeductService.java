@@ -1,5 +1,9 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -8,10 +12,6 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.support.ExcelTypeEnum;
-import com.alibaba.excel.write.metadata.WriteSheet;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.*;
@@ -26,7 +26,6 @@ import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
@@ -40,7 +39,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
@@ -137,7 +135,7 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    private TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
+    protected TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
 //        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
 //        if (taxCodeOptional.isPresent()) {
 //                TaxCode taxCode = taxCodeOptional.get();
@@ -159,7 +157,7 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    private TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
+    protected TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
 //        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
 //        if (taxCodeOptional.isPresent()) {
 //                TaxCode taxCode = taxCodeOptional.get();
