@@ -29,9 +29,9 @@ public class CompanyUpdateRequest implements Serializable {
     private BigDecimal quota;
 
     @ApiModelProperty(value = "地址")
-    private String adress;
+    private String address;
 
-    @ApiModelProperty(value = "地址")
-    private String telePhone;
+    @ApiModelProperty(value = "电话")
+    private String phone;
 
 }

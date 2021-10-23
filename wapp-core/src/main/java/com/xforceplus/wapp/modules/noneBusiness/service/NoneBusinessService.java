@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.noneBusiness.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
@@ -8,28 +9,42 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
+import com.xforceplus.wapp.export.ExportHandlerEnum;
+import com.xforceplus.wapp.export.IExportHandler;
+import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.DiscernService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.VerificationService;
+import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
+import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
+import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
+import com.xforceplus.wapp.modules.rednotification.exception.RRException;
+import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.mq.ActiveMqProducer;
 import com.xforceplus.wapp.repository.dao.TXfNoneBusinessUploadDetailDao;
+import com.xforceplus.wapp.repository.entity.TDxExcelExportlogEntity;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
 /**
  * 非商业务逻辑
@@ -52,6 +67,21 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private FtpUtilService ftpUtilService;
+
+    @Autowired
+    ExportCommonService exportCommonService;
+
+    @Autowired
+    private ExcelExportLogService excelExportLogService;
+
+    @Autowired
+    private ActiveMqProducer activeMqProducer;
+
+    @Value("${activemq.queue-name.export-request}")
+    private String exportQueue;
 
 
     public void parseOfdFile(List<byte[]> ofd, TXfNoneBusinessUploadDetailEntity entity) {
@@ -95,7 +125,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             if (StringUtils.isNotEmpty(response.getResult().getImageUrl())) {
 
                 try {
-                    String base64=verificationService.getBase64ByUrl(response.getResult().getImageUrl());
+                    String base64 = verificationService.getBase64ByUrl(response.getResult().getImageUrl());
 
                     String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
                     UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
@@ -224,5 +254,54 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         Page<TXfNoneBusinessUploadDetailEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return page;
+    }
+
+    public void down(List<TXfNoneBusinessUploadDetailEntity> list, FileDownRequest request) {
+        String path=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String ftpPath = ftpUtilService.pathprefix + path;
+        log.info("文件ftp路径{}", ftpPath);
+        final File tempDirectory = FileUtils.getTempDirectory();
+        File file = new File(tempDirectory,path);
+        file.mkdir();
+        String downLoadFileName = path + ".zip";
+        for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
+
+            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
+            try {
+                String suffix = null;
+                if (fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
+                    suffix = "." + Constants.SUFFIX_OF_OFD;
+                } else {
+                    suffix = "." + Constants.SUFFIX_OF_PDF;
+                }
+                FileUtils.writeByteArrayToFile(new File(file, fileEntity.getInvoiceNo() + "-" + fileEntity.getInvoiceCode() + suffix), bytes);
+            } catch (IOException e) {
+                log.error("临时文件存储失败:" + e.getMessage(), e);
+            }
+        }
+        try {
+            ZipUtil.zip(file.getPath()+".zip", file);
+            String s = exportCommonService.putFile(ftpPath,tempDirectory.getPath()+"/"+downLoadFileName, downLoadFileName);
+            final Long userId = UserUtil.getUserId();
+            ExceptionReportExportDto dto = new ExceptionReportExportDto();
+            dto.setUserId(userId);
+            dto.setLoginName(UserUtil.getLoginName());
+            TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
+            excelExportlogEntity.setCreateDate(new Date());
+            //这里的userAccount是userid
+            excelExportlogEntity.setUserAccount(dto.getUserId().toString());
+            excelExportlogEntity.setUserName(dto.getLoginName());
+            excelExportlogEntity.setConditions(JSON.toJSONString(request));
+            excelExportlogEntity.setStartDate(new Date());
+            excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
+            excelExportlogEntity.setServiceType(SERVICE_TYPE);
+            excelExportlogEntity.setFilepath(ftpPath+downLoadFileName);
+            this.excelExportLogService.save(excelExportlogEntity);
+            dto.setLogId(excelExportlogEntity.getId());
+            exportCommonService.sendMessage(UserUtil.getLoginName(),"下载成功",exportCommonService.getSuccContent());
+        } catch (Exception e) {
+            log.error("下载文件打包失败:" + e.getMessage(), e);
+            throw new RRException("下载文件打包失败，请重试");
+        }
     }
 }
