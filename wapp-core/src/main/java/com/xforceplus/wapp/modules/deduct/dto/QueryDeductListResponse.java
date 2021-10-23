@@ -13,7 +13,8 @@ import java.util.Date;
 @ApiModel(description = "查询业务单响应对象")
 @Data
 public class QueryDeductListResponse {
-
+    @ApiModelProperty("主键")
+    private Long id;
     /**
      * 业务单据编号
      */

@@ -8,11 +8,13 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.config.TaxRateConfig;
-import com.xforceplus.wapp.enums.DeductBillTabEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.export.dto.DeductBillExportDto;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
@@ -21,6 +23,8 @@ import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
+import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
@@ -37,10 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -59,20 +67,19 @@ public class DeductService   {
     protected TXfBillDeductExtDao  tXfBillDeductExtDao;
     @Autowired
     protected TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
-    @Autowired
-    private TXfBillDeductItemDao tXfBillDeductItemDao;
+
     @Autowired
     private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
     @Autowired
-    private TXfSettlementDao tXfSettlementDao;
+    protected TXfSettlementDao tXfSettlementDao;
     @Autowired
-    private TXfSettlementItemDao tXfSettlementItemDao;
+    protected TXfSettlementItemDao tXfSettlementItemDao;
     @Autowired
     protected   IDSequence idSequence;
     @Autowired
     private TaxRateConfig taxRateConfig;
     @Autowired
-    private TaxCodeServiceImpl taxCodeService;
+    protected TaxCodeServiceImpl taxCodeService;
     @Autowired
     private CompanyService companyService;
     @Autowired
@@ -81,150 +88,10 @@ public class DeductService   {
     protected TXfBillDeductInvoiceDao tXfBillDeductInvoiceDao;
     @Autowired
     private ExcelExportLogService excelExportLogService;
-    @PostConstruct
-    public void initData() {
-        int no = 1001121107;
-        /**
-         * 索赔单 主信息
-         */
-        int amount = 10;
-        List<DeductBillBaseData> dataList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            ClaimBillData deductBillBaseData = new ClaimBillData();
-            deductBillBaseData.setAmountWithoutTax(new BigDecimal(amount*2*(i+1)+i));
-            deductBillBaseData.setBusinessNo(idSequence.nextId().toString());
-            deductBillBaseData.setAmountWithTax(new BigDecimal(10));
-            deductBillBaseData.setBusinessType(XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue());
-            deductBillBaseData.setBatchNo("BT112312312312");
-            deductBillBaseData.setDeductDate(new Date());
-            deductBillBaseData.setPurchaserNo("PT");
-            deductBillBaseData.setSellerNo("172164");
-            deductBillBaseData.setRemark("索赔");
-            deductBillBaseData.setTaxAmount(new BigDecimal("0.13").multiply(deductBillBaseData.getAmountWithoutTax()).setScale(2, RoundingMode.HALF_UP));
-            no = no + 1;
-            deductBillBaseData.setBusinessNo(no + StringUtils.EMPTY);
-            deductBillBaseData.setTaxRate(new BigDecimal("0.13"));
-            deductBillBaseData.setStoreType("smas");
-            deductBillBaseData.setVerdictDate(new Date());
-            deductBillBaseData.setInvoiceReference("invoice00022222");
-            dataList.add(deductBillBaseData);
-        }
-        List<ClaimBillItemData> res = new ArrayList<>();
-        amount = 6;
-        for (int i = 0; i < 10; i++) {
-            int tmp = amount*i + i;
-            ClaimBillItemData claimBillItemData = new ClaimBillItemData();
-            claimBillItemData.setAmountWithoutTax(new BigDecimal(tmp));
-            claimBillItemData.setSellerNo("337852");
-            claimBillItemData.setDeptNbr("114");
-            claimBillItemData.setPrice(new BigDecimal(1));
-            claimBillItemData.setQuantity(new BigDecimal(tmp));
-            claimBillItemData.setItemNo("20280238");
-            claimBillItemData.setTaxRate(new BigDecimal("0.13"));
-            claimBillItemData.setCategoryNbr("30");
-            claimBillItemData.setCnDesc("小林刻立眼镜清洁纸");
-            claimBillItemData.setStoreNbr("WI");
-            claimBillItemData.setUnit("包");
-            claimBillItemData.setUpc("111");
-            claimBillItemData.setVerdictDate(new Date());
-            claimBillItemData.setVnpkQuantity(new BigDecimal(6));
-            claimBillItemData.setVnpkCost(new BigDecimal(10));
-            res.add(claimBillItemData);
-        }
-        amount = 5;
-        for (int i = 0; i < 10; i++) {
-            int tmp = amount*i + i;
-            ClaimBillItemData claimBillItemData = new ClaimBillItemData();
-            claimBillItemData.setAmountWithoutTax(new BigDecimal(tmp));
-            claimBillItemData.setSellerNo("337852");
-            claimBillItemData.setDeptNbr("114");
-            claimBillItemData.setPrice(new BigDecimal(1));
-            claimBillItemData.setQuantity(new BigDecimal(tmp));
-            claimBillItemData.setItemNo("20280238");
-            claimBillItemData.setTaxRate(new BigDecimal("0.09"));
-            claimBillItemData.setCategoryNbr("30");
-            claimBillItemData.setCnDesc("小林刻立眼镜清洁纸");
-            claimBillItemData.setStoreNbr("WI");
-            claimBillItemData.setUnit("包");
-            claimBillItemData.setUpc("111");
-            claimBillItemData.setVerdictDate(new Date());
-            claimBillItemData.setVnpkQuantity(new BigDecimal(6));
-            claimBillItemData.setVnpkCost(new BigDecimal(10));
-            res.add(claimBillItemData);
-        }
-        amount = 4;
-        for (int i = 0; i < 10; i++) {
-            int tmp = amount*i + i;
-            ClaimBillItemData claimBillItemData = new ClaimBillItemData();
-            claimBillItemData.setAmountWithoutTax(new BigDecimal(tmp));
-            claimBillItemData.setSellerNo("337852");
-            claimBillItemData.setDeptNbr("WI2");
-            claimBillItemData.setPrice(new BigDecimal(1));
-            claimBillItemData.setQuantity(new BigDecimal(tmp));
-            claimBillItemData.setItemNo("20280238");
-            claimBillItemData.setTaxRate(new BigDecimal("0.09"));
-            claimBillItemData.setCategoryNbr("30");
-            claimBillItemData.setCnDesc("小林刻立眼镜清洁纸");
-            claimBillItemData.setStoreNbr("114");
-            claimBillItemData.setUnit("包");
-            claimBillItemData.setUpc("111");
-            claimBillItemData.setVerdictDate(new Date());
-            claimBillItemData.setVnpkQuantity(new BigDecimal(6));
-            claimBillItemData.setVnpkCost(new BigDecimal(10));
-            res.add(claimBillItemData);
-        }
-        amount = 3;
-        for (int i = 0; i < 10; i++) {
-            int tmp = amount*i + i;
-            ClaimBillItemData claimBillItemData = new ClaimBillItemData();
-            claimBillItemData.setAmountWithoutTax(new BigDecimal(tmp));
-            claimBillItemData.setSellerNo("279771");
-            claimBillItemData.setDeptNbr("WI");
-            claimBillItemData.setPrice(new BigDecimal(1));
-            claimBillItemData.setQuantity(new BigDecimal(tmp));
-            claimBillItemData.setItemNo("20280238");
-            claimBillItemData.setTaxRate(new BigDecimal("0.09"));
-            claimBillItemData.setCategoryNbr("30");
-            claimBillItemData.setCnDesc("小林刻立眼镜清洁纸");
-            claimBillItemData.setStoreNbr("114");
-            claimBillItemData.setUnit("包");
-            claimBillItemData.setUpc("111");
-            claimBillItemData.setVerdictDate(new Date());
-            claimBillItemData.setVnpkQuantity(new BigDecimal(6));
-            claimBillItemData.setVnpkCost(new BigDecimal(10));
-            res.add(claimBillItemData);
-        }
-         //receiveItemData(res, "");
-         // receiveData(dataList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
-          // receiveDone(XFDeductionBusinessTypeEnum.CLAIM_BILL);
-//        int amount = 10;
-//        List<DeductBillBaseData> dataList = new ArrayList<>();
-//        for (int i = 0; i < 10; i++) {
-//            AgreementBillData deductBillBaseData = new AgreementBillData();
-//            deductBillBaseData.setAmountWithoutTax(new BigDecimal(amount*2*(i+1)-i).negate());
-//            deductBillBaseData.setBusinessNo(idSequence.nextId().toString());
-//            deductBillBaseData.setBusinessType(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.getType());
-//            deductBillBaseData.setBatchNo("BT112312312312");
-//            deductBillBaseData.setDeductDate(new Date());
-//            deductBillBaseData.setPurchaserNo("PT");
-//            deductBillBaseData.setSellerNo("172164");
-//            deductBillBaseData.setRemark("索赔");
-//            deductBillBaseData.setTaxAmount(new BigDecimal("0.13").multiply(deductBillBaseData.getAmountWithoutTax()).setScale(2, RoundingMode.HALF_UP));
-//             deductBillBaseData.setTaxRate(new BigDecimal("0.13"));
-//            deductBillBaseData.setAmountWithTax(deductBillBaseData.getAmountWithoutTax().add(deductBillBaseData.getTaxAmount()));
-//
-//            deductBillBaseData.setMemo("172164");
-//            deductBillBaseData.setReasonCode("reasonCode" + i);
-//            deductBillBaseData.setReferenceType("ko");
-//            deductBillBaseData.setDocumentNo("DocumentNo" + i);
-//            deductBillBaseData.setDocumentType("LK" );
-//            deductBillBaseData.setTaxCode("tx");
-//            dataList.add(deductBillBaseData);
-//        }
-      // receiveData(dataList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-      //receiveDone(XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-
-    }
+    @Autowired
+    private FtpUtilService ftpUtilService;
+    @Autowired
+    private ExportCommonService exportCommonService;
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -242,6 +109,9 @@ public class DeductService   {
     public List<TXfBillDeductItemEntity> transferBillItemData(List<ClaimBillItemData> claimBillItemDataList ,String batchNo) {
         Date date = new Date();
         List<TXfBillDeductItemEntity> list = new ArrayList<>();
+        if (CollectionUtils.isEmpty(claimBillItemDataList)) {
+            throw new EnhanceRuntimeException("","传入的单据明细数据为空");
+        }
         for (ClaimBillItemData claimBillItemData : claimBillItemDataList) {
             TXfBillDeductItemEntity tmp = new TXfBillDeductItemEntity();
             if (Objects.isNull(claimBillItemData)) {
@@ -256,32 +126,54 @@ public class DeductService   {
             tmp.setRemainingAmount(claimBillItemData.getAmountWithoutTax());
             tmp.setGoodsNoVer("33.0");
             tmp.setUpdateDate(tmp.getCreateDate());
+            tmp.setAmountWithoutTax(defaultValue(tmp.getAmountWithoutTax()));
             tmp = fixTaxCode(tmp);
             list.add(tmp);
         }
         return list;
     }
-
     /**
      * 补充商品
      * @param entity
      * @return
      */
     private TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
-        if (taxCodeOptional.isPresent()) {
-                TaxCode taxCode = taxCodeOptional.get();
-                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-                entity.setTaxPre(taxCode.getTaxPre());
-                entity.setTaxPreCon(taxCode.getTaxPreCon());
-                entity.setZeroTax(taxCode.getZeroTax());
-                entity.setItemShortName(taxCode.getSmallCategoryName());
-        }
-//        entity.setGoodsTaxNo("123123");
-//        entity.setTaxPre(StringUtils.EMPTY);
-//        entity.setTaxPreCon(StringUtils.EMPTY);
-//        entity.setZeroTax(StringUtils.EMPTY);
-//        entity.setItemShortName(StringUtils.EMPTY);
+//        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+//        if (taxCodeOptional.isPresent()) {
+//                TaxCode taxCode = taxCodeOptional.get();
+//                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+//                entity.setTaxPre(taxCode.getTaxPre());
+//                entity.setTaxPreCon(taxCode.getTaxPreCon());
+//                entity.setZeroTax(taxCode.getZeroTax());
+//                entity.setItemShortName(taxCode.getSmallCategoryName());
+//        }
+        entity.setGoodsTaxNo("123123");
+        entity.setTaxPre(StringUtils.EMPTY);
+        entity.setTaxPreCon(StringUtils.EMPTY);
+        entity.setZeroTax(StringUtils.EMPTY);
+        entity.setItemShortName(StringUtils.EMPTY);
+        return entity;
+    }
+    /**
+     * 补充商品
+     * @param entity
+     * @return
+     */
+    private TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
+//        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+//        if (taxCodeOptional.isPresent()) {
+//                TaxCode taxCode = taxCodeOptional.get();
+//                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+//                entity.setTaxPre(taxCode.getTaxPre());
+//                entity.setTaxPreCon(taxCode.getTaxPreCon());
+//                entity.setZeroTax(taxCode.getZeroTax());
+//                entity.setItemShortName(taxCode.getSmallCategoryName());
+//        }
+        entity.setGoodsTaxNo("123123");
+        entity.setTaxPre(StringUtils.EMPTY);
+        entity.setTaxPreCon(StringUtils.EMPTY);
+        entity.setZeroTax(StringUtils.EMPTY);
+        entity.setItemShortName(StringUtils.EMPTY);
         return entity;
     }
     /**
@@ -301,6 +193,9 @@ public class DeductService   {
     }
 
     public List<TXfBillDeductEntity> transferBillData(List<DeductBillBaseData> deductBillDataList ,  XFDeductionBusinessTypeEnum deductionEnum) {
+        if (CollectionUtils.isEmpty(deductBillDataList)) {
+            throw new EnhanceRuntimeException("","传入的单据数据为空");
+        }
         Date date = new Date();
         List<TXfBillDeductEntity> list = new ArrayList<>();
         Optional<DeductionHandleEnum> optionalDedcutionHandleEnum = DeductionHandleEnum.getHandleEnum( deductionEnum);
@@ -442,8 +337,8 @@ public class DeductService   {
         Integer type = deductionBusinessTypeEnum.getValue();
         Integer status = TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode();
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
-        TAcOrgEntity purchaserOrgEntity = queryOrgInfo("PT",false);
-        TAcOrgEntity sellerOrgEntity = queryOrgInfo("172164", true);
+        TAcOrgEntity purchaserOrgEntity = queryOrgInfo(purchaserNo,false);
+        TAcOrgEntity sellerOrgEntity = queryOrgInfo(sellerNo, true);
         BigDecimal amountWithoutTax = BigDecimal.ZERO;
         BigDecimal amountWithTax = BigDecimal.ZERO;
         BigDecimal taxAmount = BigDecimal.ZERO;
@@ -510,11 +405,8 @@ public class DeductService   {
                 tXfSettlementItemEntity.setCreateUser(0L);
                 tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
                 tXfSettlementItemEntity.setUpdateUser(tXfSettlementItemEntity.getCreateUser());
-                if(!partMatch){
-                    if (tXfBillDeductItemEntity.getRemainingAmount().compareTo(BigDecimal.ZERO) < 0) {
-                        partMatch = true;
-                    }
-                }
+                tXfSettlementItemEntity.setThridId(tXfBillDeductItemEntity.getId());
+                tXfSettlementItemEntity = checkItem(tXfSettlementItemEntity);
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
             }
         }
@@ -537,10 +429,10 @@ public class DeductService   {
         return res;
     }
 
-    private static String defaultValue(String value) {
+    static String defaultValue(String value) {
         return StringUtils.isEmpty(value) ? StringUtils.EMPTY : value;
     }
-    private BigDecimal defaultValue(BigDecimal value) {
+    static   BigDecimal defaultValue(BigDecimal value) {
         return Objects.isNull(value) ? BigDecimal.ZERO : value;
     }
     private Integer defaultValue(Integer value) { return Objects.isNull(value) ? 0 : value; }
@@ -558,14 +450,16 @@ public class DeductService   {
         AGREEMENT_BILL(XFDeductionBusinessTypeEnum.AGREEMENT_BILL,x -> {
             AgreementBillData tmp = (AgreementBillData) x;
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(x);
-            tXfBillDeductEntity.setAgreementDocumentNumber(tmp.getDocumentNo());
-            tXfBillDeductEntity.setAgreementDocumentType(tmp.getDocumentType());
+            tXfBillDeductEntity.setAgreementDocumentNumber(defaultValue(tmp.getDocumentNo()));
+            tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()) );
             tXfBillDeductEntity.setAgreementMemo(tmp.getMemo());
             tXfBillDeductEntity.setAgreementReasonCode(tmp.getReasonCode());
             tXfBillDeductEntity.setAgreementReference(tmp.getReference());
             tXfBillDeductEntity.setAgreementTaxCode(tmp.getTaxCode());
             tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
-            tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+            tXfBillDeductEntity.setVerdictDate(tmp.getDeductDate());
+            tXfBillDeductEntity.setBusinessNo(tmp.getReference());
+             tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
             return tXfBillDeductEntity;
         }),
         EPD_BILL(XFDeductionBusinessTypeEnum.EPD_BILL,x -> {
@@ -614,6 +508,12 @@ public class DeductService   {
         tXfBillDeductEntity.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
         tXfBillDeductEntity.setSourceId(defaultValue(deductBillBaseData.getId()));
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
+        tXfBillDeductEntity.setPurchaserNo(defaultValue(deductBillBaseData.getPurchaserNo()));
+        tXfBillDeductEntity.setSellerNo(defaultValue(deductBillBaseData.getSellerNo()));
+        tXfBillDeductEntity.setAmountWithoutTax(defaultValue(deductBillBaseData.getAmountWithoutTax()));
+        tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithoutTax().multiply(deductBillBaseData.getTaxRate()).setScale(2,RoundingMode.HALF_UP));
+        tXfBillDeductEntity.setAmountWithTax( tXfBillDeductEntity.getAmountWithoutTax().add(tXfBillDeductEntity.getTaxAmount()));
+        tXfBillDeductEntity.setBatchNo(defaultValue(deductBillBaseData.getBatchNo()));
         return tXfBillDeductEntity;
     }
 
@@ -702,7 +602,7 @@ public class DeductService   {
             List<DeductBillItemModel> deductBillItemList = new ArrayList<>();
             if(CollectionUtils.isNotEmpty(tXfBillDeductItemRefEntities)){
                 for (TXfBillDeductItemRefEntity tXfBillDeductItemRefEntity : tXfBillDeductItemRefEntities) {
-                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
+                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemExtDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
                     DeductBillItemModel deductBillItemModel;
                     if(itemEntity != null){
                         deductBillItemModel = new DeductBillItemModel();
@@ -738,13 +638,69 @@ public class DeductService   {
         excelExportlogEntity.setServiceType(SERVICE_TYPE);
         this.excelExportLogService.save(excelExportlogEntity);
         dto.setLogId(excelExportlogEntity.getId());
-        ExportDeductCallable callable = new ExportDeductCallable(this,dto,typeEnum);
+        ExportDeductCallable callable = new ExportDeductCallable(this,dto);
         ThreadPoolManager.submitCustomL1(callable);
     }
 
-    public boolean doExport(DeductBillExportDto dto, XFDeductionBusinessTypeEnum typeEnum){
+    public boolean doExport(DeductBillExportDto exportDto){
         boolean flag = true;
-
+        DeductExportRequest request = exportDto.getRequest();
+        XFDeductionBusinessTypeEnum typeEnum = exportDto.getType();
+        //这里的userAccount是userid
+        final TDxExcelExportlogEntity excelExportlogEntity = excelExportLogService.getById(exportDto.getLogId());
+        excelExportlogEntity.setEndDate(new Date());
+        excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
+        TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
+        //这里的userAccount是userName
+        messagecontrolEntity.setUserAccount(exportDto.getLoginName());
+        messagecontrolEntity.setContent(getSuccContent());
+        //主信息
+        List<QueryDeductListResponse> queryDeductListResponse = getExportMainData(request);
+        if(CollectionUtils.isEmpty(queryDeductListResponse)){
+            log.info("业务单导出--未查到数据");
+            return false;
+        }
+        final String excelFileName = ExcelExportUtil.getExcelFileName(exportDto.getUserId(), exportDto.getType().getDes());
+        ExcelWriter excelWriter;
+        ByteArrayOutputStream out = null;
+        ByteArrayInputStream in = null;
+        String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        try {
+            out = new ByteArrayOutputStream();
+            excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
+            //创建一个sheet
+            WriteSheet writeSheet = EasyExcel.writerSheet(0, "主信息").build();
+            writeSheet.setClazz(ExportClaimBillModel.class);
+            excelWriter.write(queryDeductListResponse, writeSheet);
+            //只有索赔单有明细信息
+            if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
+                List<DeductDetailResponse> exportItem = getExportItem(queryDeductListResponse.stream().map(QueryDeductListResponse::getId).collect(Collectors.toList()));
+                //创建一个新的sheet
+                WriteSheet writeSheet1 = EasyExcel.writerSheet(1, "明细信息").build();
+                writeSheet1.setClazz(ExportClaimBillItemModel.class);
+                excelWriter.write(exportItem, writeSheet1);
+            }
+            out.flush();
+            excelWriter.finish();
+            out.close();
+            //推送sftp
+            String ftpFilePath = ftpPath + "/" + excelFileName;
+            in = new ByteArrayInputStream(out.toByteArray());
+            ftpUtilService.uploadFile(ftpPath, excelFileName, in);
+            messagecontrolEntity.setUrl(exportCommonService.getUrl(excelExportlogEntity.getId()));
+            excelExportlogEntity.setFilepath(ftpFilePath);
+            messagecontrolEntity.setTitle(exportDto.getType().getDes() + "导出成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(exportDto.getType().getDes()+"导出失败:" + e.getMessage(), e);
+            excelExportlogEntity.setExportStatus(ExcelExportLogService.FAIL);
+            excelExportlogEntity.setErrmsg(e.getMessage());
+            messagecontrolEntity.setTitle( exportDto.getType().getDes() + "导出失败");
+            messagecontrolEntity.setContent(exportCommonService.getFailContent(e.getMessage()));
+            flag = false;
+        } finally {
+            excelExportLogService.updateById(excelExportlogEntity);
+        }
         return flag;
     }
 
@@ -771,6 +727,118 @@ public class DeductService   {
             wrapper.apply("format(deduct_date,'yyyy-MM-dd') = {0}",request.getDeductDate());
         }
         return wrapper;
+    }
+
+    /**
+     * 匹配蓝票 转换
+     * @param res
+     * @param settlementNo
+     * @param xfDeductionBusinessTypeEnum
+     * @return
+     */
+    public   Integer  matchInfoTransfer(List<BlueInvoiceService.MatchRes> res,String settlementNo,Long id,XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
+        Date date = new Date();
+        Integer status = TXfSettlementItemFlagEnum.NORMAL.getCode();
+        Integer relationType = xfDeductionBusinessTypeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL?TXfInvoiceDeductTypeEnum.SETTLEMENT.getCode():TXfInvoiceDeductTypeEnum.CLAIM.getCode();
+            for (BlueInvoiceService.MatchRes matchRes : res) {
+                if (xfDeductionBusinessTypeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+                      for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
+                        TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
+                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                        tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount());
+                        tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
+                        tXfSettlementItemEntity.setTaxRate(invoiceItem.getTaxRate());
+                        tXfSettlementItemEntity.setAmountWithoutTax(invoiceItem.getDetailAmount());
+                        tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
+                        tXfSettlementItemEntity.setAmountWithTax(invoiceItem.getDetailAmount().add(invoiceItem.getTaxAmount()));
+                        tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
+                        tXfSettlementItemEntity.setCreateUser(0l);
+                        tXfSettlementItemEntity.setUpdateUser(0l);
+                        tXfSettlementItemEntity.setId(idSequence.nextId());
+                        tXfSettlementItemEntity.setSettlementNo(settlementNo);
+                        tXfSettlementItemEntity.setCreateTime(date);
+                        tXfSettlementItemEntity.setUpdateTime(date);
+                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
+                        tXfSettlementItemEntity.setItemCode(invoiceItem.getItemNo());
+                        tXfSettlementItemEntity.setThridId(invoiceItem.getItemId());
+                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                        tXfSettlementItemEntity.setItemName(invoiceItem.getGoodsName());
+                        tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
+                        tXfSettlementItemEntity.setGoodsNoVer("33.0");
+                        tXfSettlementItemEntity.setZeroTax(StringUtils.EMPTY);
+                        tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
+                        tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
+                        tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
+                        if (tXfSettlementItemEntity.getItemFlag() != TXfSettlementItemFlagEnum.NORMAL.getCode()) {
+                            status = tXfSettlementItemEntity.getItemFlag();
+                        }
+                        tXfSettlementItemDao.insert(tXfSettlementItemEntity);
+                    }
+              }
+            TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
+            tXfBillDeductInvoiceEntity.setId(idSequence.nextId());
+            tXfBillDeductInvoiceEntity.setBusinessNo(settlementNo);
+            tXfBillDeductInvoiceEntity.setBusinessType(relationType);
+            tXfBillDeductInvoiceEntity.setInvoiceCode(matchRes.invoiceCode);
+            tXfBillDeductInvoiceEntity.setInvoiceNo(matchRes.invoiceNo);
+            tXfBillDeductInvoiceEntity.setCreateDate(date);
+            tXfBillDeductInvoiceEntity.setUpdateDate(date);
+            tXfBillDeductInvoiceEntity.setThridId(id);
+
+            tXfBillDeductInvoiceEntity.setUseAmount(matchRes.deductedAmount);
+            tXfBillDeductInvoiceEntity.setStatus(TXfInvoiceDeductStatusEnum.NORMAL.getCode());
+            tXfBillDeductInvoiceDao.insert(tXfBillDeductInvoiceEntity);
+        }
+        return status;
+    }
+
+    /**
+     * 结算单明细校验
+     * @param tXfSettlementItemEntity
+     * @return
+     */
+    protected TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+        BigDecimal ta = tXfSettlementItemEntity.getQuantity().multiply(tXfSettlementItemEntity.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
+        if (ta.compareTo(tXfSettlementItemEntity.getAmountWithoutTax()) != 0) {
+            tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+        }
+        tXfSettlementItemEntity = fixTaxCode(tXfSettlementItemEntity );
+        if (StringUtils.isEmpty(tXfSettlementItemEntity.getGoodsTaxNo())) {
+            tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
+        }
+        return tXfSettlementItemEntity;
+    }
+
+    public String getSuccContent() {
+        String createDate = DateUtils.format(new Date());
+        String content = "申请时间：" + createDate + "。申请导出成功，可以下载！";
+        return content;
+    }
+
+    public List<QueryDeductListResponse> getExportMainData(DeductExportRequest request){
+        if(request.getIdList() != null){
+            QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
+            wrapper.in(TXfBillDeductEntity.ID,request.getIdList());
+            List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.selectList(wrapper);
+            List<QueryDeductListResponse> response = new ArrayList<>();
+            BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
+            return response;
+        }else{
+            PageResult<QueryDeductListResponse> pageResult = queryPageList(request);
+            if(pageResult != null && CollectionUtils.isNotEmpty(pageResult.getRows())){
+                return  pageResult.getRows();
+            }
+        }
+        return null;
+    }
+
+    public List<DeductDetailResponse> getExportItem(List<Long> idList){
+        List<DeductDetailResponse> response = new ArrayList<>();
+        for (Long id : idList) {
+            DeductDetailResponse deductDetailById = getDeductDetailById(id);
+            response.add(deductDetailById);
+        }
+        return response;
     }
 
 }

@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-22
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -62,6 +62,12 @@ public class TXfBillDeductInvoiceEntity extends BaseEntity {
     @TableField("status")
     private Integer status;
 
+    /**
+     * 索赔单id 或者 结算单id
+     */
+    @TableField("thrid_id")
+    private Long thridId;
+
     @TableField("update_date")
     private Date updateDate;
 
@@ -83,6 +89,8 @@ public class TXfBillDeductInvoiceEntity extends BaseEntity {
     public static final String USE_AMOUNT = "use_amount";
 
     public static final String STATUS = "status";
+
+    public static final String THRID_ID = "thrid_id";
 
     public static final String UPDATE_DATE = "update_date";
 

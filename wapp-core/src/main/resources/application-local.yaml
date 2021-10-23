@@ -1,6 +1,7 @@
 wapp:
   integration:
     authentication: Walmart-wapp-enhance-dev2021101114111213460599
+    authentication-split: bill-split-service20211020170354134751573
     client-id: T395054492021101114111213460567
     customer-no: T395054492021101114111213460567
     tenant-id: 4882809030005538709
@@ -15,6 +16,8 @@ wapp:
       rednotification: FECD0B7724B239B3C5950FDBDB1D09E0
       # 获取终端
       terminals: 816A43875B12DE4B50EBEC29E4DA56E2
+      splitInvoice: 639C87A65FE9E5B0557651202E474581
+
       # 红字信息撤销
       rollback: 8F8D2FFCA3F768BB2D7A4D7634BB7274
       # 红字信息生成pdf
@@ -25,8 +28,10 @@ wapp:
       downLoadAction: 150DA7230F31582EC8F1B164E91DB0E4
       discern-callbackUrl: inte-janus.melete
     host:
-      tcp: janus-tcp-inte.xforceplus.com
-      http: https://janus-inte.xforceplus.com
+      tcp: janus-tcp-inte-tx.xforceplus.com
+      http: https://janus-inte-tx.xforceplus.com
+    sign:
+      splitInvoice: 0618de7ca5a54e44b85293cc7929312e
     port:
       tcp: 443
   db2:
