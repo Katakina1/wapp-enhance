@@ -94,7 +94,7 @@ public class AgreementBillService extends DeductService{
         try {
             //匹配税编
             Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-            if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+            if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
                 tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
             }
             if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
@@ -131,21 +131,25 @@ public class AgreementBillService extends DeductService{
      */
     @Transactional
     public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
-
+        if (CollectionUtils.isEmpty(ids)) {
+            log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
+            return null;
+        }
         String idsStr =  StringUtils.join(ids, ",");
         idsStr = "(" + idsStr + ")";
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableBillById(idsStr, xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         if (CollectionUtils.isEmpty(tXfBillDeductEntities)  ) {
             log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
+            return null;
         }
         if (tXfBillDeductEntities.size() != 1) {
-
             log.error("选择的{} 单据列表{}，查询符合条件结果分组为{}",xfDeductionBusinessTypeEnum.getDes(),ids,tXfBillDeductEntities.size());
+            return null;
         }
 
         if (tXfBillDeductEntities.get(0).getAmountWithoutTax().compareTo(BigDecimal.ZERO) <= 0) {
-
             log.error("选择的{} 单据列表{}，查询结果总金额为{}",xfDeductionBusinessTypeEnum.getDes(),ids,tXfBillDeductEntities.get(0).getAmountWithoutTax());
+            return null;
         }
         TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities, xfDeductionBusinessTypeEnum);
         tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT.getCode());

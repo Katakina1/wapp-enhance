@@ -12,6 +12,7 @@ import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
+import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceItemDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
@@ -21,14 +22,18 @@ import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommRedNotificationService;
 import com.xforceplus.wapp.service.CommSettlementService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 类描述：
@@ -81,7 +86,8 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     private TXfSettlementItemExtDao tXfSettlementItemDao;
     @Autowired
     CompanyService companyService;
-
+    @Autowired
+    private DeductService deductService;
     @Autowired
     private HttpClientFactory httpClientFactory;
     // 配置访问域名
@@ -112,7 +118,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
 //
 
     /**
-     *
+     * 结算单执行拆票
      * @param settlementNo
      * @param sellerNo
      * @return
@@ -138,6 +144,34 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         return doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
 
+    @Transactional
+    public void reFixTaxCode(String settlementNo) {
+        List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
+        List<TXfSettlementItemEntity> fixTaxList = tXfSettlementItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
+        List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
+        boolean success = true;
+        if (CollectionUtils.isNotEmpty(fixTaxList)) {
+            for(TXfSettlementItemEntity tXfSettlementItemEntity:fixTaxList){
+                deductService.fixTaxCode(tXfSettlementItemEntity);
+                if (StringUtils.isEmpty(tXfSettlementItemEntity.getGoodsTaxNo())) {
+                    success = false;
+                    continue;
+                }else{
+                    tXfSettlementItemDao.updateById(tXfSettlementItemEntity);
+                }
+            }
+        }
+
+        if (success) {
+            TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.querySettlementByNo(0L, settlementNo, null);
+            if (CollectionUtils.isEmpty(fixAmountList)) {
+                tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
+            }else{
+                tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+            }
+            tXfSettlementDao.updateById(tXfSettlementEntity);
+        }
+    }
     /**
      *
      * @param createPreInvoiceParam

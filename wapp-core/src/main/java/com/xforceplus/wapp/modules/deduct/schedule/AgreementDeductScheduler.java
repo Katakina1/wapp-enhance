@@ -8,6 +8,7 @@ import com.xforceplus.wapp.modules.deduct.service.AgreementBillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Component
 public class AgreementDeductScheduler {
-   // @PostConstruct
+    @PostConstruct
     public void initData() {
         Long amount = 101111223322l;
         List<DeductBillBaseData> dataList = new ArrayList<>();
@@ -68,10 +69,10 @@ public class AgreementDeductScheduler {
        // agreementBillService. receiveData(dataList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
 
         List<Long> ids = new ArrayList<>();
-        ids.add(1192l);
-        ids.add(1172l);
+         ids.add(1191l);
+        ids.add(1171l);
 
-     //   agreementBillService.mergeSettlementByManual(ids, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+       agreementBillService.mergeSettlementByManual(ids, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
        // agreementBillService.mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.AGREEMENT_BILL, TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT);
 
     }
