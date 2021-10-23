@@ -144,8 +144,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                 throw new EnhanceRuntimeException("业务单据类型有误:" + typeEnum.getDes());
         }
 
-        final Overdue overdue = overdueService.oneOptBySellerNo(serviceTypeEnum, sellerNo).get();
-        return overdue.getOverdueDay();
+        final Integer overdue = overdueService.oneOptBySellerNo(serviceTypeEnum, sellerNo);
+        return overdue;
     }
 
 
