@@ -17,24 +17,28 @@ import java.util.Optional;
 @Component
 public class WappDb2Client {
     private final WebClient webClient;
+    private final static String ITEM_NO_UPC_URL = "/item-oe/findByNbrs";
 
     public WappDb2Client(@Value("${wapp.db2.base-url}") String db2Url) {
         webClient = WebClient.builder().baseUrl(db2Url).build();
     }
 
     public Optional<String> getItemNo(String upc) {
-        return webClient.post().uri("/item-oe/findByNbrs").contentType(MediaType.APPLICATION_JSON)
+        return webClient.post().uri(ITEM_NO_UPC_URL).contentType(MediaType.APPLICATION_JSON)
                 .syncBody(String.format("{\"nbrs\":[%s]}", upc)).retrieve()
                 .bodyToMono(UpcRsp.class).timeout(Duration.ofMillis(30 * 1000L)).retry(3)
                 .doOnError(WebClientResponseException.class, err -> {
                     log.info("请求沃尔玛获取[{}]税编异常,status:{},msg:{}", upc, err.getRawStatusCode(), err.getResponseBodyAsString());
                     throw new RuntimeException(err.getMessage());
-                }).blockOptional()
+                })
+                .onErrorReturn(new UpcRsp())
+                .blockOptional()
                 .map(it -> {
                     if (!"1".equalsIgnoreCase(it.getCode())) {
                         log.error("请求沃尔玛获取[{}]税编异常:{}", upc, String.format("%s:%s", it.getCode(), it.getMessage()));
                         return null;
                     }
+                    log.info("请求沃尔玛获取UPC[{}]对应ItemNo关系,结果:{}", upc, it);
                     return it.getResult().getItemNo();
                 });
     }
