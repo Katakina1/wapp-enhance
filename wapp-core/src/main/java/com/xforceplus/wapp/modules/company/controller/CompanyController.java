@@ -59,7 +59,7 @@ public class CompanyController {
             return  R.fail("税号不能为空");
         }
         companyService.update(companyUpdateRequest);
-        return R.ok();
+        return R.ok("修改成功");
     }
 
     @ApiOperation("根据税号获取抬头信息")
