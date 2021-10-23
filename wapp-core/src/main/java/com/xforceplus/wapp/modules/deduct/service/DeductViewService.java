@@ -83,10 +83,10 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         }).sorted(Comparator.comparing(SummaryResponse::getTaxRate)).collect(Collectors.toList());
         final SummaryResponse summaryResponse = new SummaryResponse();
         summaryResponse.setAll(true);
+        summaryResponse.setTaxRate("-1");
         summaryResponse.setTaxRateText("全部");
         summaryResponse.setCount(summaryResponses.stream().map(SummaryResponse::getCount).reduce(0, Integer::sum));
-        summaryResponse.setTaxRate("-1");
-        summaryResponses.add(0,summaryResponse);
+        summaryResponses.add(summaryResponse);
         return summaryResponses;
     }
 
