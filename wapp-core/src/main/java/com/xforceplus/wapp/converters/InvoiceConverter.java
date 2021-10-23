@@ -19,8 +19,8 @@ public interface InvoiceConverter {
     TXfInvoiceEntity map(InvoiceVo.Invoice data);
 
     Map<String, String> INVOICE_TYPE_MAP = ImmutableMap.<String, String>builder()
-            .put("01-10-01", "01").put("01-10-01", "01").put("01-10-01", "01").put("01-10-01", "01")
-            .put("01-10-01", "01").put("01-10-01", "01").put("01-10-01", "01").build();
+            .put("01-10-01", "01").put("02-60-01", "03").put("02-10-01", "04").put("01-10-06", "08")
+            .put("02-10-06", "10").put("02-10-02", "11").put("02-20-06", "14").build();
 
     @Named("mapInvoiceType")
     default String mapInvoiceType(String status) {

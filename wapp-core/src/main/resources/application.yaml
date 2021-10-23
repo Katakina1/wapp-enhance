@@ -9,7 +9,6 @@ server:
   max-http-header-size: 1024000
   servlet:
     context-path: /
-
 # mysql
 spring:
   datasource:
@@ -30,7 +29,7 @@ spring:
       FAIL_ON_UNKNOWN_PROPERTIES: false
 
   resources:
-      static-locations: classpath:/static/,classpath:/views/
+      static-locations: classpath:/static/,classpath:/views/,classpath:/excl/
   servlet:
     multipart:
       max-file-size: 100MB
