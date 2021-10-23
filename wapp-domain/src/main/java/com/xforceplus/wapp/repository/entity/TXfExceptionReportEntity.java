@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-23
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -105,10 +105,10 @@ public class TXfExceptionReportEntity extends BaseEntity {
     private String batchNo;
 
     /**
-     * 状态
+     * 状态 1 正常，2已处理
      */
     @TableField("status")
-    private String status;
+    private Integer status;
 
     /**
      * 文档类型
@@ -170,6 +170,12 @@ public class TXfExceptionReportEntity extends BaseEntity {
     @TableField("amount_without_tax")
     private BigDecimal amountWithoutTax;
 
+    /**
+     * 单据ID
+     */
+    @TableField("bill_id")
+    private Long billId;
+
 
     public static final String ID = "id";
 
@@ -218,5 +224,7 @@ public class TXfExceptionReportEntity extends BaseEntity {
     public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
     public static final String AMOUNT_WITHOUT_TAX = "amount_without_tax";
+
+    public static final String BILL_ID = "bill_id";
 
 }

@@ -69,4 +69,8 @@ public class ExportClaimBillModel {
 
     @ExcelProperty("备注")
     private String remark;
+
+    @ExcelProperty("红字信息表编号")
+    private String redNotificationNo;
+
 }

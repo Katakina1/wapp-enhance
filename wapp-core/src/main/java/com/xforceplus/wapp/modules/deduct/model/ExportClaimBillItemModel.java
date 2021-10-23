@@ -10,6 +10,8 @@ import java.math.BigDecimal;
  */
 @Data
 public class ExportClaimBillItemModel {
+    @ExcelProperty("索赔单明细号")
+    private Long id;
 
     @ExcelProperty("商品编码")
     private String itemNo;
