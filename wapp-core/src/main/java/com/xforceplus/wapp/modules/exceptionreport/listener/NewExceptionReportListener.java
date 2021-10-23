@@ -32,7 +32,7 @@ public class NewExceptionReportListener {
         entity.setId(null);
 
         entity.setCode(exceptionReportEvent.getReportCode().getCode());
-
+        entity.setBillId(exceptionReportEvent.getDeduct().getId());
         switch (exceptionReportEvent.getType()){
             case CLAIM:exceptionReportService.add4Claim(entity);
             break;

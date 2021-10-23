@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,14 +17,17 @@ import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
+import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
+import com.xforceplus.wapp.modules.deduct.mapstruct.MatchedInvoiceMapper;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.overdue.models.Overdue;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
+import com.xforceplus.wapp.repository.dao.TXfInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,15 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     @Autowired
     private AgreementBillService agreementBillService;
+
+    @Autowired
+    private DeductInvoiceService deductInvoiceService;
+
+    @Autowired
+    private TXfInvoiceDao tXfInvoiceDao;
+
+    @Autowired
+    private MatchedInvoiceMapper matchedInvoiceMapper;
 
 
     public List<SummaryResponse> summary(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
@@ -255,15 +265,31 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
 
-    public Long makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type) {
-        final List<String> billNos = request.getBillNos();
-        if (CollectionUtils.isEmpty(billNos)) {
+    public String makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
             throw new EnhanceRuntimeException("请至少选择一张业务单据");
         }
-        final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(billNos, type);
+        final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(request.getIds(), type);
+        return tXfSettlementEntity.getSettlementNo();
+    }
 
-        return tXfSettlementEntity.getId();
-
+    public List<MatchedInvoiceListResponse> getMatchedInvoice(Long settlementId, XFDeductionBusinessTypeEnum typeEnum){
+        final List<TXfBillDeductInvoiceEntity> bySettlementId = this.deductInvoiceService.getBySettlementId(settlementId, typeEnum);
+        if (CollectionUtils.isEmpty(bySettlementId)){
+            throw new EnhanceRuntimeException("未查到结算单ID["+settlementId+"]匹配的发票");
+        }
+        final LambdaQueryWrapper<TXfInvoiceEntity> invoiceWrapper = Wrappers.lambdaQuery(TXfInvoiceEntity.class)
+                .select(TXfInvoiceEntity::getInvoiceNo,TXfInvoiceEntity::getInvoiceCode,TXfInvoiceEntity::getAmountWithoutTax)
+                ;
+        bySettlementId.forEach(x->{
+            invoiceWrapper.or((wrapper)->{
+                wrapper.eq(TXfInvoiceEntity::getInvoiceNo,x.getInvoiceNo())
+                        .eq(TXfInvoiceEntity::getInvoiceCode,x.getInvoiceCode());
+            });
+        });
+        final List<TXfInvoiceEntity> tXfInvoiceEntities = this.tXfInvoiceDao.selectList(invoiceWrapper);
+        final List<MatchedInvoiceListResponse> matchedInvoiceListResponses = this.matchedInvoiceMapper.toMatchedInvoice(tXfInvoiceEntities);
+        return matchedInvoiceListResponses;
     }
 
 }

@@ -54,7 +54,7 @@ public class CodeGenerator {
 //                "t_xf_default_setting",
 //                "t_xf_elec_upload_record",
 //                "t_xf_elec_upload_record_detail",
-//                "t_xf_exception_report",
+                "t_xf_exception_report"
 //                "t_xf_invoice",
 //                "t_xf_invoice_file",
 //                "t_xf_invoice_item",
@@ -77,7 +77,7 @@ public class CodeGenerator {
 //                "t_xf_tax_code","t_dx_match",
 //                "t_ac_org","t_dx_question_paper",
 //                "t_dx_record_invoice_detail","t_dx_invoice","t_xf_bill_deduct_item","t_xf_origin_agreement_item"
-                "t_xf_bill_deduct_invoice"
+//                "t_xf_bill_deduct_invoice"
                 );
 //         generateMainCode();
         // generateItemCode();
@@ -147,7 +147,7 @@ public class CodeGenerator {
         templateConfig.setServiceImpl(null);
         templateConfig.setEntity("/template/entity.java");
 //        templateConfig.setEntity(entityPath);
-        templateConfig.setMapper(null);
+        templateConfig.setMapper("/template/mapper.java");
         mpg.setTemplate(templateConfig);
 
         // 策略配置
