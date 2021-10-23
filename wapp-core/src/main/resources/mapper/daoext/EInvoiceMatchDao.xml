@@ -313,7 +313,8 @@
         invoice_status,
         tp_status,
         company_code,
-        is_del
+        is_del,
+        cipher_text
         ) VALUES (
         #{invoiceCode},
         #{invoiceNo},
@@ -339,7 +340,8 @@
         #{invoiceStatus},
         '0',
         #{companyCode},
-        '0'
+        '0',
+        #{cipherText}
         )
     </insert>
 
@@ -371,7 +373,8 @@
         tp_status,
         company_code,
         invoice_status,
-        is_del
+        is_del,
+        cipher_text
         ) VALUES (
         #{invoiceCode},
         #{invoiceNo},
@@ -398,7 +401,8 @@
         '0',
         #{companyCode},
         #{invoiceStatus},
-        '0'
+        '0',
+        #{cipherText}
         )
     </insert>
 </mapper>
