@@ -122,11 +122,11 @@ public class OverdueController {
 
     @ApiOperation("查询默认超期时间")
     @GetMapping("/overdue/{type}/day")
-    public R<String> getOverdueDay(@ApiParam(value = "超期配置类型 1.索赔、2.协议、3.EPD", required = true)
+    public R<Integer> getOverdueDay(@ApiParam(value = "超期配置类型 1.索赔、2.协议、3.EPD", required = true)
                                    @PathVariable Integer type) {
         long start = System.currentTimeMillis();
-        R<String> r = ValueEnum.getEnumByValue(DefaultSettingEnum.class, type).map(it -> {
-            String result = defaultSettingService.getOverdueDay(it);
+        R<Integer> r = ValueEnum.getEnumByValue(DefaultSettingEnum.class, type).map(it -> {
+            Integer result = defaultSettingService.getOverdueDay(it);
             return R.ok(result);
         }).orElse(R.fail("超期配置类型不正确"));
         log.info("默认超期时间查询,耗时:{}ms", System.currentTimeMillis() - start);
