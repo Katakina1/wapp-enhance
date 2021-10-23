@@ -7,6 +7,7 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportDto;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
@@ -37,6 +38,9 @@ public class ExceptionReportController {
 
     @Autowired
     private ExceptionReportMapper exceptionReportMapper;
+
+    @Autowired
+    private ClaimBillService claimBillService;
 
     @GetMapping("claim")
     @ApiOperation("列外报告-索赔单")
@@ -74,8 +78,9 @@ public class ExceptionReportController {
             throw new EnhanceRuntimeException("请选择需要重新匹配的例外报告");
         }
 
-        //TODO  需要张振伟提供匹配接口
-
+//        TODO  需要张振伟提供匹配接口
+//
+//        claimBillServic
         return R.ok();
     }
 

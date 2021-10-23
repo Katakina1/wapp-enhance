@@ -52,6 +52,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
     @Autowired
     private OverdueServiceImpl overdueService;
 
+    @Autowired
+    private AgreementBillService agreementBillService;
+
 
 
     public List<SummaryResponse> summary(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
@@ -69,8 +72,47 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(request, typeEnum);
         Page<TXfBillDeductEntity> page=new Page<>(request.getPage(),request.getSize());
         final Page<TXfBillDeductEntity> pageResult = this.page(page, wrapper);
-        final List<DeductListResponse> responses = deductMapper.toResponse(pageResult.getRecords());
+        final List<DeductListResponse> responses = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(pageResult.getRecords())){
+            final List<DeductListResponse> list = pageResult.getRecords().stream().map(x -> {
+                final DeductListResponse deductListResponse = deductMapper.toResponse(x);
+                deductListResponse.setOverdue(checkOverdue(typeEnum, x.getSellerNo(), x.getDeductDate()) ? 1 : 0);
+                return deductListResponse;
+            }).collect(Collectors.toList());
+            responses.addAll(list);
+        }
         return PageResult.of(responses,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
+    }
+
+    private boolean checkOverdue(XFDeductionBusinessTypeEnum typeEnum,String sellerNo,Date deductDate ){
+        final int overdue = getOverdue(typeEnum, sellerNo);
+        final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue+1);
+        final Date date = dateTime.setField(DateField.HOUR,0)
+                .setField(DateField.MINUTE,0)
+                .setField(DateField.SECOND,0)
+                .setField(DateField.MILLISECOND,0)
+                .toJdkDate();
+        return date.before(deductDate);
+    }
+
+    private int getOverdue(XFDeductionBusinessTypeEnum typeEnum,String sellerNo){
+        ServiceTypeEnum serviceTypeEnum = null;
+        switch (typeEnum){
+            case CLAIM_BILL:
+                serviceTypeEnum= ServiceTypeEnum.CLAIM;
+                break;
+            case AGREEMENT_BILL:
+                serviceTypeEnum=ServiceTypeEnum.AGREEMENT;
+                break;
+            case EPD_BILL:
+                serviceTypeEnum=ServiceTypeEnum.EPD;
+                break;
+            default:
+                throw new EnhanceRuntimeException("业务单据类型有误:"+typeEnum.getDes());
+        }
+
+        final Optional<Overdue> overdue = overdueService.oneOptBySellerNo(serviceTypeEnum, sellerNo);
+        return overdue.get().getOverdueDay();
     }
 
 
@@ -137,7 +179,6 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
         //超期判断
         if (request.getOverdue() != null ) {
-            // TODO
             ServiceTypeEnum serviceTypeEnum = null;
             switch (typeEnum){
                 case CLAIM_BILL:
@@ -173,8 +214,6 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
                         break;
                 }
             });
-
-
         }
 
 
@@ -215,33 +254,14 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao,TXfBillDe
 
 
     public Long makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type){
-//         TODO  张振伟提供接口
         final List<String> billNos = request.getBillNos();
         if(CollectionUtils.isEmpty(billNos)){
             throw new EnhanceRuntimeException("请至少选择一张业务单据");
         }
-        final TXfSettlementEntity tXfSettlementEntity = mergeSettlementByManual(billNos, type);
+        final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(billNos, type);
 
         return tXfSettlementEntity.getId();
 
     }
 
-
-    public TXfSettlementEntity mergeSettlementByManual(List<String> businessNo, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
-        return null;
-    }
-
-
-//    public static void main(String[] args) {
-//        final DateTime dateTime = DateUtil.offsetDay(new Date(), -5);
-//        final Date date = dateTime.setField(DateField.HOUR,0)
-//                .setField(DateField.MINUTE,0)
-//                .setField(DateField.SECOND,0)
-//                .setField(DateField.MILLISECOND,0)
-//                .toJdkDate();
-//        // 15 + 5 = 20
-//        // 17 + 5 = 22
-//        //
-//        System.out.println("args = " + date);
-//    }
 }
