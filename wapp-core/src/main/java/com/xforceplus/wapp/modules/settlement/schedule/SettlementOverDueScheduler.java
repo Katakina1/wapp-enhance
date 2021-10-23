@@ -7,6 +7,7 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,11 +25,10 @@ public class SettlementOverDueScheduler {
     private PreinvoiceService preinvoiceService;
 
     /**
-     * 自动确认
+     * 自动确认逾期金额 结算单下 所属的单据 全部预期，自动确认
      */
-  //  @S
-    //  cheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
 
+    @Scheduled(cron=" 0 0 1 * * ?")
     public void settlementAutoConfirm(){
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();

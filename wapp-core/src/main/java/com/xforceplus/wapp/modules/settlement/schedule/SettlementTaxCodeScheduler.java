@@ -7,6 +7,7 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,16 +23,12 @@ public class SettlementTaxCodeScheduler {
     private SettlementService settlementService;
     @Autowired
     private PreinvoiceService preinvoiceService;
-   // @PostConstruct
-    public void initData() {
-        settlementFixTaxCode();
-    }
-    /**
-     * 调用拆票
-     */
-  //  @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
-    public void settlementFixTaxCode(){
 
+    /**
+     *  补齐税编
+     */
+    @Scheduled(cron=" 0 0 20 * * ?")
+    public void settlementFixTaxCode(){
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
         Integer limit = 100;
