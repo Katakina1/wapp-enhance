@@ -83,16 +83,40 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         return PageResult.of(responses, pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
     }
 
-    private boolean checkOverdue(XFDeductionBusinessTypeEnum typeEnum, String sellerNo, Date deductDate) {
+    /**
+     * 单据类型，仅支持协议单和EPD，索赔单默认返回false
+     *
+     * @param typeEnum 单据类型，仅支持协议单和EPD，索赔单默认返回false
+     * @param sellerNo 销方编号
+     * @param deductDate 扣款日期
+     * @return
+     */
+    public boolean checkOverdue(XFDeductionBusinessTypeEnum typeEnum, String sellerNo, Date deductDate) {
+        if (typeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+            return false;
+        }
+        final Date date = getOverdueDate(typeEnum,sellerNo);
+        return date.before(deductDate);
+    }
+
+
+    /**
+     * 获取超期日期，精确到天
+     *
+     * @param typeEnum 单据类型
+     * @param sellerNo 销方编号
+     * @return Date
+     */
+    public Date getOverdueDate(XFDeductionBusinessTypeEnum typeEnum, String sellerNo){
         final int overdue = getOverdue(typeEnum, sellerNo);
         final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
-        final Date date = dateTime.setField(DateField.HOUR, 0)
+        return dateTime.setField(DateField.HOUR, 0)
                 .setField(DateField.MINUTE, 0)
                 .setField(DateField.SECOND, 0)
                 .setField(DateField.MILLISECOND, 0)
                 .toJdkDate();
-        return date.before(deductDate);
     }
+
 
     private int getOverdue(XFDeductionBusinessTypeEnum typeEnum, String sellerNo) {
         ServiceTypeEnum serviceTypeEnum = null;
@@ -177,26 +201,11 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE, typeEnum.getValue());
 
         //超期判断
-        if (request.getOverdue() != null) {
-            ServiceTypeEnum serviceTypeEnum = null;
-            switch (typeEnum) {
-                case CLAIM_BILL:
-                    serviceTypeEnum = ServiceTypeEnum.CLAIM;
-                    break;
-                case AGREEMENT_BILL:
-                    serviceTypeEnum = ServiceTypeEnum.AGREEMENT;
-                    break;
-                case EPD_BILL:
-                    serviceTypeEnum = ServiceTypeEnum.EPD;
-                    break;
-                default:
-                    throw new EnhanceRuntimeException("业务单据类型有误:" + typeEnum.getDes());
-            }
+        if (request.getOverdue() != null && typeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL) {
 
-            final Overdue overdue = overdueService.oneOptBySellerNo(serviceTypeEnum, request.getSellerNo());
+            final int overdue = getOverdue(typeEnum,request.getSellerNo());
 
-
-            final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue.getOverdueDay() + 1);
+            final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
             final Date date = dateTime.setField(DateField.HOUR, 0)
                     .setField(DateField.MINUTE, 0)
                     .setField(DateField.SECOND, 0)
@@ -211,7 +220,6 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                     break;
             }
         }
-
 
         return wrapper;
     }
