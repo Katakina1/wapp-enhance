@@ -555,7 +555,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
         Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
         String downLoadUrl = exportRedNoPdf(filterData, listItemMap, generateModel,tuple3);
-        return Response.ok("生成成功",downLoadUrl);
+        return Response.ok("导出成功,请在消息中心查看",downLoadUrl);
     }
 
     private String exportRedNoPdf(List<TXfRedNotificationEntity> applies, Map<Long, List<TXfRedNotificationDetailEntity>> detailMap, Integer generateModel,Tuple3<Long, Long,String> tuple3){
