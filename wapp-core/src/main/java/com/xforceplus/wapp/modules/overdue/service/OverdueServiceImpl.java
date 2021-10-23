@@ -61,22 +61,20 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         return Tuple.of(overdueConverter.map(page.getRecords()), page);
     }
 
-    public Optional<Overdue> oneOptBySellerNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerNo) {
+    public Integer oneOptBySellerNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerNo) {
         log.info("超期配置查询,入参：{}", sellerNo);
-        return new LambdaQueryChainWrapper<>(getBaseMapper())
-                .isNull(OverdueEntity::getDeleteFlag)
-                .eq(OverdueEntity::getType, typeEnum.getValue())
-                .eq(OverdueEntity::getSellerNo, sellerNo).oneOpt()
-                .map(overdueConverter::map);
+        return new LambdaQueryChainWrapper<>(getBaseMapper()).isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getType, typeEnum.getValue()).eq(OverdueEntity::getSellerNo, sellerNo)
+                .oneOpt().map(OverdueEntity::getOverdueDay)
+                .orElseGet(() -> defaultSettingService.getOverdueDay(overdueConverter.map(typeEnum)));
     }
 
-    public Optional<Overdue> oneOptBySellerTaxNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerTaxNo) {
+    public Integer oneOptBySellerTaxNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerTaxNo) {
         log.info("超期配置查询,入参：{}", sellerTaxNo);
-        return new LambdaQueryChainWrapper<>(getBaseMapper())
-                .isNull(OverdueEntity::getDeleteFlag)
-                .eq(OverdueEntity::getType, typeEnum.getValue())
-                .eq(OverdueEntity::getSellerTaxNo, sellerTaxNo)
-                .oneOpt().map(overdueConverter::map);
+        return new LambdaQueryChainWrapper<>(getBaseMapper()).isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getType, typeEnum.getValue()).eq(OverdueEntity::getSellerTaxNo, sellerTaxNo)
+                .oneOpt().map(OverdueEntity::getOverdueDay)
+                .orElseGet(() -> defaultSettingService.getOverdueDay(overdueConverter.map(typeEnum)));
     }
 
     public Either<String, Integer> export(ServiceTypeEnum typeEnum, InputStream is) {
