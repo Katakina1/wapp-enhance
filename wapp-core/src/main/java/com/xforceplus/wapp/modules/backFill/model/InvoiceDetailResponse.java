@@ -227,6 +227,9 @@ import java.util.List;
     @ApiModelProperty("机器码")
     private String machinecode;
 
+    @ApiModelProperty("销货清单标志  1-有销货清单")
+    private String goodsListFlag;
+
 
 
 }
