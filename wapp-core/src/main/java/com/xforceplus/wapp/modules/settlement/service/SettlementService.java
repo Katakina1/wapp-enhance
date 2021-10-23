@@ -1,12 +1,7 @@
 package com.xforceplus.wapp.modules.settlement.service;
 
-import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +21,7 @@ public class SettlementService {
     private TXfSettlementExtDao settlementDao;
 
 
-    public List<TXfSettlementEntity> queryWaitSplitSettlement(Long id, Integer status, Integer limit ) {
+    public List<TXfSettlementEntity> querySettlementByStatus(Long id, Integer status, Integer limit ) {
         return settlementDao.querySettlementByStatus(status, id, limit);
     }
 

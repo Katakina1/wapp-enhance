@@ -172,6 +172,22 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfSettlementDao.updateById(tXfSettlementEntity);
         }
     }
+
+
+    @Transactional
+    public void reCalculation(String settlementNo) {
+        List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
+        List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(fixAmountList)) {
+            for(TXfSettlementItemEntity tXfSettlementItemEntity:fixAmountList){
+                BigDecimal quantity = tXfSettlementItemEntity.getAmountWithoutTax().divide(tXfSettlementItemEntity.getUnitPrice()).setScale(6, RoundingMode.HALF_UP);
+                tXfSettlementItemEntity.setQuantity(quantity);
+            }
+        }
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.querySettlementByNo(0L, settlementNo, null);
+        tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
+        tXfSettlementDao.updateById(tXfSettlementEntity);
+    }
     /**
      *
      * @param createPreInvoiceParam
