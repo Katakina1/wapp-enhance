@@ -12,6 +12,7 @@ import com.xforceplus.wapp.repository.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -134,6 +135,9 @@ public class CommEpdService {
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
+        }
+        if(CollectionUtils.isEmpty(preInvoiceItemList)){
+            throw new EnhanceRuntimeException("结算单无数据可拆分预制发票");
         }
         preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), preInvoiceItemList);
         //删除之前的预制发票，避免申请逻辑状态判断问题
