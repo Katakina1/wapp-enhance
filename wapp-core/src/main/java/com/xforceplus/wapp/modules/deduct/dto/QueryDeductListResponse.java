@@ -85,4 +85,9 @@ public class QueryDeductListResponse {
     @ApiModelProperty("红字信息表编号")
     private String redNotificationNo;
 
+    @ApiModelProperty("锁定状态 1 锁定 0 未锁定")
+    private Integer lockFlag;
+
+
+
 }
