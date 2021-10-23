@@ -2,6 +2,8 @@ package com.xforceplus.wapp.modules.overdue.converters;
 
 import com.xforceplus.wapp.converters.BaseConverter;
 import com.xforceplus.wapp.converters.GlobalConfig;
+import com.xforceplus.wapp.enums.DefaultSettingEnum;
+import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import com.xforceplus.wapp.modules.overdue.models.Overdue;
 import com.xforceplus.wapp.repository.entity.OverdueEntity;
@@ -32,4 +34,9 @@ public interface OverdueConverter {
     OverdueEntity map(OverdueDto overdue);
 
     Overdue map(OverdueEntity overdue);
+    
+    @ValueMapping(source = "CLAIM", target = "CLAIM_OVERDUE_DEFAULT_DAY")
+    @ValueMapping(source = "AGREEMENT", target = "AGREEMENT_OVERDUE_DEFAULT_DAY")
+    @ValueMapping(source = "EPD", target = "EPD_OVERDUE_DEFAULT_DAY")
+    DefaultSettingEnum map(ServiceTypeEnum typeEnum);
 }

@@ -45,6 +45,12 @@ public class TXfInvoiceEntity extends BaseEntity {
     private String paperDrewDate;
 
     /**
+     * 发票类型
+     */
+    @TableField("invoice_type")
+    private String invoiceType;
+
+    /**
      * 购方名称
      */
     @TableField("purchaser_name")
