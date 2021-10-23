@@ -4,8 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -20,7 +21,8 @@ public class ConfirmDto {
     @NotBlank(message = "销方编号不能为空")
     @ApiModelProperty("销方编号")
     private String sellerNo;
-    @Min(value = 1, message = "明细ID列表不能为空")
+    @NotNull
+    @Size(min = 1, message = "明细ID列表不能为空")
     @ApiModelProperty("明细ID列表")
     private List<Long> ids;
 }
