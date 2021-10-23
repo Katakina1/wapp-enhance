@@ -7,20 +7,27 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
+import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
+import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
+import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -147,11 +154,91 @@ public class NoneBusinessController {
         }
         if (tXfNoneBusinessUploadDetailEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
 
-            return R.ok("data:image/jpeg;base64," + result );
+            return R.ok("data:image/jpeg;base64," + result);
         } else {
             return R.ok("data:application/pdf;base64," + result);
         }
 
+    }
+
+    /**
+     * 电票的退票=纸票的退票+退单
+     *
+     * @return
+     */
+    @ApiOperation("下载源文件")
+    @PostMapping(value = "/down")
+    public void down(FileDownRequest request, HttpServletResponse response) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            throw new RRException("请选中数据后进行下载");
+        }
+        List<TXfNoneBusinessUploadDetailEntity> list = noneBusinessService.listByIds(request.getIds());
+        if (CollectionUtils.isEmpty(list)) {
+            throw new RRException("您所选发票不包含任何附件文件");
+        }
+        final File tempDirectory = FileUtils.getTempDirectory();
+        final File userTempFile = new File(tempDirectory, 111 + Thread.currentThread().getName());
+        if (!userTempFile.exists()) {
+            userTempFile.mkdir();
+        }
+        final String workDirectory = dateToStrLong(new Date()) + "-" + RandomUtils.nextInt(100, 1000);
+        final File workFile = new File(userTempFile, workDirectory);
+        if (!workFile.exists()) {
+            workFile.mkdir();
+        }
+        String downLoadFileName;
+        File file;
+        final TXfNoneBusinessUploadDetailEntity invoiceFile = list.get(0);
+
+        downLoadFileName = workDirectory + ".zip";
+        for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
+
+            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
+            try {
+                String suffix = null;
+                if (invoiceFile.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
+                    suffix = "." + Constants.SUFFIX_OF_OFD;
+                } else {
+                    suffix = "." + Constants.SUFFIX_OF_PDF;
+                }
+                FileUtils.writeByteArrayToFile(new File(workFile, fileEntity.getInvoiceNo() + "-" + fileEntity.getInvoiceCode() + suffix), bytes);
+            } catch (IOException e) {
+                log.error("临时文件存储失败:" + e.getMessage(), e);
+            }
+        }
+        file = new File(userTempFile, downLoadFileName);
+        try {
+            ZipUtil.zip(file.getPath(), workFile);
+        } catch (Exception e) {
+            log.error("下载文件打包失败:" + e.getMessage(), e);
+            throw new RRException("下载文件打包失败，请重试");
+        }
+        //设置Headers
+        response.setHeader("Content-Type", "application/octet-stream");
+//        response.setContentType("application/force-download");
+        //设置下载的文件的名称-该方式已解决中文乱码问题
+        response.setHeader("Content-Disposition", "attachment;filename=" + downLoadFileName);
+        try {
+            InputStream bis = new FileInputStream(file);
+            OutputStream outputStream = response.getOutputStream();
+
+            byte[] buffer = new byte[1024];
+            int len = 0;
+            while ((len = bis.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+            }
+            outputStream.flush();
+        } catch (Exception e) {
+            log.error("下载异常:" + e.getMessage(), e);
+            throw new RRException("文件下载异常，请重试");
+        }
+    }
+
+
+    private static String dateToStrLong(java.util.Date dateDate) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String dateString = formatter.format(dateDate);
+        return dateString;
     }
 
 }
