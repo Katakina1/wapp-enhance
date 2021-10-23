@@ -117,7 +117,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo) throws IOException {
+    public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo)  {
         //查询待拆票算单主信息，
         //查询结算单明细信息
         //查询开票信息
@@ -144,7 +144,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param tXfSettlementEntity
      * @return
      */
-    public List<SplitPreInvoiceInfo> doSplit (CreatePreInvoiceParam createPreInvoiceParam,TXfSettlementEntity tXfSettlementEntity) throws IOException {
+    public List<SplitPreInvoiceInfo> doSplit (CreatePreInvoiceParam createPreInvoiceParam,TXfSettlementEntity tXfSettlementEntity)   {
         Map<String, String> defaultHeader = new HashMap<>();
         defaultHeader.put("tenantId", tenantId);
         defaultHeader.put("Authentication", authentication);
@@ -167,7 +167,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         } catch (IOException e) {
             log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
             e.printStackTrace();
-            throw e;
+            throw new RuntimeException("拆票失败");
         }
         // check 拆票失败
         Date date = new Date();
@@ -284,7 +284,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, String sellerNo, List<TXfPreInvoiceItemEntity> items) throws IOException {
+    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, String sellerNo, List<TXfPreInvoiceItemEntity> items)   {
         TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo(0l, settlementNo,null );
         BigDecimal taxAmount = BigDecimal.ZERO;
         BigDecimal amountWithTax = BigDecimal.ZERO;
