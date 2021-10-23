@@ -13,7 +13,7 @@ wapp:
       # 发票验真
       verification: E988114EC83E2C1FBA93F180B8D68CD8
       # 申请红字信息表
-      rednotification: A9F0665B2C933F31D5145B7A1CC571EB
+      rednotification: C6D28535F2ADE4D5DB655AE71D87375A
       # 获取终端
       terminals: A9F0665B2C933F31D5145B7A1CC571EB
       splitInvoice: 87E0351D0EFD681BE9610BAA849625F3
