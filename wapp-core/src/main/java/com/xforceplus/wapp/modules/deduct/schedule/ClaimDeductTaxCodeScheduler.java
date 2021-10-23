@@ -29,7 +29,7 @@ public class ClaimDeductTaxCodeScheduler {
     public void matchTaxCode(){
          Long id = 0L;
          List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
-        while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
+         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tmp : tXfBillDeductEntities) {
                 claimBillService.reMatchClaimTaxCode(tmp.getId());
             }
