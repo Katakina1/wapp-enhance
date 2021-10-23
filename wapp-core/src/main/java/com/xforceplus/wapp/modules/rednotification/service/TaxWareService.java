@@ -187,7 +187,15 @@ public class TaxWareService {
                     tXfRedNotificationLogEntity.setStatus(2);
                     redNotificationLogService.updateById(tXfRedNotificationLogEntity);
                     //commPreInvoiceService//
-                    commPreInvoiceService.fillPreInvoiceRedNotification(Long.parseLong(tXfRedNotificationEntity.getPid()),redMessageInfo.getRedNotificationNo());
+                    try{
+                        if (tXfRedNotificationEntity.getPid()!=null){
+                            commPreInvoiceService.fillPreInvoiceRedNotification(Long.parseLong(tXfRedNotificationEntity.getPid()),redMessageInfo.getRedNotificationNo());
+                        }else {
+                            log.info("回填手工导入的红字信息,申请流水号:{}",tXfRedNotificationEntity.getSerialNo());
+                        }
+                    }catch (Exception e){
+                        log.error("回填预制发票异常",e);
+                    }
 
                 }else {
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());

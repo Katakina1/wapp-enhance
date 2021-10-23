@@ -96,6 +96,12 @@ public class RedNotificationMain {
     private Integer invoiceOrigin;
 
     /**
+     * 红字信息表编号
+     */
+    @ApiModelProperty("红字信息表编号")
+    private Integer redNotificationNo;
+
+    /**
      * 公司编号
      */
     @ApiModelProperty("公司编号")

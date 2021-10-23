@@ -371,6 +371,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             updateWrapper.in(TXfRedNotificationEntity::getId,ids)  ;
             TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
             entity.setSerialNo(applyRequest.getSerialNo());
+            entity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
             getBaseMapper().update(entity,updateWrapper);
         }
 
@@ -634,11 +635,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             if(s != null){
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, ftpFilePath);
-                exportCommonService.sendMessage(userName,"红字信息表导出失败",exportCommonService.getSuccContent());
+                exportCommonService.sendMessage(tuple3._3,"红字信息表下载pdf失败",exportCommonService.getSuccContent());
                 return s;
             }else {
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.OK,ftpFilePath);
-                exportCommonService.sendMessage(tuple3._3,"红字信息表导出成功",exportCommonService.getFailContent(s));
+                exportCommonService.sendMessage(tuple3._3,"红字信息表下载pdf成功",exportCommonService.getFailContent(s));
                 return "导出成功,请在消息中心查看";
             }
         }

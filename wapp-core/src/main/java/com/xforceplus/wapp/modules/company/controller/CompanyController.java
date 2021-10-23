@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,11 +34,13 @@ import java.util.List;
 @Slf4j
 @RestController
 @Api(tags = "抬头信息管理")
-@RequestMapping(EnhanceApi.BASE_PATH+"/company")
+@RequestMapping(EnhanceApi.BASE_PATH + "/company")
 public class CompanyController {
 
     @Autowired
-    private CompanyService companyService;@ApiOperation("抬头信息分页查询")
+    private CompanyService companyService;
+
+    @ApiOperation("抬头信息分页查询")
     @GetMapping("/list/paged")
     public R<PageResult<TAcOrgEntity>> getOverdue(@ApiParam("页数") @RequestParam(required = false, defaultValue = "1") Long current,
                                                   @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
@@ -49,18 +52,31 @@ public class CompanyController {
     }
 
 
-
     @ApiOperation("根据税号抬头信息修改")
-    @GetMapping("/updateByTaxNo")
+    @PostMapping("/updateByTaxNo")
     public R updateByTaxNo(@RequestBody CompanyUpdateRequest companyUpdateRequest) {
+        if(StringUtils.isEmpty(companyUpdateRequest.getTaxNo())){
+            return  R.fail("税号不能为空");
+        }
         companyService.update(companyUpdateRequest);
         return R.ok();
+    }
+
+    @ApiOperation("根据税号获取抬头信息")
+    @GetMapping("/getByTaxNo")
+    public R<TAcOrgEntity> getByTaxNo(@ApiParam("税号") @RequestParam(required = true) String taxNo) {
+
+        TAcOrgEntity result = companyService.getByTaxNo(taxNo);
+        if (result == null) {
+            return R.fail("未查询到对应的抬头信息");
+        }
+        return R.ok(result);
     }
 
     @ApiOperation("抬头信息导入")
     @PutMapping("/import")
     public R batchImport(@ApiParam("导入的文件") @RequestParam(required = true) MultipartFile file
-                         ) throws IOException {
+    ) throws IOException {
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
         } else if (file.isEmpty()) {
@@ -75,16 +91,17 @@ public class CompanyController {
 
     @ApiOperation("购方机构列表")
     @GetMapping("purchasers")
-    public R purchaserOrg(){
+    public R purchaserOrg() {
         final List<TAcOrgEntity> purchaserOrgs = companyService.getPurchaserOrgs();
-        return R.ok(Collections.singletonMap("orgs",purchaserOrgs));
+        return R.ok(Collections.singletonMap("orgs", purchaserOrgs));
     }
+
     @ApiOperation(value = "获取抬头模板")
     @GetMapping(value = "/template")
-    public void template(HttpServletResponse res, HttpServletRequest req){
+    public void template(HttpServletResponse res, HttpServletRequest req) {
         try {
             String name = "抬头信息导入模板";
-            String fileName = name+".xlsx";
+            String fileName = name + ".xlsx";
             ServletOutputStream out;
             res.setContentType("multipart/form-data");
             res.setCharacterEncoding("UTF-8");
