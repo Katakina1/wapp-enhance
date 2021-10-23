@@ -245,6 +245,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     //获取红字信息数据(主数据)
     List<TXfRedNotificationEntity> getFilterData(QueryModel queryModel){
+        //判读如果 getIncludes 没有值，queryModel 全选标识没传 。默认true 逻辑
+        if (CollectionUtils.isEmpty(queryModel.getIncludes()) && queryModel.getIsAllSelected()==null){
+            queryModel.setIsAllSelected(true);
+        }
+
         //全选
         if (queryModel.getIsAllSelected()){
             LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
@@ -292,6 +297,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
         if (queryModel.getLockFlag()!=null){
             queryWrapper.eq(TXfRedNotificationEntity::getLockFlag,queryModel.getLockFlag());
+        }
+        if (!CollectionUtils.isEmpty(queryModel.getExcludes())){
+            queryWrapper.notIn(TXfRedNotificationEntity::getId,queryModel.getExcludes());
         }
 
         return queryWrapper;
