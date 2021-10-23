@@ -15,7 +15,8 @@ import java.util.List;
 @Data
     public class InvoiceDetailResponse {
 
-    private List<InvoiceDetail> invoiceDetailList;
+    @ApiModelProperty("发票详情列表")
+    private List<InvoiceDetail> items;
     /**
      * 发票类型 01-增值税专用发票 03-机动车销售统一发票 04-增值税普通发票 10-电子发票 11-卷票 14-通行费发票
      */

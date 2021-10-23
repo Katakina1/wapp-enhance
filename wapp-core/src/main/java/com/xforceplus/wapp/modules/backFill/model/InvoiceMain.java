@@ -155,6 +155,10 @@ public class InvoiceMain {
      * "redFlag":" ", //红冲状态 0-未红冲、1-已被红冲
      */
     private String redFlag;
+    /**
+     * ""密文
+     */
+    private String cipherText;
 
     public static final String ALREADY_RED = "1";
 
