@@ -4,7 +4,7 @@ import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.repository.dao.TXfBillDeductItemRefExtDao;
 import com.xforceplus.wapp.repository.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -181,6 +182,14 @@ public class ClaimBillService extends DeductService{
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
         return billAmount;
+    }
+
+    /**
+     * 重新补充税编
+     * @param deductId
+     */
+    public void reMatchClaimTaxCode(String deductId) {
+
     }
 
     /**
