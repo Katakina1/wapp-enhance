@@ -1,12 +1,10 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xforceplus.wapp.common.dto.R;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.common.utils.JsonUtil;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.google.common.collect.Lists;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
-import com.xforceplus.wapp.modules.preinvoice.dto.ExistRedInvoiceResult;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import com.xforceplus.wapp.modules.preinvoice.dto.SplitAgainRequest;
 import com.xforceplus.wapp.modules.preinvoice.mapstruct.PreInvoiceMapper;
@@ -16,7 +14,6 @@ import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommAgreementService;
 import com.xforceplus.wapp.service.CommEpdService;
 import com.xforceplus.wapp.service.CommSettlementService;
@@ -46,7 +43,7 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
     TXfSettlementDao tXfSettlementDao;
 
 
-    public Response<PreInvoiceItem> applyOperation(ApplyOperationRequest request) {
+    public R<List<PreInvoiceItem>> applyOperation(ApplyOperationRequest request) {
         int applyOperationType = request.getApplyOperationType();
 
         // 操作类型 1 修改税编 2 修改限额 3不做任何修改 4 修改商品明细
@@ -62,7 +59,7 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
                 //撤销结算单
                 return rollBackSettlement(request);
             default:
-                return Response.failed("操作类型不正确, 1 修改税编 2 修改限额 3 修改商品明细");
+                return R.fail("操作类型不正确, 1 修改税编 2 修改限额 3 修改商品明细");
         }
     }
 
@@ -95,7 +92,7 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
 
 
     // 结算单类型:1索赔单,2:协议单；3:EPD单
-    private Response<PreInvoiceItem> rollBackSettlement(ApplyOperationRequest request) {
+    private R<List<PreInvoiceItem>> rollBackSettlement(ApplyOperationRequest request) {
         try {
             switch (request.getSettlementType()) {
                 case 2:
@@ -105,13 +102,13 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
             }
         }catch (Exception e){
             log.error("释放结算单异常",e);
-            return Response.failed(e.getMessage());
+            return R.fail(e.getMessage());
         }
 
-        return  Response.ok("释放成功");
+        return  R.ok(Lists.newArrayList());
     }
 
-    private Response<PreInvoiceItem> retryApplyRednotification(ApplyOperationRequest request) {
+    private R<List<PreInvoiceItem>> retryApplyRednotification(ApplyOperationRequest request) {
         // 操作类型 1 修改税编 2 修改限额 3 修改商品明细
         LambdaQueryWrapper<TXfPreInvoiceEntity> tXfPreInvoiceEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         tXfPreInvoiceEntityLambdaQueryWrapper.eq(TXfPreInvoiceEntity::getSettlementId,request.getSettlementId())
@@ -133,7 +130,7 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
         abandonList.addAll(waitApplyPreIds);
         //
         if (CollectionUtils.isEmpty(abandonList)){
-            return Response.failed("未查询到待重新拆票的明细");
+            return R.fail("未查询到待重新拆票的明细");
         }
 
         LambdaQueryWrapper<TXfPreInvoiceItemEntity> itemEntityLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -141,25 +138,34 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
         List<TXfPreInvoiceItemEntity> invoiceItemEntities = preInvoiceItemDaoService.getBaseMapper().selectList(itemEntityLambdaQueryWrapper);
 
         List<PreInvoiceItem> preInvoiceItems = preInvoiceMapper.entityToPreInvoiceItemDtoList(invoiceItemEntities);
-        return Response.ok("获取待重新拆票的明细成功",preInvoiceItems);
+        return R.ok(preInvoiceItems);
     }
 
 
     public Response<String> splitAgain(SplitAgainRequest request) {
-        List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = preInvoiceMapper.itemToPreInvoiceEntityList(request.getDetails());
-        try {
-            switch (request.getSettlementType()) {
-                case 2:
-                    commAgreementService.againSplitPreInvoice(request.getSettlementId(),tXfPreInvoiceItemEntities);
-                    break;
-                case 3:
-                    commEpdService.againSplitPreInvoice(request.getSettlementId(),tXfPreInvoiceItemEntities);
-                    break;
+        //如果不做任何修改
+        if (request.getApplyOperationType() != null && request.getApplyOperationType() == 1){
+            List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = preInvoiceMapper.itemToPreInvoiceEntityList(request.getDetails());
+            try {
+                switch (request.getSettlementType()) {
+                    case 2:
+                        commAgreementService.againSplitPreInvoice(request.getSettlementId(),tXfPreInvoiceItemEntities);
+                        break;
+                    case 3:
+                        commEpdService.againSplitPreInvoice(request.getSettlementId(),tXfPreInvoiceItemEntities);
+                        break;
+                }
+            }catch (Exception e){
+                log.error("重新拆票异常",e);
+                return Response.failed(e.getMessage());
             }
-        }catch (Exception e){
-            log.error("重新拆票异常",e);
-            return Response.failed(e.getMessage());
+        }else {
+
+
+
         }
+
+
 
         return Response.ok("重新拆票成功");
     }
