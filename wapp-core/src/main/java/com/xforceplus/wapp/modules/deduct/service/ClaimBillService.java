@@ -3,8 +3,9 @@ package com.xforceplus.wapp.modules.deduct.service;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfInvoiceDeductTypeEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.repository.dao.TXfBillDeductItemRefExtDao;
 import com.xforceplus.wapp.repository.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -12,9 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 类描述：扣除单通用方法
@@ -181,6 +184,25 @@ public class ClaimBillService extends DeductService{
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
         return billAmount;
+    }
+
+    /**
+     * 重新补充税编
+     * @param deductId
+     */
+    public void reMatchClaimTaxCode(Long deductId) {
+        List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBillId(deductId, TXfInvoiceDeductTypeEnum.CLAIM.getCode(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
+        tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
+        for (TXfBillDeductItemEntity tXfBillDeductItemEntity : tXfBillDeductItemEntities) {
+            tXfBillDeductItemEntity = fixTaxCode(tXfBillDeductItemEntity);
+        }
+        tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
+            TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
+            tXfBillDeductEntity.setId(deductId);
+            tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+            tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
+        }
     }
 
     /**

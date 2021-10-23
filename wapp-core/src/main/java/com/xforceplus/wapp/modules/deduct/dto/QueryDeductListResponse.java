@@ -55,6 +55,9 @@ public class QueryDeductListResponse {
     @ApiModelProperty("协议类型编码")
     private String agreementReasonCode;
 
+    @ApiModelProperty("税码")
+    private String agreementTaxCode;
+
     /**
      * 含税金额
      */
