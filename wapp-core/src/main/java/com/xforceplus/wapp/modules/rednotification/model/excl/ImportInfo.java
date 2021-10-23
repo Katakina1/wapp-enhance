@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.rednotification.model.excl;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -97,14 +98,17 @@ public class ImportInfo extends BaseRowModel {
     @ExcelProperty(value = "成品油申请原因", index = 29)
     private String oliApplyReason;
     @ExcelProperty(value = "是否享受税收优惠政策", index = 30)
-    private Integer taxPre;
+    private String taxPre;
     @ExcelProperty(value = "享受税收优惠政策内容", index = 31)
     private String taxPreCon;
     @ExcelProperty(value = "零税率标志", index = 32)
     private String zeroTax;
     @ExcelProperty(value = "扣除额", index = 33)
-    private String deduction;
+    private BigDecimal deduction;
 
+   // 补充额外字段
+   @JsonIgnore
+   private Integer specialInvoiceFlag;
 
 
 
