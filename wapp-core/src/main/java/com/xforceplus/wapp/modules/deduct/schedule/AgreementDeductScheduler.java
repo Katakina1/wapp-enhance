@@ -8,7 +8,6 @@ import com.xforceplus.wapp.modules.deduct.service.AgreementBillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.List;
 
 @Component
 public class AgreementDeductScheduler {
-    @PostConstruct
+    //@PostConstruct
     public void initData() {
         Long amount = 101111223322l;
         List<DeductBillBaseData> dataList = new ArrayList<>();
