@@ -83,11 +83,11 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         if (StringUtils.isNotBlank(companyUpdateRequest.getTaxName())) {
             wrapper.set(TAcOrgEntity::getTaxName, companyUpdateRequest.getTaxName());
         }
-        if (StringUtils.isNotBlank(companyUpdateRequest.getTelePhone())) {
-            wrapper.set(TAcOrgEntity::getPhone, companyUpdateRequest.getTelePhone());
+        if (StringUtils.isNotBlank(companyUpdateRequest.getPhone())) {
+            wrapper.set(TAcOrgEntity::getPhone, companyUpdateRequest.getPhone());
         }
-        if (StringUtils.isNotBlank(companyUpdateRequest.getAdress())) {
-            wrapper.set(TAcOrgEntity::getAddress, companyUpdateRequest.getAdress());
+        if (StringUtils.isNotBlank(companyUpdateRequest.getAddress())) {
+            wrapper.set(TAcOrgEntity::getAddress, companyUpdateRequest.getAddress());
         }
         wrapper.set(TAcOrgEntity::getLastModifyTime, DateUtils.obtainValidDate(new Date()));
 //        wrapper.set(TAcOrgEntity::getLastModifyBy, UserUtil.getLoginName());

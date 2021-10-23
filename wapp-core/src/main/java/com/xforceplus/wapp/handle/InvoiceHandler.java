@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.xforceplus.wapp.converters.InvoiceConverter.INVOICE_TYPE_MAP;
+
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -47,6 +49,10 @@ public class InvoiceHandler implements IntegrationResultHandler {
         log.info("request name:{},payload obj:{},header:{}", this.requestName(), sealedMessage.getPayload().getObj(), JSON.toJSONString(sealedMessage.getHeader()));
         InvoiceVo vo = JsonUtil.fromJson(sealedMessage.getPayload().getObj().toString(), InvoiceVo.class);
         InvoiceVo.Invoice invoice = vo.getData();
+        if (INVOICE_TYPE_MAP.containsKey(invoice.getInvoiceType())) {
+            log.info("发票类型[{}]无法转换,invoiceCode:{},invoiceNo:{}。", invoice.getInvoiceType(), invoice.getInvoiceCode(), invoice.getInvoiceNo());
+            return true;
+        }
         List<InvoiceVo.InvoiceItemVO> items = invoice.getItems();
         TXfInvoiceEntity invoiceMap = invoiceConverter.map(invoice);
         return new LambdaQueryChainWrapper<>(invoiceService.getBaseMapper())

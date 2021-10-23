@@ -99,7 +99,7 @@ public class RedNotificationMain {
      * 红字信息表编号
      */
     @ApiModelProperty("红字信息表编号")
-    private Integer redNotificationNo;
+    private String redNotificationNo;
 
     /**
      * 公司编号

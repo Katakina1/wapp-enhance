@@ -49,6 +49,7 @@ public class InvoiceVo {
         private String redFlag;
         private String taxCategory;
         private String industryIssueType;
+        private String invoiceType;
         private String invoiceMedium;
         private String authStatus;
         private String authAfterStatus;

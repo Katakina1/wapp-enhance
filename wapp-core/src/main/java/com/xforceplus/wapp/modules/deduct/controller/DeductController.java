@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -96,10 +97,12 @@ public class DeductController {
 
     @ApiOperation(value = "业务单导出")
     @PostMapping("/export")
-    public R export(@ApiParam(value = "业务单导出请求" ,required=true )@RequestBody DeductExportRequest request) {
-        deductService.export(request, XFDeductionBusinessTypeEnum.CLAIM_BILL);
-        return R.ok("单据导出正在处理，请在消息中心");
+    public R export(@ApiParam(value = "业务单导出请求" ,required=true )@RequestBody @Valid DeductExportRequest request) {
+        if(deductService.export(request)){
+            return R.ok("单据导出正在处理，请在消息中心");
+        }else{
+            return R.fail("导出任务添加失败");
+        }
     }
-
 
 }

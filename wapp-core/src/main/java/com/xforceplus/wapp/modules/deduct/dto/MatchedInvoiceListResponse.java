@@ -3,6 +3,8 @@ package com.xforceplus.wapp.modules.deduct.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author malong@xforceplus.com
  * @program wapp-enhance
@@ -10,7 +12,7 @@ import lombok.Data;
  * @create 2021-10-18 19:46
  **/
 @Data
-public class InvoiceMatchListResponse {
+public class MatchedInvoiceListResponse {
     /**
      * 发票号码
      */
@@ -34,10 +36,6 @@ public class InvoiceMatchListResponse {
     /**
      * 可用金额
      */
-    @ApiModelProperty("可用金额")
-    private String availableAmount;
-    /**
-     * 行序号
-     */
-    private Integer rownumber;
+    @ApiModelProperty("匹配金额")
+    private BigDecimal matchedAmount;
 }

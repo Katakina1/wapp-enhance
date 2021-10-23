@@ -3,9 +3,11 @@ package com.xforceplus.wapp.modules.exceptionreport.service.impl;
 import cn.hutool.poi.excel.BigExcelWriter;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
@@ -13,7 +15,10 @@ import com.xforceplus.wapp.export.ExportHandlerEnum;
 import com.xforceplus.wapp.export.IExportHandler;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
+import com.xforceplus.wapp.modules.claim.service.ClaimService;
+import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
@@ -32,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -81,6 +87,9 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     @Autowired
     private FtpUtilService ftpUtilService;
 
+    @Autowired
+    private ClaimBillService claimService;
+
     private final Map<String, String> headClaim;
     private final Map<String, String> headEPD;
 
@@ -110,7 +119,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     private void saveExceptionReport(TXfExceptionReportEntity entity) {
 
         entity.setId(idSequence.nextId());
-        entity.setStatus("1");
+        entity.setStatus(1);
         this.save(entity);
 
     }
@@ -325,5 +334,22 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         head.put("verdictDate", "定案日期");
         head.put("taxRate", "税率");
         return head;
+    }
+
+
+    @Transactional
+    @Override
+    public void reMatchTaxCode(ReMatchRequest request){
+        if(CollectionUtils.isEmpty(request.getIds())){
+            throw new EnhanceRuntimeException("请选择一项需要重新匹配的单据");
+        }
+        final List<TXfExceptionReportEntity> list = this.list(Wrappers.lambdaQuery(TXfExceptionReportEntity.class).in(TXfExceptionReportEntity::getId, request.getIds()));
+
+        list.forEach(x->{
+            claimService.reMatchClaimTaxCode(x.getBillId());
+        });
+
+        final LambdaUpdateWrapper<TXfExceptionReportEntity> updateWrapper = Wrappers.lambdaUpdate(TXfExceptionReportEntity.class).set(TXfExceptionReportEntity::getStatus, 2).in(TXfExceptionReportEntity::getId, request.getIds());
+        this.update(updateWrapper);
     }
 }

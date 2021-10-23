@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 @ApiModel("业务单明细对象")
 @Data
 public class DeductBillItemModel {
+    @ApiModelProperty("业务单明细id")
+    private Long id;
 
     @ApiModelProperty("商品编码")
     private String itemNo;

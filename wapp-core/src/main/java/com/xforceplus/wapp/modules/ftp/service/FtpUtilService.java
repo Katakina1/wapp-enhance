@@ -74,7 +74,7 @@ public class FtpUtilService {
     @Value("${pro.sftp.default.passphrase}")
     private String passphrase="";//密钥口令
 
-    @Value("${pro.sftp.auth-method}")
+    @Value("${pro.sftp.auth-method:private}")
     private String authMethod;
 
     /**

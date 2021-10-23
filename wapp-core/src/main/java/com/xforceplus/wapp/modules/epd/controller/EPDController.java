@@ -8,7 +8,7 @@ import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceMatchListResponse;
+import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import io.swagger.annotations.Api;
@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,24 +49,10 @@ public class EPDController {
         return R.ok(page);
     }
 
-    @GetMapping("{id}/matched-invoice")
-    @ApiOperation(value = "获取已匹配发票")
-    public R invoiceList(@PathVariable long id) {
-        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
-        return R.ok();
-    }
-
-    @GetMapping("{id}/recommend-invoice")
-    @ApiOperation("指定EPD单推荐发票")
-    public R recommendInvoiceList(@PathVariable long id, InvoiceRecommendListRequest request) {
-        PageResult<InvoiceMatchListResponse> pageResult=new PageResult<>();
-        return R.ok();
-    }
-
     @PostMapping("settlement")
     @ApiOperation("生成结算单")
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
-        deductService.makeSettlement(request,XFDeductionBusinessTypeEnum.EPD_BILL );
-        return R.ok("结算单生成完毕");
+        final String settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        return R.ok( Collections.singletonMap("settlementNo",settlementNo),"结算单生成完毕");
     }
 }
