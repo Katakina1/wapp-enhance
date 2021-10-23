@@ -15,6 +15,7 @@ import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.settlement.dto.InvoiceMatchedRequest;
+import com.xforceplus.wapp.modules.settlement.dto.SettlementItemTaxNoUpdatedRequest;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
@@ -90,9 +91,19 @@ public class SettlementController {
     }
 
     @PostMapping("{settlementId}/matched-invoice")
-    @ApiOperation("获取指定协议单已匹配的发票")
+    @ApiOperation("保存手动调整的票单匹配关系")
     public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
-        //TODO
+        //TODO  移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
+
+
+        return R.ok();
+    }
+
+    @PostMapping("details/tax-no")
+    @ApiOperation("修改明细税编")
+    public R saveInvoiceDetails(@RequestBody SettlementItemTaxNoUpdatedRequest request) {
+        //TODO 修改明细税编，会涉及到反算，金额不变保单价或数量，需要确认
+
 
         return R.ok();
     }
