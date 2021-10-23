@@ -92,7 +92,7 @@ public class AgreementBillService extends DeductService{
             throw new NoSuchInvoiceException();
         }
         //匹配税编
-        Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
         }

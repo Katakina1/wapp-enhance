@@ -23,22 +23,19 @@ public class ExportDeductCallable implements Callable<Boolean> {
 
     private DeductBillExportDto dto;
 
-    private XFDeductionBusinessTypeEnum typeEnum;
 
-
-    public ExportDeductCallable(DeductService deductService, DeductBillExportDto dto, XFDeductionBusinessTypeEnum typeEnum) {
+    public ExportDeductCallable(DeductService deductService, DeductBillExportDto dto) {
         this.deductService = deductService;
         this.dto = dto;
-        this.typeEnum = typeEnum;
     }
 
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call(){
         Boolean isSuccess;
         long startTime = System.currentTimeMillis();
         try {
             logger.info("***********通过线程池发起业务单导出执行开始,request:{}", JSONObject.toJSONString(dto));
-            isSuccess = deductService.doExport(dto, typeEnum);
+            isSuccess = deductService.doExport(dto);
         } catch (Exception e) {
             logger.error("导出失败", e);
             isSuccess = false;

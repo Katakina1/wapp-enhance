@@ -40,7 +40,7 @@ public class ClaimBillService extends DeductService{
     public boolean matchClaimBill() {
         Date startDate = DateUtils.getFristDate();
         Date endDate = DateUtils.getLastDate();
-        int limit = 100;
+        int limit = 2;
         /**
          * 查询未匹配明细的索赔单
          */
@@ -107,6 +107,8 @@ public class ClaimBillService extends DeductService{
         }
         return true;
     }
+
+
 
     /**
      * 执行扣除明细，匹配主信息
@@ -175,7 +177,7 @@ public class ClaimBillService extends DeductService{
         /**
          * 如果当前金额没有匹配完 为待匹配状态，如果存在未匹配的税编，状态未待匹配税编，如果已经完成匹配税编，简称是否存在不同税率，如果存在状态未待确认税差，如果不存在，状态为待匹配蓝票，
          */
-        Integer status = billAmount.compareTo(BigDecimal.ZERO)>0?TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode(): matchTaxNoFlag ? (checkTaxRateDifference ? TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_DIFF.getCode() : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode();
+        Integer status = billAmount.compareTo(BigDecimal.ZERO)>0?TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode(): (matchTaxNoFlag ?  TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()  : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
         return billAmount;
@@ -190,7 +192,7 @@ public class ClaimBillService extends DeductService{
         Long deductId = 1L;
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
 
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 100, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 2, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
                 //索赔单 金额 大于 剩余发票金额
@@ -207,11 +209,14 @@ public class ClaimBillService extends DeductService{
                     nosuchInvoiceSeller.put(tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getAmountWithoutTax());
                     continue;
                 }
-                matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), XFDeductionBusinessTypeEnum.CLAIM_BILL);
-                tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+                matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(),tXfBillDeductEntity.getId(), XFDeductionBusinessTypeEnum.CLAIM_BILL);
+                TXfBillDeductEntity tmp = new TXfBillDeductEntity();
+                tmp.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+                tmp.setId(tXfBillDeductEntity.getId());
+                tXfBillDeductExtDao.updateById(tmp);
             }
             deductId =  tXfBillDeductEntities.stream().mapToLong(TXfBillDeductEntity::getId).max().getAsLong();
-            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 100, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 2, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
         }
         return true;
     }
@@ -244,4 +249,5 @@ public class ClaimBillService extends DeductService{
         TXfSettlementEntity tXfSettlementEntity =  trans2Settlement(Arrays.asList(tXfBillDeductEntity), XFDeductionBusinessTypeEnum.CLAIM_BILL);
         tXfBillDeductExtDao.updateSuitableClaimBill(XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode(), tXfSettlementEntity.getSettlementNo(), tXfBillDeductEntity.getPurchaserNo(), tXfBillDeductEntity.getSellerNo());
     }
+
 }

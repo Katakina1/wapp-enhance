@@ -35,8 +35,8 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
                "<if test='startDate!=null'>"+
                "and  create_date >= #{startDate} "+
                "</if>"+
-               "  and business_type = #{billType} and status = #{status} " +
-            "order by id  </script>")
+               "  and business_type = #{billType} and status = #{status} and ref_settlement_no = '' " +
+            "order by id asc </script>")
     List<TXfBillDeductEntity> queryUnMatchBill(@Param("id") Long id,
                                                @Param("startDate") Date startDate,
                                                @Param("limit") Integer limit,
