@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
@@ -574,16 +575,13 @@ public class DeductService   {
         jsonObject3.put("count",key3);
         jsonObject3.put("desc",DeductBillTabEnum.MAKEED.getDesc());
         list.add(jsonObject3);
-        if(!XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue().equals(request.getBusinessType())){
-            int key4 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-            request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.CANCELED.getValue());
-            JSONObject jsonObject4 = new JSONObject();
-            jsonObject4.put("key",DeductBillTabEnum.CANCELED.getValue());
-            jsonObject4.put("count",key4);
-            jsonObject4.put("desc",DeductBillTabEnum.CANCELED.getDesc());
-            list.add(jsonObject4);
-
-        }
+        int key4 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+        request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.CANCELED.getValue());
+        JSONObject jsonObject4 = new JSONObject();
+        jsonObject4.put("key",DeductBillTabEnum.CANCELED.getValue());
+        jsonObject4.put("count",key4);
+        jsonObject4.put("desc",DeductBillTabEnum.CANCELED.getDesc());
+        list.add(jsonObject4);
         return list;
     }
 
@@ -662,15 +660,19 @@ public class DeductService   {
         }
         final String excelFileName = ExcelExportUtil.getExcelFileName(exportDto.getUserId(), exportDto.getType().getDes());
         ExcelWriter excelWriter;
-        ByteArrayOutputStream out = null;
         ByteArrayInputStream in = null;
         String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-        try {
-            out = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()){
             excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
             //创建一个sheet
             WriteSheet writeSheet = EasyExcel.writerSheet(0, "主信息").build();
-            writeSheet.setClazz(ExportClaimBillModel.class);
+            if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
+                writeSheet.setClazz(ExportClaimBillModel.class);
+            }else if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(typeEnum)){
+                writeSheet.setClazz(ExportAgreementBillModel.class);
+            }else{
+                writeSheet.setClazz(ExportEPDBillModel.class);
+            }
             excelWriter.write(queryDeductListResponse, writeSheet);
             //只有索赔单有明细信息
             if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
@@ -680,9 +682,7 @@ public class DeductService   {
                 writeSheet1.setClazz(ExportClaimBillItemModel.class);
                 excelWriter.write(exportItem, writeSheet1);
             }
-            out.flush();
             excelWriter.finish();
-            out.close();
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;
             in = new ByteArrayInputStream(out.toByteArray());
@@ -699,6 +699,13 @@ public class DeductService   {
             messagecontrolEntity.setContent(exportCommonService.getFailContent(e.getMessage()));
             flag = false;
         } finally {
+            if(in != null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            }
             excelExportLogService.updateById(excelExportlogEntity);
         }
         return flag;
