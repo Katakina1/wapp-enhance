@@ -371,6 +371,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             updateWrapper.in(TXfRedNotificationEntity::getId,ids)  ;
             TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
             entity.setSerialNo(applyRequest.getSerialNo());
+            entity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
             getBaseMapper().update(entity,updateWrapper);
         }
 
