@@ -7,20 +7,27 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
+import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
+import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
+import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -147,11 +154,30 @@ public class NoneBusinessController {
         }
         if (tXfNoneBusinessUploadDetailEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
 
-            return R.ok("data:image/jpeg;base64," + result );
+            return R.ok("data:image/jpeg;base64," + result);
         } else {
             return R.ok("data:application/pdf;base64," + result);
         }
 
     }
+
+    /**
+     * 电票的退票=纸票的退票+退单
+     *
+     * @return
+     */
+    @ApiOperation("下载源文件")
+    @PostMapping(value = "/down")
+    public void down(FileDownRequest request) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            throw new RRException("请选中数据后进行下载");
+        }
+        List<TXfNoneBusinessUploadDetailEntity> list = noneBusinessService.listByIds(request.getIds());
+        if (CollectionUtils.isEmpty(list)) {
+            throw new RRException("您所选发票不包含任何附件文件");
+        }
+        noneBusinessService.down(list,request);
+    }
+
 
 }

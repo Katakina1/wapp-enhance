@@ -14,6 +14,7 @@ import com.xforceplus.wapp.modules.company.convert.CompanyConverter;
 import com.xforceplus.wapp.modules.company.dto.CompanyImportDto;
 import com.xforceplus.wapp.modules.company.dto.CompanyUpdateRequest;
 import com.xforceplus.wapp.modules.company.listener.CompanyImportListener;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TAcOrgDao;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import io.vavr.Tuple;
@@ -54,8 +55,16 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         return Tuple.of(companyConverter.map(page.getRecords()), page);
     }
 
+    public TAcOrgEntity getByTaxNo(String taxNo) {
+        QueryWrapper<TAcOrgEntity> wrapper = new QueryWrapper<TAcOrgEntity>();
+        if (StringUtils.isNotBlank(taxNo)) {
+            wrapper.eq(TAcOrgEntity.TAX_NO, taxNo);
+        }
+        return getOne(wrapper);
+    }
+
     public void update(CompanyUpdateRequest companyUpdateRequest) {
-        LambdaUpdateChainWrapper<TAcOrgEntity> wrapper = new LambdaUpdateChainWrapper<TAcOrgEntity>(baseMapper);
+        LambdaUpdateChainWrapper<TAcOrgEntity> wrapper = new LambdaUpdateChainWrapper<TAcOrgEntity>(getBaseMapper());
         if (StringUtils.isNotBlank(companyUpdateRequest.getTaxNo())) {
             wrapper.eq(TAcOrgEntity::getTaxNo, companyUpdateRequest.getTaxNo());
         }
@@ -63,15 +72,26 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
             wrapper.set(TAcOrgEntity::getAccount, companyUpdateRequest.getAccount());
         }
         if (StringUtils.isNotBlank(companyUpdateRequest.getBank())) {
-            wrapper.set(TAcOrgEntity::getAccount, companyUpdateRequest.getBank());
+            wrapper.set(TAcOrgEntity::getBank, companyUpdateRequest.getBank());
         }
         if (companyUpdateRequest.getQuota() != null) {
-            wrapper.set(TAcOrgEntity::getAccount, companyUpdateRequest.getQuota());
+            wrapper.set(TAcOrgEntity::getQuota, companyUpdateRequest.getQuota());
         }
         if (StringUtils.isNotBlank(companyUpdateRequest.getTaxName())) {
-            wrapper.set(TAcOrgEntity::getAccount, companyUpdateRequest.getTaxName());
+            wrapper.set(TAcOrgEntity::getOrgName, companyUpdateRequest.getTaxName());
         }
-        this.update(wrapper);
+        if (StringUtils.isNotBlank(companyUpdateRequest.getTaxName())) {
+            wrapper.set(TAcOrgEntity::getTaxName, companyUpdateRequest.getTaxName());
+        }
+        if (StringUtils.isNotBlank(companyUpdateRequest.getPhone())) {
+            wrapper.set(TAcOrgEntity::getPhone, companyUpdateRequest.getPhone());
+        }
+        if (StringUtils.isNotBlank(companyUpdateRequest.getAddress())) {
+            wrapper.set(TAcOrgEntity::getAddress, companyUpdateRequest.getAddress());
+        }
+        wrapper.set(TAcOrgEntity::getLastModifyTime, DateUtils.obtainValidDate(new Date()));
+//        wrapper.set(TAcOrgEntity::getLastModifyBy, UserUtil.getLoginName());
+        wrapper.update();
     }
 
     /**

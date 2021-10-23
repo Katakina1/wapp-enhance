@@ -1,9 +1,9 @@
 package com.xforceplus.wapp.modules.preinvoice.service;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.collect.Maps;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.phoenix.split.model.*;
 import com.xforceplus.wapp.common.utils.BeanUtil;
@@ -22,17 +22,10 @@ import com.xforceplus.wapp.service.CommRedNotificationService;
 import com.xforceplus.wapp.service.CommSettlementService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
@@ -167,7 +160,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         try {
             post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),"");
             JSONObject res = JSONObject.parseObject(post);
-
             if (res.get("code").equals("BSCTZZ0001") || res.get("result").equals("[]")) {
                 log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
             }
