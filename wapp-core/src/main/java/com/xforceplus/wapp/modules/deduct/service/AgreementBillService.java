@@ -104,7 +104,7 @@ public class AgreementBillService extends DeductService{
      * @param businessNo
      * @param xfDeductionBusinessTypeEnum
      */
-    public TXfSettlementEntity mergeSettlementByManual(List<String> businessNo, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
+    public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
         return null;
     }
     /**

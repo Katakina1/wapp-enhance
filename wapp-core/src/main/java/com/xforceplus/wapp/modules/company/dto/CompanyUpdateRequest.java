@@ -28,4 +28,10 @@ public class CompanyUpdateRequest implements Serializable {
     @Digits(integer = 6, fraction = 2, message = "限额额度最大为100000 保留两位小数")
     private BigDecimal quota;
 
+    @ApiModelProperty(value = "地址")
+    private String adress;
+
+    @ApiModelProperty(value = "地址")
+    private String telePhone;
+
 }
