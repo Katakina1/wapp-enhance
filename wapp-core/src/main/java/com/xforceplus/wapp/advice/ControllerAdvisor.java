@@ -36,12 +36,10 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
     }
 
-
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(Exception e) {
         log.error("系统异常。", e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(R.fail("系统异常"));
     }
 
 }

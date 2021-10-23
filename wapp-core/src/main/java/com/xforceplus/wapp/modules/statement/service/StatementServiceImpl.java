@@ -197,7 +197,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         }
         List<TXfPreInvoiceItemEntity> items = preInvoiceItemDaoService.getByInvoiceId(invoiceId);
         PreInvoice map = preInvoiceConverter.map(invoice, items);
-        log.debug("预制发票详情信息:{}", "");
+        log.debug("预制发票详情信息:{}", map);
         return Optional.ofNullable(map);
     }
 
@@ -210,22 +210,25 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
      * 6. 处理数据获取结算单明细ID与业务编号关系
      * 7. 组装业务编号与结算单明细列表数据
      */
-    public List<? extends BaseConfirm> claimConfirmItem(@NonNull String settlementNo) {
+    public List<ClaimConfirm> claimConfirmItem(@NonNull String settlementNo) {
+        log.info("结算单确认索赔列表查询,入参,settlementNo:{}", settlementNo);
         val items = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
                 .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
-                .eq(TXfSettlementItemEntity::getItemFlag, 2).list();
+                .eq(TXfSettlementItemEntity::getItemFlag, 2)
+                .isNull(TXfSettlementItemEntity::getThridId).list();
+        log.debug("结算单确认索赔列表查询[查询结算单明细],结果:{}", items);
         if (CollectionUtils.isEmpty(items)) {
+            log.info("查询结算单明细为空");
             return Lists.newArrayList();
         }
-        Map<Long, TXfSettlementItemEntity> itemMap = items.stream().filter(it -> Objects.nonNull(it.getThridId()))
+        Map<Long, TXfSettlementItemEntity> itemMap = items.stream()
                 .collect(Collectors.toMap(TXfSettlementItemEntity::getThridId, Function.identity(), (o, n) -> o));
-        if (itemMap.isEmpty()) {
-            return Lists.newArrayList();
-        }
         Map<Long, List<Long>> deIdAndDeItemIdsMap = billDeductItemService.listByRefItemIds(itemMap.keySet())
                 .stream().collect(Collectors.groupingBy(TXfBillDeductItemRefEntity::getDeductId,
                         Collectors.mapping(TXfBillDeductItemRefEntity::getDeductItemId, Collectors.toList())));
+        log.debug("结算单确认索赔列表查询[查询索赔单关系],结果:{}", items);
         if (deIdAndDeItemIdsMap.isEmpty()) {
+            log.info("查询索赔单关系为空");
             return Lists.newArrayList();
         }
         return billDeductService.listBusinessNoByIds(deIdAndDeItemIdsMap.keySet()).stream()
@@ -237,7 +240,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                 .collect(Collectors.toList());
     }
 
-    public List<? extends BaseConfirm> confirmItemList(@NonNull String settlementNo) {
+    public List<ConfirmItem> confirmItemList(@NonNull String settlementNo) {
         val items = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
                 .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
                 .eq(TXfSettlementItemEntity::getItemFlag, TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getValue())
@@ -252,16 +255,11 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                 .put(TXfAmountSplitRuleEnum.SplitPrice, entity -> entity.setUnitPrice(entity.getAmountWithoutTax().divide(entity.getQuantity(), 10, RoundingMode.HALF_UP)))
                 .put(TXfAmountSplitRuleEnum.SplitQuantity, entity -> entity.setQuantity(entity.getAmountWithoutTax().divide(entity.getUnitPrice(), 10, RoundingMode.HALF_UP)))
                 .build();
-        List<TXfSettlementItemEntity> entities = settlementItemService.listByIds(ids).stream().map(it -> {
-            TXfSettlementItemEntity entity = new TXfSettlementItemEntity();
-            entity.setId(it.getId());
-            entity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getValue());
-            entity.setAmountWithoutTax(it.getAmountWithoutTax());
-            entity.setQuantity(it.getQuantity());
-            entity.setUnitPrice(it.getUnitPrice());
-            build.get(type).accept(entity);
-            return entity;
-        }).collect(Collectors.toList());
+        List<TXfSettlementItemEntity> entities = settlementItemService.listByIds(ids);
+        entities.forEach(it -> {
+            it.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getValue());
+            build.get(type).accept(it);
+        });
         settlementItemService.updateBatchById(entities);
         try {
             log.info("调用拆票方法参数,settlementNo:{},sellerNo:{}", settlementNo, sellerNo);

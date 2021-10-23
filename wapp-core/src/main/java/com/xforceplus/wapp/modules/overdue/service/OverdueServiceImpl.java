@@ -34,9 +34,11 @@ import static java.util.Comparator.comparing;
 @Service
 public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
     private final OverdueConverter overdueConverter;
+    private final DefaultSettingServiceImpl defaultSettingService;
 
-    public OverdueServiceImpl(OverdueConverter overdueConverter) {
+    public OverdueServiceImpl(OverdueConverter overdueConverter, DefaultSettingServiceImpl defaultSettingService) {
         this.overdueConverter = overdueConverter;
+        this.defaultSettingService = defaultSettingService;
     }
 
     public Tuple2<List<Overdue>, Page<?>> page(long current, long size,
@@ -64,7 +66,8 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         return new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag)
                 .eq(OverdueEntity::getType, typeEnum.getValue())
-                .eq(OverdueEntity::getSellerNo, sellerNo).oneOpt().map(overdueConverter::map);
+                .eq(OverdueEntity::getSellerNo, sellerNo).oneOpt()
+                .map(overdueConverter::map);
     }
 
     public Optional<Overdue> oneOptBySellerTaxNo(@NonNull ServiceTypeEnum typeEnum, @NonNull String sellerTaxNo) {
@@ -72,7 +75,8 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         return new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag)
                 .eq(OverdueEntity::getType, typeEnum.getValue())
-                .eq(OverdueEntity::getSellerTaxNo, sellerTaxNo).oneOpt().map(overdueConverter::map);
+                .eq(OverdueEntity::getSellerTaxNo, sellerTaxNo)
+                .oneOpt().map(overdueConverter::map);
     }
 
     public Either<String, Integer> export(ServiceTypeEnum typeEnum, InputStream is) {
