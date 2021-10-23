@@ -265,12 +265,12 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
 
-    public String makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type) {
+    public TXfSettlementEntity makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type) {
         if (CollectionUtils.isEmpty(request.getIds())) {
             throw new EnhanceRuntimeException("请至少选择一张业务单据");
         }
         final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(request.getIds(), type);
-        return tXfSettlementEntity.getSettlementNo();
+        return tXfSettlementEntity;
     }
 
     public List<MatchedInvoiceListResponse> getMatchedInvoice(Long settlementId, XFDeductionBusinessTypeEnum typeEnum){

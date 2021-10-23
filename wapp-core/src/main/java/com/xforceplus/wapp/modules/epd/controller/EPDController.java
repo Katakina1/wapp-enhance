@@ -11,6 +11,7 @@ import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author malong@xforceplus.com
@@ -52,7 +55,10 @@ public class EPDController {
     @PostMapping("settlement")
     @ApiOperation("生成结算单")
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
-        final String settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-        return R.ok( Collections.singletonMap("settlementNo",settlementNo),"结算单生成完毕");
+        final TXfSettlementEntity settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        Map<String,String> result=new HashMap<>();
+        result.put("settlementNo",settlementNo.getSettlementNo());
+        result.put("settlementId",settlementNo.getId().toString());
+        return R.ok( result,"结算单生成完毕");
     }
 }
