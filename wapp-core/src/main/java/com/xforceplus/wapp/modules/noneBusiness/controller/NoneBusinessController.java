@@ -193,7 +193,7 @@ public class NoneBusinessController {
         downLoadFileName = workDirectory + ".zip";
         for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
 
-            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getUploadId());
+            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
             try {
                 String suffix = null;
                 if (invoiceFile.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
