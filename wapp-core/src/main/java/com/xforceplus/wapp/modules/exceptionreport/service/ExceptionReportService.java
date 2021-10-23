@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ExceptionReportService {
 
@@ -33,4 +35,7 @@ public interface ExceptionReportService {
 
     void export(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum);
     void doExport(ExceptionReportExportDto exportDto);
+
+    @Transactional
+    void reMatchTaxCode(ReMatchRequest request);
 }

@@ -310,18 +310,18 @@ public class CommSettlementService {
 
         List<TXfPreInvoiceEntity> tXfPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceWrapper);
         List<Long> preInvoiceIdList = tXfPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
-
-        if (!CollectionUtils.isEmpty(preInvoiceIdList)) {
-            //查询（没有红字信息、作废）的预制发票明细
-            QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
-            preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
-            List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(preInvoiceItemWrapper);
-            //拆票-针对（没有红字信息、作废）的预制发票明细重新拆票
-            preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), tXfPreInvoiceItemEntityList);
-            //删除结算单之前已作废的预制发票（没有红字信息、作废）避免申请逻辑状态判断问题
-            TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
-            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
-            tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity,preInvoiceWrapper);
+        if (CollectionUtils.isEmpty(preInvoiceIdList)) {
+            throw new EnhanceRuntimeException("结算单没有可申请的预制发票(红字信息)");
         }
+        //查询（没有红字信息、作废）的预制发票明细
+        QueryWrapper<TXfPreInvoiceItemEntity> preInvoiceItemWrapper = new QueryWrapper<>();
+        preInvoiceItemWrapper.in(TXfPreInvoiceItemEntity.PRE_INVOICE_ID, preInvoiceIdList);
+        List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntityList = tXfPreInvoiceItemDao.selectList(preInvoiceItemWrapper);
+        //拆票-针对（没有红字信息、作废）的预制发票明细重新拆票
+        preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), tXfPreInvoiceItemEntityList);
+        //删除结算单之前已作废的预制发票（没有红字信息、作废）避免申请逻辑状态判断问题
+        TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+        updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
+        tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity, preInvoiceWrapper);
     }
 }

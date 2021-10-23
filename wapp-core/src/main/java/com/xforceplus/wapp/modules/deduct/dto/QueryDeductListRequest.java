@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -23,6 +25,7 @@ public class QueryDeductListRequest {
      * 业务单据类型;1:索赔;2:协议;3:EPD
      */
     @ApiModelProperty("业务单据类型;1:索赔;2:协议;3:EPD")
+    @NotNull(message = "业务单类型不能为空")
     private Integer businessType;
     /**
      * 供应商编号

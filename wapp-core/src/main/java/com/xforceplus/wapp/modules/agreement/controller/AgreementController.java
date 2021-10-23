@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,7 +54,9 @@ public class AgreementController {
     @PostMapping("settlement")
     @ApiOperation("生成结算单")
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
-        deductService.makeSettlement(request,XFDeductionBusinessTypeEnum.AGREEMENT_BILL );
-        return R.ok("结算单生成完毕");
+        final String settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        return R.ok( Collections.singletonMap("settlementNo",settlementNo),"结算单生成完毕");
     }
+
+
 }

@@ -117,7 +117,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo)   {
+    public List<SplitPreInvoiceInfo> splitPreInvoice(String settlementNo, String sellerNo)  {
         //查询待拆票算单主信息，
         //查询结算单明细信息
         //查询开票信息
@@ -144,7 +144,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param tXfSettlementEntity
      * @return
      */
-    public List<SplitPreInvoiceInfo> doSplit (CreatePreInvoiceParam createPreInvoiceParam,TXfSettlementEntity tXfSettlementEntity) {
+    public List<SplitPreInvoiceInfo> doSplit (CreatePreInvoiceParam createPreInvoiceParam,TXfSettlementEntity tXfSettlementEntity)   {
         Map<String, String> defaultHeader = new HashMap<>();
         defaultHeader.put("tenantId", tenantId);
         defaultHeader.put("Authentication", authentication);
@@ -160,11 +160,14 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         try {
             post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),"");
             JSONObject res = JSONObject.parseObject(post);
-            if (res.get("code").equals("BSCTZZ0001") || res.get("result").equals("[]")) {
+            if (!res.get("code").equals("BSCTZZ0001") || res.get("result").equals("[]")) {
                 log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
+                throw new RuntimeException("拆票失败+" + res.get("message"));
             }
         } catch (IOException e) {
+            log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
             e.printStackTrace();
+            throw new RuntimeException("拆票失败");
         }
         // check 拆票失败
         Date date = new Date();
@@ -210,6 +213,10 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                 log.error("发起红字信息申请 失败{} 预制发票id：{}",e,tXfPreInvoiceEntity.getId());
             }
         }
+        TXfSettlementEntity tmp = new TXfSettlementEntity();
+        tmp.setId(tXfSettlementEntity.getId());
+        tmp.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+        tXfSettlementDao.updateById(tmp);
         return splitPreInvoiceInfos;
     }
 
@@ -277,7 +284,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param sellerNo
      * @return
      */
-    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, String sellerNo, List<TXfPreInvoiceItemEntity> items) {
+    public List<SplitPreInvoiceInfo> reSplitPreInvoice(String settlementNo, String sellerNo, List<TXfPreInvoiceItemEntity> items)   {
         TXfSettlementEntity tXfSettlementEntity =  tXfSettlementDao.querySettlementByNo(0l, settlementNo,null );
         BigDecimal taxAmount = BigDecimal.ZERO;
         BigDecimal amountWithTax = BigDecimal.ZERO;

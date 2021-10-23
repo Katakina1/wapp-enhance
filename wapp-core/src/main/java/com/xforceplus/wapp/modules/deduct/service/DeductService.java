@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
@@ -26,10 +27,12 @@ import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
+import com.xforceplus.wapp.service.CommonMessageService;
 import com.xforceplus.wapp.threadpool.ThreadPoolManager;
 import com.xforceplus.wapp.threadpool.callable.ExportDeductCallable;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +94,11 @@ public class DeductService   {
     private FtpUtilService ftpUtilService;
     @Autowired
     private ExportCommonService exportCommonService;
+    @Autowired
+    private CommonMessageService commonMessageService;
+    @Autowired
+    private TXfPreInvoiceDao tXfPreInvoiceDao;
+
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -137,20 +145,15 @@ public class DeductService   {
      * @return
      */
     protected TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-//        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
-//        if (taxCodeOptional.isPresent()) {
-//                TaxCode taxCode = taxCodeOptional.get();
-//                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-//                entity.setTaxPre(taxCode.getTaxPre());
-//                entity.setTaxPreCon(taxCode.getTaxPreCon());
-//                entity.setZeroTax(taxCode.getZeroTax());
-//                entity.setItemShortName(taxCode.getSmallCategoryName());
-//        }
-        entity.setGoodsTaxNo("123123");
-        entity.setTaxPre(StringUtils.EMPTY);
-        entity.setTaxPreCon(StringUtils.EMPTY);
-        entity.setZeroTax(StringUtils.EMPTY);
-        entity.setItemShortName(StringUtils.EMPTY);
+        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+        if (taxCodeOptional.isPresent()) {
+                TaxCode taxCode = taxCodeOptional.get();
+                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+                entity.setTaxPre(taxCode.getTaxPre());
+                entity.setTaxPreCon(taxCode.getTaxPreCon());
+                entity.setZeroTax(taxCode.getZeroTax());
+                entity.setItemShortName(taxCode.getSmallCategoryName());
+        }
         return entity;
     }
     /**
@@ -159,20 +162,15 @@ public class DeductService   {
      * @return
      */
     protected TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
-//        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
-//        if (taxCodeOptional.isPresent()) {
-//                TaxCode taxCode = taxCodeOptional.get();
-//                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-//                entity.setTaxPre(taxCode.getTaxPre());
-//                entity.setTaxPreCon(taxCode.getTaxPreCon());
-//                entity.setZeroTax(taxCode.getZeroTax());
-//                entity.setItemShortName(taxCode.getSmallCategoryName());
-//        }
-        entity.setGoodsTaxNo("123123");
-        entity.setTaxPre(StringUtils.EMPTY);
-        entity.setTaxPreCon(StringUtils.EMPTY);
-        entity.setZeroTax(StringUtils.EMPTY);
-        entity.setItemShortName(StringUtils.EMPTY);
+        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+        if (taxCodeOptional.isPresent()) {
+                TaxCode taxCode = taxCodeOptional.get();
+                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+                entity.setTaxPre(taxCode.getTaxPre());
+                entity.setTaxPreCon(taxCode.getTaxPreCon());
+                entity.setZeroTax(taxCode.getZeroTax());
+                entity.setItemShortName(taxCode.getSmallCategoryName());
+        }
         return entity;
     }
     /**
@@ -457,7 +455,7 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementTaxCode(tmp.getTaxCode());
             tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
             tXfBillDeductEntity.setVerdictDate(tmp.getDeductDate());
-            tXfBillDeductEntity.setBusinessNo(tmp.getReference());
+            tXfBillDeductEntity.setBusinessNo(defaultValue(tmp.getReference()));
              tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
             return tXfBillDeductEntity;
         }),
@@ -509,6 +507,7 @@ public class DeductService   {
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
         tXfBillDeductEntity.setPurchaserNo(defaultValue(deductBillBaseData.getPurchaserNo()));
         tXfBillDeductEntity.setSellerNo(defaultValue(deductBillBaseData.getSellerNo()));
+        tXfBillDeductEntity.setBusinessNo(defaultValue(deductBillBaseData.getBusinessNo()));
         tXfBillDeductEntity.setAmountWithoutTax(defaultValue(deductBillBaseData.getAmountWithoutTax()));
         tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithoutTax().multiply(deductBillBaseData.getTaxRate()).setScale(2,RoundingMode.HALF_UP));
         tXfBillDeductEntity.setAmountWithTax( tXfBillDeductEntity.getAmountWithoutTax().add(tXfBillDeductEntity.getTaxAmount()));
@@ -535,6 +534,10 @@ public class DeductService   {
                 request.getDeductDate(), request.getPurchaserNo(), request.getKey());
         List<QueryDeductListResponse> response = new ArrayList<>();
         BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
+        //key为1和2 添加红字信息编号
+        if(DeductBillTabEnum.MATCHED_TO_BE_MAKE.getValue().equals(request.getKey()) || DeductBillTabEnum.APPLYED_RED_NO.getValue().equals(request.getKey())){
+            this.redNotificationNo(response);
+        }
         return PageResult.of(response,count, request.getPageNo(), request.getPageSize());
     }
 
@@ -616,8 +619,9 @@ public class DeductService   {
         return response;
     }
 
-    public void export(DeductExportRequest request, XFDeductionBusinessTypeEnum typeEnum) {
+    public boolean export(DeductExportRequest request) {
         final Long userId = UserUtil.getUserId();
+        XFDeductionBusinessTypeEnum typeEnum = ValueEnum.getEnumByValue(XFDeductionBusinessTypeEnum.class,request.getBusinessType()).get();
         DeductBillExportDto dto = new DeductBillExportDto();
         dto.setType(typeEnum);
         dto.setRequest(request);
@@ -632,10 +636,11 @@ public class DeductService   {
         excelExportlogEntity.setStartDate(new Date());
         excelExportlogEntity.setExportStatus(ExcelExportLogService.REQUEST);
         excelExportlogEntity.setServiceType(SERVICE_TYPE);
-        this.excelExportLogService.save(excelExportlogEntity);
+        boolean count = this.excelExportLogService.save(excelExportlogEntity);
         dto.setLogId(excelExportlogEntity.getId());
         ExportDeductCallable callable = new ExportDeductCallable(this,dto);
         ThreadPoolManager.submitCustomL1(callable);
+        return count;
     }
 
     public boolean doExport(DeductBillExportDto exportDto){
@@ -674,7 +679,7 @@ public class DeductService   {
             excelWriter.write(queryDeductListResponse, writeSheet);
             //只有索赔单有明细信息
             if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
-                List<DeductDetailResponse> exportItem = getExportItem(queryDeductListResponse.stream().map(QueryDeductListResponse::getId).collect(Collectors.toList()));
+                List<DeductBillItemModel> exportItem = getExportItem(queryDeductListResponse.stream().map(QueryDeductListResponse::getId).collect(Collectors.toList()));
                 //创建一个新的sheet
                 WriteSheet writeSheet1 = EasyExcel.writerSheet(1, "明细信息").build();
                 writeSheet1.setClazz(ExportClaimBillItemModel.class);
@@ -705,6 +710,7 @@ public class DeductService   {
                 }
             }
             excelExportLogService.updateById(excelExportlogEntity);
+            commonMessageService.sendMessage(messagecontrolEntity);
         }
         return flag;
     }
@@ -753,20 +759,22 @@ public class DeductService   {
                         tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount());
                         tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
                         tXfSettlementItemEntity.setTaxRate(invoiceItem.getTaxRate());
-                        tXfSettlementItemEntity.setAmountWithoutTax(invoiceItem.getDetailAmount());
+                        tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()));
                         tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
+                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
+                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                        //tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
+                          tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setAmountWithTax(invoiceItem.getDetailAmount().add(invoiceItem.getTaxAmount()));
-                        tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
-                        tXfSettlementItemEntity.setCreateUser(0l);
+
+                          tXfSettlementItemEntity.setCreateUser(0l);
                         tXfSettlementItemEntity.setUpdateUser(0l);
                         tXfSettlementItemEntity.setId(idSequence.nextId());
                         tXfSettlementItemEntity.setSettlementNo(settlementNo);
                         tXfSettlementItemEntity.setCreateTime(date);
                         tXfSettlementItemEntity.setUpdateTime(date);
-                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
-                        tXfSettlementItemEntity.setItemCode(invoiceItem.getItemNo());
-                        tXfSettlementItemEntity.setThridId(invoiceItem.getItemId());
-                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                        tXfSettlementItemEntity.setItemCode(defaultValue(invoiceItem.getItemNo()));
+                        tXfSettlementItemEntity.setThridId(defaultValue(invoiceItem.getItemId()));
                         tXfSettlementItemEntity.setItemName(invoiceItem.getGoodsName());
                         tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
                         tXfSettlementItemEntity.setGoodsNoVer("33.0");
@@ -837,13 +845,31 @@ public class DeductService   {
         return null;
     }
 
-    public List<DeductDetailResponse> getExportItem(List<Long> idList){
-        List<DeductDetailResponse> response = new ArrayList<>();
+    public List<DeductBillItemModel> getExportItem(List<Long> idList){
+        List<DeductBillItemModel> response = new ArrayList<>();
         for (Long id : idList) {
             DeductDetailResponse deductDetailById = getDeductDetailById(id);
-            response.add(deductDetailById);
+            response.addAll(deductDetailById.getDeductBillItemList());
         }
         return response;
+    }
+
+    public void redNotificationNo(List<QueryDeductListResponse> list){
+        for (QueryDeductListResponse entity : list) {
+            QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,entity.getRefSettlementNo());
+            List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = tXfPreInvoiceDao.selectList(wrapper);
+            StringBuilder sb =new StringBuilder();
+            if(CollectionUtils.isNotEmpty(tXfPreInvoiceEntities)){
+                for (int i = 0; i < tXfPreInvoiceEntities.size(); i++) {
+                    sb.append(tXfPreInvoiceEntities.get(i).getRedNotificationNo());
+                    if(i != tXfPreInvoiceEntities.size()-1){
+                        sb.append(",");
+                    }
+                }
+            }
+            entity.setRedNotificationNo(sb.toString());
+        }
     }
 
 }
