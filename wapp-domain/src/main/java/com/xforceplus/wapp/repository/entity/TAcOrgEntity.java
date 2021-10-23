@@ -268,9 +268,19 @@ public class TAcOrgEntity extends BaseEntity {
 
     public static final String ORG_TYPE = "orgType";
 
+    public static final String ORG_NAME = "orgType";
+
     public static final String ORG_ID = "orgId";
 
     public static final String TAX_NO = "taxno";
+
+    public static final String ACCOUNT = "account";
+
+    public static final String BANK = "bank";
+
+    public static final String QUOTA = "quota";
+
+
 
 
 }
