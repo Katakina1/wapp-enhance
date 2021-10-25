@@ -303,6 +303,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (!CollectionUtils.isEmpty(queryModel.getExcludes())){
             queryWrapper.notIn(TXfRedNotificationEntity.ID,queryModel.getExcludes());
         }
+        //默认带上 正常条件
+        queryWrapper.eq(TXfRedNotificationEntity.STATUS,1);
 
         return queryWrapper;
     }
