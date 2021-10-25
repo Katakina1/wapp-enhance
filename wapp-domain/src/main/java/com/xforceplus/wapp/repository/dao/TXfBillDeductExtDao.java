@@ -148,7 +148,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and format(d.deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
             "</if>"+
             "<if test='purchaserNo!=null'>"+
-            "and d.purchaser_no= #{deductDate}\n"+
+            "and d.purchaser_no= #{purchaserNo}\n"+
             "</if>"+
             "<if test='key == 0'>"+
             "and s.settlement_status = 8\n"+
@@ -199,7 +199,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and format(d.deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
             "</if>"+
             "<if test='purchaserNo!=null'>"+
-            "and d.purchaser_no= #{deductDate}\n"+
+            "and d.purchaser_no= #{purchaserNo}\n"+
             "</if>"+
             "<if test='key == 0'>"+
             "and s.settlement_status = 8\n"+
@@ -224,6 +224,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='key == 4 and businessType ==3'>"+
             "and d.status = 304\n"+
             "</if>"+
+            "order by id desc"+
             "</script>")
     int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 }

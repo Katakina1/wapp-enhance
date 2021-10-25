@@ -82,6 +82,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             List<InvoiceDetail> invoiceDetails = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
             response.setItems(invoiceDetails);
             BeanUtil.copyProperties(invoiceEntity,response);
+            this.convert(invoiceEntity,response);
         }
         return response;
     }
@@ -172,11 +173,12 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(wrapper);
         List<InvoiceDetailResponse> response = new ArrayList<>();
         InvoiceDetailResponse invoice;
-        for (TDxRecordInvoiceEntity tDxRecordInvoiceEntity : tDxRecordInvoiceEntities) {
+        for (TDxRecordInvoiceEntity invoiceEntity : tDxRecordInvoiceEntities) {
             invoice = new InvoiceDetailResponse();
-            List<InvoiceDetail> list = queryInvoiceDetailByUuid(tDxRecordInvoiceEntity.getUuid());
+            List<InvoiceDetail> list = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
             invoice.setItems(list);
-            BeanUtil.copyProperties(tDxRecordInvoiceEntity,invoice);
+            BeanUtil.copyProperties(invoiceEntity,invoice);
+            this.convert(invoiceEntity,invoice);
             response.add(invoice);
         }
         return response;
@@ -185,6 +187,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
     private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus,String venderid){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc(TDxRecordInvoiceEntity.ID);
         wrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO.getValue());
         if(StringUtils.isNotEmpty(venderid)){
             wrapper.eq(TDxRecordInvoiceEntity.VENDERID,venderid);
@@ -213,8 +216,16 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
 
 
-    public void convert(List<TDxRecordInvoiceDetailEntity> entities){
-
+    public void convert(TDxRecordInvoiceEntity entity,InvoiceDetailResponse invoice){
+        invoice.setPurchaserAddressAndPhone(entity.getGfAddressAndPhone());
+        invoice.setPurchaserBankAndNo(entity.getGfBankAndNo());
+        invoice.setPurchaserName(entity.getGfName());
+        invoice.setPurchaserTaxNo(entity.getGfTaxNo());
+        invoice.setSellerAddressAndPhone(entity.getXfAddressAndPhone());
+        invoice.setSellerBankAndNo(entity.getXfBankAndNo());
+        invoice.setSellerName(entity.getXfName());
+        invoice.setSellerTaxNo(entity.getXfTaxNo());
+        invoice.setPaperDrewDate(entity.getInvoiceDate());
     }
 
     /**
