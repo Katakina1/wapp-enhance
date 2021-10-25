@@ -327,7 +327,7 @@ public class TDxInvoiceEntity extends BaseEntity {
     private String belongsTo;
 
     /**
-     * 剩余可匹配的额度，初始值与invoice_amount一致
+     * 剩余可匹配的额度 默认与不含税金额相同
      */
     @TableField("remaining_amount")
     private BigDecimal remainingAmount;
