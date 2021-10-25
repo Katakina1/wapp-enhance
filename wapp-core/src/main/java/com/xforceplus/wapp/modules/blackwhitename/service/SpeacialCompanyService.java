@@ -41,17 +41,17 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         this.companyConverter = companyConverter;
     }
 
-    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size,String taxNo,String companyName,String type) {
+    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type) {
         LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
-        wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED);
-        if(StringUtils.isNotEmpty(taxNo)){
-            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierTaxNo,taxNo);
+        wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED);
+        if (StringUtils.isNotEmpty(taxNo)) {
+            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, taxNo);
         }
-        if(StringUtils.isNotEmpty(companyName)){
-            wrapper.like(TXfBlackWhiteCompanyEntity::getCompanyName,companyName);
+        if (StringUtils.isNotEmpty(companyName)) {
+            wrapper.like(TXfBlackWhiteCompanyEntity::getCompanyName, companyName);
         }
-        if(StringUtils.isNotEmpty(type)){
-            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierType,type);
+        if (StringUtils.isNotEmpty(type)) {
+            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierType, type);
         }
         Page<TXfBlackWhiteCompanyEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("黑白名单信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
@@ -85,7 +85,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         List<String> supplierCodeList = listener.getValidInvoices().stream().map(SpecialCompanyImportDto::getSupplierTaxNo).collect(Collectors.toList());
         QueryWrapper wrapperCode = new QueryWrapper<>();
         wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
-        wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS,Constants.COMPANY_STATUS_ENABLED);
+        wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
         List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = this.list(wrapperCode);
         Map<String, Long> map = new HashMap<>();
         resultOrgCodeList.stream().forEach(code -> {
@@ -113,7 +113,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * @return
      */
     public boolean hitBlackOrWhiteList(String supplierType, String memo) {
-        return 0 == count(
+        return 0 <= count(
                 new QueryWrapper<TXfBlackWhiteCompanyEntity>()
                         .lambda()
                         // 黑名单
@@ -125,11 +125,12 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
 
     /**
      * 批量删除
+     *
      * @param id
      */
     public void deleteById(Long[] id) {
         List<TXfBlackWhiteCompanyEntity> list = new ArrayList<>();
-        for(int i=0;i<id.length;i++){
+        for (int i = 0; i < id.length; i++) {
             TXfBlackWhiteCompanyEntity entity = new TXfBlackWhiteCompanyEntity();
             entity.setId(id[i]);
             entity.setSupplierStatus(Constants.COMPANY_STATUS_DELETE);

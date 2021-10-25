@@ -117,8 +117,14 @@ public class AgreementBillFilterCommand implements Command {
     private void filter(List<TXfOriginAgreementBillEntity> list) {
         List<DeductBillBaseData> newList = list
                 .stream()
-                // 非黑名单共供应商
-                .filter(v -> !speacialCompanyService.hitBlackOrWhiteList("0", v.getMemo()))
+                .filter(v -> {
+                    if (Objects.isNull(v.getMemo())) {
+                        return true;
+                    } else {
+                        // 非黑名单供应商
+                        return !speacialCompanyService.hitBlackOrWhiteList("0", v.getMemo());
+                    }
+                })
                 .map(TXfOriginAgreementBillEntityConvertor.INSTANCE::toAgreementBillData)
                 .collect(Collectors.toList());
         deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
