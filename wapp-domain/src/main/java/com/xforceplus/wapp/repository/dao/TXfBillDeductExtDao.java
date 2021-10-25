@@ -164,6 +164,9 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+
             "</if>"+
+            "<if test='key == 4 and businessType ==1'>"+
+            "and d.status = 108\n"+
+            "</if>"+
             "<if test='key == 4 and businessType ==2'>"+
             "and d.status = 206\n"+
             "</if>"+
