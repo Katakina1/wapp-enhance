@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.taxcode.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -20,17 +21,14 @@ import java.util.List;
 @AllArgsConstructor
 @ApiModel("税编信息树")
 public class TaxCodeTree {
-    @ApiModelProperty("大类名称")
-    private String largeCategoryName;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private Long id;
 
-    @ApiModelProperty("大类编码")
-    private String largeCategoryCode;
+    @ApiModelProperty("名称")
+    private String categoryName;
 
-    @ApiModelProperty("中类名称")
-    private String medianCategoryName;
-
-    @ApiModelProperty("中类编码")
-    private String medianCategoryCode;
+    @ApiModelProperty("编码")
+    private String categoryCode;
 
     @ApiModelProperty("税编子树")
     private List<TaxCodeTree> children;
