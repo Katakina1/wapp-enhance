@@ -22,6 +22,7 @@ import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
 import com.xforceplus.wapp.modules.statement.models.*;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.entity.*;
@@ -263,6 +264,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         });
         new LambdaUpdateChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo)
                 .set(TXfSettlementEntity::getSettlementStatus, TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getValue())
+                .set(TXfSettlementEntity::getUpdateUser, UserUtil.getUserId())
                 .update();
         settlementItemService.updateBatchById(entities);
         try {
