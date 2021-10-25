@@ -16,6 +16,7 @@ import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.owasp.esapi.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,6 +95,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         QueryWrapper wrapperCode = new QueryWrapper<>();
         wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
         wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
+        wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE,type);
         List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = this.list(wrapperCode);
         Map<String, Long> map = new HashMap<>();
         resultOrgCodeList.stream().forEach(code -> {
@@ -102,7 +104,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         validList.stream().forEach(e -> {
             e.setSupplierType(type);
             e.setId(map.get(e.getSupplierTaxNo()));
+            e.setCreateUser(UserUtil.getLoginName());
             e.setSupplierStatus(Constants.COMPANY_STATUS_ENABLED);
+            e.setUpdateUser(UserUtil.getLoginName());
         });
         boolean save = saveOrUpdateBatch(validList);
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
