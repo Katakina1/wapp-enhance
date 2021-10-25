@@ -133,6 +133,12 @@ public class RedNotificationMain {
     @ApiModelProperty("申请日期")
     private String invoiceDate;
 
+    @ApiModelProperty("创建时间")
+    private Date createDate;
+
+    @ApiModelProperty("申请失败原因")
+    private String applyRemark;
+
 
 
 

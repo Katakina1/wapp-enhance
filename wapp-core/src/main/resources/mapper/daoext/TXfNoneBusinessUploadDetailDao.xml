@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.repository.dao.TXfNoneBusinessUploadDetailDao">
+
+    <resultMap id="noneBusMap"
+               type="com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto">
+        <id column="id" property="id"/>
+        <result column="batch_no" property="batchNo"/>
+        <result column="xf_discern_task_id" property="xfDiscernTaskId"/>
+        <result column="xf_verify_task_id" property="xfVerifyTaskId"/>
+        <result column="invoice_no" property="invoiceNo"/>
+        <result column="invoice_code" property="invoiceCode"/>
+        <result column="reason" property="reason"/>
+        <result column="verify_status" property="verifyStatus"/>
+        <result column="ofd_status" property="ofdStatus"/>
+        <result column="invoice_store_no" property="invoiceStoreNo"/>
+        <result column="store_no" property="storeNo"/>
+        <result column="store_date" property="storeDate"/>
+        <result column="bussiness_type" property="bussinessType"/>
+        <result column="bussiness_no" property="bussinessNo"/>
+        <result column="invoice_type" property="invoiceType"/>
+        <result column="source_upload_id" property="sourceUploadId"/>
+        <result column="source_upload_path" property="sourceUploadPath"/>
+        <result column="upload_id" property="uploadId"/>
+        <result column="invoice_amount" property="invoiceAmount"/>
+        <result column="tax_amount" property="taxAmount"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="upload_path" property="uploadPath"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="file_type" property="fileType"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="invoice_date" property="invoiceDate"/>
+        <result column="submitFlag" property="submit_flag"/>
+        <result column="companyCode" property="jvcode"/>
+    </resultMap>
+
+    <select id="list" resultMap="noneBusMap">
+        select t.*,t1.jvcode,t1.invoice_amount,t1.tax_amount,t1.total_amount as com from
+        t_xf_none_business_upload_detail t left join t_dx_record_invoice t1
+
+        on t.invoice_no = t1.invoice_no and t.invoice_code=t1.invoice_code
+        where 1=1
+        <if test="entity.companyCode != null and entity.companyCode != ''">
+            and t1.jvcode = #{entity.companyCode}
+        </if>
+        <if test="entity.createUser != null and entity.createUser != ''">
+            and t.create_user = #{entity.createUser}
+        </if>
+        <if test="entity.bussinessType != null and entity.bussinessType != ''">
+            and t.bussiness_type = #{entity.bussinessType}
+        </if>
+
+        <if test="entity.storeNo != null and entity.storeNo != ''">
+            and t.store_no = #{entity.storeNo}
+        </if>
+        <if test="entity.invoiceNo != null and entity.invoiceNo != ''">
+            and t.invoice_no = #{entity.invoiceNo}
+        </if>
+
+        <if test="entity.createDateStart != null and entity.createDateStart != ''">
+            and t.create_time &lt; #{entity.createDateStart}
+        </if>
+
+        <if test="entity.createDateEnd != null and entity.createDateEnd != ''">
+            and t.create_time &gt; #{entity.createDateEnd}
+        </if>
+
+        <if test="entity.venderId != null and entity.venderId != ''">
+            and t1.venderid = #{entity.venderId}
+        </if>
+
+    </select>
+</mapper>
