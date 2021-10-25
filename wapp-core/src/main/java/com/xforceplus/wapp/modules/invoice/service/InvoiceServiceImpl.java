@@ -168,15 +168,14 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             BigDecimal useAmount = tDxInvoice.getRemainingAmount();
             //默认底账剩余额度
             BigDecimal remainingAmount = BigDecimal.ZERO;
-
             //匹配一张发票后明细总额
             totalUseAmount.set(totalUseAmount.get().add(tDxInvoice.getRemainingAmount()));
             //判断明细总额与结算单总额的差额
-            BigDecimal diff = totalUseAmount.get().subtract(settlementAmountWithoutTax);
+            BigDecimal exceedAmount = totalUseAmount.get().subtract(settlementAmountWithoutTax);
             //如果超额 则取底账部分金额
-            if (diff.compareTo(BigDecimal.ZERO) > 0) {
-                useAmount = diff;
-                remainingAmount = tDxInvoice.getRemainingAmount().subtract(diff);
+            if (exceedAmount.compareTo(BigDecimal.ZERO) > 0) {
+                useAmount = tDxInvoice.getRemainingAmount().subtract(exceedAmount);
+                remainingAmount = exceedAmount;
             }
             //匹配蓝票
             TXfBillDeductInvoiceEntity newTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
