@@ -41,17 +41,25 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         this.companyConverter = companyConverter;
     }
 
-    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type) {
+    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type,String createTimeStart,String createTimeEnd) {
         LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
         wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED);
         if (StringUtils.isNotEmpty(taxNo)) {
-            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, taxNo);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, taxNo);
         }
         if (StringUtils.isNotEmpty(companyName)) {
-            wrapper.like(TXfBlackWhiteCompanyEntity::getCompanyName, companyName);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getCompanyName, companyName);
         }
         if (StringUtils.isNotEmpty(type)) {
-            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierType, type);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierType, type);
+        }
+
+        if (StringUtils.isNotEmpty(createTimeStart)) {
+            wrapper.ge(TXfBlackWhiteCompanyEntity::getCreateTime, createTimeStart);
+        }
+
+        if (StringUtils.isNotEmpty(createTimeEnd)) {
+            wrapper.le(TXfBlackWhiteCompanyEntity::getCreateTime, createTimeEnd);
         }
         Page<TXfBlackWhiteCompanyEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("黑白名单信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
