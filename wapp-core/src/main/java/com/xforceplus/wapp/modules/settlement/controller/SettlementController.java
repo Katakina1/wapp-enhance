@@ -102,8 +102,8 @@ public class SettlementController {
     @PostMapping("details/tax-no")
     @ApiOperation("修改明细税编")
     public R saveInvoiceDetails(@RequestBody SettlementItemTaxNoUpdatedRequest request) {
-        //TODO 修改明细税编，会涉及到反算，金额不变保单价或数量，需要确认
 
+        this.settlementItemService.batchUpdateItemTaxNo(request);
 
         return R.ok();
     }
