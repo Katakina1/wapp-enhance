@@ -472,7 +472,6 @@ public class BackFillService  {
             // 保存红蓝关系
             blueInvoiceRelationService.saveBatch(request.getOriginInvoiceNo(), request.getOriginInvoiceCode(), request.getVerifyBeanList());
 
-            //TODO 修改发票状态为已蓝冲
             log.info("蓝票回填后匹配--修改发票状态和预制发票状态和结算单状态");
             recordInvoiceService.blue4RedInvoice(request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
 

@@ -23,11 +23,9 @@ import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
-import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import com.xforceplus.wapp.repository.entity.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +57,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     private DeductInvoiceService deductInvoiceService;
 
     @Autowired
-    private TDxInvoiceDao tDxInvoiceDao;
+    private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
     @Autowired
     private MatchedInvoiceMapper matchedInvoiceMapper;
@@ -260,6 +258,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 // TODO
 
 
+
         return Collections.emptyMap();
     }
 
@@ -277,16 +276,15 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         if (CollectionUtils.isEmpty(bySettlementId)){
             throw new EnhanceRuntimeException("未查到结算单ID["+settlementId+"]匹配的发票");
         }
-        final LambdaQueryWrapper<TDxInvoiceEntity> invoiceWrapper = Wrappers.lambdaQuery(TDxInvoiceEntity.class)
-                .select(TDxInvoiceEntity::getInvoiceNo,TDxInvoiceEntity::getInvoiceCode,TDxInvoiceEntity::getInvoiceAmount)
+        final LambdaQueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = Wrappers.lambdaQuery(TDxRecordInvoiceEntity.class)
+                .select(TDxRecordInvoiceEntity::getInvoiceNo,TDxRecordInvoiceEntity::getInvoiceCode,TDxRecordInvoiceEntity::getInvoiceAmount)
                 ;
         bySettlementId.forEach(x->{
             invoiceWrapper.or((wrapper)->{
-                wrapper.eq(TDxInvoiceEntity::getInvoiceNo,x.getInvoiceNo())
-                        .eq(TDxInvoiceEntity::getInvoiceCode,x.getInvoiceCode());
+                wrapper.eq(TDxRecordInvoiceEntity::getUuid,x.getInvoiceCode()+x.getInvoiceNo());
             });
         });
-        final List<TDxInvoiceEntity> tXfInvoiceEntities = this.tDxInvoiceDao.selectList(invoiceWrapper);
+        final List<TDxRecordInvoiceEntity> tXfInvoiceEntities = this.tDxRecordInvoiceDao.selectList(invoiceWrapper);
         final List<MatchedInvoiceListResponse> matchedInvoiceListResponses = this.matchedInvoiceMapper.toMatchedInvoice(tXfInvoiceEntities);
         return matchedInvoiceListResponses;
     }
