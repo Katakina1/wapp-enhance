@@ -326,12 +326,6 @@
 //    @TableField("belongs_to")
 //    private String belongsTo;
 //
-//    /**
-//     * 剩余可匹配的额度 默认与不含税金额相同
-//     */
-//    @TableField("remaining_amount")
-//    private BigDecimal remainingAmount;
-//
 //    @TableField("ariba_confirm_date")
 //    private Date aribaConfirmDate;
 //
