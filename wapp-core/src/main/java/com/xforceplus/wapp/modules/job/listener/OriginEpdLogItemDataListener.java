@@ -60,7 +60,7 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
         // 出错仍然继续
         log.warn(exception.getMessage(), exception);
     }
-    
+
     /**
      * 加上存储数据库
      */
