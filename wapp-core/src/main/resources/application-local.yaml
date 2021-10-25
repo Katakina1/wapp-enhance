@@ -52,6 +52,7 @@ mybatis-plus:
 
 
 
+
 #图片存储路径
 filePathConstan:
   remoteImageRootPath: /home/wappftp/jxfp/image/

@@ -7,9 +7,11 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
@@ -23,13 +25,21 @@ public class SettlementOverDueScheduler {
     private SettlementService settlementService;
     @Autowired
     private PreinvoiceService preinvoiceService;
-
+    @Autowired
+    private RedisTemplate redisTemplate;
+    public static String KEY = "Settlement-overdraft";
     /**
      * 自动确认逾期金额 结算单下 所属的单据 全部预期，自动确认
      */
-
+    @PostConstruct
+    public void init() {
+        settlementAutoConfirm();
+    }
     @Scheduled(cron=" 0 0 1 * * ?")
     public void settlementAutoConfirm(){
+        if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            return;
+        }
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
         Integer limit = 100;
@@ -45,6 +55,6 @@ public class SettlementOverDueScheduler {
             id =  list.stream().mapToLong(TXfSettlementEntity::getId).max().getAsLong();
             list = settlementService.querySettlementByStatus(id, status, limit);
         }
-
+        redisTemplate.delete(KEY);
     }
 }

@@ -26,6 +26,7 @@ public class ClaimDeductTaxCodeScheduler {
     private ClaimBillService claimBillService;
     @Autowired
     protected TXfBillDeductExtDao tXfBillDeductExtDao;
+
     /**
      * 索赔单匹配税编
      */

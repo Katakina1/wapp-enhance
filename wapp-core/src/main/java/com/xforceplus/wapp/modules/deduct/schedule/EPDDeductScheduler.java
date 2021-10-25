@@ -5,6 +5,7 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.service.EPDService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +14,18 @@ import org.springframework.stereotype.Component;
 public class EPDDeductScheduler {
     @Autowired
     private EPDService epdService;
-
+    public static String KEY = "EPD-MergeSettlement";
+    @Autowired
+    private RedisTemplate redisTemplate;
     /**
      * EPD 合并结算单
      */
     @Scheduled(cron=" 0 0 5 * * ?")
     public void EPDDeductDeal(){
+        if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            return;
+        }
         epdService.mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT);
+        redisTemplate.delete(KEY);
     }
 }
