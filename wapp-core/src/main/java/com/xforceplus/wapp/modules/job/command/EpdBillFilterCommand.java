@@ -2,7 +2,6 @@ package com.xforceplus.wapp.modules.job.command;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.common.collect.ImmutableMap;
 import com.xforceplus.wapp.converters.TXfOriginEpdBillEntityConvertor;
 import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -38,18 +36,6 @@ import java.util.stream.Collectors;
 @Component
 public class EpdBillFilterCommand implements Command {
 
-    // 使用在TXfOriginAgreementBillEntityConvertor 和 TXfOriginEpdBillEntityConvertor
-    public static final Map<String, BigDecimal> TAX_CODE_TRANSLATOR =
-            ImmutableMap
-                    .<String, BigDecimal>builder()
-                    .put("TG", BigDecimal.valueOf(0.03))
-                    .put("TH", BigDecimal.valueOf(0.17))
-                    .put("TL", BigDecimal.valueOf(0.11))
-                    .put("TM", BigDecimal.valueOf(0.16))
-                    .put("TN", BigDecimal.valueOf(0.10))
-                    .put("TO", BigDecimal.valueOf(0.13))
-                    .put("TP", BigDecimal.valueOf(0.09))
-                    .build();
     /**
      * 一次从数据库中拉取的最大行数
      */
