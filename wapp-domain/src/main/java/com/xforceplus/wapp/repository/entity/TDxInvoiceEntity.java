@@ -460,8 +460,6 @@
 //
 //    public static final String BELONGS_TO = "belongs_to";
 //
-//    public static final String REMAINING_AMOUNT = "remaining_amount";
-//
 //    public static final String ARIBA_CONFIRM_DATE = "ariba_confirm_date";
 //
 //    public static final String COMPANY_CODE = "company_code";
