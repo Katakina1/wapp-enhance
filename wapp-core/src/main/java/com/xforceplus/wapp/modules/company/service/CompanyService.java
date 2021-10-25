@@ -90,7 +90,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
             wrapper.set(TAcOrgEntity::getAddress, companyUpdateRequest.getAddress());
         }
         wrapper.set(TAcOrgEntity::getLastModifyTime, DateUtils.obtainValidDate(new Date()));
-//        wrapper.set(TAcOrgEntity::getLastModifyBy, UserUtil.getLoginName());
+        wrapper.set(TAcOrgEntity::getLastModifyBy, UserUtil.getLoginName());
         wrapper.update();
     }
 
