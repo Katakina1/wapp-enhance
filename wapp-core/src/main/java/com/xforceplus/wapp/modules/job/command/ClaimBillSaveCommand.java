@@ -47,9 +47,9 @@ public class ClaimBillSaveCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
-        log.info("开始保存原始索赔单文件数据入库fileName={}, sheetName={}", fileName, sheetName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
+            log.info("开始保存原始索赔单文件数据入库fileName={}, sheetName={}", fileName, sheetName);
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);

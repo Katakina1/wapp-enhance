@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.dao;
 
+import com.xforceplus.wapp.repository.entity.TDxInvoiceDetailsEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 
