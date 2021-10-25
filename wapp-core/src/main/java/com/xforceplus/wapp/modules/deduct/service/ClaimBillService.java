@@ -69,8 +69,20 @@ public class ClaimBillService extends DeductService{
                 /**
                  * 查询符合条件的明细
                  */
+                List<TXfBillDeductItemEntity> claimNoList = Collections.EMPTY_LIST;
+                if (StringUtils.isNotEmpty(tXfBillDeductEntity.getBusinessNo())) {
+                    claimNoList  =   tXfBillDeductItemExtDao.queryMatchBillItemByClaimNo(startDate, endDate, purcharseNo, sellerNo, tXfBillDeductEntity.getBusinessNo());
+                    if(CollectionUtils.isEmpty(claimNoList)){
+                        claimNoList = new ArrayList<>();
+                    }
+                }
                 Long itemId = 1L;
                 List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate,  itemId, limit);
+                if (CollectionUtils.isNotEmpty(tXfBillDeductItemEntities)) {
+                    tXfBillDeductItemEntities.addAll(claimNoList);
+                }else{
+                    tXfBillDeductItemEntities = claimNoList;
+                }
                 while (billAmount.compareTo(BigDecimal.ZERO) > 0) {
                     if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
                         taxRate = taxRateConfig.getNextTaxRate(taxRate);

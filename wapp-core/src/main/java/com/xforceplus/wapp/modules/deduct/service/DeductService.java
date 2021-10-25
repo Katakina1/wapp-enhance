@@ -22,6 +22,7 @@ import com.xforceplus.wapp.modules.deduct.dto.DeductExportRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
+import com.xforceplus.wapp.modules.exceptionreport.service.impl.ExceptionReportServiceImpl;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
@@ -97,6 +98,9 @@ public class DeductService   {
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
 
+    @Autowired
+    private ExceptionReportServiceImpl exceptionReportService;
+
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -106,7 +110,11 @@ public class DeductService   {
     public boolean receiveItemData(List<ClaimBillItemData> claimBillItemDataList ,String batchNo ) {
         List<TXfBillDeductItemEntity> list =  transferBillItemData(claimBillItemDataList,batchNo);
         for (TXfBillDeductItemEntity tXfBillDeductItemEntity : list) {
-            tXfBillDeductItemExtDao.insert(tXfBillDeductItemEntity);
+            try {
+                tXfBillDeductItemExtDao.insert(tXfBillDeductItemEntity);
+            } catch (Exception e) {
+                log.error("索赔单明细插入异常：{}  数据 {}",e,tXfBillDeductItemEntity);
+            }
         }
         return true;
     }
@@ -122,18 +130,23 @@ public class DeductService   {
             if (Objects.isNull(claimBillItemData)) {
                 continue;
             }
-            BeanUtils.copyProperties(claimBillItemData, tmp);
-            tmp.setGategoryNbr(claimBillItemData.getCategoryNbr());
-            tmp.setVnpkQuantity(claimBillItemData.getVnpkQuantity().intValue());
-            tmp.setPurchaserNo(claimBillItemData.getStoreNbr());
+            tmp.setGategoryNbr(defaultValue(claimBillItemData.getCategoryNbr()));
+            tmp.setVnpkQuantity(defaultValue(claimBillItemData.getVnpkQuantity()).intValue());
+            tmp.setPurchaserNo(defaultValue(claimBillItemData.getStoreNbr()));
             tmp.setCreateDate(date);
             tmp.setId(idSequence.nextId());
             tmp.setRemainingAmount(defaultValue(claimBillItemData.getAmountWithoutTax()));
             tmp.setGoodsNoVer("33.0");
             tmp.setUpdateDate(tmp.getCreateDate());
             tmp.setAmountWithoutTax(defaultValue(claimBillItemData.getAmountWithoutTax()));
-            tmp.setTaxAmount(defaultValue(claimBillItemData.getAmountWithoutTax()).multiply(claimBillItemData.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
+            tmp.setTaxAmount(defaultValue(claimBillItemData.getAmountWithoutTax()).multiply(defaultValue(claimBillItemData.getTaxRate())).setScale(2, RoundingMode.HALF_UP));
             tmp.setAmountWithTax(tmp.getAmountWithoutTax().add(tmp.getTaxAmount()));
+            tmp.setSourceId(defaultValue(claimBillItemData.getId()));
+            tmp.setBatchNo(StringUtils.EMPTY);
+            tmp.setPrice(defaultValue(claimBillItemData.getPrice()));
+            tmp.setUnit(defaultValue(claimBillItemData.getUnit()));
+            tmp.setVnpkCost(defaultValue(claimBillItemData.getVnpkCost()));
+            tmp.setQuantity(defaultValue(claimBillItemData.getQuantity()));
             tmp = fixTaxCode(tmp);
             list.add(tmp);
         }
