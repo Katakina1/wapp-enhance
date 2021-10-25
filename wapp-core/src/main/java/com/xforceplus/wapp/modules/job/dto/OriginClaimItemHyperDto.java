@@ -9,17 +9,13 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * <p>
  * 索赔单Hyper明细
- * </p>
  *
- * @author malong@xforceplus.com
+ * @author Kenny Wong
  * @since 2021-10-15
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class OriginClaimItemHyperDto extends BaseEntity {
+public class OriginClaimItemHyperDto {
 
     private static final long serialVersionUID = 1L;
 
