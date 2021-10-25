@@ -40,7 +40,7 @@ public class CommClaimService {
     @Autowired
     private CommRedNotificationService commRedNotificationService;
     @Autowired
-    private TDxInvoiceDao tDxInvoiceDao;
+    private TDxRecordInvoiceDao tDxRecordInvoiceDao;
     @Autowired
     private PreinvoiceService preinvoiceService;
 
@@ -133,15 +133,15 @@ public class CommClaimService {
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
         tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
-            QueryWrapper<TDxInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
-            tDxInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_CODE,tXfBillDeductInvoiceEntity.getInvoiceCode());
-            tDxInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_NO,tXfBillDeductInvoiceEntity.getInvoiceNo());
-            TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
+            QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
+            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE,tXfBillDeductInvoiceEntity.getInvoiceCode());
+            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO,tXfBillDeductInvoiceEntity.getInvoiceNo());
+            TDxRecordInvoiceEntity tDxInvoiceEntity = tDxRecordInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
 
-            TDxInvoiceEntity updateTDxInvoiceEntity = new TDxInvoiceEntity();
+            TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
             updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
             updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
-            tDxInvoiceDao.updateById(updateTDxInvoiceEntity);
+            tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
         });
 
         //删除蓝票关系

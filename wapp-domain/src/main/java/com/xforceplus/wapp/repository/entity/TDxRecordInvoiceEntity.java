@@ -896,6 +896,12 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("goods_list_flag")
     private String goodsListFlag;
 
+    /**
+     * 蓝票剩余可用金额；默认值同invoice_amount
+     */
+    @TableField("remaining_amount")
+    private BigDecimal remainingAmount;
+
     @TableField("host_taxRate")
     private BigDecimal hostTaxrate;
 
@@ -943,6 +949,9 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     @TableField("category1")
     private String category1;
+
+    @TableField("machine_code")
+    private String machineCode;
 
     @TableField("xxly")
     private String xxly;
@@ -1256,6 +1265,8 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     public static final String GOODS_LIST_FLAG = "goods_list_flag";
 
+    public static final String REMAINING_AMOUNT = "remaining_amount";
+
     public static final String HOST_TAXRATE = "host_taxRate";
 
     public static final String IS_GL = "is_gl";
@@ -1287,6 +1298,8 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     public static final String CONFIRM_USER_ID = "confirm_user_id";
 
     public static final String CATEGORY1 = "category1";
+
+    public static final String MACHINE_CODE = "machine_code";
 
     public static final String XXLY = "xxly";
 

@@ -16,7 +16,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface MatchedInvoiceMapper {
 
-    @Mapping(target = "matchedAmount", source = "invoiceAmount")
+    @Mapping(target = "invoiceDate", source = "invoiceDate")
+    @Mapping(target = "matchedAmount", source = "remainingAmount")
     MatchedInvoiceListResponse toMatchedInvoice(TDxRecordInvoiceEntity invoiceEntity);
 
     List<MatchedInvoiceListResponse> toMatchedInvoice(List<TDxRecordInvoiceEntity> invoiceEntity);
