@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.converters;
 
 import com.xforceplus.wapp.modules.deduct.service.BlueInvoiceService;
-import com.xforceplus.wapp.repository.entity.TXfInvoiceItemEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -13,9 +13,9 @@ import org.mapstruct.factory.Mappers;
  * @create: 2021-10-20 16:57
  **/
 @Mapper
-public interface TXfInvoiceItemEntityConvertor {
+public interface TDxRecordInvoiceDetailEntityConvertor {
 
-    TXfInvoiceItemEntityConvertor INSTANCE = Mappers.getMapper(TXfInvoiceItemEntityConvertor.class);
+    TDxRecordInvoiceDetailEntityConvertor INSTANCE = Mappers.getMapper(TDxRecordInvoiceDetailEntityConvertor.class);
 
     // @Mapping(source = "", target = "itemNo")
     // 发票代码
@@ -23,30 +23,30 @@ public interface TXfInvoiceItemEntityConvertor {
     // 发票号码
     @Mapping(source = "invoiceNo", target = "invoiceNo")
     // 明细序号
-    // @Mapping(source = "", target = "detailNo")
+    @Mapping(source = "detailNo", target = "detailNo")
     // 货物或应税劳务名称
-    @Mapping(source = "cargoName", target = "goodsName")
+    @Mapping(source = "goodsName", target = "goodsName")
     // 规格型号
-    @Mapping(source = "itemSpec", target = "model")
+    @Mapping(source = "model", target = "model")
     // 单位
-    @Mapping(source = "quantityUnit", target = "unit")
+    @Mapping(source = "unit", target = "unit")
     // 数量
-    @Mapping(source = "quantity", target = "num")
+    @Mapping(source = "num", target = "num")
     // 单价
     @Mapping(source = "unitPrice", target = "unitPrice")
     // 金额
-    @Mapping(source = "amountWithoutTax", target = "detailAmount")
+    @Mapping(source = "detailAmount", target = "detailAmount")
     // 税率
     @Mapping(source = "taxRate", target = "taxRate")
     // 税额
     @Mapping(source = "taxAmount", target = "taxAmount")
     // 商品编码
-    @Mapping(source = "cargoCode", target = "goodsNum")
+    @Mapping(source = "goodsNum", target = "goodsNum")
     /**
      * 转换成BlueInvoiceService.InvoiceItem
      *
      * @param invoiceItem
      * @return
      */
-    BlueInvoiceService.InvoiceItem toSettlementItem(TXfInvoiceItemEntity tXfInvoiceItemEntity);
+    BlueInvoiceService.InvoiceItem toSettlementItem(TDxRecordInvoiceDetailEntity tXfInvoiceItemEntity);
 }

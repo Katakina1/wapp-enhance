@@ -87,6 +87,9 @@ public class TaxWareService {
         try {
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
             paramMeterMap.put("taxNo",taxNo);
+
+            // 集成平台没传递，邮件报警
+            defaultHeader.put("serialNo",taxNo);
             final String get = httpClientFactory.get(getTerminalAction,paramMeterMap,defaultHeader);
             log.info("获取终端结果:{}", get);
             return gson.fromJson(get, GetTerminalResponse.class);
@@ -100,6 +103,8 @@ public class TaxWareService {
         try {
             String reqJson = gson.toJson(applyRequest);
             log.info("申请请求:{}", reqJson);
+            // 集成平台没传递，邮件报警
+            defaultHeader.put("serialNo",applyRequest.getSerialNo());
             final String post = httpClientFactory.post(applyRedAction,defaultHeader,reqJson,"");
             log.info("申请结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
@@ -139,6 +144,8 @@ public class TaxWareService {
         try {
             String reqJson = gson.toJson(revokeRequest);
 //            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
+            // 集成平台没传递，邮件报警
+            defaultHeader.put("serialNo",revokeRequest.getSerialNo());
             HttpUtils.pack(defaultHeader,rollbackAction, this.authentication) ;
             log.info("撤销请求:{}", reqJson);
             final String post = HttpUtils.doPutHttpRequest(host,defaultHeader,reqJson) ;
@@ -161,6 +168,8 @@ public class TaxWareService {
         try {
             String reqJson = gson.toJson(request);
             log.info("生成pdf请求:{}", reqJson);
+            // 集成平台没传递，邮件报警
+            defaultHeader.put("serialNo",request.getSerialNo());
             final String post = httpClientFactory.post(genredpdfAction,defaultHeader,reqJson,"");
             log.info("生成pdf结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
