@@ -29,7 +29,7 @@ public class OperateLogController extends AbstractController {
 
     @ApiOperation(value = "查询操作日志")
     @GetMapping(value = "/list")
-    public R<List<QueryOperationLogResponse>> list(@ApiParam(value = "业务id" ,required=true )@RequestParam Long businessId, @ApiParam(value = "用户id" ,required=true )@RequestParam Long userId){
+    public R<List<QueryOperationLogResponse>> list(@ApiParam(value = "业务id" ,required=true )@RequestParam Long businessId, @ApiParam(value = "用户id")@RequestParam(required = false) Long userId){
         logger.info("查询操作日志--入参：{}", businessId);
         return R.ok(operateLogService.query(businessId,userId));
     }
