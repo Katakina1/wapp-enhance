@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -26,12 +27,14 @@ import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.binding.MapperMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -93,6 +96,21 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         }
         return list;
     }
+
+    /**
+     * by Kenny Wong
+     *
+     * @param uuid
+     * @return
+     */
+    public List<TDxRecordInvoiceDetailEntity> getInvoiceDetailByUuid(String uuid){
+        QueryWrapper<TDxRecordInvoiceDetailEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TDxRecordInvoiceDetailEntity.UUID,uuid);
+        // by Kenny Wong 按照ID排序，保证每次返回的结果顺序一致
+        wrapper.orderByAsc(TDxRecordInvoiceDetailEntity.ID);
+        return recordInvoiceDetailsDao.selectList(wrapper);
+    }
+
 
     public Integer getCountBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
@@ -199,4 +217,32 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
     }
 
+    /**
+     * 根据id将入参实体的剩余金额加回到原发票上
+     *
+     * @param entityList 实体对象集合
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean withdrawRemainingAmountById(Collection<TDxRecordInvoiceEntity> entityList) {
+        return withdrawRemainingAmountById(entityList, DEFAULT_BATCH_SIZE);
+    }
+
+    /**
+     * 根据id将入参实体的剩余金额加回到原发票上
+     *
+     * @param entityList
+     * @param batchSize
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean withdrawRemainingAmountById(Collection<TDxRecordInvoiceEntity> entityList, int batchSize) {
+        String sqlStatement = "update t_dx_record_invoice set remaining_amount = remaining_amount + #{et.remainingAmount} where id = #{et.id}";
+        return executeBatch(entityList, batchSize,
+                (sqlSession, entity) -> {
+                    MapperMethod.ParamMap<TDxRecordInvoiceEntity> param = new MapperMethod.ParamMap<>();
+                    param.put(Constants.ENTITY, entity);
+                    sqlSession.update(sqlStatement, param);
+                }
+        );
+    }
 }

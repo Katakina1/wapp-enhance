@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.statement.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.ImmutableMap;
@@ -260,6 +261,9 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             it.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getValue());
             build.get(type).accept(it);
         });
+        new LambdaUpdateChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo)
+                .set(TXfSettlementEntity::getSettlementStatus, TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getValue())
+                .update();
         settlementItemService.updateBatchById(entities);
         try {
             log.info("调用拆票方法参数,settlementNo:{},sellerNo:{}", settlementNo, sellerNo);
