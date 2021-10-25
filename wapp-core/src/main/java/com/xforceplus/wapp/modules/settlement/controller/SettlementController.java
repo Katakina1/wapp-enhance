@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.settlement.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
@@ -14,7 +15,11 @@ import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.settlement.dto.InvoiceMatchedRequest;
+import com.xforceplus.wapp.modules.settlement.dto.SettlementItemTaxNoUpdatedRequest;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
+import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
+import com.xforceplus.wapp.modules.settlement.service.SettlementService;
+import com.xforceplus.wapp.repository.entity.TXfSettlementItemEntity;
 import com.xforceplus.wapp.service.CommSettlementService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -47,6 +52,9 @@ public class SettlementController {
     @Autowired
     private DeductViewService deductViewService;
 
+    @Autowired
+    private SettlementItemServiceImpl settlementItemService;
+
     @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
@@ -58,7 +66,7 @@ public class SettlementController {
 
     @PostMapping("undo-red-notification")
     @ApiOperation(value = "撤销红字信息表")
-    public R undoRedNotification(@RequestBody SettlementUndoRedNotificationRequest request){
+    public R undoRedNotification(@RequestBody SettlementUndoRedNotificationRequest request) {
         commSettlementService.applyDestroySettlementPreInvoice(request.getSettlementId());
         return R.ok("撤销红字信息表申请已提交成功");
     }
@@ -66,14 +74,14 @@ public class SettlementController {
 
     @GetMapping("{settlementId}/matched-invoice")
     @ApiOperation("获取指定协议单已匹配的发票")
-    public R invoiceList(@PathVariable Long settlementId,@RequestParam @ApiParam("1 协议单，2 EPD") int type) {
+    public R invoiceList(@PathVariable Long settlementId, @RequestParam @ApiParam("1 协议单，2 EPD") int type) {
         XFDeductionBusinessTypeEnum typeEnum;
-        switch (type){
+        switch (type) {
             case 1:
-                typeEnum=XFDeductionBusinessTypeEnum.AGREEMENT_BILL;
+                typeEnum = XFDeductionBusinessTypeEnum.AGREEMENT_BILL;
                 break;
             case 2:
-                typeEnum=XFDeductionBusinessTypeEnum.EPD_BILL;
+                typeEnum = XFDeductionBusinessTypeEnum.EPD_BILL;
                 break;
             default:
                 throw new EnhanceRuntimeException("单据类型不正确，应为(协议单:1；EPD:2)");
@@ -83,32 +91,42 @@ public class SettlementController {
     }
 
     @PostMapping("{settlementId}/matched-invoice")
-    @ApiOperation("获取指定协议单已匹配的发票")
-    public R saveInvoice(@PathVariable Long settlementId, InvoiceMatchedRequest request) {
-        //TODO
+    @ApiOperation("保存手动调整的票单匹配关系")
+    public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
+        //TODO  移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
+
+
         return R.ok();
     }
+
+    @PostMapping("details/tax-no")
+    @ApiOperation("修改明细税编")
+    public R saveInvoiceDetails(@RequestBody SettlementItemTaxNoUpdatedRequest request) {
+        //TODO 修改明细税编，会涉及到反算，金额不变保单价或数量，需要确认
+
+
+        return R.ok();
+    }
+
 
     @GetMapping("{settlementId}/details")
-    public R details(@PathVariable long settlementId){
-
-        return R.ok();
+    public R details(@PathVariable long settlementId, @RequestParam String settlementNo, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "50") int size) {
+        final Page<TXfSettlementItemEntity> itemsBySettlementNo = this.settlementItemService.getItemsBySettlementNo(settlementNo, page, size);
+        final PageResult<TXfSettlementItemEntity> result = PageResult.of(itemsBySettlementNo.getRecords(), itemsBySettlementNo.getTotal(), itemsBySettlementNo.getPages(), itemsBySettlementNo.getSize());
+        return R.ok(result);
     }
-
 
 
     @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class, tags = {"发票池",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @GetMapping(value = "{settlementId}/recommended")
-    public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request){
+    public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request) {
 
         final PageResult<InvoiceDto> recommend = invoiceService.recommend(settlementId, request);
 
-        return Response.ok("",recommend);
+        return Response.ok("", recommend);
     }
-
-
 
 
 }

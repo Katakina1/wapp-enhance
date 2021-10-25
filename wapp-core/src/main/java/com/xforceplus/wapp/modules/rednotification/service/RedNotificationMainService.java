@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
@@ -832,7 +833,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             int update = getBaseMapper().update(record, updateWrapper);
 
             // 同意删除预制发票
-            commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(list);
+            try{
+                commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(list);
+            }catch (EnhanceRuntimeException e){
+                return Response.failed(e.getMessage());
+            }
 
             RedNotificationApplyReverseRequest reverseRequest = new RedNotificationApplyReverseRequest();
             request.getQueryModel().setApproveStatus(null);
@@ -847,7 +852,12 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             int update = getBaseMapper().update(record, updateWrapper);
 
             // 驳回保留红字预制发票
-            commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(list);
+            try {
+                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(list);
+            }catch (EnhanceRuntimeException e){
+                return Response.failed(e.getMessage());
+            }
+
         }
         return Response.ok("操作成功");
 
