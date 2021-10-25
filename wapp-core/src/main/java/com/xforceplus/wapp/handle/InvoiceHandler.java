@@ -9,6 +9,7 @@ import com.xforceplus.wapp.converters.InvoiceItemConverter;
 import com.xforceplus.wapp.handle.vo.InvoiceVo;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceItemServiceImpl;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -54,7 +55,7 @@ public class InvoiceHandler implements IntegrationResultHandler {
             return true;
         }
         List<InvoiceVo.InvoiceItemVO> items = invoice.getItems();
-        TXfInvoiceEntity invoiceMap = invoiceConverter.map(invoice);
+        TDxRecordInvoiceEntity invoiceMap = invoiceConverter.map(invoice);
         return new LambdaQueryChainWrapper<>(invoiceService.getBaseMapper())
                 .eq(TXfInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode())
                 .eq(TXfInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo()).oneOpt()
