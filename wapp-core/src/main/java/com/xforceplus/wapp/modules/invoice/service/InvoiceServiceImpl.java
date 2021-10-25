@@ -123,6 +123,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
+        if(CollectionUtils.isEmpty(request.getInvoiceList())){
+            throw new EnhanceRuntimeException("结算单匹配蓝票为空");
+        }
         checkSettlementMatchedInvoice(tXfSettlementEntity, request);
         //查询已匹配蓝票数据
         LambdaQueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new LambdaQueryWrapper<>();
@@ -204,7 +207,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
                     return tDxInvoice.getRemainingAmount();
                 })
         ).collect(Collectors.toList());
-        BigDecimal addAmount = addCompletableFutureList.stream().map(f -> {
+        BigDecimal addAmount = addCompletableFutureList.parallelStream().map(f -> {
             try {
                 return f.get();
             } catch (Exception e) {
