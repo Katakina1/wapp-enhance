@@ -75,8 +75,8 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
     }
 
     private void doApplyVerdict(TXfSettlementEntity tXfSettlementEntity, List<Long> billDeductIdList) {
-        if (Objects.equals(tXfSettlementEntity.getSettlementStatus(), TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode())) {
-            throw new EnhanceRuntimeException("已经开具红票");
+        if (!Objects.equals(tXfSettlementEntity.getSettlementStatus(), TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())) {
+            throw new EnhanceRuntimeException("只能待开票状态才能申请不定案");
         }
         //索赔单
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
