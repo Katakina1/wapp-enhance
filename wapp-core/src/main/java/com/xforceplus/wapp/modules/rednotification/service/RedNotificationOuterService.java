@@ -99,6 +99,28 @@ public class RedNotificationOuterService {
     }
 
 
+    /**
+     * 修改已申请的红字信息表编号
+     * 对应的状态改为已核销 标明红字信息已使用      ALREADY_USE(3,"已核销"),
+     * 或者该红票作废，释放对应的红字信息表编号      APPROVE_PASS(1,"审核通过"),
+     * @param redNotification 红字信息表编号
+     * @return
+     */
+    public Response<String> update(String redNotification,ApproveStatus approveStatus) {
+        LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo,redNotification).eq(TXfRedNotificationEntity::getApplyingStatus,RedNoApplyingStatus.APPLIED.getValue());
+        TXfRedNotificationEntity tXfRedNotificationEntity = redNotificationService.getBaseMapper().selectOne(queryWrapper);
+        if (tXfRedNotificationEntity ==null ){
+            return   Response.failed(String.format("红字信息表编号[%s]未找到已申请的记录",redNotification));
+        }
+
+        tXfRedNotificationEntity.setApproveStatus(approveStatus.getValue());
+        tXfRedNotificationEntity.setUpdateDate(new Date());
+        redNotificationService.getBaseMapper().updateById(tXfRedNotificationEntity);
+        return Response.ok("修改成功");
+    }
+
+
 
 
 }
