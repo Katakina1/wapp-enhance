@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Mapper(config = GlobalConfig.class, uses = BaseConverter.class)
 public interface InvoiceItemConverter {
-    @Mapping(target = "uuid", expression = "java(data.getInvoiceCode() + data.InvoiceNo())")
+    @Mapping(target = "uuid", expression = "java(items.getInvoiceCode() + items.getInvoiceNo())")
     @Mapping(target = "goodsName", source = "cargoName")
     @Mapping(target = "model", source = "itemSpec")
     @Mapping(target = "unit", source = "quantityUnit")

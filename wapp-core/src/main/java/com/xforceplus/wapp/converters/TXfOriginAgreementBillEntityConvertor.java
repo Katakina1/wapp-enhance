@@ -44,7 +44,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 扣款日期
     @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     // 税率
-    @Mapping(target = "taxRate", defaultExpression = "java(TAX_CODE_TRANSLATOR.get(tXfOriginAgreementBillEntity.getTaxCode()))")
+    @Mapping(target = "taxRate", expression = "java(TAX_CODE_TRANSLATOR.get(tXfOriginAgreementBillEntity.getTaxCode()))")
     // 供应商6D
     @Mapping(source = "memo", target = "memo")
     // 协议类型
