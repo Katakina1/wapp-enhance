@@ -237,9 +237,15 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tDxQuestionPaperEntity.setDescription("索赔单号：" + Joiner.on(",").join(billDeductList.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList())));
         tDxQuestionPaperEntity.setCheckstatus("0");
         tDxQuestionPaperEntity.setProblemStream(generateProblemStream(tXfSettlementEntity.getSellerNo()));//流水号
+        tDxQuestionPaperEntity.setCreatedDate(new Date());
         tDxQuestionPaperDao.insert(tDxQuestionPaperEntity);
     }
 
+    /**
+     * 从一期拷贝的代码
+     * @param usercode
+     * @return
+     */
     private String generateProblemStream(String usercode) {
         Date de = new Date();
         TDxQuestionPaperEntity querymaxstream = tDxQuestionPaperDao.queryMaxProblemStream(usercode);
