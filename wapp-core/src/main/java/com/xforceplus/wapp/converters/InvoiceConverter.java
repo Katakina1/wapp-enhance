@@ -28,11 +28,12 @@ public interface InvoiceConverter {
     @Mapping(source = "sellerAddrTel", target = "xfAddressAndPhone")
     @Mapping(source = "sellerBankNameAccount", target = "xfBankAndNo")
     @Mapping(source = "status", target = "invoiceStatus", qualifiedByName = "mapInvoiceStatus")
-    @Mapping(source = "authStatus", target = "rzhYesorno", qualifiedByName = "mapAuthStatus")
+    @Mapping(source = "authStatus", target = "rzhYesorno")
     @Mapping(target = "rzhType", expression = "java(1)")
-    @Mapping(source = "authSyncStatus", target = "authStatus", qualifiedByName = "")
+    @Mapping(source = "authSyncStatus", target = "authStatus", qualifiedByName = "mapAuthSyncStatus")
     @Mapping(source = "authBussiDate", target = "gxDate")
-    TDxRecordInvoiceEntity map(InvoiceVo.Invoice data);
+    @Mapping(target = "uuid", expression = "java(data.getInvoiceCode() + data.InvoiceNo())")
+    TDxRecordInvoiceEntity map(InvoiceVo.Invoice data, Integer detailYesorno);
 
     Map<String, String> INVOICE_TYPE_MAP = ImmutableMap.<String, String>builder()
             .put("01-10-01", "01").put("02-60-01", "03").put("02-10-01", "04").put("01-10-06", "08")
@@ -43,31 +44,21 @@ public interface InvoiceConverter {
 //      01 01-10-01、03 02-60-01、04 02-10-01、08 01-10-06、10 02-10-06、11 02-10-02、14 02-20-06
         return INVOICE_TYPE_MAP.get(status);
     }
+
     Map<String, String> INVOICE_STATUS_MAP = ImmutableMap.<String, String>builder()
-            .put("01-10-01", "01").put("02-60-01", "03").put("02-10-01", "04").put("01-10-06", "08")
-            .put("02-10-06", "10").put("02-10-02", "11").put("02-20-06", "14").build();
+            .put("0", "2").put("1", "0").put("2", "3").put("3", "1").put("4", "4").put("9", "4").build();
 
     @Named("mapInvoiceStatus")
     default String mapInvoiceStatus(String status) {
-//      01 01-10-01、03 02-60-01、04 02-10-01、08 01-10-06、10 02-10-06、11 02-10-02、14 02-20-06
+        // 0 2、1 0、2 3、3 1、4 4、9 4
         return INVOICE_STATUS_MAP.get(status);
     }
-    Map<String, String> AUTH_STATUS_MAP = ImmutableMap.<String, String>builder()
-            .put("01-10-01", "01").put("02-60-01", "03").put("02-10-01", "04").put("01-10-06", "08")
-            .put("02-10-06", "10").put("02-10-02", "11").put("02-20-06", "14").build();
 
-    @Named("mapAuthStatus")
-    default String mapAuthStatus(String status) {
-//      01 01-10-01、03 02-60-01、04 02-10-01、08 01-10-06、10 02-10-06、11 02-10-02、14 02-20-06
-        return AUTH_STATUS_MAP.get(status);
-    }
     Map<String, String> AUTH_SYNC_STATUS_MAP = ImmutableMap.<String, String>builder()
-            .put("01-10-01", "01").put("02-60-01", "03").put("02-10-01", "04").put("01-10-06", "08")
-            .put("02-10-06", "10").put("02-10-02", "11").put("02-20-06", "14").build();
+            .put("1", "0").put("2", "1").put("3", "4").put("4", "0").build();
 
     @Named("mapAuthSyncStatus")
     default String mapAuthSyncStatus(String status) {
-//      01 01-10-01、03 02-60-01、04 02-10-01、08 01-10-06、10 02-10-06、11 02-10-02、14 02-20-06
         return AUTH_SYNC_STATUS_MAP.get(status);
     }
 }
