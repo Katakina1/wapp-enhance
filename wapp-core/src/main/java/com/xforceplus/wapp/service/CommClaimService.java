@@ -134,27 +134,29 @@ public class CommClaimService {
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
         tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
             QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
-            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE,tXfBillDeductInvoiceEntity.getInvoiceCode());
-            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO,tXfBillDeductInvoiceEntity.getInvoiceNo());
+            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
+            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
             TDxRecordInvoiceEntity tDxInvoiceEntity = tDxRecordInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
-
-            TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
-            updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
-            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
-            tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
+            if (tDxInvoiceEntity != null) {
+                TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
+                updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
+                updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+                tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
+            }
         });
 
         //删除蓝票关系
         //释放索赔单蓝票额度（作废的索赔单）
         TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
         updateTXfBillDeductInvoiceEntity.setStatus(1);
-        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity,tXfBillDeductInvoiceWrapper);
+        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity, tXfBillDeductInvoiceWrapper);
     }
 
     /**
      * 索赔单[确认]按钮相关逻辑，这个主要是针对结算单明细拆票
      * 结算单明细拆成预制发票（红字信息）
      * 底层逻辑调用产品服务(拆票、申请红字信息)
+     *
      * @param settlementId
      */
     @Transactional
