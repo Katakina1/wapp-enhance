@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.invoice.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
@@ -123,6 +124,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
+        if (CollectionUtils.isEmpty(request.getInvoiceList())) {
+            throw new EnhanceRuntimeException("结算单匹配蓝票为空");
+        }
         checkSettlementMatchedInvoice(tXfSettlementEntity, request);
         //查询已匹配蓝票数据
         LambdaQueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new LambdaQueryWrapper<>();
@@ -150,6 +154,11 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         //保存匹配结果
         AtomicReference<BigDecimal> totalUseAmount = new AtomicReference<>(BigDecimal.ZERO);
         request.getInvoiceList().parallelStream().forEach(invoice -> {
+            BigDecimal settlementAmountWithoutTax = tXfSettlementEntity.getAmountWithoutTax();
+            if (totalUseAmount.get().compareTo(settlementAmountWithoutTax) >= 0) {
+                log.info("结算单id={},匹配多余的发票={}", settlementId, JSON.toJSONString(invoice));
+                return;
+            }
             //底账数据
             LambdaQueryWrapper<TDxRecordInvoiceEntity> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(TDxRecordInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo())
@@ -159,8 +168,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             BigDecimal useAmount = tDxInvoice.getRemainingAmount();
             //默认底账剩余额度
             BigDecimal remainingAmount = BigDecimal.ZERO;
-            //最后一张可能需要特殊处理
-            BigDecimal settlementAmountWithoutTax = tXfSettlementEntity.getAmountWithoutTax();
+
             //匹配一张发票后明细总额
             totalUseAmount.set(totalUseAmount.get().add(tDxInvoice.getRemainingAmount()));
             //判断明细总额与结算单总额的差额
@@ -204,16 +212,13 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
                     return tDxInvoice.getRemainingAmount();
                 })
         ).collect(Collectors.toList());
-        BigDecimal addAmount = addCompletableFutureList.stream().map(f -> {
+        BigDecimal addAmount = addCompletableFutureList.parallelStream().map(f -> {
             try {
                 return f.get();
             } catch (Exception e) {
             }
             return BigDecimal.ZERO;
         }).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (tXfSettlementEntity.getAmountWithoutTax().compareTo(addAmount) > 0) {
-            throw new EnhanceRuntimeException("匹配额度已少于结算需要的额度");
-        }
         if (tXfSettlementEntity.getAmountWithoutTax().compareTo(addAmount) < 0) {
             throw new EnhanceRuntimeException("匹配额度已超过结算需要的额度");
         }
