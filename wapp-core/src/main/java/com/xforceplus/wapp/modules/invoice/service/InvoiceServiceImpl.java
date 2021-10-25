@@ -13,10 +13,10 @@ import com.xforceplus.wapp.modules.invoice.mapstruct.InvoiceMapper;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.repository.dao.TXfInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TXfInvoiceItemDao;
-import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfInvoiceItemEntity;
+import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxInvoiceDetailsDao;
+import com.xforceplus.wapp.repository.entity.TDxInvoiceDetailsEntity;
+import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,10 +35,10 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEntity> {
+public class InvoiceServiceImpl extends ServiceImpl<TDxInvoiceDao, TDxInvoiceEntity> {
 
     @Autowired
-    TXfInvoiceItemDao tXfInvoiceItemDao;
+    TDxInvoiceDetailsDao tDxInvoiceDetailsDao;
     @Autowired
     InvoiceMapper invoiceMapper;
 
@@ -47,12 +46,12 @@ public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEnt
     private SettlementService settlementService;
 
     public Response<InvoiceDto> detail(Long id) {
-        TXfInvoiceEntity tXfInvoiceEntity = getBaseMapper().selectById(id);
-        if (tXfInvoiceEntity != null) {
-            LambdaQueryWrapper<TXfInvoiceItemEntity> queryWrapper = new LambdaQueryWrapper<>();
-            List<TXfInvoiceItemEntity> tXfInvoiceItemEntities = tXfInvoiceItemDao.selectList(queryWrapper);
+        TDxInvoiceEntity tDxInvoiceEntity = getBaseMapper().selectById(id);
+        if (tDxInvoiceEntity != null) {
+            LambdaQueryWrapper<TDxInvoiceDetailsEntity> queryWrapper = new LambdaQueryWrapper<>();
+            List<TDxInvoiceDetailsEntity> tXfInvoiceItemEntities = tDxInvoiceDetailsDao.selectList(queryWrapper);
 
-            InvoiceDto invoiceDto = invoiceMapper.entityToInvoiceDto(tXfInvoiceEntity);
+            InvoiceDto invoiceDto = invoiceMapper.entityToInvoiceDto(tDxInvoiceEntity);
             List<InvoiceItemDto> invoiceItemDtos = invoiceMapper.entityToInvoiceItemDtoList(tXfInvoiceItemEntities);
             invoiceDto.setDetails(invoiceItemDtos);
             return Response.ok("查询成功", invoiceDto);
@@ -67,7 +66,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEnt
      * @param entityList 实体对象集合
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean withdrawRemainingAmountById(Collection<TXfInvoiceEntity> entityList) {
+    public boolean withdrawRemainingAmountById(Collection<TDxInvoiceEntity> entityList) {
         return updateBatchById(entityList, DEFAULT_BATCH_SIZE);
     }
 
@@ -79,11 +78,11 @@ public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEnt
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean withdrawRemainingAmountById(List<TXfInvoiceEntity> entityList, int batchSize) {
+    public boolean withdrawRemainingAmountById(List<TDxInvoiceEntity> entityList, int batchSize) {
         String sqlStatement = "update t_xf_invoice set remaining_amount = remaining_amount + #{remainingAmount} where id = #{id}";
         return executeBatch(entityList, batchSize,
                 (sqlSession, entity) -> {
-                    MapperMethod.ParamMap<TXfInvoiceEntity> param = new MapperMethod.ParamMap<>();
+                    MapperMethod.ParamMap<TDxInvoiceEntity> param = new MapperMethod.ParamMap<>();
                     param.put(Constants.ENTITY, entity);
                     sqlSession.update(sqlStatement, param);
                 }
@@ -98,24 +97,21 @@ public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEnt
             throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
         }
 
-        final BigDecimal taxRate = byId.getTaxRate();
-        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) > 0 ? taxRate.movePointLeft(2).toPlainString() : taxRate.toPlainString();
-        final String sellerNo = byId.getSellerNo();
-        final String sellerTaxNo = byId.getSellerTaxNo();
-        final String purchaserNo = byId.getPurchaserNo();
-        final String purchaserTaxNo = byId.getPurchaserTaxNo();
+//        final BigDecimal taxRate = byId.getTaxRate();
+//        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) > 0 ? taxRate.movePointLeft(2).toPlainString() : taxRate.toPlainString();
+//        final String sellerNo = byId.getSellerNo();
+//        final String sellerTaxNo = byId.getSellerTaxNo();
+//        final String purchaserNo = byId.getPurchaserNo();
+//        final String purchaserTaxNo = byId.getPurchaserTaxNo();
 
-        LambdaQueryWrapper<TXfInvoiceEntity> wrapper=new LambdaQueryWrapper<>();
-        wrapper.eq(TXfInvoiceEntity::getSellerTaxNo,sellerTaxNo)
-                .eq(TXfInvoiceEntity::getPurchaserTaxNo,purchaserTaxNo)
-                .eq(TXfInvoiceEntity::getTaxRate,taxRateStr)
-                .ge(TXfInvoiceEntity::getPaperDrewDate,request.getInvoiceDateStart())
-                .le(TXfInvoiceEntity::getPaperDrewDate,request.getInvoiceDateEnd())
+        LambdaQueryWrapper<TDxInvoiceEntity> wrapper=new LambdaQueryWrapper<>();
+        wrapper.ge(TDxInvoiceEntity::getMakeDate,request.getInvoiceDateStart())
+                .le(TDxInvoiceEntity::getMakeDate,request.getInvoiceDateEnd())
         ;
 
-        Page<TXfInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
+        Page<TDxInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
 
-        final Page<TXfInvoiceEntity> entityPage = super.page(page, wrapper);
+        final Page<TDxInvoiceEntity> entityPage = super.page(page, wrapper);
 
         List<InvoiceDto> dtos=new ArrayList<>();
         if (CollectionUtils.isNotEmpty(entityPage.getRecords())){
