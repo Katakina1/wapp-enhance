@@ -1,22 +1,22 @@
 package com.xforceplus.wapp.repository.entity;
 
-import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.util.Date;
 /**
  * <p>
     * 业务单据明细信息
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-25
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -170,6 +170,18 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("source_id")
     private Long sourceId;
 
+    /**
+     * 税额
+     */
+    @TableField("tax_amount")
+    private BigDecimal taxAmount;
+
+    /**
+     * 含税金额
+     */
+    @TableField("amount_with_tax")
+    private BigDecimal amountWithTax;
+
     @TableField("create_date")
     private Date createDate;
 
@@ -227,6 +239,10 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     public static final String BATCH_NO = "batch_no";
 
     public static final String SOURCE_ID = "source_id";
+
+    public static final String TAX_AMOUNT = "tax_amount";
+
+    public static final String AMOUNT_WITH_TAX = "amount_with_tax";
 
     public static final String CREATE_DATE = "create_date";
 

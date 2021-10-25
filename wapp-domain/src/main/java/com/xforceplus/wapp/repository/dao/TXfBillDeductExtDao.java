@@ -173,6 +173,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='offset != null and next !=null'>"+
             "order by id offset #{offset} rows fetch next #{next} rows only\n"+
             "</if>"+
+            "order by d.id desc"+
             "</script>")
     List<TXfBillDeductEntity> queryBillPage(@Param("offset")int offset,@Param("next")int next,@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 
@@ -224,7 +225,6 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='key == 4 and businessType ==3'>"+
             "and d.status = 304\n"+
             "</if>"+
-            "order by id desc"+
             "</script>")
     int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 }
