@@ -32,6 +32,7 @@ public class ClaimDeductTaxCodeScheduler {
      */
     @Scheduled(cron=" 0 0 12 * * ?")
     public void matchTaxCode(){
+        log.info("matchTaxCode job 开始");
          Long id = 0L;
          List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
          while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {

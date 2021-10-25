@@ -21,10 +21,13 @@ public class ClaimDeductScheduler {
     @Scheduled(cron=" 0 0 1 * * ?")
     public void claimDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            log.info("Claim-match job 已经在执行，结束此次执行");
             return;
         }
+        log.info("Claim-match job 已经在执行，开始");
         claimBillService.matchClaimBill();
         claimBillService.claimMatchBlueInvoice();
+        log.info("Claim-match job 已经在执行，结束");
     }
 
 }

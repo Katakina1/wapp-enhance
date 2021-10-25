@@ -23,9 +23,12 @@ public class EPDDeductScheduler {
     @Scheduled(cron=" 0 0 5 * * ?")
     public void EPDDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            log.info("EPD-MergeSettlement job 已经在执行，结束此次执行");
             return;
         }
+        log.info("EPD-MergeSettlement job 开始");
         epdService.mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT);
         redisTemplate.delete(KEY);
+        log.info("EPD-MergeSettlement job 结束");
     }
 }

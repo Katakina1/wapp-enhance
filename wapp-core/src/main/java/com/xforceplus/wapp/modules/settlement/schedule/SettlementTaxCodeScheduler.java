@@ -29,6 +29,7 @@ public class SettlementTaxCodeScheduler {
      */
     @Scheduled(cron=" 0 0 20 * * ?")
     public void settlementFixTaxCode(){
+        log.info("settlementFixTaxCode job 开始");
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
         Integer limit = 100;
@@ -44,5 +45,6 @@ public class SettlementTaxCodeScheduler {
             id =  list.stream().mapToLong(TXfSettlementEntity::getId).max().getAsLong();
             list = settlementService.querySettlementByStatus(id, status, limit);
         }
+        log.info("settlementFixTaxCode job 结束");
     }
 }

@@ -23,10 +23,13 @@ public class ClaimSettlementScheduler {
     @Scheduled(cron=" 0 0 3 * * ?")
     public void claimMergeSettlementDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            log.info("claim-MergeSettlement job 已经在执行，结束此次执行");
             return;
         }
+        log.info("claim-MergeSettlement job 开始");
         claimBillService.mergeClaimSettlement();
         redisTemplate.delete(KEY);
+        log.info("claim-MergeSettlement job 结束");
     }
 
 }

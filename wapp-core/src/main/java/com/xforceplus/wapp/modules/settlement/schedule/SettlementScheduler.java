@@ -31,8 +31,10 @@ public class SettlementScheduler {
     @Scheduled(cron=" 0 0 6 * * ?")
     public void settlementSplit(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            log.info("Settlement-split  job 已经在执行，结束此次执行");
             return;
         }
+        log.info("Settlement-split  job 开始");
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
         Integer limit = 100;
@@ -49,5 +51,6 @@ public class SettlementScheduler {
             list = settlementService.querySettlementByStatus(id, status, limit);
         }
         redisTemplate.delete(KEY);
+        log.info("Settlement-split  job 结束");
     }
 }

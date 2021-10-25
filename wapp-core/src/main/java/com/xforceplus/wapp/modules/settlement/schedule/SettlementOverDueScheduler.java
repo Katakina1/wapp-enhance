@@ -38,8 +38,10 @@ public class SettlementOverDueScheduler {
     @Scheduled(cron=" 0 0 1 * * ?")
     public void settlementAutoConfirm(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
+            log.info("Settlement-overdraft  job 已经在执行，结束此次执行");
             return;
         }
+        log.info("Settlement-overdraft  job 开始");
         Long id = 0L;
         Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
         Integer limit = 100;
@@ -56,5 +58,6 @@ public class SettlementOverDueScheduler {
             list = settlementService.querySettlementByStatus(id, status, limit);
         }
         redisTemplate.delete(KEY);
+        log.info("Settlement-overdraft  job 结束");
     }
 }
