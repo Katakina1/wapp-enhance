@@ -81,6 +81,7 @@ public class InvoiceVo {
         private BigDecimal amountWithoutTax;
         private String goodsTaxNo;
         private String plateNumber;
+        private String vehicleType;
         private String tollStartDate;
         private String tollEndDate;
     }
