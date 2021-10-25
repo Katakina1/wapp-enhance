@@ -6,6 +6,7 @@ import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -253,7 +254,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         //全选
         if (queryModel.getIsAllSelected()){
-            LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
+            QueryWrapper<TXfRedNotificationEntity> queryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
             return getBaseMapper().selectList(queryWrapper);
         }else {
             // id 勾选
@@ -261,46 +262,46 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
     }
 
-    private LambdaQueryWrapper<TXfRedNotificationEntity> getNotificationEntityLambdaQueryWrapper(QueryModel queryModel) {
-        LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+    private QueryWrapper<TXfRedNotificationEntity> getNotificationEntityLambdaQueryWrapper(QueryModel queryModel) {
+        QueryWrapper<TXfRedNotificationEntity> queryWrapper = new QueryWrapper<>();
         if (queryModel.getInvoiceOrigin()!=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getInvoiceOrigin, queryModel.getInvoiceOrigin());
+            queryWrapper.eq(TXfRedNotificationEntity.INVOICE_ORIGIN, queryModel.getInvoiceOrigin());
         }
         if (!StringUtils.isEmpty(queryModel.getCompanyCode())){
-            queryWrapper.eq(TXfRedNotificationEntity::getCompanyCode, queryModel.getCompanyCode());
+            queryWrapper.eq(TXfRedNotificationEntity.COMPANY_CODE, queryModel.getCompanyCode());
         }
         if (!StringUtils.isEmpty(queryModel.getPurchaserName())){
-            queryWrapper.eq(TXfRedNotificationEntity::getPurchaserName, queryModel.getPurchaserName());
+            queryWrapper.eq(TXfRedNotificationEntity.PURCHASER_NAME, queryModel.getPurchaserName());
         }
 
         if (!StringUtils.isEmpty(queryModel.getSellerName())){
-            queryWrapper.eq(TXfRedNotificationEntity::getSellerName, queryModel.getSellerName());
+            queryWrapper.eq(TXfRedNotificationEntity.SELLER_NAME, queryModel.getSellerName());
         }
 
         if (!StringUtils.isEmpty(queryModel.getRedNotificationNo())){
-            queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo, queryModel.getRedNotificationNo());
+            queryWrapper.eq(TXfRedNotificationEntity.RED_NOTIFICATION_NO, queryModel.getRedNotificationNo());
         }
         if (!StringUtils.isEmpty(queryModel.getBillNo())){
-            queryWrapper.eq(TXfRedNotificationEntity::getBillNo, queryModel.getBillNo());
+            queryWrapper.eq(TXfRedNotificationEntity.BILL_NO, queryModel.getBillNo());
         }
         if (queryModel.getPaymentTime()!=null){
             // 1634860800000
-            queryWrapper.eq(TXfRedNotificationEntity::getPaymentTime,  new Date(queryModel.getPaymentTime()));
+            queryWrapper.eq(TXfRedNotificationEntity.PAYMENT_TIME,  new Date(queryModel.getPaymentTime()));
         }
         if (!CollectionUtils.isEmpty(queryModel.getPidList())){
-            queryWrapper.in(TXfRedNotificationEntity::getPid,queryModel.getPidList());
+            queryWrapper.in(TXfRedNotificationEntity.PID,queryModel.getPidList());
         }
         if (queryModel.getApproveStatus()!=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getApproveStatus,queryModel.getApproveStatus());
+            queryWrapper.eq(TXfRedNotificationEntity.APPROVE_STATUS,queryModel.getApproveStatus());
         }
         if (queryModel.getApplyingStatus()!=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getApplyingStatus,queryModel.getApplyingStatus());
+            queryWrapper.eq(TXfRedNotificationEntity.APPLYING_STATUS,queryModel.getApplyingStatus());
         }
         if (queryModel.getLockFlag()!=null){
-            queryWrapper.eq(TXfRedNotificationEntity::getLockFlag,queryModel.getLockFlag());
+            queryWrapper.eq(TXfRedNotificationEntity.LOCK_FLAG,queryModel.getLockFlag());
         }
         if (!CollectionUtils.isEmpty(queryModel.getExcludes())){
-            queryWrapper.notIn(TXfRedNotificationEntity::getId,queryModel.getExcludes());
+            queryWrapper.notIn(TXfRedNotificationEntity.ID,queryModel.getExcludes());
         }
 
         return queryWrapper;
@@ -425,23 +426,32 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
     public Response<SummaryResult> summary(QueryModel queryModel) {
-        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
-        Map<Integer, List<TXfRedNotificationEntity>> listMap = filterData.stream().collect(Collectors.groupingBy(TXfRedNotificationEntity::getApplyingStatus));
+//        List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+//        Map<Integer, List<TXfRedNotificationEntity>> listMap = filterData.stream().collect(Collectors.groupingBy(TXfRedNotificationEntity::getApplyingStatus));
+
+        QueryWrapper<TXfRedNotificationEntity> queryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
+        queryWrapper.select("applying_status , count(1) as count").groupBy(TXfRedNotificationEntity.APPLYING_STATUS);
+        List<Map<String, Object>> listMap = getBaseMapper().selectMaps(queryWrapper);
+
         //默认为0  1.未申请 2.申请中 3.已申请 4.撤销待审核
         SummaryResult summaryResult = new SummaryResult(0,0,0,0,0);
-        listMap.entrySet().forEach(entry->{
-            switch (entry.getKey()){
+
+
+        listMap.forEach(itemMap->{
+            Integer applying_status =(Integer) itemMap.get("applying_status");
+            Integer count = (Integer)itemMap.get("count");
+            switch (applying_status){
                 case 1:
-                    summaryResult.setApplyPending(entry.getValue().size());
+                    summaryResult.setApplyPending(count);
                     break;
                 case 2:
-                    summaryResult.setApplying(entry.getValue().size());
+                    summaryResult.setApplying(count);
                     break;
                 case 3:
-                    summaryResult.setApplied(entry.getValue().size());
+                    summaryResult.setApplied(count);
                     break;
                 case 4:
-                    summaryResult.setWaitApprove(entry.getValue().size());
+                    summaryResult.setWaitApprove(count);
                     break;
             }
 
@@ -456,7 +466,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             queryModel.setPageNo(1);
             queryModel.setPageSize(20);
         }
-        LambdaQueryWrapper<TXfRedNotificationEntity> notificationEntityLambdaQueryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
+        QueryWrapper<TXfRedNotificationEntity> notificationEntityLambdaQueryWrapper = getNotificationEntityLambdaQueryWrapper(queryModel);
         Page<TXfRedNotificationEntity> page = new Page<>(queryModel.getPageNo(), queryModel.getPageSize());
         Page<TXfRedNotificationEntity> tXfRedNotificationEntityPage = getBaseMapper().selectPage(page, notificationEntityLambdaQueryWrapper);
         List<RedNotificationMain> redNotificationMains = redNotificationMainMapper.entityToMainInfoList(tXfRedNotificationEntityPage.getRecords());
