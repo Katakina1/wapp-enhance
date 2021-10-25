@@ -107,11 +107,12 @@ public class CommAgreementService {
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
             TDxRecordInvoiceEntity txInvoiceEntity = tDxRecordInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
-
-            TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
-            updateTDxInvoiceEntity.setId(txInvoiceEntity.getId());
-            updateTDxInvoiceEntity.setRemainingAmount(txInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
-            tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
+            if(txInvoiceEntity != null) {
+                TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
+                updateTDxInvoiceEntity.setId(txInvoiceEntity.getId());
+                updateTDxInvoiceEntity.setRemainingAmount(txInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+                tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
+            }
         });
         //删除结算单蓝票关系
         TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
