@@ -218,8 +218,8 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             }
             return BigDecimal.ZERO;
         }).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (tXfSettlementEntity.getAmountWithoutTax().compareTo(addAmount) < 0) {
-            throw new EnhanceRuntimeException("匹配额度已超过结算需要的额度");
+        if (tXfSettlementEntity.getAmountWithoutTax().compareTo(addAmount) > 0) {
+            throw new EnhanceRuntimeException("匹配额度少于结算需要的额度");
         }
     }
 }
