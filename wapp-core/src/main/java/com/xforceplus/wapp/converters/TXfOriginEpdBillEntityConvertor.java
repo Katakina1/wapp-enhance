@@ -26,7 +26,7 @@ public interface TXfOriginEpdBillEntityConvertor {
                     .put("TO", BigDecimal.valueOf(0.13))
                     .put("TP", BigDecimal.valueOf(0.09))
                     .build();
-    
+
     // 业务单据类型;1:索赔;2:协议;3:EPD
     @Mapping(target = "businessType", constant = "3")
     @Mapping(source = "taxCode", target = "taxCode")
@@ -45,7 +45,7 @@ public interface TXfOriginEpdBillEntityConvertor {
     @Mapping(source = "paymentDate", target = "paymentDate", dateFormat = "yyyy/MM/dd")
     @Mapping(source = "companyCode", target = "purchaserNo")
     @Mapping(source = "text", target = "remark")
-    @Mapping(target = "taxRate", expression = "java(TAX_CODE_TRANSLATOR.get(tXfOriginEpdBillEntity.getTaxCode()))")
+    @Mapping(target = "taxRate", defaultExpression = "java(TAX_CODE_TRANSLATOR.get(tXfOriginEpdBillEntity.getTaxCode()))")
     /**
      * 转换成EPDBillData
      *
