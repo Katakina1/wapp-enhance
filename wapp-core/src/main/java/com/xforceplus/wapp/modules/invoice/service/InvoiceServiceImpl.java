@@ -46,20 +46,20 @@ public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEnt
     @Autowired
     private SettlementService settlementService;
 
-    public Response<InvoiceDto> detail(Long id) {
-        TXfInvoiceEntity tXfInvoiceEntity = getBaseMapper().selectById(id);
-        if (tXfInvoiceEntity != null) {
-            LambdaQueryWrapper<TXfInvoiceItemEntity> queryWrapper = new LambdaQueryWrapper<>();
-            List<TXfInvoiceItemEntity> tXfInvoiceItemEntities = tXfInvoiceItemDao.selectList(queryWrapper);
-
-            InvoiceDto invoiceDto = invoiceMapper.entityToInvoiceDto(tXfInvoiceEntity);
-            List<InvoiceItemDto> invoiceItemDtos = invoiceMapper.entityToInvoiceItemDtoList(tXfInvoiceItemEntities);
-            invoiceDto.setDetails(invoiceItemDtos);
-            return Response.ok("查询成功", invoiceDto);
-        }
-
-        return Response.ok("查询成功", null);
-    }
+//    public Response<InvoiceDto> detail(Long id) {
+//        TXfInvoiceEntity tXfInvoiceEntity = getBaseMapper().selectById(id);
+//        if (tXfInvoiceEntity != null) {
+//            LambdaQueryWrapper<TXfInvoiceItemEntity> queryWrapper = new LambdaQueryWrapper<>();
+//            List<TXfInvoiceItemEntity> tXfInvoiceItemEntities = tXfInvoiceItemDao.selectList(queryWrapper);
+//
+//            InvoiceDto invoiceDto = invoiceMapper.entityToInvoiceDto(tXfInvoiceEntity);
+//            List<InvoiceItemDto> invoiceItemDtos = invoiceMapper.entityToInvoiceItemDtoList(tXfInvoiceItemEntities);
+//            invoiceDto.setDetails(invoiceItemDtos);
+//            return Response.ok("查询成功", invoiceDto);
+//        }
+//
+//        return Response.ok("查询成功", null);
+//    }
 
     /**
      * 根据id将入参实体的剩余金额加回到原发票上
