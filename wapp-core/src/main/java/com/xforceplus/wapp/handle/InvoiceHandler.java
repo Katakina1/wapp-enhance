@@ -10,7 +10,6 @@ import com.xforceplus.wapp.handle.vo.InvoiceVo;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceItemServiceImpl;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
@@ -57,8 +56,8 @@ public class InvoiceHandler implements IntegrationResultHandler {
         List<InvoiceVo.InvoiceItemVO> items = invoice.getItems();
         TDxRecordInvoiceEntity invoiceMap = invoiceConverter.map(invoice);
         return new LambdaQueryChainWrapper<>(invoiceService.getBaseMapper())
-                .eq(TXfInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode())
-                .eq(TXfInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo()).oneOpt()
+                .eq(TDxRecordInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode())
+                .eq(TDxRecordInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo()).oneOpt()
                 .map(it -> {
                     invoiceMap.setId(it.getId());
                     log.warn("发票更新,invoiceCode:{},invoiceNo:{}", it.getInvoiceCode(), it.getInvoiceNo());
