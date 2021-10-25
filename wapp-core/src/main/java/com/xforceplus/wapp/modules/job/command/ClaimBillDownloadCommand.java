@@ -35,9 +35,9 @@ public class ClaimBillDownloadCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
-        log.info("开始下载原始索赔单文件={}", fileName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus)) {
+            log.info("开始下载原始索赔单文件={}", fileName);
             try {
                 process(remotePath, fileName, localPath, context);
             } catch (Exception e) {

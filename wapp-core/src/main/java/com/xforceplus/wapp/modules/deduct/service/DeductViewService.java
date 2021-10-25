@@ -20,15 +20,12 @@ import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.mapstruct.MatchedInvoiceMapper;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
-import com.xforceplus.wapp.modules.overdue.models.Overdue;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
-import com.xforceplus.wapp.repository.dao.TXfInvoiceDao;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import com.xforceplus.wapp.repository.entity.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +57,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     private DeductInvoiceService deductInvoiceService;
 
     @Autowired
-    private TXfInvoiceDao tXfInvoiceDao;
+    private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
     @Autowired
     private MatchedInvoiceMapper matchedInvoiceMapper;
@@ -261,6 +258,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 // TODO
 
 
+
         return Collections.emptyMap();
     }
 
@@ -278,16 +276,15 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         if (CollectionUtils.isEmpty(bySettlementId)){
             throw new EnhanceRuntimeException("未查到结算单ID["+settlementId+"]匹配的发票");
         }
-        final LambdaQueryWrapper<TXfInvoiceEntity> invoiceWrapper = Wrappers.lambdaQuery(TXfInvoiceEntity.class)
-                .select(TXfInvoiceEntity::getInvoiceNo,TXfInvoiceEntity::getInvoiceCode,TXfInvoiceEntity::getAmountWithoutTax)
+        final LambdaQueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = Wrappers.lambdaQuery(TDxRecordInvoiceEntity.class)
+                .select(TDxRecordInvoiceEntity::getInvoiceNo,TDxRecordInvoiceEntity::getInvoiceCode,TDxRecordInvoiceEntity::getInvoiceAmount)
                 ;
         bySettlementId.forEach(x->{
             invoiceWrapper.or((wrapper)->{
-                wrapper.eq(TXfInvoiceEntity::getInvoiceNo,x.getInvoiceNo())
-                        .eq(TXfInvoiceEntity::getInvoiceCode,x.getInvoiceCode());
+                wrapper.eq(TDxRecordInvoiceEntity::getUuid,x.getInvoiceCode()+x.getInvoiceNo());
             });
         });
-        final List<TXfInvoiceEntity> tXfInvoiceEntities = this.tXfInvoiceDao.selectList(invoiceWrapper);
+        final List<TDxRecordInvoiceEntity> tXfInvoiceEntities = this.tDxRecordInvoiceDao.selectList(invoiceWrapper);
         final List<MatchedInvoiceListResponse> matchedInvoiceListResponses = this.matchedInvoiceMapper.toMatchedInvoice(tXfInvoiceEntities);
         return matchedInvoiceListResponses;
     }

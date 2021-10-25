@@ -8,6 +8,8 @@ import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceItemServiceImpl;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
+import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceItemEntity;
 import lombok.Builder;
@@ -256,11 +258,11 @@ public class BlueInvoiceService {
      * @return
      */
     public boolean withdrawInvoices(List<MatchRes> list) {
-        List<TXfInvoiceEntity> invoices = list
+        List<TDxRecordInvoiceEntity> invoices = list
                 .stream()
                 .map(
                         v -> {
-                            TXfInvoiceEntity tXfInvoiceEntity = new TXfInvoiceEntity();
+                            TDxRecordInvoiceEntity tXfInvoiceEntity = new TDxRecordInvoiceEntity();
                             tXfInvoiceEntity.setId(v.getInvoiceId());
                             tXfInvoiceEntity.setRemainingAmount(v.getDeductedAmount());
                             return tXfInvoiceEntity;

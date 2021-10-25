@@ -40,7 +40,7 @@ public class CommEpdService {
     @Autowired
     private CommRedNotificationService commRedNotificationService;
     @Autowired
-    private TXfInvoiceDao tXfInvoiceDao;
+    private TDxRecordInvoiceDao tDxRecordInvoiceDao;
     @Autowired
     private PreinvoiceService preinvoiceService;
 
@@ -106,15 +106,15 @@ public class CommEpdService {
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
         tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
-            QueryWrapper<TXfInvoiceEntity> tXfInvoiceEntityQueryWrapper = new QueryWrapper<>();
-            tXfInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
-            tXfInvoiceEntityQueryWrapper.eq(TDxInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
-            TXfInvoiceEntity tXfInvoiceEntity = tXfInvoiceDao.selectOne(tXfInvoiceEntityQueryWrapper);
+            QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
+            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
+            tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
+            TDxRecordInvoiceEntity tDxInvoiceEntity = tDxRecordInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
 
-            TXfInvoiceEntity updateTXfInvoiceEntity = new TXfInvoiceEntity();
-            updateTXfInvoiceEntity.setId(tXfInvoiceEntity.getId());
-            updateTXfInvoiceEntity.setRemainingAmount(tXfInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
-            tXfInvoiceDao.updateById(updateTXfInvoiceEntity);
+            TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
+            updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
+            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+            tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
         });
         //删除结算单蓝票关系
         TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
