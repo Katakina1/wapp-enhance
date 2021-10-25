@@ -66,9 +66,9 @@ public class EpdBillFilterCommand implements Command {
     @Override
     public boolean execute(Context context) throws Exception {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
-        log.info("开始过滤原始EPD单文件数据入业务表={}", fileName);
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus)) {
+            log.info("开始过滤原始EPD单文件数据入业务表={}", fileName);
             int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
             try {
                 process(jobId, context);
@@ -140,8 +140,14 @@ public class EpdBillFilterCommand implements Command {
                 .stream()
                 // Document Type 文档类型 只取KO类型
                 .filter(v -> Objects.equals("KO", v.getDocumentType()))
-                // 非白名单共供应商
-                .filter(v -> speacialCompanyService.hitBlackOrWhiteList("1", v.getAccount()))
+                .filter(v -> {
+                    if (Objects.isNull(v.getAccount())) {
+                        return false;
+                    } else {
+                        // 白名单供应商
+                        return speacialCompanyService.hitBlackOrWhiteList("1", v.getAccount());
+                    }
+                })
                 .map(TXfOriginEpdBillEntityConvertor.INSTANCE::toEpdBillData)
                 .peek(v ->
                         {

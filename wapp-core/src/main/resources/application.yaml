@@ -88,13 +88,13 @@ agreementBill:
   remote:
     path: /home/wappftp/wapp/vendor/agreement
   local:
-    path: /wapp/vendor/agreement
+    path: /tmp/wapp/vendor/agreement
   sheetName: 原始协议单
 claimBill:
   remote:
     path: /home/wappftp/wapp/vendor/claim
   local:
-    path: /wapp/vendor/claim
+    path: /tmp/wapp/vendor/claim
   sheetName: 原始索赔单
   item:
     hyperSheetName: 原始索赔单Hyper明细
@@ -103,7 +103,7 @@ epdBill:
   remote:
     path: /home/wappftp/wapp/vendor/epd
   local:
-    path: /wapp/vendor/epd
+    path: /tmp/wapp/vendor/epd
   sheetName: 原始EPD单
   item:
     sheetName: 原始EPD单LOG明细

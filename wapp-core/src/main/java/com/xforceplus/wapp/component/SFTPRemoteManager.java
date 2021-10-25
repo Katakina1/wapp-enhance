@@ -2,6 +2,7 @@ package com.xforceplus.wapp.component;
 
 import com.jcraft.jsch.*;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -171,6 +172,7 @@ public class SFTPRemoteManager {
      * @throws SftpException
      */
     public void downloadFile(String path, String fileName, String localPath) throws SftpException, JSchException, IOException {
+        LocalFileSystemManager.createFolderIfNonExist(localPath);
         // 进入并设置为当前目录
         sftp.cd(path);
         // 下载
