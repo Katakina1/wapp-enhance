@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -98,6 +99,7 @@ public class TaxWareService {
     public TaxWareResponse applyRedInfo(ApplyRequest applyRequest) {
         try {
             String reqJson = gson.toJson(applyRequest);
+            log.info("申请请求:{}", reqJson);
             final String post = httpClientFactory.post(applyRedAction,defaultHeader,reqJson,"");
             log.info("申请结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
@@ -113,10 +115,32 @@ public class TaxWareService {
      * @return
      */
     public TaxWareResponse rollback(RevokeRequest revokeRequest) {
+        // 获取在线终端
+        if (StringUtils.isEmpty(revokeRequest.getDeviceUn())){
+            GetTerminalResponse terminalResponse = getTerminal(revokeRequest.getApplyTaxCode());
+            if (Objects.equals(TaxWareCode.SUCCESS,terminalResponse.getCode())) {
+                for (GetTerminalResponse.ResultDTO.TerminalListDTO item : terminalResponse.getResult().getTerminalList()) {
+                    GetTerminalResponse.ResultDTO.DeviceDTO deviceDTO = !CollectionUtils.isEmpty(item.getOnlineDeviceList()) ? item.getOnlineDeviceList().get(0) : null;
+                    if (deviceDTO != null) {
+                        revokeRequest.setDeviceUn(deviceDTO.getDeviceUn());
+                        revokeRequest.setTerminalUn(item.getTerminalUn());
+                        break;
+                    }
+                }
+            }
+        }
+
+        //补充终端
+        if (revokeRequest.getDeviceUn() == null){
+            throw new RRException(String.format("未获取到在线终端%s",revokeRequest.getApplyTaxCode()));
+        }
+
+
         try {
             String reqJson = gson.toJson(revokeRequest);
 //            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
             HttpUtils.pack(defaultHeader,rollbackAction, this.authentication) ;
+            log.info("撤销请求:{}", reqJson);
             final String post = HttpUtils.doPutHttpRequest(host,defaultHeader,reqJson) ;
 //            final String post2 = HttpUtils.doPutJsonSkipSsl(host,defaultHeader,reqJson) ;
             log.info("撤销结果:{}", post);
@@ -136,6 +160,7 @@ public class TaxWareService {
     public TaxWareResponse generatePdf(RedNotificationGeneratePdfRequest request) {
         try {
             String reqJson = gson.toJson(request);
+            log.info("生成pdf请求:{}", reqJson);
             final String post = httpClientFactory.post(genredpdfAction,defaultHeader,reqJson,"");
             log.info("生成pdf结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
