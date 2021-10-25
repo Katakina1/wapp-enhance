@@ -24,4 +24,14 @@ public class DeductInvoiceService extends ServiceImpl<TXfBillDeductInvoiceDao, T
                 .eq(TXfBillDeductInvoiceEntity::getThridId, settlementId).eq(TXfBillDeductInvoiceEntity::getBusinessType, typeEnum.getValue());
         return this.list(wrapper);
     }
+
+
+    public List<TXfBillDeductInvoiceEntity> getBySettlementNo(String settlementNo, XFDeductionBusinessTypeEnum typeEnum){
+        final LambdaQueryWrapper<TXfBillDeductInvoiceEntity> wrapper = Wrappers.lambdaQuery(TXfBillDeductInvoiceEntity.class)
+                .eq(TXfBillDeductInvoiceEntity::getBusinessNo, settlementNo).eq(TXfBillDeductInvoiceEntity::getBusinessType, typeEnum.getValue());
+        return this.list(wrapper);
+    }
+
+
+
 }
