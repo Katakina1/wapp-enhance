@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,11 +26,16 @@ public class ClaimDeductTaxCodeScheduler {
     private ClaimBillService claimBillService;
     @Autowired
     protected TXfBillDeductExtDao tXfBillDeductExtDao;
-   // @Scheduled(cron=" 0 0 0 */7 * ?") //每七天执行一次
+
+    /**
+     * 索赔单匹配税编
+     */
+    @Scheduled(cron=" 0 0 12 * * ?")
     public void matchTaxCode(){
+        log.info("matchTaxCode job 开始");
          Long id = 0L;
          List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
-        while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
+         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tmp : tXfBillDeductEntities) {
                 claimBillService.reMatchClaimTaxCode(tmp.getId());
             }
