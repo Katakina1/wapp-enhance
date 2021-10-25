@@ -94,16 +94,15 @@ public class SettlementController {
     @ApiOperation("保存手动调整的票单匹配关系")
     public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
         //TODO  移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
-
-
+        invoiceService.saveSettlementMatchedInvoice(settlementId,request);
         return R.ok();
     }
 
     @PostMapping("details/tax-no")
     @ApiOperation("修改明细税编")
     public R saveInvoiceDetails(@RequestBody SettlementItemTaxNoUpdatedRequest request) {
-        //TODO 修改明细税编，会涉及到反算，金额不变保单价或数量，需要确认
 
+        this.settlementItemService.batchUpdateItemTaxNo(request);
 
         return R.ok();
     }

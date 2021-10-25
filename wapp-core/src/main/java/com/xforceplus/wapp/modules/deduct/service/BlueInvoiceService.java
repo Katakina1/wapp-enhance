@@ -122,7 +122,7 @@ public class BlueInvoiceService {
                             if (withItems) {
                                 List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(
                                         tDxRecordInvoiceEntity.getInvoiceNo() + tDxRecordInvoiceEntity.getInvoiceCode(),
-                                        tDxRecordInvoiceEntity.getAmountWithoutTax(), lastRemainingAmount, lastRemainingAmount);
+                                        tDxRecordInvoiceEntity.getInvoiceAmount(), lastRemainingAmount, lastRemainingAmount);
                                 list.add(MatchRes.builder()
                                         .invoiceId(tDxRecordInvoiceEntity.getId())
                                         .invoiceNo(tDxRecordInvoiceEntity.getInvoiceNo())
@@ -160,7 +160,7 @@ public class BlueInvoiceService {
                             if (withItems) {
                                 List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(
                                         tDxRecordInvoiceEntity.getInvoiceNo() + tDxRecordInvoiceEntity.getInvoiceCode(),
-                                        tDxRecordInvoiceEntity.getAmountWithoutTax(), lastRemainingAmount, deductedAmount);
+                                        tDxRecordInvoiceEntity.getInvoiceAmount(), lastRemainingAmount, deductedAmount);
                                 list.add(MatchRes.builder()
                                         .invoiceId(tDxRecordInvoiceEntity.getId())
                                         .invoiceNo(tDxRecordInvoiceEntity.getInvoiceNo())
@@ -213,16 +213,24 @@ public class BlueInvoiceService {
         List<TDxRecordInvoiceDetailEntity> items = invoiceService.getInvoiceDetailByUuid(uuid);
         BigDecimal accumulatedAmount = BigDecimal.ZERO;
         for (TDxRecordInvoiceDetailEntity item : items) {
+            // 获取明细不含税金额
+            BigDecimal amountWithoutTax;
+            try {
+                amountWithoutTax = new BigDecimal(item.getDetailAmount());
+            } catch (NumberFormatException e) {
+                log.warn("明细不含税金额转换成数字失败，跳过此明细，uuid={} detailAmount={}", uuid, item.getDetailAmount());
+                continue;
+            }
             // 顺序不能颠倒
             if (accumulatedAmount.compareTo(lastDeductedAmount) < 0
-                    && accumulatedAmount.add(item.getAmountWithoutTax()).compareTo(lastDeductedAmount) > 0) {
-                item.setAmountWithoutTax(lastDeductedAmount.subtract(accumulatedAmount));
+                    && accumulatedAmount.add(amountWithoutTax).compareTo(lastDeductedAmount) > 0) {
+                item.setDetailAmount(lastDeductedAmount.subtract(accumulatedAmount).toPlainString());
             }
             if (accumulatedAmount.compareTo(totalDeductedAmount) < 0
-                    && accumulatedAmount.add(item.getAmountWithoutTax()).compareTo(totalDeductedAmount) > 0) {
-                item.setAmountWithoutTax(totalAmountWithoutTax.subtract(accumulatedAmount));
+                    && accumulatedAmount.add(amountWithoutTax).compareTo(totalDeductedAmount) > 0) {
+                item.setDetailAmount(totalAmountWithoutTax.subtract(accumulatedAmount).toPlainString());
             }
-            accumulatedAmount = accumulatedAmount.add(item.getAmountWithoutTax());
+            accumulatedAmount = accumulatedAmount.add(amountWithoutTax);
             if (accumulatedAmount.compareTo(lastDeductedAmount) > 0) {
                 list.add(item);
             }

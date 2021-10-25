@@ -3,8 +3,8 @@ package com.xforceplus.wapp.modules.invoice.mapstruct;
 
 import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.dto.InvoiceItemDto;
-import com.xforceplus.wapp.repository.entity.TDxInvoiceDetailsEntity;
-import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -12,10 +12,10 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface InvoiceMapper {
 
-    InvoiceDto entityToInvoiceDto(TDxInvoiceEntity tXfInvoiceEntity);
+    InvoiceDto entityToInvoiceDto(TDxRecordInvoiceEntity tXfInvoiceEntity);
 
-    InvoiceItemDto entityToInvoiceItemDto(TDxInvoiceDetailsEntity tXfInvoiceItemEntity);
+    InvoiceItemDto entityToInvoiceItemDto(TDxRecordInvoiceDetailEntity tXfInvoiceItemEntity);
 
-    List<InvoiceItemDto> entityToInvoiceItemDtoList(List<TDxInvoiceDetailsEntity> tXfInvoiceItemEntityList);
+    List<InvoiceItemDto> entityToInvoiceItemDtoList(List<TDxRecordInvoiceDetailEntity> tXfInvoiceItemEntityList);
 
 }
