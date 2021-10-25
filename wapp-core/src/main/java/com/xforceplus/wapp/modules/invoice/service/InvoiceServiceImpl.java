@@ -15,6 +15,7 @@ import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfInvoiceItemDao;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
@@ -88,40 +89,5 @@ public class InvoiceServiceImpl extends ServiceImpl<TXfInvoiceDao, TXfInvoiceEnt
                     sqlSession.update(sqlStatement, param);
                 }
         );
-    }
-
-    public PageResult<InvoiceDto> recommend(Long settlementId, InvoiceRecommendListRequest request) {
-        log.info("userCode:{}", UserUtil.getUser().getUsercode());
-
-        final TXfSettlementEntity byId = settlementService.getById(settlementId);
-        if (byId == null) {
-            throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
-        }
-
-        final BigDecimal taxRate = byId.getTaxRate();
-        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) > 0 ? taxRate.movePointLeft(2).toPlainString() : taxRate.toPlainString();
-        final String sellerNo = byId.getSellerNo();
-        final String sellerTaxNo = byId.getSellerTaxNo();
-        final String purchaserNo = byId.getPurchaserNo();
-        final String purchaserTaxNo = byId.getPurchaserTaxNo();
-
-        LambdaQueryWrapper<TXfInvoiceEntity> wrapper=new LambdaQueryWrapper<>();
-        wrapper.eq(TXfInvoiceEntity::getSellerTaxNo,sellerTaxNo)
-                .eq(TXfInvoiceEntity::getPurchaserTaxNo,purchaserTaxNo)
-                .eq(TXfInvoiceEntity::getTaxRate,taxRateStr)
-                .ge(TXfInvoiceEntity::getPaperDrewDate,request.getInvoiceDateStart())
-                .le(TXfInvoiceEntity::getPaperDrewDate,request.getInvoiceDateEnd())
-        ;
-
-        Page<TXfInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
-
-        final Page<TXfInvoiceEntity> entityPage = super.page(page, wrapper);
-
-        List<InvoiceDto> dtos=new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(entityPage.getRecords())){
-            final List<InvoiceDto> collect = entityPage.getRecords().stream().map(this.invoiceMapper::entityToInvoiceDto).collect(Collectors.toList());
-            dtos.addAll(collect);
-        }
-        return PageResult.of(dtos,entityPage.getTotal(),entityPage.getPages(),entityPage.getSize());
     }
 }

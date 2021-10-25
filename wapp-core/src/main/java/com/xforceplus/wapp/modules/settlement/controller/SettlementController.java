@@ -46,14 +46,15 @@ public class SettlementController {
     @Autowired
     private CommSettlementService commSettlementService;
 
-    @Autowired
-    private InvoiceServiceImpl invoiceService;
 
     @Autowired
     private DeductViewService deductViewService;
 
     @Autowired
     private SettlementItemServiceImpl settlementItemService;
+
+    @Autowired
+    private SettlementService settlementService;
 
     @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
     @ApiResponses(value = {
@@ -123,7 +124,7 @@ public class SettlementController {
     @GetMapping(value = "{settlementId}/recommended")
     public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request) {
 
-        final PageResult<InvoiceDto> recommend = invoiceService.recommend(settlementId, request);
+        final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
 
         return Response.ok("", recommend);
     }
