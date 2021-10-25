@@ -46,14 +46,17 @@ public class SettlementController {
     @Autowired
     private CommSettlementService commSettlementService;
 
-    @Autowired
-    private InvoiceServiceImpl invoiceService;
 
     @Autowired
     private DeductViewService deductViewService;
 
     @Autowired
     private SettlementItemServiceImpl settlementItemService;
+
+    @Autowired
+    private SettlementService settlementService;
+    @Autowired
+    private InvoiceServiceImpl invoiceService;
 
     @ApiOperation(value = "申请不定案", notes = "", response = Response.class)
     @ApiResponses(value = {
@@ -94,7 +97,11 @@ public class SettlementController {
     @ApiOperation("保存手动调整的票单匹配关系")
     public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
         //移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
-        invoiceService.saveSettlementMatchedInvoice(settlementId,request);
+        try {
+            invoiceService.saveSettlementMatchedInvoice(settlementId, request);
+        }catch (Exception e){
+            return R.fail(e.getMessage());
+        }
         return R.ok();
     }
 
@@ -122,7 +129,7 @@ public class SettlementController {
     @GetMapping(value = "{settlementId}/recommended")
     public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request) {
 
-        final PageResult<InvoiceDto> recommend = invoiceService.recommend(settlementId, request);
+        final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
 
         return Response.ok("", recommend);
     }

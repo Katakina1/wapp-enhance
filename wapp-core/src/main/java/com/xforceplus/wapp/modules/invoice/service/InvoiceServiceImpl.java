@@ -2,19 +2,13 @@ package com.xforceplus.wapp.modules.invoice.service;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
-import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.mapstruct.InvoiceMapper;
 import com.xforceplus.wapp.modules.settlement.dto.InvoiceMatchedRequest;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
-import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
@@ -28,7 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -91,29 +86,29 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         );
     }
 
-    public PageResult<InvoiceDto> recommend(Long settlementId, InvoiceRecommendListRequest request) {
-        log.info("userCode:{}", UserUtil.getUser().getUsercode());
-
-        final TXfSettlementEntity byId = settlementService.getById(settlementId);
-        if (byId == null) {
-            throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
-        }
-
-        LambdaQueryWrapper<TDxRecordInvoiceEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.ge(TDxRecordInvoiceEntity::getInvoiceDate, request.getInvoiceDateStart())
-                .le(TDxRecordInvoiceEntity::getInvoiceDate, request.getInvoiceDateEnd());
-
-        Page<TDxRecordInvoiceEntity> page = new Page<>(request.getPage(), request.getSize());
-
-        final Page<TDxRecordInvoiceEntity> entityPage = super.page(page, wrapper);
-
-        List<InvoiceDto> dtos = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(entityPage.getRecords())) {
-            final List<InvoiceDto> collect = entityPage.getRecords().stream().map(this.invoiceMapper::entityToInvoiceDto).collect(Collectors.toList());
-            dtos.addAll(collect);
-        }
-        return PageResult.of(dtos, entityPage.getTotal(), entityPage.getPages(), entityPage.getSize());
-    }
+//    public PageResult<InvoiceDto> recommend(Long settlementId, InvoiceRecommendListRequest request) {
+//        log.info("userCode:{}", UserUtil.getUser().getUsercode());
+//
+//        final TXfSettlementEntity byId = settlementService.getById(settlementId);
+//        if (byId == null) {
+//            throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
+//        }
+//
+//        LambdaQueryWrapper<TDxRecordInvoiceEntity> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.ge(TDxRecordInvoiceEntity::getInvoiceDate, request.getInvoiceDateStart())
+//                .le(TDxRecordInvoiceEntity::getInvoiceDate, request.getInvoiceDateEnd());
+//
+//        Page<TDxRecordInvoiceEntity> page = new Page<>(request.getPage(), request.getSize());
+//
+//        final Page<TDxRecordInvoiceEntity> entityPage = super.page(page, wrapper);
+//
+//        List<InvoiceDto> dtos = new ArrayList<>();
+//        if (CollectionUtils.isNotEmpty(entityPage.getRecords())) {
+//            final List<InvoiceDto> collect = entityPage.getRecords().stream().map(this.invoiceMapper::entityToInvoiceDto).collect(Collectors.toList());
+//            dtos.addAll(collect);
+//        }
+//        return PageResult.of(dtos, entityPage.getTotal(), entityPage.getPages(), entityPage.getSize());
+//    }
 
     /**
      * 保存结算单匹配的蓝票
@@ -146,10 +141,12 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             wrapper.eq(TDxRecordInvoiceEntity::getInvoiceNo, tXfBillDeductInvoiceEntity.getInvoiceNo())
                     .eq(TDxRecordInvoiceEntity::getInvoiceCode, tXfBillDeductInvoiceEntity.getInvoiceCode());
             TDxRecordInvoiceEntity tDxInvoice = this.baseMapper.selectOne(wrapper);
-            TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
-            updateTDxInvoiceEntity.setId(tDxInvoice.getId());
-            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoice.getRemainingAmount().add(updateTXfBillDeductInvoiceEntity.getUseAmount()));
-            this.baseMapper.updateById(updateTDxInvoiceEntity);
+            if(tDxInvoice != null) {
+                TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
+                updateTDxInvoiceEntity.setId(tDxInvoice.getId());
+                updateTDxInvoiceEntity.setRemainingAmount(tDxInvoice.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+                this.baseMapper.updateById(updateTDxInvoiceEntity);
+            }
         });
         //保存匹配结果
         AtomicReference<BigDecimal> totalUseAmount = new AtomicReference<>(BigDecimal.ZERO);
@@ -208,6 +205,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
                     wrapper.eq(TDxRecordInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo())
                             .eq(TDxRecordInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode());
                     TDxRecordInvoiceEntity tDxInvoice = this.baseMapper.selectOne(wrapper);
+                    if(tDxInvoice == null){
+                        return BigDecimal.ZERO;
+                    }
                     return tDxInvoice.getRemainingAmount();
                 })
         ).collect(Collectors.toList());

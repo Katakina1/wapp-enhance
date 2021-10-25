@@ -133,6 +133,16 @@ public class RedNotificationMain {
     @ApiModelProperty("申请日期")
     private String invoiceDate;
 
+    @ApiModelProperty("创建时间")
+    private Date createDate;
+
+    @ApiModelProperty("申请失败原因")
+    private String applyRemark;
+
+
+    @ApiModelProperty("审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批")
+    private Integer approveStatus;
+
 
 
 

@@ -16,6 +16,7 @@ import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.owasp.esapi.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,17 +42,25 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         this.companyConverter = companyConverter;
     }
 
-    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type) {
+    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type,String createTimeStart,String createTimeEnd) {
         LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
         wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED);
         if (StringUtils.isNotEmpty(taxNo)) {
-            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, taxNo);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, taxNo);
         }
         if (StringUtils.isNotEmpty(companyName)) {
-            wrapper.like(TXfBlackWhiteCompanyEntity::getCompanyName, companyName);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getCompanyName, companyName);
         }
         if (StringUtils.isNotEmpty(type)) {
-            wrapper.like(TXfBlackWhiteCompanyEntity::getSupplierType, type);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierType, type);
+        }
+
+        if (StringUtils.isNotEmpty(createTimeStart)) {
+            wrapper.ge(TXfBlackWhiteCompanyEntity::getCreateTime, createTimeStart);
+        }
+
+        if (StringUtils.isNotEmpty(createTimeEnd)) {
+            wrapper.le(TXfBlackWhiteCompanyEntity::getCreateTime, createTimeEnd);
         }
         Page<TXfBlackWhiteCompanyEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("黑白名单信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
@@ -86,6 +95,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         QueryWrapper wrapperCode = new QueryWrapper<>();
         wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
         wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
+        wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE,type);
         List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = this.list(wrapperCode);
         Map<String, Long> map = new HashMap<>();
         resultOrgCodeList.stream().forEach(code -> {
@@ -94,7 +104,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         validList.stream().forEach(e -> {
             e.setSupplierType(type);
             e.setId(map.get(e.getSupplierTaxNo()));
+            e.setCreateUser(UserUtil.getLoginName());
             e.setSupplierStatus(Constants.COMPANY_STATUS_ENABLED);
+            e.setUpdateUser(UserUtil.getLoginName());
         });
         boolean save = saveOrUpdateBatch(validList);
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {

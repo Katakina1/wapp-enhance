@@ -256,9 +256,14 @@ public class EInvoiceMatchService {
         map.put("remark", invoiceMain.getRemark());
         //从备注里截取红字信息编号
         if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
-            String redNo = StringUtils.substringBetween(invoiceMain.getRemark(), "信息表编号", "单据编号").trim();
+            String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号")+5, invoiceMain.getRemark().indexOf("信息表编号")+21);
             if (StringUtils.isNotEmpty(redNo)) {
-                map.put("redNoticeNumber", redNo.trim());
+                String trim = redNo.trim();
+                if(trim.matches("[0-9]+")){
+                    map.put("redNoticeNumber", trim);
+                }else{
+                    log.error("发票回填--解析红字信息编号失败！");
+                }
             }
         }
         successSuppliers.add(() -> {

@@ -47,6 +47,7 @@ public class OverdueDto {
 
     @ApiModelProperty("超期时间（天）")
     @ExcelProperty(value = "超期时间（天）")
+    @NotNull(message = "超期时间（天）不能为空", groups = {OverdueUpdateValidGroup.class, OverdueCreateValidGroup.class})
     @Min(message = "超期时间不能小于0", value = 0, groups = {OverdueUpdateValidGroup.class, OverdueCreateValidGroup.class})
     private Integer overdueDay;
 }

@@ -11,7 +11,9 @@ import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
+import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
+import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -46,6 +48,7 @@ public class NoneBusinessController {
 
     @Autowired
     private FileService fileService;
+
 
     @ApiOperation(value = "上传电子发票")
     @PutMapping("/upload")
@@ -106,29 +109,11 @@ public class NoneBusinessController {
 
     @ApiOperation("非商上传信息分页查询")
     @GetMapping("/list/paged")
-    public R<PageResult<TXfNoneBusinessUploadDetailEntity>> paged(@ApiParam("页数") @RequestParam(required = false, defaultValue = "1") Long current,
-                                                                  @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
-                                                                  @ApiParam("业务类型") @RequestParam(required = false) String bussinessType,
-                                                                  @ApiParam("门店号") @RequestParam(required = false) String storeNo,
-                                                                  @ApiParam("发票上传门店") @RequestParam(required = false) String invoiceStoreNo,
-                                                                  @ApiParam("发票类型") @RequestParam(required = false) String invoiceType,
-                                                                  @ApiParam("验真状态") @RequestParam(required = false) String verifyStauts,
-                                                                  @ApiParam("验签名状态") @RequestParam(required = false) String ofdStatus,
-                                                                  @ApiParam("JV") @RequestParam(required = false) String jvCode,
-                                                                  @ApiParam("供应商号") @RequestParam(required = false) String supplierId,
-                                                                  @ApiParam("是否提交 0未提交 1已提交") @RequestParam(required = true) String type,
-                                                                  @ApiParam("业务单号") @RequestParam(required = false) String businessNo) {
+    public R<PageResult<TXfNoneBusinessUploadDetailDto>> paged(@ApiParam("页数") @RequestParam(required = false, defaultValue = "1") Long current,
+                                                               @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
+                                                               TXfNoneBusinessUploadQueryDto dto) {
         long start = System.currentTimeMillis();
-        Page<TXfNoneBusinessUploadDetailEntity> page = noneBusinessService.page(current, size, bussinessType,
-                storeNo,
-                invoiceStoreNo,
-                invoiceType,
-                verifyStauts,
-                ofdStatus,
-                jvCode,
-                supplierId,
-                type,
-                businessNo);
+        Page<TXfNoneBusinessUploadDetailDto> page = noneBusinessService.page(current, size, dto);
         log.info("非商上传信息分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page.getRecords(), page.getTotal(), page.getPages(), page.getSize()));
     }
@@ -176,7 +161,19 @@ public class NoneBusinessController {
         if (CollectionUtils.isEmpty(list)) {
             throw new RRException("您所选发票不包含任何附件文件");
         }
-        noneBusinessService.down(list,request);
+        noneBusinessService.down(list, request);
+    }
+
+    @ApiOperation("上传记录批量批量删除")
+    @DeleteMapping("/del")
+    public R<String> delOverdue(@RequestBody @ApiParam("id集合") Long[] ids) {
+        if (ids == null || ids.length == 0) {
+            return R.fail("请选中记录后删除");
+        }
+        long start = System.currentTimeMillis();
+        noneBusinessService.removeByIds(Arrays.asList(ids));
+        log.info("上传记录批量批量删除,耗时:{}ms", System.currentTimeMillis() - start);
+        return R.ok("删除成功");
     }
 
 

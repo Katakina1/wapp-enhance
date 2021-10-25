@@ -9,17 +9,13 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * <p>
  * 原始索赔单数据
- * </p>
  *
- * @author malong@xforceplus.com
+ * @author Kenny Wong
  * @since 2021-10-15
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class OriginClaimBillDto extends BaseEntity {
+public class OriginClaimBillDto {
 
     private static final long serialVersionUID = 1L;
 

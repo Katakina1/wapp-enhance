@@ -127,6 +127,13 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 queryModel.setPidList(pidList);
                 applyRequest.setQueryModel(queryModel);
             }else {
+                // 终端不在线更新到红字信息表
+                List<Long> redIdList = listMain.stream().map(item -> item.getId()).collect(Collectors.toList());
+                TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+                record.setApplyRemark("税盘不在线");
+                LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.in(TXfRedNotificationEntity::getId,redIdList);
+                getBaseMapper().update(record,updateWrapper);
                 throw new RRException(String.format("未获取税号[%s]的在线终端",rednotificationMain.getPurchaserTaxNo()));
             }
             //申请
@@ -151,6 +158,14 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             }else {
                 //更新流水.全部失败
                 updateRequestFail(applyRequest.getSerialNo(), taxWareResponse);
+                //更新失败原因到主表
+                List<Long> redIdList = redInfoList.stream().map(item -> Long.parseLong(item.getPid())).collect(Collectors.toList());
+                TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+                record.setApplyRemark(taxWareResponse.getMessage());
+                LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.in(TXfRedNotificationEntity::getId,redIdList);
+                getBaseMapper().update(record,updateWrapper);
+
                 return  Response.failed(taxWareResponse.getMessage());
             }
         }else {
@@ -303,6 +318,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (!CollectionUtils.isEmpty(queryModel.getExcludes())){
             queryWrapper.notIn(TXfRedNotificationEntity.ID,queryModel.getExcludes());
         }
+        //默认带上 正常条件
+        queryWrapper.eq(TXfRedNotificationEntity.STATUS,1);
 
         return queryWrapper;
     }
@@ -438,7 +455,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
 
         listMap.forEach(itemMap->{
-            Integer applying_status =(Integer) itemMap.get("applying_status");
+            Short applying_status =(Short) itemMap.get("applying_status");
             Integer count = (Integer)itemMap.get("count");
             switch (applying_status){
                 case 1:
