@@ -143,7 +143,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             TDxRecordInvoiceEntity tDxInvoice = this.baseMapper.selectOne(wrapper);
             TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
             updateTDxInvoiceEntity.setId(tDxInvoice.getId());
-            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoice.getRemainingAmount().add(updateTXfBillDeductInvoiceEntity.getUseAmount()));
+            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoice.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
             this.baseMapper.updateById(updateTDxInvoiceEntity);
         });
         //保存匹配结果
