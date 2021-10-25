@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.deduct.mapstruct;
 
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -17,8 +18,8 @@ import java.util.List;
 public interface MatchedInvoiceMapper {
 
 //    @Mapping(target = "invoiceDate", source = "paperDrewDate")
-    @Mapping(target = "matchedAmount", source = "invoiceAmount")
-    MatchedInvoiceListResponse toMatchedInvoice(TDxRecordInvoiceEntity invoiceEntity);
+    @Mapping(target = "matchedAmount", source = "useAmount")
+    MatchedInvoiceListResponse toMatchedInvoice(TXfBillDeductInvoiceEntity invoiceEntity);
 
-    List<MatchedInvoiceListResponse> toMatchedInvoice(List<TDxRecordInvoiceEntity> invoiceEntity);
+    List<MatchedInvoiceListResponse> toMatchedInvoice(List<TXfBillDeductInvoiceEntity> matchedInvoices);
 }
