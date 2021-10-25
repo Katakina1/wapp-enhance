@@ -38,4 +38,7 @@ public class Overdue {
     
     @ApiModelProperty("更新时间")
     private Long updateTime;
+
+    @ApiModelProperty("更新人")
+    private String updateUser;
 }

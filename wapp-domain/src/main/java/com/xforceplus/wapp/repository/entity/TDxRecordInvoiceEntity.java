@@ -950,9 +950,6 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("category1")
     private String category1;
 
-    @TableField("machine_code")
-    private String machineCode;
-
     @TableField("xxly")
     private String xxly;
 
@@ -1298,8 +1295,6 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     public static final String CONFIRM_USER_ID = "confirm_user_id";
 
     public static final String CATEGORY1 = "category1";
-
-    public static final String MACHINE_CODE = "machine_code";
 
     public static final String XXLY = "xxly";
 

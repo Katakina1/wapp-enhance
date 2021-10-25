@@ -24,7 +24,12 @@ public interface TaxCodeConverter {
 
     TaxCodeEntity map(TaxCodeVO taxCode);
 
-    @Mapping(target = "medianCategoryName", ignore = true)
-    @Mapping(target = "medianCategoryCode", ignore = true)
+    @Mapping(target = "categoryName", source = "taxCode.largeCategoryName")
+    @Mapping(target = "categoryCode", source = "taxCode.largeCategoryCode")
+    @Mapping(target = "children", source = "children")
     TaxCodeTree map(TaxCodeEntity taxCode, List<TaxCodeEntity> children);
+
+    @Mapping(target = "categoryName", source = "medianCategoryName")
+    @Mapping(target = "categoryCode", source = "medianCategoryCode")
+    TaxCodeTree mapTree(TaxCodeEntity children);
 }

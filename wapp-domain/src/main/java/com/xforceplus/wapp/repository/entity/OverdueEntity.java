@@ -55,7 +55,7 @@ public class OverdueEntity {
     /**
      * 创建用户
      */
-    private Long createUser;
+    private String createUser;
 
     /**
      * 更新时间
@@ -66,7 +66,7 @@ public class OverdueEntity {
     /**
      * 更新用户
      */
-    private Long updateUser;
+    private String updateUser;
 
     /**
      * 删除标记

@@ -10,6 +10,7 @@ import com.xforceplus.wapp.modules.overdue.converters.OverdueConverter;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import com.xforceplus.wapp.modules.overdue.excel.OverdueImportListener;
 import com.xforceplus.wapp.modules.overdue.models.Overdue;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.OverdueDao;
 import com.xforceplus.wapp.repository.entity.OverdueEntity;
 import io.vavr.Tuple;
@@ -97,7 +98,7 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
                         ArrayList::new));
         log.debug("导入数据新增数据:{}", list);
         log.info("导入数据新增条数:{}", list.size());
-        boolean save = saveBatch(overdueConverter.reverse(list, 111L), 2000);
+        boolean save = saveBatch(overdueConverter.reverse(list, UserUtil.getUserName()), 2000);
         return save ? Either.right(list.size()) : Either.right(0);
     }
 }

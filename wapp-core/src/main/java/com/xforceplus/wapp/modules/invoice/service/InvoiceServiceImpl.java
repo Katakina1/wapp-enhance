@@ -141,10 +141,12 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             wrapper.eq(TDxRecordInvoiceEntity::getInvoiceNo, tXfBillDeductInvoiceEntity.getInvoiceNo())
                     .eq(TDxRecordInvoiceEntity::getInvoiceCode, tXfBillDeductInvoiceEntity.getInvoiceCode());
             TDxRecordInvoiceEntity tDxInvoice = this.baseMapper.selectOne(wrapper);
-            TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
-            updateTDxInvoiceEntity.setId(tDxInvoice.getId());
-            updateTDxInvoiceEntity.setRemainingAmount(tDxInvoice.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
-            this.baseMapper.updateById(updateTDxInvoiceEntity);
+            if(tDxInvoice != null) {
+                TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
+                updateTDxInvoiceEntity.setId(tDxInvoice.getId());
+                updateTDxInvoiceEntity.setRemainingAmount(tDxInvoice.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
+                this.baseMapper.updateById(updateTDxInvoiceEntity);
+            }
         });
         //保存匹配结果
         AtomicReference<BigDecimal> totalUseAmount = new AtomicReference<>(BigDecimal.ZERO);
@@ -203,6 +205,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
                     wrapper.eq(TDxRecordInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo())
                             .eq(TDxRecordInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode());
                     TDxRecordInvoiceEntity tDxInvoice = this.baseMapper.selectOne(wrapper);
+                    if(tDxInvoice == null){
+                        return BigDecimal.ZERO;
+                    }
                     return tDxInvoice.getRemainingAmount();
                 })
         ).collect(Collectors.toList());
