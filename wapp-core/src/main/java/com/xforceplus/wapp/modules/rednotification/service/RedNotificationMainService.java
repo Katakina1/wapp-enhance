@@ -303,6 +303,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (!CollectionUtils.isEmpty(queryModel.getExcludes())){
             queryWrapper.notIn(TXfRedNotificationEntity.ID,queryModel.getExcludes());
         }
+        //默认带上 正常条件
+        queryWrapper.eq(TXfRedNotificationEntity.STATUS,1);
 
         return queryWrapper;
     }
@@ -438,7 +440,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
 
         listMap.forEach(itemMap->{
-            Integer applying_status =(Integer) itemMap.get("applying_status");
+            Short applying_status =(Short) itemMap.get("applying_status");
             Integer count = (Integer)itemMap.get("count");
             switch (applying_status){
                 case 1:

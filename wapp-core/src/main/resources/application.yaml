@@ -21,11 +21,11 @@ spring:
           #热部署生效
         enabled: false
     # jackson时间格式化
-  redis:
-    host: phoenix-t.xforceplus.com
-    port: 23333
-    password: 8eSf4M97VLhP6hq8
-    database: 2
+#  redis:
+#    host: phoenix-t.xforceplus.com
+#    port: 23333
+#    password: 8eSf4M97VLhP6hq8
+#    database: 2
   jackson:
     time-zone: GMT+0
     date-format: yyyy-MM-dd HH:mm:ss
