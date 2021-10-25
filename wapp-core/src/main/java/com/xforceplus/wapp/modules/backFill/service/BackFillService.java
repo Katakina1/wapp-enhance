@@ -119,10 +119,10 @@ public class BackFillService  {
 
 
     public R commitVerify(BackFillCommitVerifyRequest request){
-//        R r = checkCommitRequest(request);
-//        if(R.FAIL.equals(r)){
-//            return r;
-//        }
+        R r = checkCommitRequest(request);
+        if(R.FAIL.equals(r)){
+            return r;
+        }
         String batchNo = UUID.randomUUID().toString().replace("-", "");
         TXfElecUploadRecordEntity recordEntity = new TXfElecUploadRecordEntity();
         recordEntity.setCreateTime(new Date());
@@ -508,7 +508,9 @@ public class BackFillService  {
                 return R.fail("您最多只需要上传"+count+"张发票，请确认后再试");
             }
             if(tXfPreInvoiceEntities.stream().noneMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
-                return R.fail("所有预制发票必须都有红字信息编码");
+                return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
+                        "完成后，您可以继续添加发票！\r\n" +
+                        "请及时关注票据状态！或联系购货方联系");
             }
         } else{
             if(StringUtils.isEmpty(request.getOriginInvoiceCode())){

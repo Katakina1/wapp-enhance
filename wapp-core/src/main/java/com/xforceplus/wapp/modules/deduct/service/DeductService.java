@@ -144,15 +144,20 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    protected TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
-        if (taxCodeOptional.isPresent()) {
+    public TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
+        try {
+            Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+            if (taxCodeOptional.isPresent()) {
                 TaxCode taxCode = taxCodeOptional.get();
                 entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
                 entity.setTaxPre(taxCode.getTaxPre());
                 entity.setTaxPreCon(taxCode.getTaxPreCon());
                 entity.setZeroTax(taxCode.getZeroTax());
                 entity.setItemShortName(taxCode.getSmallCategoryName());
+            }
+        } catch (Exception e) {
+            log.error("查询税编异常：{}  异常 {} ）", entity.getItemNo(), e);
+            entity.setGoodsTaxNo(StringUtils.EMPTY);
         }
         return entity;
     }
@@ -161,15 +166,20 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    protected TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
-        Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
-        if (taxCodeOptional.isPresent()) {
+    public TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
+        try {
+            Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+            if (taxCodeOptional.isPresent()) {
                 TaxCode taxCode = taxCodeOptional.get();
                 entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
                 entity.setTaxPre(taxCode.getTaxPre());
                 entity.setTaxPreCon(taxCode.getTaxPreCon());
                 entity.setZeroTax(taxCode.getZeroTax());
                 entity.setItemShortName(taxCode.getSmallCategoryName());
+            }
+        } catch (Exception e) {
+            log.error("查询税编异常：{}  异常 {} ）", entity.getItemCode(), e);
+            entity.setGoodsTaxNo(StringUtils.EMPTY);
         }
         return entity;
     }
@@ -185,7 +195,6 @@ public class DeductService   {
             unlockAndCancel(deductionEnum, tXfBillDeductEntity );
             tXfBillDeductExtDao.insert(tXfBillDeductEntity);
         }
-
         return true;
     }
 

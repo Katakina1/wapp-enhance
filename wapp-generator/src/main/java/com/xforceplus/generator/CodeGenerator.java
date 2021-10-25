@@ -54,7 +54,7 @@ public class CodeGenerator {
 //                "t_xf_default_setting",
 //                "t_xf_elec_upload_record",
 //                "t_xf_elec_upload_record_detail",
-                "t_xf_exception_report"
+                "t_dx_Invoice_details"
 //                "t_xf_invoice",
 //                "t_xf_invoice_file",
 //                "t_xf_invoice_item",

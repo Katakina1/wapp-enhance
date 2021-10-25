@@ -75,8 +75,8 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
     }
 
     private void doApplyVerdict(TXfSettlementEntity tXfSettlementEntity, List<Long> billDeductIdList) {
-        if (Objects.equals(tXfSettlementEntity.getSettlementStatus(), TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode())) {
-            throw new EnhanceRuntimeException("已经开具红票");
+        if (!Objects.equals(tXfSettlementEntity.getSettlementStatus(), TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())) {
+            throw new EnhanceRuntimeException("只能待开票状态才能申请不定案");
         }
         //索赔单
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
@@ -237,9 +237,15 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tDxQuestionPaperEntity.setDescription("索赔单号：" + Joiner.on(",").join(billDeductList.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList())));
         tDxQuestionPaperEntity.setCheckstatus("0");
         tDxQuestionPaperEntity.setProblemStream(generateProblemStream(tXfSettlementEntity.getSellerNo()));//流水号
+        tDxQuestionPaperEntity.setCreatedDate(new Date());
         tDxQuestionPaperDao.insert(tDxQuestionPaperEntity);
     }
 
+    /**
+     * 从一期拷贝的代码
+     * @param usercode
+     * @return
+     */
     private String generateProblemStream(String usercode) {
         Date de = new Date();
         TDxQuestionPaperEntity querymaxstream = tDxQuestionPaperDao.queryMaxProblemStream(usercode);
