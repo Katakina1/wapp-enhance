@@ -1,16 +1,31 @@
 package com.xforceplus.wapp.converters;
 
+import com.google.common.collect.ImmutableMap;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
-import com.xforceplus.wapp.modules.job.command.EpdBillFilterCommand;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper(imports = EpdBillFilterCommand.class)
+import java.math.BigDecimal;
+import java.util.Map;
+
+@Mapper
 public interface TXfOriginAgreementBillEntityConvertor {
 
     TXfOriginAgreementBillEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginAgreementBillEntityConvertor.class);
+
+    Map<String, BigDecimal> TAX_CODE_TRANSLATOR =
+            ImmutableMap
+                    .<String, BigDecimal>builder()
+                    .put("TG", BigDecimal.valueOf(0.03))
+                    .put("TH", BigDecimal.valueOf(0.17))
+                    .put("TL", BigDecimal.valueOf(0.11))
+                    .put("TM", BigDecimal.valueOf(0.16))
+                    .put("TN", BigDecimal.valueOf(0.10))
+                    .put("TO", BigDecimal.valueOf(0.13))
+                    .put("TP", BigDecimal.valueOf(0.09))
+                    .build();
 
     // 业务单据类型;1:索赔;2:协议;3:EPD
     @Mapping(target = "businessType", constant = "2")
@@ -29,7 +44,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 扣款日期
     @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     // 税率
-    @Mapping(target = "taxRate", defaultValue = "java(EpdBillFilterCommand.TAX_CODE_TRANSLATOR.get(agreementBillData.getTaxCode()))")
+    @Mapping(target = "taxRate", expression = "java(TAX_CODE_TRANSLATOR.get(tXfOriginAgreementBillEntity.getTaxCode()))")
     // 供应商6D
     @Mapping(source = "memo", target = "memo")
     // 协议类型

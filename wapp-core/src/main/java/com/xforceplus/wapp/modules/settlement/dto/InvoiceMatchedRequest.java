@@ -17,12 +17,8 @@ import java.util.List;
 @Getter
 @ApiModel
 public class InvoiceMatchedRequest {
-    @ApiModelProperty("移除的发票")
-    private List<Invoice> removed;
-
-    @ApiModelProperty("增加的发票")
-    private List<Invoice> added;
-
+    @ApiModelProperty("发票")
+    private List<Invoice> invoiceList;
 
     @Setter
     @Getter

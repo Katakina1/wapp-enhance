@@ -39,7 +39,7 @@ import java.util.List;
      * 开票日期
      */
     @ApiModelProperty("开票日期")
-    private Date invoiceDate;
+    private Date paperDrewDate;
 
     /**
      * 购方税号
