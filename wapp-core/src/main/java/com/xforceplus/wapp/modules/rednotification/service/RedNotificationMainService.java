@@ -438,7 +438,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
 
         listMap.forEach(itemMap->{
-            Integer applying_status =(Integer) itemMap.get("applying_status");
+            Short applying_status =(Short) itemMap.get("applying_status");
             Integer count = (Integer)itemMap.get("count");
             switch (applying_status){
                 case 1:
