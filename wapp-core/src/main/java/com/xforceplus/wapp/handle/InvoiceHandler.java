@@ -54,7 +54,7 @@ public class InvoiceHandler implements IntegrationResultHandler {
             return true;
         }
         List<InvoiceVo.InvoiceItemVO> items = invoice.getItems();
-        TDxRecordInvoiceEntity invoiceMap = invoiceConverter.map(invoice);
+        TDxRecordInvoiceEntity invoiceMap = invoiceConverter.map(invoice, CollectionUtils.isEmpty(items) ? 0 : 1);
         return new LambdaQueryChainWrapper<>(invoiceService.getBaseMapper())
                 .eq(TDxRecordInvoiceEntity::getInvoiceCode, invoice.getInvoiceCode())
                 .eq(TDxRecordInvoiceEntity::getInvoiceNo, invoice.getInvoiceNo()).oneOpt()
@@ -66,7 +66,7 @@ public class InvoiceHandler implements IntegrationResultHandler {
                 .orElseGet(() -> {
                     invoiceService.save(invoiceMap);
                     if (CollectionUtils.isNotEmpty(items)) {
-                        invoiceDetailsService.saveBatch(invoiceItemConverter.map(items, invoiceMap.getId()), 2000);
+                        invoiceDetailsService.saveBatch(invoiceItemConverter.map(items), 2000);
                     }
                     log.warn("发票插入,invoiceCode:{},invoiceNo:{}", invoiceMap.getInvoiceCode(), invoiceMap.getInvoiceNo());
                     return true;
