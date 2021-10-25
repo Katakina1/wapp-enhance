@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
-import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
 import com.baomidou.mybatisplus.generator.config.converts.SqlServerTypeConvert;
 import com.baomidou.mybatisplus.generator.config.po.TableFill;
 import com.baomidou.mybatisplus.generator.config.rules.DateType;
@@ -15,7 +14,6 @@ import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 
 
@@ -45,7 +43,7 @@ public class CodeGenerator {
 //                "t_dx_messagecontrol",
 //                "t_xf_blue_relation",
 //                "t_xf_bill_deduct_invoice",
-//                "t_xf_bill_deduct_item",
+   "t_xf_bill_deduct_item"
 //                "t_xf_bill_deduct_item_ref",
 //                "t_xf_bill_job",
 //                "t_xf_black_white_company",
@@ -54,7 +52,7 @@ public class CodeGenerator {
 //                "t_xf_default_setting",
 //                "t_xf_elec_upload_record",
 //                "t_xf_elec_upload_record_detail",
-                "t_dx_record_invoice","t_dx_record_invoice_detail"
+                //"t_dx_record_invoice","t_dx_record_invoice_detail"
 //                "t_xf_invoice",
 //                "t_xf_invoice_file",
 //                "t_xf_invoice_item",

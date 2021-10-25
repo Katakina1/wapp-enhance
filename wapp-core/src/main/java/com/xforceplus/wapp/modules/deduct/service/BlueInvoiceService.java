@@ -281,7 +281,7 @@ public class BlueInvoiceService {
 
     @Data
     public static class InvoiceItem {
-        private String itemNo;
+
         /**
          * 发票代码
          */
