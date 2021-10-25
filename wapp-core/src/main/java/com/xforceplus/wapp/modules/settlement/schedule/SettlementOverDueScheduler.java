@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
@@ -31,10 +30,6 @@ public class SettlementOverDueScheduler {
     /**
      * 自动确认逾期金额 结算单下 所属的单据 全部预期，自动确认
      */
-    @PostConstruct
-    public void init() {
-        settlementAutoConfirm();
-    }
     @Scheduled(cron=" 0 0 1 * * ?")
     public void settlementAutoConfirm(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
