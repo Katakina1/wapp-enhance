@@ -14,6 +14,7 @@ import com.xforceplus.wapp.modules.overdue.service.DefaultSettingServiceImpl;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.overdue.valid.OverdueCreateValidGroup;
 import com.xforceplus.wapp.modules.overdue.valid.OverdueUpdateValidGroup;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.OverdueEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,7 +69,7 @@ public class OverdueController {
     public R<Boolean> updateOverdue(@RequestBody @Validated(OverdueUpdateValidGroup.class) OverdueDto overdue) {
         long start = System.currentTimeMillis();
         OverdueEntity map = overdueConverter.map(overdue);
-        map.setUpdateUser(111L);
+        map.setUpdateUser(UserUtil.getUserName());
         boolean update = overdueService.updateById(map);
         log.info("超期配置更新,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(update);
@@ -78,8 +79,7 @@ public class OverdueController {
     @DeleteMapping("/overdue/{id}")
     public R<Boolean> delOverdue(@ApiParam(value = "规则ID", required = true) @PathVariable Long id) {
         long start = System.currentTimeMillis();
-        boolean update = overdueService.updateById(OverdueEntity.builder().id(id)
-                .updateUser(111L)
+        boolean update = overdueService.updateById(OverdueEntity.builder().id(id).updateUser(UserUtil.getUserName())
                 .deleteFlag(String.valueOf(System.currentTimeMillis())).build());
         log.info("超期配置删除,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(update);
@@ -97,7 +97,7 @@ public class OverdueController {
         if (hasExist.isPresent()) {
             return R.fail("配置已存在");
         }
-        OverdueEntity map = overdueConverter.map(overdue, 111L);
+        OverdueEntity map = overdueConverter.map(overdue, UserUtil.getUserName());
         boolean update = overdueService.save(map);
         log.info("超期配置新增,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(update);

@@ -4,6 +4,7 @@ import com.xforceplus.wapp.annotation.EnhanceApiV1;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.dto.IdsDto;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCodeTree;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
@@ -53,10 +54,8 @@ public class TaxCodeController {
     public R<Boolean> delOverdue(@RequestBody @Validated IdsDto idsDto) {
         long start = System.currentTimeMillis();
         List<TaxCodeEntity> entities = idsDto.getIds().stream().distinct()
-                .map(it -> TaxCodeEntity.builder()
-                        .id(it).deleteFlag(String.valueOf(System.currentTimeMillis()))
-                        .updateUser(111L)
-                        .build())
+                .map(it -> TaxCodeEntity.builder().id(it).deleteFlag(String.valueOf(System.currentTimeMillis()))
+                        .updateUser(UserUtil.getUserId()).build())
                 .collect(Collectors.toList());
         boolean update = taxCodeService.updateBatchById(entities);
         log.info("税编批量删除,耗时:{}ms", System.currentTimeMillis() - start);
