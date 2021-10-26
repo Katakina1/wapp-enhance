@@ -2,12 +2,16 @@ package com.xforceplus.wapp.modules.noneBusiness.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
+import com.xforceplus.wapp.common.Const;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
+import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownResponse;
+import com.xforceplus.wapp.modules.noneBusiness.dto.ValidSubmitRequest;
+import com.xforceplus.wapp.modules.noneBusiness.dto.ValidSubmitResponse;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
@@ -31,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -176,5 +181,49 @@ public class NoneBusinessController {
         return R.ok("删除成功");
     }
 
+    @ApiOperation("校验可以提交数量")
+    @PostMapping("/validSumitInfo")
+    public R<ValidSubmitResponse> validSumitInfo(@RequestBody ValidSubmitRequest request) {
+        ValidSubmitResponse response = new ValidSubmitResponse();
+        if ("0".equals(request.getIsAllSelected())) {
+            List<TXfNoneBusinessUploadDetailEntity> resultList = noneBusinessService.listByIds(request.getIncludes());
+            response.setSubmitCount(resultList.size());
+            List<TXfNoneBusinessUploadDetailEntity> submitList = resultList.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag()
+            ) && Constants.SIGN_NONE_BUSINESS_SUCCESS.equals(x.getOfdStatus()) && Constants.VERIFY_NONE_BUSINESS_SUCCESSE.equals(x.getVerifyStatus())).collect(Collectors.toList());
+            response.setInSubmit(submitList.size());
+            response.setExSubmit(resultList.size() - submitList.size());
+            return R.ok(response);
+        } else {
+            List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
+            response.setSubmitCount(list.size());
+            List<TXfNoneBusinessUploadDetailDto> submitList = list.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag())
+                    && Constants.SIGN_NONE_BUSINESS_SUCCESS.equals(x.getOfdStatus()) && Constants.VERIFY_NONE_BUSINESS_SUCCESSE.equals(x.getVerifyStatus())).collect(Collectors.toList());
+            response.setInSubmit(submitList.size());
+            response.setExSubmit(list.size() - submitList.size());
+            return R.ok(response);
+
+        }
+
+    }
+
+    @ApiOperation("校验上传的类型")
+    @PostMapping("/validSubmitFile")
+    public R<FileDownResponse> validSubmitFile(@RequestBody @ApiParam("id集合") Long[] ids) {
+        if (ids == null || ids.length == 0) {
+            return R.fail("请选中记录后提交");
+        }
+
+        List<TXfNoneBusinessUploadDetailEntity> resultList = noneBusinessService.listByIds(Arrays.asList(ids));
+        FileDownResponse response = new FileDownResponse();
+        List<TXfNoneBusinessUploadDetailEntity> ofdList = resultList.stream().filter(x -> String.valueOf(Constants.FILE_TYPE_OFD).equals(x.getFileType()
+        )).collect(Collectors.toList());
+
+        List<TXfNoneBusinessUploadDetailEntity> pdfList = resultList.stream().filter(x -> String.valueOf(Constants.FILE_TYPE_PDF).equals(x.getFileType()
+        )).collect(Collectors.toList());
+        response.setSubmitCount(resultList.size());
+        response.setOfdSubmit(ofdList.size());
+        response.setPdfSubmit(pdfList.size());
+        return R.ok(response);
+    }
 
 }
