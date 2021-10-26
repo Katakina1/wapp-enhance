@@ -2,18 +2,14 @@ package com.xforceplus.wapp.modules.noneBusiness.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
-import com.xforceplus.wapp.common.Const;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
-import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
-import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownResponse;
-import com.xforceplus.wapp.modules.noneBusiness.dto.ValidSubmitRequest;
-import com.xforceplus.wapp.modules.noneBusiness.dto.ValidSubmitResponse;
+import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
+import com.xforceplus.wapp.modules.noneBusiness.dto.*;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
-import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
@@ -23,17 +19,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +45,8 @@ public class NoneBusinessController {
 
     @Autowired
     private FileService fileService;
+    @Autowired
+    private NoneBusinessConverter noneBusinessConverter;
 
 
     @ApiOperation(value = "上传电子发票")
@@ -121,6 +115,19 @@ public class NoneBusinessController {
         Page<TXfNoneBusinessUploadDetailDto> page = noneBusinessService.page(current, size, dto);
         log.info("非商上传信息分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page.getRecords(), page.getTotal(), page.getPages(), page.getSize()));
+    }
+
+    @ApiOperation("查询页签总数")
+    @GetMapping("/summery")
+    public R<SummerySubmitResponse> summery(
+            TXfNoneBusinessUploadQueryDto dto) {
+        SummerySubmitResponse response = new SummerySubmitResponse();
+        List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(dto);
+        List<TXfNoneBusinessUploadDetailDto> submitList = list.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag())).collect(Collectors.toList());
+        response.setSubmitCount(list.size());
+        response.setWaitSubmit(submitList.size());
+        response.setSubmitedCount(list.size() - submitList.size());
+        return R.ok(response);
     }
 
     /**
@@ -224,6 +231,39 @@ public class NoneBusinessController {
         response.setOfdSubmit(ofdList.size());
         response.setPdfSubmit(pdfList.size());
         return R.ok(response);
+    }
+
+    @ApiOperation("提交发票到进项发票")
+    @PostMapping("/submit")
+    public R<ValidSubmitResponse> submit(@RequestBody ValidSubmitRequest request) {
+        ValidSubmitResponse response = new ValidSubmitResponse();
+        if ("0".equals(request.getIsAllSelected())) {
+            List<TXfNoneBusinessUploadDetailEntity> resultList = noneBusinessService.listByIds(request.getIncludes());
+            response.setSubmitCount(resultList.size());
+            List<TXfNoneBusinessUploadDetailEntity> submitList = resultList.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag()
+            ) && Constants.SIGN_NONE_BUSINESS_SUCCESS.equals(x.getOfdStatus()) && Constants.VERIFY_NONE_BUSINESS_SUCCESSE.equals(x.getVerifyStatus())).collect(Collectors.toList());
+            submitList.stream().forEach(e -> {
+                e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
+            });
+            response.setInSubmit(submitList.size());
+            response.setExSubmit(resultList.size() - submitList.size());
+            noneBusinessService.saveOrUpdateBatch(submitList);
+            return R.ok(response);
+        } else {
+            List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
+            response.setSubmitCount(list.size());
+            List<TXfNoneBusinessUploadDetailDto> submitList = list.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag())
+                    && Constants.SIGN_NONE_BUSINESS_SUCCESS.equals(x.getOfdStatus()) && Constants.VERIFY_NONE_BUSINESS_SUCCESSE.equals(x.getVerifyStatus())).collect(Collectors.toList());
+            submitList.stream().forEach(e -> {
+                e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
+            });
+            noneBusinessService.saveOrUpdateBatch(noneBusinessConverter.map(submitList));
+            response.setInSubmit(submitList.size());
+            response.setExSubmit(list.size() - submitList.size());
+            return R.ok(response);
+
+        }
+
     }
 
 }
