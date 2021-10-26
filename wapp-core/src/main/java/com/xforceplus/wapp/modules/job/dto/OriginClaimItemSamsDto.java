@@ -1,25 +1,16 @@
 package com.xforceplus.wapp.modules.job.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
- * <p>
  * 索赔单Sams明细
- * </p>
  *
- * @author malong@xforceplus.com
+ * @author Kenny Wong
  * @since 2021-10-15
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class OriginClaimItemSamsDto extends BaseEntity {
+public class OriginClaimItemSamsDto {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,7 +21,7 @@ public class OriginClaimItemSamsDto extends BaseEntity {
     private String itemTaxPct;
 
     @ExcelProperty("ship_cost")
-    private BigDecimal shipCost;
+    private String shipCost;
 
     @ExcelProperty("item_nbr")
     private String itemNbr;

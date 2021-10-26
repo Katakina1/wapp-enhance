@@ -1,7 +1,9 @@
 package com.xforceplus.wapp.modules.log.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.enums.OperateLogEnum;
+import com.xforceplus.wapp.modules.log.model.QueryOperationLogResponse;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.IdGenerator;
 import com.xforceplus.wapp.repository.dao.TXfOperationLogDao;
 import com.xforceplus.wapp.repository.entity.TXfOperationLogEntity;
@@ -9,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,7 +26,7 @@ public class OperateLogService {
     @Autowired
     private TXfOperationLogDao tXfOperationLogDao;
 
-    public List<TXfOperationLogEntity> query(Long businessId, Long userId){
+    public List<QueryOperationLogResponse> query(Long businessId, Long userId){
         QueryWrapper<TXfOperationLogEntity> wrapper = new QueryWrapper<>();
         if(businessId !=null){
             wrapper.eq(TXfOperationLogEntity.BUSINESS_ID,businessId);
@@ -32,7 +35,9 @@ public class OperateLogService {
             wrapper.eq(TXfOperationLogEntity.USER_ID,userId);
         }
         List<TXfOperationLogEntity> tXfOperationLogEntities = tXfOperationLogDao.selectList(wrapper);
-        return tXfOperationLogEntities;
+        List<QueryOperationLogResponse> response = new ArrayList<>();
+        BeanUtil.copyList(tXfOperationLogEntities,response,QueryOperationLogResponse.class);
+        return response;
     }
 
 

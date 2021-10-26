@@ -8,6 +8,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.ParsePosition;
 import java.util.Map;
 
 @Mapper
@@ -34,7 +36,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 客户名称
     @Mapping(source = "customerName", target = "sellerName")
     // 金额(含税)
-    @Mapping(source = "amountWithTax", target = "amountWithTax")
+    @Mapping(target = "amountWithTax", expression = "java(parse(tXfOriginAgreementBillEntity.getAmountWithTax(),0))")
     // 协议类型编码
     @Mapping(source = "reasonCode", target = "reasonCode")
     // 协议号
@@ -58,7 +60,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
     // 入账日期
     @Mapping(source = "postingDate", target = "postingDate", dateFormat = "yyyy/MM/dd")
     // 税额
-    @Mapping(source = "taxAmount", target = "taxAmount")
+    @Mapping(target = "taxAmount", expression = "java(parse(tXfOriginAgreementBillEntity.getTaxAmount(),0))")
     /**
      * 转换成AgreementBillData
      *
@@ -67,4 +69,17 @@ public interface TXfOriginAgreementBillEntityConvertor {
      */
     AgreementBillData toAgreementBillData(TXfOriginAgreementBillEntity tXfOriginAgreementBillEntity);
 
+    /**
+     * 将数字类型的字符串（可能含千分符）转换成数字
+     *
+     * @param number
+     * @param positionIndex
+     * @return
+     */
+    default BigDecimal parse(String number, int positionIndex) {
+        DecimalFormat format = new DecimalFormat();
+        format.setParseBigDecimal(true);
+        ParsePosition position = new ParsePosition(positionIndex);
+        return (BigDecimal) format.parse(number, position);
+    }
 }

@@ -55,6 +55,12 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
         saveData();
     }
 
+    @Override
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        // 出错仍然继续
+        log.warn(exception.getMessage(), exception);
+    }
+
     /**
      * 加上存储数据库
      */

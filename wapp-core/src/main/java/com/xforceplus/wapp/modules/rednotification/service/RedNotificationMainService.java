@@ -14,7 +14,6 @@ import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
@@ -27,7 +26,6 @@ import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
-import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.sequence.IDSequence;
@@ -127,6 +125,13 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 queryModel.setPidList(pidList);
                 applyRequest.setQueryModel(queryModel);
             }else {
+                // 终端不在线更新到红字信息表
+                List<Long> redIdList = listMain.stream().map(item -> item.getId()).collect(Collectors.toList());
+                TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+                record.setApplyRemark("税盘不在线");
+                LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.in(TXfRedNotificationEntity::getId,redIdList);
+                getBaseMapper().update(record,updateWrapper);
                 throw new RRException(String.format("未获取税号[%s]的在线终端",rednotificationMain.getPurchaserTaxNo()));
             }
             //申请
@@ -151,6 +156,14 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             }else {
                 //更新流水.全部失败
                 updateRequestFail(applyRequest.getSerialNo(), taxWareResponse);
+                //更新失败原因到主表
+                List<Long> redIdList = redInfoList.stream().map(item -> Long.parseLong(item.getPid())).collect(Collectors.toList());
+                TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+                record.setApplyRemark(taxWareResponse.getMessage());
+                LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.in(TXfRedNotificationEntity::getId,redIdList);
+                getBaseMapper().update(record,updateWrapper);
+
                 return  Response.failed(taxWareResponse.getMessage());
             }
         }else {
@@ -167,7 +180,6 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
         List<TXfRedNotificationEntity> entityList = filterData.stream().filter(item ->
                 item.getLockFlag() == 1
-                        && item.getApplyingStatus() == RedNoApplyingStatus.APPLIED.getValue()
                         && item.getApproveStatus() == ApproveStatus.APPROVE_PASS.getValue()
         ).collect(Collectors.toList());
         if (filterData.size()>0 && entityList.size() != filterData.size()){
@@ -656,11 +668,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             if(s != null){
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, ftpFilePath);
-                exportCommonService.sendMessage(tuple3._3,"红字信息表下载pdf失败",exportCommonService.getSuccContent());
+                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf失败",exportCommonService.getSuccContent());
                 return s;
             }else {
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.OK,ftpFilePath);
-                exportCommonService.sendMessage(tuple3._3,"红字信息表下载pdf成功",exportCommonService.getFailContent(s));
+                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf成功",exportCommonService.getFailContent(s));
                 return "导出成功,请在消息中心查看";
             }
         }
@@ -806,11 +818,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
         if(s != null){
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.FAIL, ftpFilePath);
-            exportCommonService.sendMessage(userName,"红字信息表导出失败",exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出失败",exportCommonService.getSuccContent());
             return Response.failed(s);
         }else {
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.OK,ftpFilePath);
-            exportCommonService.sendMessage(userName,"红字信息表导出成功",exportCommonService.getFailContent(s));
+            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出成功",exportCommonService.getFailContent(s));
             return Response.ok("导出成功,请在消息中心查看");
         }
 

@@ -1,25 +1,16 @@
 package com.xforceplus.wapp.modules.job.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
- * <p>
  * 原始EPD单数据
- * </p>
  *
- * @author malong@xforceplus.com
+ * @author Kenny Wong
  * @since 2021-10-15
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class OriginEpdBillDto extends BaseEntity {
+public class OriginEpdBillDto {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,7 +33,7 @@ public class OriginEpdBillDto extends BaseEntity {
     private String clearingDate;
 
     @ExcelProperty("Amount in local currency")
-    private BigDecimal amountInLocalCurrency;
+    private String amountInLocalCurrency;
 
     @ExcelProperty("Reference key 2")
     private String referenceKey2;

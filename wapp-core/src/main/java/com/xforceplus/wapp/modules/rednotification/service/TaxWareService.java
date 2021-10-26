@@ -230,9 +230,8 @@ public class TaxWareService {
                     }catch (Exception e){
                         log.error("回填预制发票异常",e);
                     }
-
                 }else {
-                    tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
+                    tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPLY.getValue());
                     redNotificationMainService.updateById(tXfRedNotificationEntity);
                     tXfRedNotificationLogEntity.setProcessRemark(redMessageInfo.getProcessRemark());
                     tXfRedNotificationLogEntity.setStatus(3);
@@ -263,19 +262,22 @@ public class TaxWareService {
              }
 
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
-            record.setId(logEntity.getId());
+            record.setId(logEntity.getApplyId());
             if (Objects.equals(TaxWareCode.SUCCESS,redRevokeMessageResult.getCode())){
                 logEntity.setStatus(2);
                 logEntity.setProcessRemark("撤销成功");
                 //修改红字信息 已撤销并解锁数据
                 record.setApproveStatus(ApproveStatus.ALREADY_ROLL_BACK.getValue());
                 record.setLockFlag(1);
+                // 状态变为已申请 状态变为已撤销
+                record.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
 
             }else {
                 logEntity.setStatus(3);
                 logEntity.setProcessRemark(redRevokeMessageResult.getMessage());
                 //解锁数据
                 record.setLockFlag(1);
+                record.setApplyRemark(redRevokeMessageResult.getMessage());
                 // 通知调用方
 
             }

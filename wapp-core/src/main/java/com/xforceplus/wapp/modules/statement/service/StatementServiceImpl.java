@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
 import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
@@ -17,11 +18,13 @@ import com.xforceplus.wapp.modules.billdeduct.service.BillDeductServiceImpl;
 import com.xforceplus.wapp.modules.preinvoice.converters.PreInvoiceConverter;
 import com.xforceplus.wapp.modules.preinvoice.service.PreInvoiceItemDaoService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
+import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.settlement.converters.SettlementItemConverter;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
 import com.xforceplus.wapp.modules.statement.models.*;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.entity.*;
@@ -263,6 +266,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         });
         new LambdaUpdateChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo)
                 .set(TXfSettlementEntity::getSettlementStatus, TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getValue())
+                .set(TXfSettlementEntity::getUpdateUser, UserUtil.getUserId())
                 .update();
         settlementItemService.updateBatchById(entities);
         try {
@@ -272,7 +276,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             log.info("调用拆票方法耗时:{}", System.currentTimeMillis() - pStart);
         } catch (Exception e) {
             log.error("拆票方法异常,", e);
-            throw new RuntimeException("拆票方法异常");
+            throw new EnhanceRuntimeException("拆票方法异常" + e.getClass().getName() + e.getMessage());
         }
         return true;
     }

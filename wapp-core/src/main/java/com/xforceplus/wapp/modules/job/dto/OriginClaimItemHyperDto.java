@@ -1,25 +1,16 @@
 package com.xforceplus.wapp.modules.job.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
- * <p>
  * 索赔单Hyper明细
- * </p>
  *
- * @author malong@xforceplus.com
+ * @author Kenny Wong
  * @since 2021-10-15
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class OriginClaimItemHyperDto extends BaseEntity {
+public class OriginClaimItemHyperDto {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,7 +18,7 @@ public class OriginClaimItemHyperDto extends BaseEntity {
     private String upcNbr;
 
     @ExcelProperty("UNIT_COST")
-    private BigDecimal unitCost;
+    private String unitCost;
 
     @ExcelProperty("VENDOR_STOCK_ID")
     private String vendorStockId;
@@ -51,7 +42,7 @@ public class OriginClaimItemHyperDto extends BaseEntity {
     private String categoryNbr;
 
     @ExcelProperty("VNPK_COST")
-    private BigDecimal vnpkCost;
+    private String vnpkCost;
 
     @ExcelProperty("ITEM_QTY")
     private String itemQty;
