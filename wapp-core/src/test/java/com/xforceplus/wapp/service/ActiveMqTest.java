@@ -14,7 +14,7 @@ import java.util.Map;
 @Slf4j
 public class ActiveMqTest extends BaseUnitTest {
 
-    @Value("${activemq.queue-name.enhance_claim_verdict_queue}")
+    @Value("${activemq.queue-name.enhance-claim-verdict-queue}")
     private String activemqEnhanceClaimVerdictQueue;
 
     @Autowired
@@ -28,4 +28,5 @@ public class ActiveMqTest extends BaseUnitTest {
         activeMqProducer.send(activemqEnhanceClaimVerdictQueue, JSON.toJSONString(enhanceClaimVerdictMap));
         System.out.println("--");
     }
+
 }
