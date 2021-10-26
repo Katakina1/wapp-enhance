@@ -285,7 +285,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             excelExportlogEntity.setFilepath(ftpPath + downLoadFileName);
             this.excelExportLogService.save(excelExportlogEntity);
             dto.setLogId(excelExportlogEntity.getId());
-            exportCommonService.sendMessage(UserUtil.getLoginName(), "下载成功", exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(excelExportlogEntity.getId(),UserUtil.getLoginName(), "下载成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
             log.error("下载文件打包失败:" + e.getMessage(), e);
             throw new RRException("下载文件打包失败，请重试");

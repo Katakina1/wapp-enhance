@@ -2,7 +2,9 @@ package com.xforceplus.wapp.modules.rednotification.controller;
 
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.modules.rednotification.model.*;
+import com.xforceplus.wapp.modules.rednotification.model.taxware.RedRevokeMessageResult;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationMainService;
+import com.xforceplus.wapp.modules.rednotification.service.TaxWareService;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -26,6 +28,8 @@ import java.util.List;
 public class RedNotificationController {
     @Autowired
     RedNotificationMainService rednotificationService;
+    @Autowired
+    TaxWareService taxWareService;
 
     @ApiOperation(value = "红字信息申请(页面申请)", notes = "", response = Response.class, tags = {"red-notification",})
     @ApiResponses(value = {
@@ -184,5 +188,14 @@ public class RedNotificationController {
 //
 //        return Response.ok("成功");
 //    }
+
+    @ApiOperation(value = "mock撤销结果返回", notes = "", response = Response.class, tags = {"red-notification",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @PostMapping(value = "/mock-roll-back-result")
+    public Response<String> mockRollBackResult(@RequestBody RedRevokeMessageResult redRevokeMessageResult){
+         taxWareService.handleRollBack(redRevokeMessageResult);
+         return Response.ok("处理成功");
+    }
 
 }

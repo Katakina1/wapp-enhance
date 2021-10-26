@@ -84,6 +84,7 @@ public class CommAgreementService {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setRefSettlementNo("");
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
