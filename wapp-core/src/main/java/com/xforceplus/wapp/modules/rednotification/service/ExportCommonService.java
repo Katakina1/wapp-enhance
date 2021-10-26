@@ -19,8 +19,10 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.FileInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.Date;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
@@ -169,4 +171,46 @@ public class ExportCommonService {
         return url;
     }
 
+    /**
+     * @param res
+     * @param req
+     * @param fileName 例如 红字信息表导入模板.xlsx
+     */
+    public void template(HttpServletResponse res, HttpServletRequest req, String fileName) {
+        try {
+            //获取
+            res.setContentType("multipart/form-data");
+            res.setCharacterEncoding("UTF-8");
+            res.setContentType("text/html");
+            String filePath = "/excl/" + fileName;
+            String userAgent = req.getHeader("User-Agent");
+            if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
+                fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
+            } else {
+                // 非IE浏览器的处理：
+                fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
+            }
+            res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
+            InputStream inputStream = this.getClass().getResourceAsStream(filePath);
+            ServletOutputStream   out = res.getOutputStream();
+            int b = 0;
+            byte[] buffer = new byte[1024];
+            while ((b = inputStream.read(buffer)) != -1) {
+                // 4.写到输出流(out)中
+                out.write(buffer, 0, b);
+            }
+            inputStream.close();
+
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

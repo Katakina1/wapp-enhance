@@ -116,7 +116,16 @@ public class SettlementController {
 
 
     @GetMapping("{settlementId}/details")
+    @ApiOperation("结算单号获取明细")
     public R details(@PathVariable long settlementId, @RequestParam String settlementNo, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "50") int size) {
+        final Page<TXfSettlementItemEntity> itemsBySettlementNo = this.settlementItemService.getItemsBySettlementNo(settlementNo, page, size);
+        final PageResult<TXfSettlementItemEntity> result = PageResult.of(itemsBySettlementNo.getRecords(), itemsBySettlementNo.getTotal(), itemsBySettlementNo.getPages(), itemsBySettlementNo.getSize());
+        return R.ok(result);
+    }
+
+    @GetMapping("/details")
+    @ApiOperation("结算单号获取明细（推荐）")
+    public R detailsBySettlementNo( @RequestParam String settlementNo, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "50") int size) {
         final Page<TXfSettlementItemEntity> itemsBySettlementNo = this.settlementItemService.getItemsBySettlementNo(settlementNo, page, size);
         final PageResult<TXfSettlementItemEntity> result = PageResult.of(itemsBySettlementNo.getRecords(), itemsBySettlementNo.getTotal(), itemsBySettlementNo.getPages(), itemsBySettlementNo.getSize());
         return R.ok(result);

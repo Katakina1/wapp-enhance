@@ -19,6 +19,7 @@ import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ReportExportDto;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
@@ -129,6 +130,17 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         Page<TXfExceptionReportEntity> page = new Page<>();
         page.setSize(request.getSize());
         page.setCurrent(request.getPage());
+        if (StringUtils.isBlank(request.getBillNo())){
+            request.setBillNo(null);
+        }
+        if(StringUtils.isBlank(request.getSellerNo())){
+            request.setSellerNo(null);
+        }
+
+        if (StringUtils.isBlank(request.getPurchaserNo())){
+            request.setPurchaserNo(null);
+        }
+
         TXfExceptionReportEntity entity = exceptionReportMapper.toEntity(request);
         entity.setType(typeEnum.getType());
         final String startDeductDate = request.getStartDeductDate();
@@ -197,11 +209,11 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
             Map<String, String> head = typeEnum == ExceptionReportTypeEnum.CLAIM ? headClaim : headEPD;
             bigExcelWriter.setHeaderAlias(head);
             while (CollectionUtils.isNotEmpty(list)) {
-                bigExcelWriter.write(list);
+                final List<ReportExportDto> reportExportDtos = this.exceptionReportMapper.toExport(list);
+                bigExcelWriter.write(reportExportDtos);
                 long lastId = list.get(list.size() - 1).getId();
                 list = getExportData(request, typeEnum, lastId);
             }
-            // TODO
 
             try {
                 final String excelFileName = ExcelExportUtil.getExcelFileName(exportDto.getUserId(), filePrefix);
