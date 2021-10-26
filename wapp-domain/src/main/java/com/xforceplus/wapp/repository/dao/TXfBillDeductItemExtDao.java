@@ -42,6 +42,13 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
                                                              @Param("id") Long id,
                                                              @Param("limit") int limit );
 
+    @Select("select   * from t_xf_bill_deduct_item  where claim_no = #{claimNo}  and  create_date >= #{startDate} and create_date <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo}     ")
+    public List<TXfBillDeductItemEntity > queryMatchBillItemByClaimNo(@Param("startDate") Date startDate,
+                                                             @Param("endDate") Date endDate,
+                                                             @Param("purchaserNo")String purchaserNo,
+                                                             @Param("sellerNo")String sellerNo,
+                                                             @Param("claimNo") String claimNo );
+
     /**
      * 更新折扣明细金额
      * @param id

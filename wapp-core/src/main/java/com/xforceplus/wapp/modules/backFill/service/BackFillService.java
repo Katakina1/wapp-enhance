@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
-import com.xforceplus.wapp.common.enums.InvoiceType;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
@@ -39,7 +38,6 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -196,18 +194,14 @@ public class BackFillService  {
             if (ofdResponse.isOk()) {
                 final OfdResponse.OfdResponseResult result = ofdResponse.getResult();
                 final InvoiceMain invoiceMain = result.getInvoiceMain();
-                if (BigDecimal.ZERO.compareTo(new BigDecimal(invoiceMain.getAmountWithTax())) > 0) {
-                    throw new EnhanceRuntimeException("票单匹配仅能匹配蓝票,发票号码:[" + invoiceMain.getInvoiceNo() + "],发票代码:[" + invoiceMain.getInvoiceCode() + "]");
-                } else {
-                    VerificationRequest verificationRequest = new VerificationRequest();
-                    verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
-                    verificationRequest.setCheckCode(invoiceMain.getCheckCode());
-                    verificationRequest.setCustomerNo(customerNo);
-                    verificationRequest.setInvoiceCode(invoiceMain.getInvoiceCode());
-                    verificationRequest.setInvoiceNo(invoiceMain.getInvoiceNo());
-                    verificationRequest.setPaperDrewDate(invoiceMain.getPaperDrewDate());
-                    return verificationService.verify(verificationRequest);
-                }
+                VerificationRequest verificationRequest = new VerificationRequest();
+                verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
+                verificationRequest.setCheckCode(invoiceMain.getCheckCode());
+                verificationRequest.setCustomerNo(customerNo);
+                verificationRequest.setInvoiceCode(invoiceMain.getInvoiceCode());
+                verificationRequest.setInvoiceNo(invoiceMain.getInvoiceNo());
+                verificationRequest.setPaperDrewDate(invoiceMain.getPaperDrewDate());
+                return verificationService.verify(verificationRequest);
             } else {
                 log.info("ofd解析失败:{}", ofdResponse.getMessage());
                 throw new EnhanceRuntimeException("ofd解析失败:" + ofdResponse.getMessage());

@@ -50,10 +50,17 @@ public class AgreementBillService extends DeductService{
             /**
              * 查询 同一购销对，同一税率 下所有的负数单据
              */
+            String sellerNo = tmp.getSellerNo();
+            String purcharseNo = tmp.getPurchaserNo();
+            if (org.apache.commons.lang3.StringUtils.isEmpty(sellerNo) || org.apache.commons.lang3.StringUtils.isEmpty(purcharseNo)) {
+                log.info("发现购销对信息不合法 跳过{}单据合并：sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
+                continue;
+            }
             TXfBillDeductEntity negativeBill = tXfBillDeductExtDao.querySpecialNegativeBill(tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(), deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode(),TXfBillDeductStatusEnum.UNLOCK.getCode());
             BigDecimal mergeAmount = negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax());
             //当前结算单 金额 大于 剩余发票金额
             if (nosuchInvoiceSeller.containsKey(tmp.getSellerNo()) && nosuchInvoiceSeller.get(tmp.getSellerNo()).compareTo(mergeAmount) < 0) {
+                log.info(" {} 单据合并失败 : 销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
                 continue;
             }
             if (mergeAmount.compareTo(BigDecimal.ZERO) > 0) {

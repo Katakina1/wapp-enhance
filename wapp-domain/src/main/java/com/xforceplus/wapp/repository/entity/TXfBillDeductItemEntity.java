@@ -182,6 +182,12 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("amount_with_tax")
     private BigDecimal amountWithTax;
 
+    /**
+     * 索赔单号
+     */
+    @TableField("claim_no")
+    private String claimNo;
+
     @TableField("create_date")
     private Date createDate;
 
@@ -243,6 +249,8 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     public static final String TAX_AMOUNT = "tax_amount";
 
     public static final String AMOUNT_WITH_TAX = "amount_with_tax";
+
+    public static final String CLAIM_NO = "claim_no";
 
     public static final String CREATE_DATE = "create_date";
 
