@@ -125,7 +125,16 @@ public class AgreementBillFilterCommand implements Command {
                         return !speacialCompanyService.hitBlackOrWhiteList("0", v.getMemo());
                     }
                 })
-                .map(TXfOriginAgreementBillEntityConvertor.INSTANCE::toAgreementBillData)
+                .map(v -> {
+                    // 排除转换异常的数据
+                    try {
+                        return TXfOriginAgreementBillEntityConvertor.INSTANCE.toAgreementBillData(v);
+                    } catch (Exception e) {
+                        log.warn(e.getMessage(), e);
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
     }

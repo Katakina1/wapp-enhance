@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.job.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import org.apache.commons.chain.Context;
 
 import java.util.List;
 import java.util.Map;
@@ -36,5 +37,7 @@ public interface BillJobService extends IService<TXfBillJobEntity> {
      * @return
      */
     List<Map<String, Object>> obtainAvailableJobs(int JobType);
+
+    boolean saveContext(Context context);
 
 }
