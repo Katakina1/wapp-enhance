@@ -184,8 +184,8 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             newTXfBillDeductInvoiceEntity.setBusinessType(TXfBillDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
             newTXfBillDeductInvoiceEntity.setStatus(0);
             newTXfBillDeductInvoiceEntity.setUseAmount(useAmount);
-            newTXfBillDeductInvoiceEntity.setCreateDate(new Date());
-            newTXfBillDeductInvoiceEntity.setUpdateDate(new Date());
+            newTXfBillDeductInvoiceEntity.setCreateTime(new Date());
+            newTXfBillDeductInvoiceEntity.setUpdateTime(new Date());
             tXfBillDeductInvoiceDao.insert(newTXfBillDeductInvoiceEntity);
             //使用底账蓝票额度
             TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
