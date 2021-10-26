@@ -7,11 +7,9 @@ import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.common.utils.InvoiceUtil;
-import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
-import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
 import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
@@ -26,13 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -300,10 +295,10 @@ public class EInvoiceMatchService {
                     return true;
                 }
         );
-        int result = 1;
+        int result = this.saveOrUpdateRecordInvoice(map);
         //只有红票才入库
         if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0) {
-             saveOrUpdateInvoice(map);
+            this.saveOrUpdateInvoice(map);
         }
         if (result == 0) {
             // 新增发票情况下才会将明细入库
