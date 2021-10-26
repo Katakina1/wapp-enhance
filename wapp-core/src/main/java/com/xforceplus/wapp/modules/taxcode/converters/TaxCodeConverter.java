@@ -22,7 +22,16 @@ public interface TaxCodeConverter {
 
     TaxCode map(TaxCodeEntity entity);
 
+    @BeanMapping(qualifiedByName = "updateTaxCodeDeleteFlag")
     TaxCodeEntity map(TaxCodeVO taxCode);
+
+    @AfterMapping
+    @Named("updateTaxCodeDeleteFlag")
+    default void updateTaxCodeDeleteFlag(@MappingTarget TaxCodeEntity entity) {
+        if ("9".equalsIgnoreCase(entity.getStatus())) {
+            entity.setDeleteFlag(String.valueOf(System.currentTimeMillis()));
+        }
+    }
 
     @Mapping(target = "categoryName", source = "taxCode.largeCategoryName")
     @Mapping(target = "categoryCode", source = "taxCode.largeCategoryCode")
