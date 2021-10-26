@@ -61,4 +61,7 @@ public class TXfNoneBusinessUploadQueryDto {
     @ApiModelProperty("供应商编号")
     private String venderId;
 
+    @ApiModelProperty("是否提交 0未提交 1 已提交")
+    private String submitFlag;
+
 }
