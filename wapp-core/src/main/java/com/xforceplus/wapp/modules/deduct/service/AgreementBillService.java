@@ -42,7 +42,7 @@ public class AgreementBillService extends DeductService{
      */
     public boolean mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, TXfBillDeductStatusEnum targetStatus ) {
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
-        int expireScale = -5;
+        int expireScale = -100;
         /**
          * 获取超期时间 判断超过此日期的正数单据
          */
