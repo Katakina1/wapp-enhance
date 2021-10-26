@@ -60,7 +60,7 @@ public class AgreementBillService extends DeductService{
             BigDecimal mergeAmount = negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax());
             //当前结算单 金额 大于 剩余发票金额
             if (nosuchInvoiceSeller.containsKey(tmp.getSellerNo()) && nosuchInvoiceSeller.get(tmp.getSellerNo()).compareTo(mergeAmount) < 0) {
-                log.info(" {} 单据合并失败 : 销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
+                log.info(" {} 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
                 continue;
             }
             if (mergeAmount.compareTo(BigDecimal.ZERO) > 0) {
@@ -68,6 +68,7 @@ public class AgreementBillService extends DeductService{
                      excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
                 } catch (NoSuchInvoiceException n ) {
                     nosuchInvoiceSeller.put(tmp.getSellerNo(), negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax()));
+                    log.info(" {} 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
                 }
                 catch (Exception e) {
                     log.error("{}单合并异常 销方:{}，购方:{}，税率:{}", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate());
