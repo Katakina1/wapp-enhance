@@ -49,7 +49,7 @@ public class InvoiceHandler implements IntegrationResultHandler {
         log.info("request name:{},payload obj:{},header:{}", this.requestName(), sealedMessage.getPayload().getObj(), JSON.toJSONString(sealedMessage.getHeader()));
         InvoiceVo vo = JsonUtil.fromJson(sealedMessage.getPayload().getObj().toString(), InvoiceVo.class);
         InvoiceVo.Invoice invoice = vo.getData();
-        if (INVOICE_TYPE_MAP.containsKey(invoice.getInvoiceType())) {
+        if (!INVOICE_TYPE_MAP.containsKey(invoice.getInvoiceType())) {
             log.info("发票类型[{}]无法转换,invoiceCode:{},invoiceNo:{}。", invoice.getInvoiceType(), invoice.getInvoiceCode(), invoice.getInvoiceNo());
             return true;
         }
