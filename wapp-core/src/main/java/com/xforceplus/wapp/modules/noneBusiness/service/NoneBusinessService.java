@@ -235,6 +235,14 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         return tXfNoneBusinessUploadDetailDao.list(page, dto);
     }
 
+    public List<TXfNoneBusinessUploadDetailDto> noPaged(TXfNoneBusinessUploadQueryDto dto) {
+        LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity> wrapper = new LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity>(baseMapper);
+        if ("0".equals(dto.getQueryType())) {
+            dto.setCreateUser(UserUtil.getLoginName());
+        }
+        return tXfNoneBusinessUploadDetailDao.list(dto);
+    }
+
     public void down(List<TXfNoneBusinessUploadDetailEntity> list, FileDownRequest request) {
         String path = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         String ftpPath = ftpUtilService.pathprefix + path;

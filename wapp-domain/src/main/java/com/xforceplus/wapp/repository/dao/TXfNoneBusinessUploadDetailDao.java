@@ -22,4 +22,7 @@ public interface TXfNoneBusinessUploadDetailDao extends BaseMapper<TXfNoneBusine
 
     public Page<TXfNoneBusinessUploadDetailDto> list(Page<TXfNoneBusinessUploadDetailDto> page,@Param("entity") TXfNoneBusinessUploadQueryDto dto);
 
+
+    public List<TXfNoneBusinessUploadDetailDto> list(@Param("entity") TXfNoneBusinessUploadQueryDto dto);
+
 }

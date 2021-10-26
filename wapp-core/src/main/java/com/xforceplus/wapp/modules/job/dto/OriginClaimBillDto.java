@@ -1,12 +1,7 @@
 package com.xforceplus.wapp.modules.job.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
  * 原始索赔单数据
@@ -83,7 +78,7 @@ public class OriginClaimBillDto {
      * 成本金额
      */
     @ExcelProperty("成本金额")
-    private BigDecimal costAmount;
+    private String costAmount;
 
     /**
      * 所扣发票
@@ -101,7 +96,7 @@ public class OriginClaimBillDto {
      * 含税金额
      */
     @ExcelProperty("含税金额")
-    private BigDecimal amountWithTax;
+    private String amountWithTax;
 
     /**
      * 店铺类型（Hyper或Sams）

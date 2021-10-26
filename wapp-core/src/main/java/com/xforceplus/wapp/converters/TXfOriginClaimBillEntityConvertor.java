@@ -6,6 +6,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.ParsePosition;
+
 @Mapper
 public interface TXfOriginClaimBillEntityConvertor {
 
@@ -26,13 +30,13 @@ public interface TXfOriginClaimBillEntityConvertor {
     // 定案日期
     @Mapping(source = "decisionDate", target = "verdictDate", dateFormat = "yyyy/MM/dd")
     // 成本金额
-    @Mapping(source = "costAmount", target = "amountWithoutTax")
+    @Mapping(target = "amountWithoutTax", expression = "java(parse(tXfOriginClaimBillEntity.getCostAmount(),0))")
     // 所扣发票
     @Mapping(source = "invoiceReference", target = "invoiceReference")
     // 税率
     @Mapping(source = "taxRate", target = "taxRate")
     // 含税金额
-    @Mapping(source = "amountWithTax", target = "amountWithTax")
+    @Mapping(target = "amountWithTax", expression = "java(parse(tXfOriginClaimBillEntity.getAmountWithTax(),0))")
     // 店铺类型（Hyper或Sams）
     @Mapping(source = "storeType", target = "storeType")
     /**
@@ -43,4 +47,17 @@ public interface TXfOriginClaimBillEntityConvertor {
      */
     ClaimBillData toClaimBillData(TXfOriginClaimBillEntity tXfOriginClaimBillEntity);
 
+    /**
+     * 将数字类型的字符串（可能含千分符）转换成数字
+     *
+     * @param number
+     * @param positionIndex
+     * @return
+     */
+    default BigDecimal parse(String number, int positionIndex) {
+        DecimalFormat format = new DecimalFormat();
+        format.setParseBigDecimal(true);
+        ParsePosition position = new ParsePosition(positionIndex);
+        return (BigDecimal) format.parse(number, position);
+    }
 }

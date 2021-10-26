@@ -3,8 +3,6 @@ package com.xforceplus.wapp.modules.job.dto;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * 索赔单Sams明细
  *
@@ -23,7 +21,7 @@ public class OriginClaimItemSamsDto {
     private String itemTaxPct;
 
     @ExcelProperty("ship_cost")
-    private BigDecimal shipCost;
+    private String shipCost;
 
     @ExcelProperty("item_nbr")
     private String itemNbr;
