@@ -1,0 +1,3 @@
+-- 红字信息表明细 主表id  添加索引
+create nonclustered index NonClu_Index
+on "testdb01"."dbo".t_xf_red_notification_detail(apply_id)
