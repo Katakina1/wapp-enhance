@@ -107,7 +107,7 @@ public class OverdueController {
     @ApiOperation("导入超期配置")
     @PutMapping("/overdue/{type}")
     public R<Integer> exportOverdue(@ApiParam(value = "超期配置类型", required = true) @PathVariable Integer type,
-                                    MultipartFile file) {
+                                    @ApiParam(value = "文件", required = true) @RequestParam("file") MultipartFile file) {
         ServiceTypeEnum typeEnum = ValueEnum.getEnumByValue(ServiceTypeEnum.class, type).orElseThrow(() -> new RuntimeException("超期配置类型不正确"));
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
@@ -123,7 +123,7 @@ public class OverdueController {
     @ApiOperation("查询默认超期时间")
     @GetMapping("/overdue/{type}/day")
     public R<Integer> getOverdueDay(@ApiParam(value = "超期配置类型 1.索赔、2.协议、3.EPD", required = true)
-                                   @PathVariable Integer type) {
+                                    @PathVariable Integer type) {
         long start = System.currentTimeMillis();
         R<Integer> r = ValueEnum.getEnumByValue(DefaultSettingEnum.class, type).map(it -> {
             Integer result = defaultSettingService.getOverdueDay(it);
