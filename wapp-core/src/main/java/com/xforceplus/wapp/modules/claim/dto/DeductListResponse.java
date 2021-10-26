@@ -129,9 +129,6 @@ public class DeductListResponse {
 
     private Long id;
 
-    private Date createDate;
-
-    private Date updateDate;
 
     /**
      * 批次号
