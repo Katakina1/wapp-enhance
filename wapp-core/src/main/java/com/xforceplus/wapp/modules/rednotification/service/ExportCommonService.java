@@ -115,12 +115,12 @@ public class ExportCommonService {
      * 发送消息
      * @return
      */
-    public  void sendMessage(String userName , String title,String content){
+    public  void sendMessage(Long logId,String userName , String title,String content){
         TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
         //这里的userAccount是userName
         messagecontrolEntity.setUserAccount(userName);
         messagecontrolEntity.setContent(getSuccContent());
-        messagecontrolEntity.setUrl(getUrl(System.currentTimeMillis()));
+        messagecontrolEntity.setUrl(getUrl(logId));
         messagecontrolEntity.setTitle(title);
         commonMessageService.sendMessage(messagecontrolEntity);
     }
