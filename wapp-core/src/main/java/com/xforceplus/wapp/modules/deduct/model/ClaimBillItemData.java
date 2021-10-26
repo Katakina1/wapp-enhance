@@ -79,4 +79,8 @@ public class ClaimBillItemData {
      * 资源id
      */
     private Long id;
+    /**
+     * 索赔单编号
+     */
+    private String claimNo;
 }

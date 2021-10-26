@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 结算单重新匹配税编
@@ -36,23 +37,33 @@ public class SettlementOverDueScheduler {
             log.info("Settlement-overdraft  job 已经在执行，结束此次执行");
             return;
         }
+        redisTemplate.opsForValue().set(KEY, KEY, 10, TimeUnit.MINUTES);
         log.info("Settlement-overdraft  job 开始");
-        Long id = 0L;
-        Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
-        Integer limit = 100;
-        List<TXfSettlementEntity> list = settlementService.querySettlementByStatus(id, status, limit);
-        while (CollectionUtils.isNotEmpty(list)) {
-            for (TXfSettlementEntity tXfSettlementEntity : list) {
-                try {
-                    preinvoiceService.reCalculation( tXfSettlementEntity.getSettlementNo() );
-                } catch (Exception e) {
-                    log.error("定时器 拆票失败：{}", e);
+        try {
+            Long id = 0L;
+            Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
+            Integer limit = 100;
+            List<TXfSettlementEntity> list = settlementService.querySettlementByStatus(id, status, limit);
+            while (CollectionUtils.isNotEmpty(list)) {
+                for (TXfSettlementEntity tXfSettlementEntity : list) {
+                    try {
+                        preinvoiceService.reCalculation( tXfSettlementEntity.getSettlementNo() );
+                    } catch (Exception e) {
+                        log.error("定时器 拆票失败：{}", e);
+                    }
                 }
+                id =  list.stream().mapToLong(TXfSettlementEntity::getId).max().getAsLong();
+                list = settlementService.querySettlementByStatus(id, status, limit);
             }
-            id =  list.stream().mapToLong(TXfSettlementEntity::getId).max().getAsLong();
-            list = settlementService.querySettlementByStatus(id, status, limit);
+        } catch (Exception e) {
+            log.info("Settlement-overdraft job 异常：{}",e);
+        }finally {
+            try {
+                redisTemplate.delete(KEY);
+            } catch (Exception e) {
+                log.info("Settlement-overdraft  释放锁Redis 异常： {}", e);
+            }
+            log.info("Settlement-overdraft  job 结束");
         }
-        redisTemplate.delete(KEY);
-        log.info("Settlement-overdraft  job 结束");
     }
 }
