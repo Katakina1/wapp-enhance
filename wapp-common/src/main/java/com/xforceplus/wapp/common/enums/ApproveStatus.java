@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ApproveStatus implements ValueEnum<Integer>{
-    OTHERS(0,"其他状态"),
+    OTHERS(0,""),
     APPROVE_PASS(1,"审核通过"),
     APPROVE_FAIL(2,"审核不通过"),
     ALREADY_USE(3,"已核销"),

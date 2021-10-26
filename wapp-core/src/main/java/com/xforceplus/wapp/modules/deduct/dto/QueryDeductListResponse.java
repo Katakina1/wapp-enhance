@@ -88,6 +88,12 @@ public class QueryDeductListResponse {
     @ApiModelProperty("锁定状态 1 锁定 0 未锁定")
     private Integer lockFlag;
 
+    @ApiModelProperty("索赔单:101待匹配明细;102待确认税编;103待确认税差;104待匹配蓝票;105:待匹配结算单;106已匹配结算单;107待审核;108已撤销\n" +
+            "协议单:201待匹配结算单;202已匹配结算单;203已锁定;204已取消\n" +
+            "EPD单:301待匹配结算单;302已匹配结算单")
+    private Integer status;
+
+
 
 
 }

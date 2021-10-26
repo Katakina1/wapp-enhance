@@ -30,6 +30,7 @@ public interface TXfOriginClaimItemHyperEntityConvertor {
     @Mapping(source = "vnpkQty", target = "vnpkQuantity")
     @Mapping(source = "cnDesc", target = "cnDesc")
     @Mapping(source = "itemNbr", target = "itemNo")
+    @Mapping(source = "storeNbr", target = "storeNbr")
     /**
      * @param tXfOriginClaimItemHyperEntity
      * @return

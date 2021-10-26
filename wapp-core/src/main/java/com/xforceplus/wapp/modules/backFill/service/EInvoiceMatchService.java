@@ -7,15 +7,14 @@ import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.common.utils.InvoiceUtil;
-import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
-import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
 import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
 import com.xforceplus.wapp.repository.daoExt.XfRecordInvoiceDao;
@@ -25,13 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -92,6 +88,8 @@ public class EInvoiceMatchService {
     @Autowired
     private CompanyService companyService;
 
+    @Autowired
+    private TXfSettlementDao tXfSettlementDao;
 
     @Value("${wapp.org-check:false}")
     private boolean needOrgCheck;
@@ -229,9 +227,40 @@ public class EInvoiceMatchService {
         electronicUploadRecordDetailEntity.setStatus(true);
         validateOrg(invoiceMain, recordEntity, orgEntity);
         validateTax(invoiceMain, invoiceDetails);
-
-        //TODO 结果存储-大象记录表
+        //校验购销对
+        QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
+        settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,electronicUploadRecordDetailEntity.getSettlementNo());
+        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(settlementWrapper);
+        if(tXfSettlementEntity == null){
+            throw new EnhanceRuntimeException("未找到对应的结算单");
+        }
+        if(!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())){
+            throw new EnhanceRuntimeException("购方名称不一致");
+        }
+        if(!invoiceMain.getPurchaserTaxNo().equals(tXfSettlementEntity.getPurchaserTaxNo())){
+            throw new EnhanceRuntimeException("购方税号不一致");
+        }
+        if(!invoiceMain.getSellerName().equals(tXfSettlementEntity.getSellerName())){
+            throw new EnhanceRuntimeException("销方名称不一致");
+        }
+        if(!invoiceMain.getSellerTaxNo().equals(tXfSettlementEntity.getSellerTaxNo())){
+            throw new EnhanceRuntimeException("销方税号不一致");
+        }
+        //从备注里截取红字信息编号
         Map<String, Object> map = new HashMap<>();
+        if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
+            String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号")+5, invoiceMain.getRemark().indexOf("信息表编号")+21);
+            if (StringUtils.isNotEmpty(redNo)) {
+                String trim = redNo.trim();
+                if(trim.matches("[0-9]+")){
+                    map.put("redNoticeNumber", trim);
+                }else{
+                    log.error("发票回填--解析红字信息编号失败！");
+                    throw new EnhanceRuntimeException("解析红字信息编号失败");
+                }
+            }
+        }
+        //TODO 结果存储-大象记录表
         map.put("venderid", recordEntity.getVendorId());
         map.put("jvcode", recordEntity.getJvCode());
         map.put("invoiceNo", invoiceMain.getInvoiceNo());
@@ -254,18 +283,6 @@ public class EInvoiceMatchService {
 //        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
         map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
         map.put("remark", invoiceMain.getRemark());
-        //从备注里截取红字信息编号
-        if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
-            String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号")+5, invoiceMain.getRemark().indexOf("信息表编号")+21);
-            if (StringUtils.isNotEmpty(redNo)) {
-                String trim = redNo.trim();
-                if(trim.matches("[0-9]+")){
-                    map.put("redNoticeNumber", trim);
-                }else{
-                    log.error("发票回填--解析红字信息编号失败！");
-                }
-            }
-        }
         successSuppliers.add(() -> {
                     //结果存储-记录表
                     //成功计数
@@ -281,7 +298,7 @@ public class EInvoiceMatchService {
         int result = this.saveOrUpdateRecordInvoice(map);
         //只有红票才入库
         if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0) {
-            saveOrUpdateInvoice(map);
+            this.saveOrUpdateInvoice(map);
         }
         if (result == 0) {
             // 新增发票情况下才会将明细入库
@@ -348,7 +365,6 @@ public class EInvoiceMatchService {
             if (CollectionUtils.isEmpty(list1)) {
                 //不存在
                 //录入
-
                 map.put("xfTaxNo", orgEntity.getTaxno());
                 map.put("xfName", orgEntity.getOrgname());
                 if ("04".equals(CommonUtil.getFplx((String) invoiceCode))) {
@@ -356,8 +372,6 @@ public class EInvoiceMatchService {
                 } else {
                     flag = this.electronicInvoiceDao.saveInvoice(map) > 0;
                 }
-
-
             } else {
                 result = 1;
                 //存在数据
@@ -484,26 +498,21 @@ public class EInvoiceMatchService {
         int result = 0;
         try {
             //判断uuid是否存在
-            if (tDxInvoiceEntity != null) {
+            if (tDxInvoiceEntity == null) {
                 //不存在
                 //录入
                 map.put("xfTaxNo", orgEntity.getTaxno());
                 map.put("xfName", orgEntity.getOrgname());
-                if ("04".equals(CommonUtil.getFplx((String) invoiceCode))) {
-                    //TODO
-                } else {
-
-                }
                 TDxInvoiceEntity entity = JSONObject.parseObject(JSONObject.toJSONString(map), TDxInvoiceEntity.class);
+                entity.setUuid(uuid);
+                entity.setCreateDate(new Date());
+                entity.setBindyesorno("0");
+                entity.setPackyesorno("0");
                 flag = tDxInvoiceDao.insert(entity) > 0;
             } else {
                 result = 1;
                 //存在数据
-                String flowType = tDxInvoiceEntity.getFlowType();
-                BigDecimal invoiceAmount = tDxInvoiceEntity.getInvoiceAmount();
-                if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
-                    throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
-                }
+
                 //TODO
 
             }

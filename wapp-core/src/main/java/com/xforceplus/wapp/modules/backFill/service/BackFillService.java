@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.common.enums.InvoiceType;
+import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
@@ -16,6 +16,8 @@ import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
+import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDetailDao;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
@@ -36,7 +38,6 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -106,6 +107,9 @@ public class BackFillService  {
 
     @Autowired
     private RecordInvoiceService recordInvoiceService;
+
+    @Autowired
+    private RedNotificationOuterService redNotificationOuterService;
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                               String tenantId) {
@@ -190,18 +194,14 @@ public class BackFillService  {
             if (ofdResponse.isOk()) {
                 final OfdResponse.OfdResponseResult result = ofdResponse.getResult();
                 final InvoiceMain invoiceMain = result.getInvoiceMain();
-                if (BigDecimal.ZERO.compareTo(new BigDecimal(invoiceMain.getAmountWithTax())) > 0) {
-                    throw new EnhanceRuntimeException("票单匹配仅能匹配蓝票,发票号码:[" + invoiceMain.getInvoiceNo() + "],发票代码:[" + invoiceMain.getInvoiceCode() + "]");
-                } else {
-                    VerificationRequest verificationRequest = new VerificationRequest();
-                    verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
-                    verificationRequest.setCheckCode(invoiceMain.getCheckCode());
-                    verificationRequest.setCustomerNo(customerNo);
-                    verificationRequest.setInvoiceCode(invoiceMain.getInvoiceCode());
-                    verificationRequest.setInvoiceNo(invoiceMain.getInvoiceNo());
-                    verificationRequest.setPaperDrewDate(invoiceMain.getPaperDrewDate());
-                    return verificationService.verify(verificationRequest);
-                }
+                VerificationRequest verificationRequest = new VerificationRequest();
+                verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
+                verificationRequest.setCheckCode(invoiceMain.getCheckCode());
+                verificationRequest.setCustomerNo(customerNo);
+                verificationRequest.setInvoiceCode(invoiceMain.getInvoiceCode());
+                verificationRequest.setInvoiceNo(invoiceMain.getInvoiceNo());
+                verificationRequest.setPaperDrewDate(invoiceMain.getPaperDrewDate());
+                return verificationService.verify(verificationRequest);
             } else {
                 log.info("ofd解析失败:{}", ofdResponse.getMessage());
                 throw new EnhanceRuntimeException("ofd解析失败:" + ofdResponse.getMessage());
@@ -434,6 +434,9 @@ public class BackFillService  {
                     log.info("发票回填后匹配--修改预制发票状态");
                     preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
                     preInvoiceDao.updateById(preInvoiceEntity);
+                    log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
+                    Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
+                    log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
                 }
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
@@ -502,11 +505,11 @@ public class BackFillService  {
             if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
                 return R.fail("根据结算单号未找到预制发票");
             }
-            long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.equals(t.getPreInvoiceStatus())).count();
+            long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus())).count();
             if(request.getVerifyBeanList().size() > count){
                 return R.fail("您最多只需要上传"+count+"张发票，请确认后再试");
             }
-            if(tXfPreInvoiceEntities.stream().noneMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
+            if(tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
                 return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
                         "完成后，您可以继续添加发票！\r\n" +
                         "请及时关注票据状态！或联系购货方联系");

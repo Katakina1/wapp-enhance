@@ -1,7 +1,6 @@
 package com.xforceplus.wapp.modules.job.executor;
 
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.chain.ClaimBillJobChain;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -9,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Chain;
 import org.apache.commons.chain.Context;
 import org.apache.commons.chain.impl.ContextBase;
-import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
@@ -33,8 +31,6 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
 
     @Autowired
     private BillJobService billJobService;
-    @Autowired
-    private DeductService deductService;
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -60,36 +56,11 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     } finally {
-                        saveContext(context);
+                        billJobService.saveContext(context);
                         billJobService.unlockJob(jobId);
                     }
                 }
         );
     }
 
-    /**
-     * 保存context瞬时状态入库
-     *
-     * @param context
-     * @return
-     */
-    private boolean saveContext(Context context) {
-        TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
-        tXfBillJobEntity.setId(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID))));
-        tXfBillJobEntity.setJobStatus(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS))));
-        tXfBillJobEntity.setRemark(String.valueOf(context.get(TXfBillJobEntity.REMARK)));
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT)))) {
-            tXfBillJobEntity.setJobAcquisitionObject(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))));
-        }
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS)))) {
-            tXfBillJobEntity.setJobAcquisitionProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))));
-        }
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT)))) {
-            tXfBillJobEntity.setJobEntryObject(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT))));
-        }
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS)))) {
-            tXfBillJobEntity.setJobEntryProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS))));
-        }
-        return billJobService.updateById(tXfBillJobEntity);
-    }
 }

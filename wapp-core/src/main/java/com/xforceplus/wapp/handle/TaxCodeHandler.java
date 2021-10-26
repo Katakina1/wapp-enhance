@@ -37,7 +37,8 @@ public class TaxCodeHandler implements IntegrationResultHandler {
         TaxCodeVO vo = JsonUtil.fromJson(sealedMessage.getPayload().getObj().toString(), TaxCodeVO.class);
         TaxCodeEntity taxCode = taxCodeConverter.map(vo);
         return new LambdaQueryChainWrapper<>(taxCodeService.getBaseMapper())
-                .eq(TaxCodeEntity::getItemNo, taxCode.getItemNo()).oneOpt()
+                .eq(TaxCodeEntity::getItemNo, taxCode.getItemNo())
+                .isNull(TaxCodeEntity::getDeleteFlag).oneOpt()
                 .map(it -> {
                     taxCode.setId(it.getId());
                     return taxCodeService.updateById(taxCode);
