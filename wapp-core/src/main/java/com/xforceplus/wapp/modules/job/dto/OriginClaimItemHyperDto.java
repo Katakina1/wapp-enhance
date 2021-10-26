@@ -59,4 +59,6 @@ public class OriginClaimItemHyperDto {
     @ExcelProperty("ITEM_NBR")
     private String itemNbr;
 
+    @ExcelProperty("STORE_NBR")
+    private String storeNbr;
 }
