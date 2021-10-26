@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
@@ -14,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,8 +39,7 @@ public class ClaimBillService extends DeductService{
     private TXfBillDeductItemRefExtDao tXfBillDeductItemRefDao;
     @Autowired
     private TaxRateConfig taxRateConfig;
-    @Autowired
-    private  ApplicationContext applicationContext;
+
     /**
      * 匹配索赔单 索赔单明细
      * 单线程执行，每次导入 只会执行一次，针对当月的索赔明细有效
@@ -243,6 +242,10 @@ public class ClaimBillService extends DeductService{
             }
             TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(tXfBillDeductEntity.getSellerNo(), true);
             TAcOrgEntity tAcPurcharserOrgEntity = queryOrgInfo(tXfBillDeductEntity.getPurchaserNo(), false);
+            if (Objects.isNull(tAcPurcharserOrgEntity) || Objects.isNull(tAcSellerOrgEntity)) {
+                log.info(" 购销方信息不完整 sellerNo : {} sellerOrgEntity{}  purcharseNo : {} purchaserOrgEntity：{}", tXfBillDeductEntity.getSellerNo(),tAcSellerOrgEntity,tXfBillDeductEntity.getPurchaserNo(),tAcPurcharserOrgEntity);
+                return false;
+            }
             //按照索赔单金额（负数），转正后，匹配
             matchResList = blueInvoiceService.matchInvoiceInfo(tXfBillDeductEntity.getAmountWithoutTax().negate(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfBillDeductEntity.getBusinessNo(), tAcSellerOrgEntity.getTaxNo(), tAcPurcharserOrgEntity.getTaxNo());
             if (CollectionUtils.isEmpty(matchResList)) {
@@ -255,7 +258,16 @@ public class ClaimBillService extends DeductService{
             tmp.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
             tmp.setId(tXfBillDeductEntity.getId());
             tXfBillDeductExtDao.updateById(tmp);
-        } catch (Exception e) {
+        }
+        catch (NoSuchInvoiceException n ) {
+            NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+            newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
+            newExceptionReportEvent.setType( ExceptionReportTypeEnum.CLAIM );
+            applicationContext.publishEvent(newExceptionReportEvent);
+            log.info(" 索赔单 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} businessNo",tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getBusinessNo());
+        }
+        catch (Exception e) {
             if (CollectionUtils.isNotEmpty(matchResList)) {
                 List<String> invoiceList = matchResList.stream().map(x -> x.getInvoiceCode() + "=---" + x.getInvoiceNo()).collect(Collectors.toList());
                 log.error(" 索赔单 匹配蓝票 回撤匹配信息 单据id {} 回撤匹配信息:{}", e,tXfBillDeductEntity.getId(),invoiceList );

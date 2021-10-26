@@ -39,6 +39,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -97,7 +98,8 @@ public class DeductService   {
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
 
-
+    @Autowired
+    protected ApplicationContext applicationContext;
 
     /**
      * 接收索赔明细
@@ -214,8 +216,13 @@ public class DeductService   {
     public boolean receiveData(List<DeductBillBaseData> deductBillBaseDataList, XFDeductionBusinessTypeEnum deductionEnum) {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
-            unlockAndCancel(deductionEnum, tXfBillDeductEntity );
-            tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+            try {
+                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
+                tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+            } catch (Exception e) {
+                log.error("{} 数据保存失败 异常{} 单据数据：{} ", deductionEnum.getDes(), e,tXfBillDeductEntity);
+            }
+
         }
         return true;
     }
@@ -393,7 +400,6 @@ public class DeductService   {
         tXfSettlementEntity.setPurchaserBankName(purchaserOrgEntity.getBank());
         tXfSettlementEntity.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
         tXfSettlementEntity.setPurchaserTel(defaultValue(purchaserOrgEntity.getPhone()) );
-        tXfSettlementEntity.setPurchaserTaxNo(purchaserOrgEntity.getTaxNo());
         tXfSettlementEntity.setAvailableAmount(tXfSettlementEntity.getAmountWithoutTax());
         tXfSettlementEntity.setTaxRate(BigDecimal.valueOf(0.00));
         tXfSettlementEntity.setId(idSequence.nextId());
@@ -454,6 +460,7 @@ public class DeductService   {
         }else{
             res = companyService.getOrgInfoByOrgCode(no, "5");
         }
+
         return res;
     }
 
@@ -485,10 +492,10 @@ public class DeductService   {
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(x);
             tXfBillDeductEntity.setAgreementDocumentNumber(defaultValue(tmp.getDocumentNo()));
             tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()) );
-            tXfBillDeductEntity.setAgreementMemo(tmp.getMemo());
-            tXfBillDeductEntity.setAgreementReasonCode(tmp.getReasonCode());
-            tXfBillDeductEntity.setAgreementReference(tmp.getReference());
-            tXfBillDeductEntity.setAgreementTaxCode(tmp.getTaxCode());
+            tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getMemo()));
+            tXfBillDeductEntity.setAgreementReasonCode(defaultValue(tmp.getReasonCode()));
+            tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReference()));
+            tXfBillDeductEntity.setAgreementTaxCode(defaultValue(tmp.getTaxCode()));
             tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
             tXfBillDeductEntity.setVerdictDate(tmp.getDeductDate());
             tXfBillDeductEntity.setBusinessNo(defaultValue(tmp.getReference()));
@@ -501,12 +508,13 @@ public class DeductService   {
         EPD_BILL(XFDeductionBusinessTypeEnum.EPD_BILL,x -> {
             EPDBillData tmp = (EPDBillData) x;
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(x);
-            tXfBillDeductEntity.setAgreementMemo(tmp.getMemo());
-            tXfBillDeductEntity.setAgreementReasonCode(tmp.getReasonCode());
-            tXfBillDeductEntity.setAgreementReference(tmp.getReference());
-            tXfBillDeductEntity.setAgreementTaxCode(tmp.getTaxCode());
-            tXfBillDeductEntity.setAgreementDocumentType(tmp.getDocumentType());
-            tXfBillDeductEntity.setAgreementMemo(tmp.getDocumentNo());
+            tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getMemo()));
+            tXfBillDeductEntity.setVerdictDate(tmp.getDeductDate());
+            tXfBillDeductEntity.setAgreementReasonCode(defaultValue(tmp.getReasonCode()));
+            tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReference()));
+            tXfBillDeductEntity.setAgreementTaxCode(defaultValue(tmp.getTaxCode()));
+            tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()));
+            tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getDocumentNo()));
             tXfBillDeductEntity.setAmountWithTax( defaultValue(x.getAmountWithTax()));
             tXfBillDeductEntity.setAmountWithoutTax(tXfBillDeductEntity.getAmountWithTax().divide(BigDecimal.ONE.add(defaultValue(tXfBillDeductEntity.getTaxRate())), 2, RoundingMode.HALF_UP));
             tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithTax().subtract(tXfBillDeductEntity.getAmountWithoutTax()));
@@ -552,7 +560,7 @@ public class DeductService   {
         tXfBillDeductEntity.setBusinessNo(defaultValue(deductBillBaseData.getBusinessNo()));
         tXfBillDeductEntity.setBatchNo(defaultValue(deductBillBaseData.getBatchNo()));
         tXfBillDeductEntity.setTaxRate(defaultValue(deductBillBaseData.getTaxRate()));
-        return tXfBillDeductEntity;
+         return tXfBillDeductEntity;
     }
 
     public TXfBillDeductEntity getDeductById(Long id){

@@ -47,6 +47,7 @@ taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
 spring:
   redis:
     host: wapp-redis
+    port: 6379
 server:
   port: 6060
 

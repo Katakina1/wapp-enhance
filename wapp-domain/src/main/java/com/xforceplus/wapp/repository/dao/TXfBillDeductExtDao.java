@@ -113,7 +113,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @param status
      * @return
      */
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no   from t_xf_bill_deduct where  create_time >= dateadd(d,-day(getdate())+1,getdate()) and business_type = #{type} and status = #{status}  group by purchaser_no,seller_no ")
+    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no   from t_xf_bill_deduct where    business_type = #{type} and status = #{status}  group by purchaser_no,seller_no ")
     public List<TXfBillDeductEntity> querySuitableClaimBill( @Param("type")Integer type,@Param("status")Integer status);
 
     /**
