@@ -505,11 +505,11 @@ public class BackFillService  {
             if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
                 return R.fail("根据结算单号未找到预制发票");
             }
-            long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.equals(t.getPreInvoiceStatus())).count();
+            long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus())).count();
             if(request.getVerifyBeanList().size() > count){
                 return R.fail("您最多只需要上传"+count+"张发票，请确认后再试");
             }
-            if(tXfPreInvoiceEntities.stream().noneMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
+            if(tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
                 return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
                         "完成后，您可以继续添加发票！\r\n" +
                         "请及时关注票据状态！或联系购货方联系");
