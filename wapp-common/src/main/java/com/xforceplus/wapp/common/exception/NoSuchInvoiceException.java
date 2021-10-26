@@ -7,4 +7,8 @@ package com.xforceplus.wapp.common.exception;
  * @create: 2021-10-20 16:26
  **/
 public class NoSuchInvoiceException extends EnhanceRuntimeException {
+
+    public NoSuchInvoiceException() {
+        super("没有匹配到合适的蓝票，请稍后重试");
+    }
 }
