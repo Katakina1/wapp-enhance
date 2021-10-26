@@ -119,7 +119,7 @@ public class ExportCommonService {
         TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
         //这里的userAccount是userName
         messagecontrolEntity.setUserAccount(userName);
-        messagecontrolEntity.setContent(getSuccContent());
+        messagecontrolEntity.setContent(content);
         messagecontrolEntity.setUrl(getUrl(logId));
         messagecontrolEntity.setTitle(title);
         commonMessageService.sendMessage(messagecontrolEntity);

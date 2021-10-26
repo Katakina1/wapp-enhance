@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.dto.R;
+import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.InvoiceType;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.JsonUtil;
@@ -16,6 +17,8 @@ import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
+import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDetailDao;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
@@ -106,6 +109,9 @@ public class BackFillService  {
 
     @Autowired
     private RecordInvoiceService recordInvoiceService;
+
+    @Autowired
+    private RedNotificationOuterService redNotificationOuterService;
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                               String tenantId) {
@@ -434,6 +440,9 @@ public class BackFillService  {
                     log.info("发票回填后匹配--修改预制发票状态");
                     preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
                     preInvoiceDao.updateById(preInvoiceEntity);
+                    log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
+                    Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
+                    log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
                 }
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {

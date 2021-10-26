@@ -1,5 +1,9 @@
 package com.xforceplus.wapp.modules.noneBusiness.service;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
@@ -7,14 +11,18 @@ import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWra
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.utils.Base64;
+import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
+import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.DiscernService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.VerificationService;
+import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
+import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
@@ -31,17 +39,21 @@ import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.owasp.esapi.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -282,13 +294,61 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             excelExportlogEntity.setStartDate(new Date());
             excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
             excelExportlogEntity.setServiceType(SERVICE_TYPE);
-            excelExportlogEntity.setFilepath(ftpPath + downLoadFileName);
+            excelExportlogEntity.setFilepath(ftpPath + "/" + downLoadFileName);
             this.excelExportLogService.save(excelExportlogEntity);
             dto.setLogId(excelExportlogEntity.getId());
-            exportCommonService.sendMessage(excelExportlogEntity.getId(),UserUtil.getLoginName(), "下载成功", exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "下载成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
             log.error("下载文件打包失败:" + e.getMessage(), e);
             throw new RRException("下载文件打包失败，请重试");
         }
+    }
+
+    public void export(TXfNoneBusinessUploadQueryDto dto) {
+        List<TXfNoneBusinessUploadDetailDto> resultList = this.noPaged(dto);
+
+        final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
+        ExcelWriter excelWriter;
+        ByteArrayInputStream in = null;
+        String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
+            //创建一个sheet
+            WriteSheet writeSheet = EasyExcel.writerSheet(0, "非商导出结果信息").build();
+            excelWriter.write(resultList, writeSheet);
+            excelWriter.finish();
+            //推送sftp
+            String ftpFilePath = ftpPath + "/" + excelFileName;
+            in = new ByteArrayInputStream(out.toByteArray());
+            ftpUtilService.uploadFile(ftpPath, excelFileName, in);
+            final Long userId = UserUtil.getUserId();
+            ExceptionReportExportDto exportDto = new ExceptionReportExportDto();
+            exportDto.setUserId(userId);
+            exportDto.setLoginName(UserUtil.getLoginName());
+            TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
+            excelExportlogEntity.setCreateDate(new Date());
+            //这里的userAccount是userid
+            excelExportlogEntity.setUserAccount(UserUtil.getUserName());
+            excelExportlogEntity.setUserName(UserUtil.getLoginName());
+            excelExportlogEntity.setConditions(JSON.toJSONString(dto));
+            excelExportlogEntity.setStartDate(new Date());
+            excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
+            excelExportlogEntity.setServiceType(SERVICE_TYPE);
+            excelExportlogEntity.setFilepath(ftpPath + "/" + excelFileName);
+            this.excelExportLogService.save(excelExportlogEntity);
+            exportDto.setLogId(excelExportlogEntity.getId());
+            exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商结果导出成功", exportCommonService.getSuccContent());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            }
+        }
+
     }
 }
