@@ -39,6 +39,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -97,7 +98,8 @@ public class DeductService   {
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
 
-
+    @Autowired
+    protected ApplicationContext applicationContext;
 
     /**
      * 接收索赔明细
