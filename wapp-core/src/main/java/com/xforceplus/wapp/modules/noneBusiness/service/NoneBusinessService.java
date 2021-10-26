@@ -10,21 +10,20 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.DiscernService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.VerificationService;
-import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
-import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
 import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
@@ -39,7 +38,6 @@ import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.owasp.esapi.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -53,7 +51,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -95,6 +92,10 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     private String exportQueue;
     @Autowired
     private TXfNoneBusinessUploadDetailDao tXfNoneBusinessUploadDetailDao;
+
+
+    @Autowired
+    private NoneBusinessConverter noneBusinessConverter;
 
 
     public void parseOfdFile(List<byte[]> ofd, TXfNoneBusinessUploadDetailEntity entity) {
@@ -304,7 +305,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         }
     }
 
-    public void export(TXfNoneBusinessUploadQueryDto dto) {
+    public R export(TXfNoneBusinessUploadQueryDto dto) {
         List<TXfNoneBusinessUploadDetailDto> resultList = this.noPaged(dto);
 
         final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
@@ -315,7 +316,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
             //创建一个sheet
             WriteSheet writeSheet = EasyExcel.writerSheet(0, "非商导出结果信息").build();
-            excelWriter.write(resultList, writeSheet);
+            excelWriter.write(noneBusinessConverter.exportMap(resultList), writeSheet);
             excelWriter.finish();
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;
@@ -339,7 +340,8 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             exportDto.setLogId(excelExportlogEntity.getId());
             exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商结果导出成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
-            e.printStackTrace();
+           log.error("导出异常:{}",e);
+           return R.fail("导出异常");
         } finally {
             if (in != null) {
                 try {
@@ -349,6 +351,6 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
                 }
             }
         }
-
+        return R.ok();
     }
 }
