@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.mapstruct;
 
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ExportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
@@ -33,9 +34,22 @@ public interface RedNotificationMainMapper {
     List<RedNotificationItem> entityToItemInfoList(List<TXfRedNotificationDetailEntity> redNotificationEntityList);
 
 
+
     ExportInfo mainEntityToExportInfo(TXfRedNotificationEntity apply);
 
-    List<ExportItemInfo> detailEntityToExportInfoList(List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities);
+
+    @Mapping(target = "billNo", source = "dto.billNo")
+    @Mapping(target = "serialNo", source = "dto.serialNo")
+    @Mapping(target = "goodsName", source = "entity.goodsName")
+    @Mapping(target = "model", source = "entity.model")
+    @Mapping(target = "unit", source = "entity.unit")
+    @Mapping(target = "amountWithTax", source = "entity.amountWithTax")
+    @Mapping(target = "amountWithoutTax", source = "entity.amountWithoutTax")
+    @Mapping(target = "taxAmount", source = "entity.taxAmount")
+    @Mapping(target = "num", source = "entity.num")
+    @Mapping(target = "unitPrice", source = "entity.unitPrice")
+    ExportItemInfo detailEntityToExportInfo(TXfRedNotificationDetailEntity entity, ExportInfo dto);
+
 
 
     @Mapping(target = "serialNo", source = "sellerNumber")

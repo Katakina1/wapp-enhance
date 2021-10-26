@@ -34,7 +34,7 @@ spring:
       FAIL_ON_UNKNOWN_PROPERTIES: false
 
   resources:
-      static-locations: classpath:/static/,classpath:/views/,classpath:/excl/
+      static-locations: classpath:/static/,classpath:/views/,classpath:/excel/
   servlet:
     multipart:
       max-file-size: 100MB

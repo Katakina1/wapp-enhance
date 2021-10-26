@@ -3,8 +3,6 @@ package com.xforceplus.wapp.modules.job.dto;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * 原始EPD单LOG明细
  *
@@ -68,10 +66,10 @@ public class OriginEpdLogItemDto {
     private String cl;
 
     @ExcelProperty("Discount Amount")
-    private BigDecimal discountAmount;
+    private String discountAmount;
 
     @ExcelProperty("Amount")
-    private BigDecimal amount;
+    private String amount;
 
     @ExcelProperty("Date in Format YYYYMMDD")
     private String dateInFormatYyyymmdd;

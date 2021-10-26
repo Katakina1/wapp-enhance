@@ -2,10 +2,6 @@ package com.xforceplus.wapp.modules.job.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /**
  * 原始协议单数据SAP-FBL5N
@@ -25,7 +21,7 @@ public class OriginAgreementBillDto {
     private String customerName;
 
     @ExcelProperty("金额(含税)")
-    private BigDecimal amountWithTax;
+    private String amountWithTax;
 
     @ExcelProperty("协议类型编码")
     private String reasonCode;
@@ -61,5 +57,5 @@ public class OriginAgreementBillDto {
     private String postingDate;
 
     @ExcelProperty("税额")
-    private BigDecimal taxAmount;
+    private String taxAmount;
 }

@@ -3,8 +3,6 @@ package com.xforceplus.wapp.modules.job.dto;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * 原始EPD单数据
  *
@@ -35,7 +33,7 @@ public class OriginEpdBillDto {
     private String clearingDate;
 
     @ExcelProperty("Amount in local currency")
-    private BigDecimal amountInLocalCurrency;
+    private String amountInLocalCurrency;
 
     @ExcelProperty("Reference key 2")
     private String referenceKey2;

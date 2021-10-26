@@ -15,17 +15,17 @@ public class ExportInfo extends BaseRowModel {
     @ExcelProperty(value = "销方名称", index = 1)
     private String sellerName;
 
-    @ExcelProperty(value = "业务单号", index = 2)
+    @ExcelProperty(value = "结算单号", index = 2)
     private String billNo;
 
     @ExcelProperty(value = "申请流水号", index = 3)
-    private String sellerNumber;
+    private String serialNo;
 
     @ExcelProperty(value = "发票代码", index = 4)
-    private String invoiceCode;
+    private String originInvoiceCode;
 
     @ExcelProperty(value = "发票号码", index = 5)
-    private String invoiceNo;
+    private String originInvoiceNo;
 
     @ExcelProperty(value = "合计金额", index = 6)
     private String amountWithoutTax;
@@ -37,10 +37,10 @@ public class ExportInfo extends BaseRowModel {
     private String amountWithTax;
 
     @ExcelProperty(value = "红字信息表编号", index = 9)
-    private String applyTaxNo;
+    private String redNotificationNo;
 
     @ExcelProperty(value = "申请结果", index = 10)
-    private String applyStatus;
+    private String approveStatus;
 
     @ExcelProperty(value = "发票类型", index = 11)
     private String invoiceType;
