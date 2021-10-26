@@ -1,20 +1,22 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import java.util.Date;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.util.Date;
 /**
  * <p>
     * 发票扫描表
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-26
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -327,29 +329,29 @@ public class TDxInvoiceEntity extends BaseEntity {
     @TableField("ariba_confirm_date")
     private Date aribaConfirmDate;
 
-    @TableField("company_code")
-    private String companyCode;
-
     @TableField("flow_type")
     private String flowType;
+
+    @TableField("company_code")
+    private String companyCode;
 
     @TableField("venderid_edit")
     private String venderidEdit;
 
-    @TableField("id")
+    @TableField("isdel")
+    private String isdel;
+
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @TableField("mail_date")
     private Date mailDate;
 
-    @TableField("isdel")
-    private String isdel;
+    @TableField("jv_code")
+    private String jvCode;
 
     @TableField("mail_company")
     private String mailCompany;
-
-    @TableField("jv_code")
-    private String jvCode;
 
     @TableField("ariba_confirm_status")
     private String aribaConfirmStatus;
@@ -458,25 +460,23 @@ public class TDxInvoiceEntity extends BaseEntity {
 
     public static final String BELONGS_TO = "belongs_to";
 
-    public static final String REMAINING_AMOUNT = "remaining_amount";
-
     public static final String ARIBA_CONFIRM_DATE = "ariba_confirm_date";
-
-    public static final String COMPANY_CODE = "company_code";
 
     public static final String FLOW_TYPE = "flow_type";
 
+    public static final String COMPANY_CODE = "company_code";
+
     public static final String VENDERID_EDIT = "venderid_edit";
+
+    public static final String ISDEL = "isdel";
 
     public static final String ID = "id";
 
     public static final String MAIL_DATE = "mail_date";
 
-    public static final String ISDEL = "isdel";
+    public static final String JV_CODE = "jv_code";
 
     public static final String MAIL_COMPANY = "mail_company";
-
-    public static final String JV_CODE = "jv_code";
 
     public static final String ARIBA_CONFIRM_STATUS = "ariba_confirm_status";
 
