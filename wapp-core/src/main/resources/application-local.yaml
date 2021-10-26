@@ -90,7 +90,7 @@ filePathConstan:
 #sftp配置
 pro:
   sftp:
-    host: 10.100.2.16  #10.44.100.123
+    host: 10.100.2.17  #10.44.100.123
     username: wappftp
     password: testwapp123
     # 授权方式：公私钥和密码选择一个，测试时选择密码
