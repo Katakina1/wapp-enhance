@@ -107,7 +107,7 @@ public class OverdueController {
     @ApiOperation("导入超期配置")
     @PutMapping("/overdue/{type}")
     public R<Integer> exportOverdue(@ApiParam(value = "超期配置类型", required = true) @PathVariable Integer type,
-                                    @RequestParam("file") MultipartFile file) {
+                                    MultipartFile file) {
         ServiceTypeEnum typeEnum = ValueEnum.getEnumByValue(ServiceTypeEnum.class, type).orElseThrow(() -> new RuntimeException("超期配置类型不正确"));
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
