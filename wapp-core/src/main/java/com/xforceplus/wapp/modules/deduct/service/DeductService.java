@@ -400,7 +400,6 @@ public class DeductService   {
         tXfSettlementEntity.setPurchaserBankName(purchaserOrgEntity.getBank());
         tXfSettlementEntity.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
         tXfSettlementEntity.setPurchaserTel(defaultValue(purchaserOrgEntity.getPhone()) );
-        tXfSettlementEntity.setPurchaserTaxNo(purchaserOrgEntity.getTaxNo());
         tXfSettlementEntity.setAvailableAmount(tXfSettlementEntity.getAmountWithoutTax());
         tXfSettlementEntity.setTaxRate(BigDecimal.valueOf(0.00));
         tXfSettlementEntity.setId(idSequence.nextId());
@@ -461,6 +460,7 @@ public class DeductService   {
         }else{
             res = companyService.getOrgInfoByOrgCode(no, "5");
         }
+
         return res;
     }
 
