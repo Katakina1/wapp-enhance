@@ -188,11 +188,11 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("claim_no")
     private String claimNo;
 
-    @TableField("create_date")
-    private Date createDate;
+    @TableField("create_time")
+    private Date createTime;
 
-    @TableField("update_date")
-    private Date updateDate;
+    @TableField("update_time")
+    private Date updateTime;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -252,9 +252,9 @@ public class TXfBillDeductItemEntity extends BaseEntity {
 
     public static final String CLAIM_NO = "claim_no";
 
-    public static final String CREATE_DATE = "create_date";
+    public static final String CREATE_TIME = "create_time";
 
-    public static final String UPDATE_DATE = "update_date";
+    public static final String UPDATE_TIME = "update_time";
 
     public static final String ID = "id";
 
