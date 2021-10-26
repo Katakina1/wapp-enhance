@@ -242,6 +242,10 @@ public class ClaimBillService extends DeductService{
             }
             TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(tXfBillDeductEntity.getSellerNo(), true);
             TAcOrgEntity tAcPurcharserOrgEntity = queryOrgInfo(tXfBillDeductEntity.getPurchaserNo(), false);
+            if (Objects.isNull(tAcPurcharserOrgEntity) || Objects.isNull(tAcSellerOrgEntity)) {
+                log.info(" 购销方信息不完整 sellerNo : {} sellerOrgEntity{}  purcharseNo : {} purchaserOrgEntity：{}", tXfBillDeductEntity.getSellerNo(),tAcSellerOrgEntity,tXfBillDeductEntity.getPurchaserNo(),tAcPurcharserOrgEntity);
+                return false;
+            }
             //按照索赔单金额（负数），转正后，匹配
             matchResList = blueInvoiceService.matchInvoiceInfo(tXfBillDeductEntity.getAmountWithoutTax().negate(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfBillDeductEntity.getBusinessNo(), tAcSellerOrgEntity.getTaxNo(), tAcPurcharserOrgEntity.getTaxNo());
             if (CollectionUtils.isEmpty(matchResList)) {
