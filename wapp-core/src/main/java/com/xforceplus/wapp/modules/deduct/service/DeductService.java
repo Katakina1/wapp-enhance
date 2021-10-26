@@ -214,8 +214,13 @@ public class DeductService   {
     public boolean receiveData(List<DeductBillBaseData> deductBillBaseDataList, XFDeductionBusinessTypeEnum deductionEnum) {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
-            unlockAndCancel(deductionEnum, tXfBillDeductEntity );
-            tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+            try {
+                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
+                tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+            } catch (Exception e) {
+                log.error("{} 数据保存失败 异常{} 单据数据：{} ", deductionEnum.getDes(), e,tXfBillDeductEntity);
+            }
+
         }
         return true;
     }
