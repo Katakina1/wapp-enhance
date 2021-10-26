@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -668,11 +669,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             if(s != null){
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, ftpFilePath);
-                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf失败",exportCommonService.getSuccContent());
+                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf失败",exportCommonService.getFailContent(s));
                 return s;
             }else {
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.OK,ftpFilePath);
-                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf成功",exportCommonService.getFailContent(s));
+                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf成功", exportCommonService.getSuccContent());
                 return "导出成功,请在消息中心查看";
             }
         }
@@ -734,19 +735,18 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         Tuple3<Long,Long,String> tuple3 = exportCommonService.insertRequest(request);
 
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
-        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+//        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
         //获取明细
-        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, applyList);
-        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
-//        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+
 
         List<Long> redNoIds = new ArrayList<>();
+        Map<Long,ExportInfo> exportInfoMap = Maps.newHashMap();
+
+        List<ExportItemInfo> itemInfos = Lists.newArrayList();
         List<ExportInfo> exportInfos = filterData.stream().map(apply -> {
-            redNoIds.add(apply.getId());
             ExportInfo dto = redNotificationMainMapper.mainEntityToExportInfo(apply);
             ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApplyingStatus()).orElse(ApproveStatus.OTHERS);
-            dto.setApplyStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
+            dto.setApproveStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
 
             if (StringUtils.isNotBlank(apply.getInvoiceType())){
                 dto.setInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getInvoiceType()).get().getDescription());
@@ -754,15 +754,48 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             if (StringUtils.isNotBlank(apply.getOriginInvoiceType())){
                 dto.setOriginInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getOriginInvoiceType()).get().getDescription());
             }
+            redNoIds.add(apply.getId());
+            exportInfoMap.put(apply.getId(),dto);
+
+            //封装1000一批次查询明细
+            if (redNoIds.size()>1000){
+                handleItemInfos(redNoIds, exportInfoMap, itemInfos);
+            }
+
             return dto;
         }).collect(Collectors.toList());
 
-        List<ExportItemInfo> itemInfos = redNotificationMainMapper.detailEntityToExportInfoList(tXfRedNotificationDetailEntities);
+        //最后一批次
+        if (redNoIds.size()>0){
+            handleItemInfos(redNoIds, exportInfoMap, itemInfos);
+        }
+
+
 
         return writeExcel(exportInfos, itemInfos, new ExportInfo(), new ExportItemInfo(),tuple3);
 
     }
 
+    private void handleItemInfos(List<Long> redNoIds, Map<Long, ExportInfo> exportInfoMap, List<ExportItemInfo> itemInfos) {
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, redNoIds);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
+        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+
+        redNoIds.stream().forEach(data->{
+            // 获取明细
+            List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities1 = listItemMap.get(data);
+            ExportInfo tmpDto = exportInfoMap.get(data);
+            tXfRedNotificationDetailEntities1.stream().forEach(item->{
+                ExportItemInfo exportItemInfo = redNotificationMainMapper.detailEntityToExportInfo(item, tmpDto);
+                itemInfos.add(exportItemInfo);
+            });
+        });
+        // 清空批次
+        redNoIds.clear();
+        exportInfoMap.clear();
+        listItemMap.clear();
+    }
 
 
     private Response writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2,Tuple3<Long,Long,String> tuple3) {
@@ -807,10 +840,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         sheet2.setSheetName(sheetName2);
 
         writer.write(list2, sheet2);
-
+        writer.finish();
         String s = exportCommonService.putFile(ftpPath,localFilePath, excelFileName);
 
-        writer.finish();
         try {
             out.close();
         } catch (IOException ioException) {
@@ -818,11 +850,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
         if(s != null){
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.FAIL, ftpFilePath);
-            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出失败",exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出失败",exportCommonService.getFailContent(s));
             return Response.failed(s);
         }else {
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.OK,ftpFilePath);
-            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出成功",exportCommonService.getFailContent(s));
+            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出成功", exportCommonService.getSuccContent());
             return Response.ok("导出成功,请在消息中心查看");
         }
 

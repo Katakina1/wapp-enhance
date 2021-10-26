@@ -18,7 +18,71 @@ public class BackFillServiceTest extends BaseUnitTest {
     EInvoiceMatchService eInvoiceMatchService;
     @Test
     public void testAfterVerify() {
-        String back = "{\"result\":{\"invoiceType\":\"ce\",\"invoiceDetails\":[{\"cargoName\":\"*肉及肉制品*MM美国谷饲牛霖.\",\"itemSpec\":\"1X1kg.\",\"quantityUnit\":\"件\",\"quantity\":\"1.84389000\",\"taxRate\":\"0.00\",\"zeroTax\":\"1\",\"unitPrice\":\"83.60043170\",\"amountWithoutTax\":\"154.15\",\"taxAmount\":\"0.00\",\"amountWithTax\":\"154.15\"},{\"cargoName\":\"*纸制品*MM斑布竹纤维本色面巾纸.\",\"itemSpec\":\"24X130'S\",\"quantityUnit\":\"袋\",\"quantity\":\"1.00000000\",\"taxRate\":\"13\",\"zeroTax\":\" \",\"unitPrice\":\"57.43000000\",\"amountWithoutTax\":\"57.43\",\"taxAmount\":\"7.47\",\"amountWithTax\":\"64.90\"},{\"cargoName\":\"*水果*都乐超甜蕉一把.\",\"itemSpec\":\"1X1.4kg\",\"quantityUnit\":\"把\",\"quantity\":\"1.00000000\",\"taxRate\":\"9\",\"zeroTax\":\" \",\"unitPrice\":\"18.26000000\",\"amountWithoutTax\":\"18.26\",\"taxAmount\":\"1.64\",\"amountWithTax\":\"19.90\"},{\"cargoName\":\"*糖果类食品*I.MM棒棒糖480G.\",\"itemSpec\":\"1X480g.\",\"quantityUnit\":\"盒\",\"quantity\":\"1.00000000\",\"taxRate\":\"13\",\"zeroTax\":\" \",\"unitPrice\":\"60.18000000\",\"amountWithoutTax\":\"60.18\",\"taxAmount\":\"7.82\",\"amountWithTax\":\"68.00\"},{\"cargoName\":\"*乳制品*蒙牛消健益生菌酸牛奶原味.\",\"itemSpec\":\"24X100g.\",\"quantityUnit\":\"盒\",\"quantity\":\"1.00000000\",\"taxRate\":\"13\",\"zeroTax\":\" \",\"unitPrice\":\"26.46000000\",\"amountWithoutTax\":\"26.46\",\"taxAmount\":\"3.44\",\"amountWithTax\":\"29.90\"},{\"cargoName\":\"*焙烤食品*曼可顿超醇面包.\",\"itemSpec\":\"2X400g\",\"quantityUnit\":\"组\",\"quantity\":\"1.00000000\",\"taxRate\":\"13\",\"zeroTax\":\" \",\"unitPrice\":\"17.52000000\",\"amountWithoutTax\":\"17.52\",\"taxAmount\":\"2.28\",\"amountWithTax\":\"19.80\"}],\"invoiceMain\":{\"taskId\":\"41d45b13-df09-4211-b024-cf252425b8a0\",\"invoiceCode\":\"044002100411\",\"invoiceNo\":\"09238197\",\"invoiceType\":\"ce\",\"purchaserTaxNo\":\"31460000MD0234170W\",\"purchaserName\":\"广东盈隆(海口)律师事务所\",\"purchaserAddrTel\":\"13600450599\",\"purchaserBankInfo\":\"\",\"sellerTaxNo\":\"914401016852269688\",\"sellerName\":\"沃尔玛（广东）百货有限公司\",\"sellerAddrTel\":\"广州市天河区黄埔大道东657、659、661号 020-31388712\",\"sellerBankInfo\":\"中国银行广州五羊新城支行 639274237796\",\"paperDrewDate\":\"20210928\",\"amountWithoutTax\":\"334\",\"taxAmount\":\"22.65\",\"amountWithTax\":\"356.65\",\"checkCode\":\"52112764761122566512\",\"machineCode\":\"661022829977\",\"remark\":\"订单号[CPCSM651809163272676487649]\",\"status\":\"1\",\"redFlag\":\"0\",\"ctStatus\":\"\",\"cpyStatus\":\"0\",\"checkNumber\":\"4\",\"checkTime\":\"2021-10-19 17:33:58\",\"goodsListFlag\":\"0\",\"dqCode\":\"4400\",\"dqName\":\"广东\",\"ofdDownloadUrl\":\"\",\"pdfDownloadUrl\":\"\",\"ofdPreviewUrl\":\"\",\"ofdImageUrl\":\"\"}},\"code\":\"TXWRVC0001\",\"message\":\"查验成功\",\"taskId\":\"41d45b13-df09-4211-b024-cf252425b8a0\"}";
+        String back = "{\n" +
+                "\t\"result\": {\n" +
+                "\t\t\"invoiceType\": \"s\",\n" +
+                "\t\t\"invoiceDetails\": [{\n" +
+                "\t\t\t\"cargoName\": \"*油料*花生碎\",\n" +
+                "\t\t\t\"itemSpec\": \"\",\n" +
+                "\t\t\t\"quantityUnit\": \"件\",\n" +
+                "\t\t\t\"quantity\": \"-1\",\n" +
+                "\t\t\t\"taxRate\": \"13\",\n" +
+                "\t\t\t\"zeroTax\": \" \",\n" +
+                "\t\t\t\"unitPrice\": \"74.00\",\n" +
+                "\t\t\t\"amountWithoutTax\": \"-74\",\n" +
+                "\t\t\t\"taxAmount\": \"-9.62\",\n" +
+                "\t\t\t\"amountWithTax\": \"-83.62\"\n" +
+                "\t\t}, {\n" +
+                "\t\t\t\"cargoName\": \"*植物油*V金味高级夹心油\",\n" +
+                "\t\t\t\"itemSpec\": \"\",\n" +
+                "\t\t\t\"quantityUnit\": \"件\",\n" +
+                "\t\t\t\"quantity\": \"-2\",\n" +
+                "\t\t\t\"taxRate\": \"13\",\n" +
+                "\t\t\t\"zeroTax\": \" \",\n" +
+                "\t\t\t\"unitPrice\": \"168.00\",\n" +
+                "\t\t\t\"amountWithoutTax\": \"-336\",\n" +
+                "\t\t\t\"taxAmount\": \"-43.68\",\n" +
+                "\t\t\t\"amountWithTax\": \"-379.68\"\n" +
+                "\t\t}],\n" +
+                "\t\t\"invoiceMain\": {\n" +
+                "\t\t\t\"taskId\": \"d63a7b2b-f15d-4bef-8940-d41179c4e2cb\",\n" +
+                "\t\t\t\"invoiceCode\": \"5300194130\",\n" +
+                "\t\t\t\"invoiceNo\": \"00957689\",\n" +
+                "\t\t\t\"invoiceType\": \"s\",\n" +
+                "\t\t\t\"purchaserTaxNo\": \"915300005501314867\",\n" +
+                "\t\t\t\"purchaserName\": \"沃尔玛（云南）商业零售有限公司\",\n" +
+                "\t\t\t\"purchaserAddrTel\": \"云南省昆明市五华区红云街道北市区银河片区尚家营村旁银河星辰花园2幢1层商铺2号 0871-64626580\",\n" +
+                "\t\t\t\"purchaserBankInfo\": \"中国工商银行股份有限公司昆明银通支行 2502010509200118958\",\n" +
+                "\t\t\t\"sellerTaxNo\": \"91530300323114440U\",\n" +
+                "\t\t\t\"sellerName\": \"沃尔玛（云南）商业零售有限公司曲靖子午路分店\",\n" +
+                "\t\t\t\"sellerAddrTel\": \"云南省曲靖市麒麟区南片区子午路与文笔路交叉口东北角 0874-3192618\",\n" +
+                "\t\t\t\"sellerBankInfo\": \"中国工商银行股份有限公司曲靖南市支行 2505001009000018549\",\n" +
+                "\t\t\t\"paperDrewDate\": \"20201231\",\n" +
+                "\t\t\t\"amountWithoutTax\": \"-410\",\n" +
+                "\t\t\t\"taxAmount\": \"-53.3\",\n" +
+                "\t\t\t\"amountWithTax\": \"-463.3\",\n" +
+                "\t\t\t\"checkCode\": \"56924369321133034746\",\n" +
+                "\t\t\t\"machineCode\": \"661506428408\",\n" +
+                "\t\t\t\"remark\": \"开具红字增值税专用发票信息表编号5303022012013293&lt;br/&gt; MTR#272464006190001/发出方：2464；ZW/购入方：2393；ZW 订单号[]\",\n" +
+                "\t\t\t\"status\": \"1\",\n" +
+                "\t\t\t\"redFlag\": \"0\",\n" +
+                "\t\t\t\"ctStatus\": \"\",\n" +
+                "\t\t\t\"cpyStatus\": \"0\",\n" +
+                "\t\t\t\"checkNumber\": \"4\",\n" +
+                "\t\t\t\"checkTime\": \"2021-10-26 10:59:37\",\n" +
+                "\t\t\t\"goodsListFlag\": \"0\",\n" +
+                "\t\t\t\"dqCode\": \"5300\",\n" +
+                "\t\t\t\"dqName\": \"云南\",\n" +
+                "\t\t\t\"ofdDownloadUrl\": \"\",\n" +
+                "\t\t\t\"pdfDownloadUrl\": \"\",\n" +
+                "\t\t\t\"ofdPreviewUrl\": \"\",\n" +
+                "\t\t\t\"ofdImageUrl\": \"\"\n" +
+                "\t\t}\n" +
+                "\t},\n" +
+                "\t\"code\": \"TXWRVC0001\",\n" +
+                "\t\"message\": \"查验成功\",\n" +
+                "\t\"taskId\": \"d63a7b2b-f15d-4bef-8940-d41179c4e2cb\"\n" +
+                "}";
         VerificationBack verificationBack = JSONObject.parseObject(back, VerificationBack.class);
         eInvoiceMatchService.matchResultAfterVerify(verificationBack,null);
     }

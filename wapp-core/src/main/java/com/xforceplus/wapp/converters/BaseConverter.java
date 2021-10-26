@@ -29,8 +29,18 @@ public interface BaseConverter {
 
     @SneakyThrows
     @Named("formatYMD")
-    default Date mapStringToDate(String date) {
+    default Date formatYMD(String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        return sdf.parse(date);
+    }
+
+    @SneakyThrows
+    @Named("formatYMDHMS")
+    default Date formatYMDHMS(String date) {
+        if (StringUtils.isBlank(date)) {
+            return null;
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sdf.parse(date);
     }
 }

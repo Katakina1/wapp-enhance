@@ -31,7 +31,7 @@ public interface InvoiceConverter {
     @Mapping(source = "data.authStatus", target = "rzhYesorno")
     @Mapping(target = "data.rzhType", expression = "java(1)")
     @Mapping(source = "data.authSyncStatus", target = "authStatus", qualifiedByName = "mapAuthSyncStatus")
-    @Mapping(source = "data.authBussiDate", target = "gxDate")
+    @Mapping(source = "data.authBussiDate", target = "gxDate", qualifiedByName = "formatYMDHMS")
     @Mapping(target = "uuid", expression = "java(data.getInvoiceCode() + data.getInvoiceNo())")
     @Mapping(source = "detailYesorno", target = "detailYesorno")
     TDxRecordInvoiceEntity map(InvoiceVo.Invoice data, int detailYesorno);

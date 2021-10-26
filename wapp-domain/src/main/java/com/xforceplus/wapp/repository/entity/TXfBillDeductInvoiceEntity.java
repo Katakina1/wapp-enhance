@@ -68,11 +68,11 @@ public class TXfBillDeductInvoiceEntity extends BaseEntity {
     @TableField("thrid_id")
     private Long thridId;
 
-    @TableField("update_date")
-    private Date updateDate;
+    @TableField("create_time")
+    private Date createTime;
 
-    @TableField("create_date")
-    private Date createDate;
+    @TableField("update_time")
+    private Date updateTime;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
@@ -92,9 +92,9 @@ public class TXfBillDeductInvoiceEntity extends BaseEntity {
 
     public static final String THRID_ID = "thrid_id";
 
-    public static final String UPDATE_DATE = "update_date";
+    public static final String CREATE_TIME = "create_time";
 
-    public static final String CREATE_DATE = "create_date";
+    public static final String UPDATE_TIME = "update_time";
 
     public static final String ID = "id";
 

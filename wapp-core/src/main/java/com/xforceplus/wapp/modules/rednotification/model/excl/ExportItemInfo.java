@@ -13,16 +13,16 @@ public class ExportItemInfo extends BaseRowModel {
     private String billNo;
 
     @ExcelProperty(value = "申请流水号", index = 1)
-    private String sellerNumber;
+    private String serialNo;
 
     @ExcelProperty(value = "货物名称", index = 2)
-    private String cargoName;
+    private String goodsName;
 
     @ExcelProperty(value = "规格型号", index = 3)
-    private String itemSpec;
+    private String model;
 
     @ExcelProperty(value = "数量单位", index = 4)
-    private String quantityUnit;
+    private String unit;
 
     @ExcelProperty(value = "含税金额", index = 5)
     private String amountWithTax;
@@ -34,7 +34,7 @@ public class ExportItemInfo extends BaseRowModel {
     private String taxAmount;
 
     @ExcelProperty(value = "数量", index = 8)
-    private String quantity;
+    private String num;
 
     @ExcelProperty(value = "税率", index = 9)
     private String taxRate;

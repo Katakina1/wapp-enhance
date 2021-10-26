@@ -4,13 +4,16 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.xforceplus.wapp.common.enums.ValueEnum;
-import com.xforceplus.wapp.enums.ServiceTypeEnum;
 import com.xforceplus.wapp.modules.overdue.dto.OverdueDto;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -49,6 +52,9 @@ public class OverdueImportListener extends AnalysisEventListener<OverdueDto> {
     }
 
     private boolean checkImportInvoice(OverdueDto data) {
-        return ValueEnum.isValid(ServiceTypeEnum.class, data.getType());
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<OverdueDto>> validate = validator.validate(data);
+        return validate.isEmpty();
     }
 }
