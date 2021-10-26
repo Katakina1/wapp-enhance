@@ -133,11 +133,11 @@ public class DeductService   {
             tmp.setVnpkQuantity(defaultValue(claimBillItemData.getVnpkQuantity()).intValue());
             tmp.setPurchaserNo(defaultValue(claimBillItemData.getStoreNbr()));
             tmp.setDeptNbr(defaultValue(claimBillItemData.getDeptNbr()));
-            tmp.setCreateDate(date);
+            tmp.setCreateTime(date);
             tmp.setId(idSequence.nextId());
             tmp.setRemainingAmount(defaultValue(claimBillItemData.getAmountWithoutTax()));
             tmp.setGoodsNoVer("33.0");
-            tmp.setUpdateDate(tmp.getCreateDate());
+            tmp.setUpdateTime(tmp.getCreateTime());
             tmp.setAmountWithoutTax(defaultValue(claimBillItemData.getAmountWithoutTax()).setScale(2,RoundingMode.HALF_UP));
             tmp.setTaxAmount(defaultValue(claimBillItemData.getAmountWithoutTax()).multiply(defaultValue(claimBillItemData.getTaxRate())).setScale(2, RoundingMode.HALF_UP));
             tmp.setAmountWithTax(tmp.getAmountWithoutTax().add(tmp.getTaxAmount()));
@@ -233,8 +233,8 @@ public class DeductService   {
         DeductionHandleEnum dedcutionHandleEnum = optionalDedcutionHandleEnum.get();
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
             TXfBillDeductEntity tmp = dedcutionHandleEnum.function.apply(deductBillBaseData);
-            tmp.setCreateDate(date);
-            tmp.setUpdateDate(tmp.getCreateDate());
+            tmp.setCreateTime(date);
+            tmp.setUpdateTime(tmp.getCreateTime());
             tmp.setId(idSequence.nextId());
             list.add(tmp);
          }
@@ -835,8 +835,8 @@ public class DeductService   {
             tXfBillDeductInvoiceEntity.setBusinessType(relationType);
             tXfBillDeductInvoiceEntity.setInvoiceCode(matchRes.invoiceCode);
             tXfBillDeductInvoiceEntity.setInvoiceNo(matchRes.invoiceNo);
-            tXfBillDeductInvoiceEntity.setCreateDate(date);
-            tXfBillDeductInvoiceEntity.setUpdateDate(date);
+            tXfBillDeductInvoiceEntity.setCreateTime(date);
+            tXfBillDeductInvoiceEntity.setUpdateTime(date);
             tXfBillDeductInvoiceEntity.setThridId(id);
 
             tXfBillDeductInvoiceEntity.setUseAmount(matchRes.deductedAmount);

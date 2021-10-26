@@ -179,7 +179,7 @@ public class ClaimBillService extends DeductService{
 
             TXfBillDeductItemRefEntity tXfBillDeductItemRefEntity = new TXfBillDeductItemRefEntity();
             tXfBillDeductItemRefEntity.setId(idSequence.nextId());
-            tXfBillDeductItemRefEntity.setCreateDate(DateUtils.getNowDate());
+            tXfBillDeductItemRefEntity.setCreateTime(DateUtils.getNowDate());
             tXfBillDeductItemRefEntity.setDeductId(billId);
             tXfBillDeductItemRefEntity.setUseAmount(amount);
             tXfBillDeductItemRefEntity.setDeductItemId(tXfBillDeductItemEntity.getId());
