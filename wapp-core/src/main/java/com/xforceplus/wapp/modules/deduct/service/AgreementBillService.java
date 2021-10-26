@@ -6,6 +6,9 @@ import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.modules.exceptionreport.event.NewExceptionReportEvent;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -57,17 +60,28 @@ public class AgreementBillService extends DeductService{
                 continue;
             }
             TXfBillDeductEntity negativeBill = tXfBillDeductExtDao.querySpecialNegativeBill(tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate(), deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode(),TXfBillDeductStatusEnum.UNLOCK.getCode());
-            BigDecimal mergeAmount = negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax());
+            BigDecimal mergeAmount =  tmp.getAmountWithoutTax();
+            BigDecimal negativeBillAmount = BigDecimal.ZERO;
+            if (Objects.nonNull(negativeBill)) {
+                negativeBillAmount = negativeBill.getAmountWithoutTax();
+                mergeAmount = negativeBillAmount.add(mergeAmount);
+            }
             //当前结算单 金额 大于 剩余发票金额
             if (nosuchInvoiceSeller.containsKey(tmp.getSellerNo()) && nosuchInvoiceSeller.get(tmp.getSellerNo()).compareTo(mergeAmount) < 0) {
-                log.info(" {} 单据合并失败 : 销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
+                log.info(" {} 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
                 continue;
             }
             if (mergeAmount.compareTo(BigDecimal.ZERO) > 0) {
                 try {
                      excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
                 } catch (NoSuchInvoiceException n ) {
-                    nosuchInvoiceSeller.put(tmp.getSellerNo(), negativeBill.getAmountWithoutTax().add(tmp.getAmountWithoutTax()));
+                    NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+                    newExceptionReportEvent.setDeduct(tmp);
+                    newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
+                    newExceptionReportEvent.setType(deductionEnum == XFDeductionBusinessTypeEnum.EPD_BILL?ExceptionReportTypeEnum.EPD:ExceptionReportTypeEnum.AGREEMENT);
+                    applicationContext.publishEvent(newExceptionReportEvent);
+                    nosuchInvoiceSeller.put(tmp.getSellerNo(), negativeBillAmount.add(tmp.getAmountWithoutTax()));
+                    log.info(" {} 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purcharseNo);
                 }
                 catch (Exception e) {
                     log.error("{}单合并异常 销方:{}，购方:{}，税率:{}", deductionEnum.getDes(), tmp.getPurchaserNo(), tmp.getSellerNo(), tmp.getTaxRate());
@@ -184,7 +198,9 @@ public class AgreementBillService extends DeductService{
         Integer targetStatus = targetSatus.getCode();
         List<TXfBillDeductEntity> tXfBillDeductEntities = new ArrayList<>();
         tXfBillDeductEntities.add(tmp);
-        tXfBillDeductEntities.add(negativeBill);
+        if (Objects.nonNull(negativeBill)) {
+            tXfBillDeductEntities.add(negativeBill);
+        }
         TXfSettlementEntity tXfSettlementEntity =  trans2Settlement(tXfBillDeductEntities,deductionEnum);
         tXfBillDeductExtDao.updateMergeNegativeBill(tXfSettlementEntity.getSettlementNo(),purchaserNo, sellerNo, taxRate, type, status, targetStatus, TXfBillDeductStatusEnum.UNLOCK.getCode());
         tXfBillDeductExtDao.updateMergePositiveBill(tXfSettlementEntity.getSettlementNo(),purchaserNo, sellerNo, taxRate, referenceDate, type, status, targetStatus, TXfBillDeductStatusEnum.UNLOCK.getCode());

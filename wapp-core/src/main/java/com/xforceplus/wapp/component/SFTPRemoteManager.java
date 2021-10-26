@@ -109,7 +109,7 @@ public class SFTPRemoteManager {
         // 通过 用户名，主机地址，端口 获取一个Session对象
         session = jsch.getSession(userName, host, port);
         // 设置密码
-        if (Objects.equals(authMethod, "password") && password != null) {
+        if (Objects.equals(authMethod, "pwd") && password != null) {
             this.session.setPassword(password);
         }
         // 为Session对象设置properties
