@@ -6,7 +6,9 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.constants.Constants;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
 import com.xforceplus.wapp.modules.noneBusiness.dto.*;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
@@ -165,15 +167,22 @@ public class NoneBusinessController {
      */
     @ApiOperation("下载源文件")
     @PostMapping(value = "/down")
-    public void down(FileDownRequest request) {
-        if (CollectionUtils.isEmpty(request.getIds())) {
-            throw new RRException("请选中数据后进行下载");
+    public R down(FileDownRequest request) {
+        try {
+            if (CollectionUtils.isEmpty(request.getIds())) {
+                throw new RRException("请选中数据后进行下载");
+            }
+            List<TXfNoneBusinessUploadDetailEntity> list = noneBusinessService.listByIds(request.getIds());
+            if (CollectionUtils.isEmpty(list)) {
+                throw new RRException("您所选发票不包含任何附件文件");
+            }
+            noneBusinessService.down(list, request);
+            return R.ok();
+        } catch (Exception e) {
+            log.error("非商下载源文件异常:{}", e);
+            return R.fail("下载源文件异常" + e.getMessage());
         }
-        List<TXfNoneBusinessUploadDetailEntity> list = noneBusinessService.listByIds(request.getIds());
-        if (CollectionUtils.isEmpty(list)) {
-            throw new RRException("您所选发票不包含任何附件文件");
-        }
-        noneBusinessService.down(list, request);
+
     }
 
     @ApiOperation("上传记录批量批量删除")
@@ -264,6 +273,13 @@ public class NoneBusinessController {
 
         }
 
+    }
+
+    @GetMapping("claim/export")
+    @ApiOperation(value = "索赔单导出")
+    public R export(TXfNoneBusinessUploadQueryDto dto) {
+        noneBusinessService.export(dto);
+        return R.ok("单据导出正在处理，请在消息中心");
     }
 
 }
