@@ -130,6 +130,17 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         Page<TXfExceptionReportEntity> page = new Page<>();
         page.setSize(request.getSize());
         page.setCurrent(request.getPage());
+        if (StringUtils.isBlank(request.getBillNo())){
+            request.setBillNo(null);
+        }
+        if(StringUtils.isBlank(request.getSellerNo())){
+            request.setSellerNo(null);
+        }
+
+        if (StringUtils.isBlank(request.getPurchaserNo())){
+            request.setPurchaserNo(null);
+        }
+
         TXfExceptionReportEntity entity = exceptionReportMapper.toEntity(request);
         entity.setType(typeEnum.getType());
         final String startDeductDate = request.getStartDeductDate();

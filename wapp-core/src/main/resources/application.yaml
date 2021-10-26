@@ -32,6 +32,7 @@ spring:
 
     deserialization:
       FAIL_ON_UNKNOWN_PROPERTIES: false
+      ACCEPT_EMPTY_STRING_AS_NULL_OBJECT: true
 
   resources:
       static-locations: classpath:/static/,classpath:/views/,classpath:/excel/
