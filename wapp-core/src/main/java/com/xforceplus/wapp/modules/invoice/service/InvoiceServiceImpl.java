@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -183,6 +184,8 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             newTXfBillDeductInvoiceEntity.setBusinessType(TXfBillDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
             newTXfBillDeductInvoiceEntity.setStatus(0);
             newTXfBillDeductInvoiceEntity.setUseAmount(useAmount);
+            newTXfBillDeductInvoiceEntity.setCreateDate(new Date());
+            newTXfBillDeductInvoiceEntity.setUpdateDate(new Date());
             tXfBillDeductInvoiceDao.insert(newTXfBillDeductInvoiceEntity);
             //使用底账蓝票额度
             TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
