@@ -87,6 +87,7 @@ public class CommEpdService {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setRefSettlementNo("");
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
