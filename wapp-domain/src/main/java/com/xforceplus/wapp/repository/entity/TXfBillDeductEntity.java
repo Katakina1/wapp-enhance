@@ -176,11 +176,11 @@ EPD单:301待匹配结算单;302已匹配结算单
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField("create_date")
-    private Date createDate;
+    @TableField("create_time")
+    private Date createTime;
 
-    @TableField("update_date")
-    private Date updateDate;
+    @TableField("update_time")
+    private Date updateTime;
 
 
     public static final String BUSINESS_NO = "business_no";
@@ -233,8 +233,8 @@ EPD单:301待匹配结算单;302已匹配结算单
 
     public static final String ID = "id";
 
-    public static final String CREATE_DATE = "create_date";
+    public static final String CREATE_TIME = "create_time";
 
-    public static final String UPDATE_DATE = "update_date";
+    public static final String UPDATE_TIME = "update_time";
 
 }
