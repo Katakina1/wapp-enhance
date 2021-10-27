@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -32,8 +31,7 @@ public class OriginAgreementBillDataListener extends AnalysisEventListener<Origi
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
     private final OriginAgreementBillService service;
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
     /**
      * 缓存的数据
      */
@@ -41,10 +39,11 @@ public class OriginAgreementBillDataListener extends AnalysisEventListener<Origi
     @Getter
     private long cursor;
 
-    public OriginAgreementBillDataListener(int jobId, long cursor, OriginAgreementBillService service) {
+    public OriginAgreementBillDataListener(int jobId, long cursor, OriginAgreementBillService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
+        this.validator = validator;
     }
 
     @Override
