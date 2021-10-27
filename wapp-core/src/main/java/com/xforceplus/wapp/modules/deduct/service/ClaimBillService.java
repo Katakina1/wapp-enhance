@@ -68,6 +68,10 @@ public class ClaimBillService extends DeductService{
                     log.warn("索赔单{}主信息 不符合要求，sellerNo:{},purcharseNo:{},taxRate:{}",sellerNo,purcharseNo,taxRate);
                     continue;
                 }
+                if (StringUtils.isEmpty(tXfBillDeductEntity.getBusinessNo())  ) {
+                    log.warn("索赔单{}主信息  单号为空 跳过匹配",sellerNo,purcharseNo,taxRate);
+                    continue;
+                }
                 /**
                  * 查询已匹配金额
                  */
@@ -79,20 +83,8 @@ public class ClaimBillService extends DeductService{
                 /**
                  * 查询符合条件的明细
                  */
-                List<TXfBillDeductItemEntity> claimNoList = Collections.EMPTY_LIST;
-                if (StringUtils.isNotEmpty(tXfBillDeductEntity.getBusinessNo())) {
-                    claimNoList  =   tXfBillDeductItemExtDao.queryMatchBillItemByClaimNo(startDate, endDate, purcharseNo, sellerNo, tXfBillDeductEntity.getBusinessNo());
-                    if(CollectionUtils.isEmpty(claimNoList)){
-                        claimNoList = new ArrayList<>();
-                    }
-                }
                 Long itemId = 1L;
-                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate,  itemId, limit);
-                if (CollectionUtils.isNotEmpty(tXfBillDeductItemEntities)) {
-                    tXfBillDeductItemEntities.addAll(claimNoList);
-                }else{
-                    tXfBillDeductItemEntities = claimNoList;
-                }
+                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate,  itemId,limit, tXfBillDeductEntity.getBusinessNo());
                 while (billAmount.compareTo(BigDecimal.ZERO) > 0) {
                     if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
                         taxRate = taxRateConfig.getNextTaxRate(taxRate);
@@ -101,7 +93,7 @@ public class ClaimBillService extends DeductService{
                             break;
                         }
                         itemId = 0L;
-                        tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit);
+                        tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
                         continue;
                     }
                     BigDecimal total = tXfBillDeductItemEntities.stream().map(TXfBillDeductItemEntity::getAmountWithoutTax).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -115,7 +107,7 @@ public class ClaimBillService extends DeductService{
                         break;
                     }
                     itemId =   tXfBillDeductItemEntities.stream().mapToLong(TXfBillDeductItemEntity::getId).max().getAsLong();
-                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit);
+                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
                 }
                 /**
                  * 匹配完成 进行绑定操作
