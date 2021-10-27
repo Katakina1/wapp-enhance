@@ -7,11 +7,16 @@ import com.xforceplus.wapp.modules.job.service.OriginClaimBillService;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimBillEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @program: wapp-generator
@@ -27,6 +32,8 @@ public class OriginClaimBillDataListener extends AnalysisEventListener<OriginCla
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
     private final OriginClaimBillService service;
+    @Autowired
+    private Validator validator;
     /**
      * 缓存的数据
      */
@@ -42,11 +49,16 @@ public class OriginClaimBillDataListener extends AnalysisEventListener<OriginCla
 
     @Override
     public void invoke(OriginClaimBillDto data, AnalysisContext context) {
-        list.add(data);
-        if (list.size() >= BATCH_COUNT) {
-            saveData();
-            // 存储完成清理 list
-            list = new ArrayList<>();
+        Set<ConstraintViolation<OriginClaimBillDto>> violations = validator.validate(data);
+        if (CollectionUtils.isEmpty(violations)) {
+            list.add(data);
+            if (list.size() >= BATCH_COUNT) {
+                saveData();
+                // 存储完成清理 list
+                list = new ArrayList<>();
+            }
+        } else {
+            log.warn("索赔单原始数据校验失败 jobId={} 错误原因={}", jobId, violations.stream().findAny().orElse(null));
         }
     }
 
