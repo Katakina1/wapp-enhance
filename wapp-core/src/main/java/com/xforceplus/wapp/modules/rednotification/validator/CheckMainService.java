@@ -5,6 +5,7 @@ import com.xforceplus.wapp.modules.rednotification.mapstruct.ConvertHelper;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.util.RegexUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,9 +15,10 @@ import java.util.Optional;
 /**
  * 校验红字主信息
  */
+@Service
 public class CheckMainService {
 
-    String checkMainInfo(ImportInfo importInfo){
+    public String checkMainInfo(ImportInfo importInfo){
 
         StringBuilder errorBuilder = new StringBuilder();
         Integer applyTypeValue = importInfo.getApplyType();

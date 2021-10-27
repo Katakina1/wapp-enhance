@@ -23,7 +23,7 @@ spring:
     # jackson时间格式化
 
   jackson:
-    time-zone: GMT+0
+    time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
 
     deserialization:
@@ -47,8 +47,7 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:mapper/daoext/*.xml
 #  type-aliases-package: com.xforceplus.wapp.repository.entity
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 # 日志
 #logging:
 #  path: /home/vn03qsx/logs/

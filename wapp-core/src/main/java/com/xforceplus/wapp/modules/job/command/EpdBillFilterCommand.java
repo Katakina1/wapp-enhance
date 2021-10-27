@@ -17,6 +17,7 @@ import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -151,7 +152,9 @@ public class EpdBillFilterCommand implements Command {
                 // 无税率的EPD单是无效单据
                 .filter(v -> Objects.nonNull(v.getTaxRate()))
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.EPD_BILL);
+        if (CollectionUtils.isNotEmpty(newList)) {
+            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.EPD_BILL);
+        }
     }
 
     /**

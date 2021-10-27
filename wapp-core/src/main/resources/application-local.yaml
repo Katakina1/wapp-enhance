@@ -140,3 +140,7 @@ spring:
     port: 23333
     password: 8eSf4M97VLhP6hq8
     database: 2
+
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
