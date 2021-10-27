@@ -94,8 +94,8 @@ pro:
     host: 10.100.2.17  #10.44.100.123
     username: wappftp
     password: testwapp123
-    # 授权方式：公私钥和密码选择一个，测试时选择密码
-    auth-method: password
+    # 授权方式：公私钥和密码选择一个，测试时选择密码,pwd密码，private 私钥，默认private
+    auth-method: pwd
     default:
       port: 22
       timeout: 60000
