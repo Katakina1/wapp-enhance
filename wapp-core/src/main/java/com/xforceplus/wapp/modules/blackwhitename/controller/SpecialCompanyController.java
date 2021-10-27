@@ -79,7 +79,7 @@ public class SpecialCompanyController {
     @GetMapping(value = "/template")
     public void template(HttpServletResponse res, HttpServletRequest req){
         try {
-            String fileName = "companyTemplate.xlsx";
+            String fileName = "1companyTemplate.xlsx";
             //获取
 
 
