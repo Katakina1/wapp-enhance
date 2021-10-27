@@ -4,10 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.enums.OperateLogEnum;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.TDxQuestionPaperEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
@@ -50,9 +53,10 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
     private CommClaimService commClaimService;
     @Autowired
     private TDxQuestionPaperDao tDxQuestionPaperDao;
-
     @Autowired
     private DeductMapper deductMapper;
+    @Autowired
+    private OperateLogService operateLogService;
 
     /**
      * 申请索赔单不定案
@@ -115,6 +119,12 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         });
         // 需要将数据放入到问题列表清单(关联一期)
         saveQuestionPaper(tXfSettlementEntity, billDeductList);
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(tXfSettlementEntity.getId());
+        operateLogService.add(settlement.getId(), OperateLogEnum.APPLY_VERDICT,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -162,6 +172,11 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+        operateLogService.add(settlementId, OperateLogEnum.REJECT_VERDICT,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -173,6 +188,12 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
     @Transactional
     public void agreeClaimVerdict(Long settlementId) {
         commClaimService.destroyClaimSettlement(settlementId);
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+        operateLogService.add(settlementId, OperateLogEnum.PASS_VERDICT,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -220,7 +241,6 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         settlementBillDeDuctMap.forEach((key, value) -> {
             List<Long> settlementDeductIdList = value.stream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
             doApplyVerdict(key, settlementDeductIdList);
-
         });
     }
 
