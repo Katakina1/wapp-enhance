@@ -16,7 +16,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,12 @@ public class AgreementController {
 
     @Autowired
     private DeductViewService deductService;
+
+    // 使用全局配置 PropertyEditorRegistrar
+//    @InitBinder
+//    public void initBinder(WebDataBinder binder) {
+//        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
+//    }
 
     @GetMapping("summary")
     @ApiOperation(value = "页头统计")
