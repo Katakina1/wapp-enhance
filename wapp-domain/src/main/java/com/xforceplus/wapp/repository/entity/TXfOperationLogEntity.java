@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-25
+ * @since 2021-10-27
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -24,18 +24,6 @@ import lombok.ToString;
 public class TXfOperationLogEntity extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 主键
-     */
-    @TableField("id")
-    private Long id;
-
-    /**
-     * 操作类型 0 settlement, 1 deduct ,2 invoice
-     */
-    @TableField("operate_type")
-    private String operateType;
 
     /**
      * 操作描述
@@ -73,10 +61,24 @@ public class TXfOperationLogEntity extends BaseEntity {
     @TableField("business_id")
     private Long businessId;
 
+    /**
+     * 主键
+     */
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
 
-    public static final String ID = "id";
+    /**
+     * 操作类型
+     */
+    @TableField("operate_type")
+    private Integer operateType;
 
-    public static final String OPERATE_TYPE = "operate_type";
+    /**
+     * 操作代码
+     */
+    @TableField("operate_code")
+    private String operateCode;
+
 
     public static final String OPERATE_DESC = "operate_desc";
 
@@ -89,5 +91,11 @@ public class TXfOperationLogEntity extends BaseEntity {
     public static final String BUSINESS_STATUS = "business_status";
 
     public static final String BUSINESS_ID = "business_id";
+
+    public static final String ID = "id";
+
+    public static final String OPERATE_TYPE = "operate_type";
+
+    public static final String OPERATE_CODE = "operate_code";
 
 }
