@@ -9,19 +9,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.enums.OperateLogEnum;
 import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
 import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.billdeduct.converters.BillDeductConverter;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductServiceImpl;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.preinvoice.converters.PreInvoiceConverter;
 import com.xforceplus.wapp.modules.preinvoice.service.PreInvoiceItemDaoService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
-import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.settlement.converters.SettlementItemConverter;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
-import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.modules.statement.converters.StatementConverter;
 import com.xforceplus.wapp.modules.statement.models.*;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 @Service
 public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettlementEntity> {
     private final StatementConverter statementConverter;
+    private final OperateLogService operateLogService;
     private final TXfBillDeductExtDao billDeductExtDao;
     private final PreinvoiceService preinvoiceService;
     private final PreInvoiceConverter preInvoiceConverter;
@@ -61,8 +62,9 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
     private final BillDeductItemServiceImpl billDeductItemService;
     private final PreInvoiceItemDaoService preInvoiceItemDaoService;
 
-    public StatementServiceImpl(StatementConverter statementConverter, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
+    public StatementServiceImpl(StatementConverter statementConverter, OperateLogService operateLogService, TXfBillDeductExtDao billDeductExtDao, PreinvoiceService preinvoiceService, PreInvoiceConverter preInvoiceConverter, SettlementItemServiceImpl settlementItemService, SettlementItemConverter settlementItemConverter, BillDeductServiceImpl billDeductService, BillDeductConverter billDeductConverter, BillDeductItemServiceImpl billDeductItemService, PreInvoiceItemDaoService preInvoiceItemDaoService) {
         this.statementConverter = statementConverter;
+        this.operateLogService = operateLogService;
         this.billDeductExtDao = billDeductExtDao;
         this.preinvoiceService = preinvoiceService;
         this.preInvoiceConverter = preInvoiceConverter;
@@ -254,7 +256,8 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
 
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean confirmItem(String settlementNo, String sellerNo, List<Long> ids, @NonNull TXfAmountSplitRuleEnum type) {
-        val build = ImmutableMap
+        log.info("结算单确认,settlementNo:{},sellerNo:{},type:{},明细ID:{}", settlementNo, sellerNo, type.getDesc(), ids);
+        val splitType = ImmutableMap
                 .<TXfAmountSplitRuleEnum, Consumer<TXfSettlementItemEntity>>builder()
                 .put(TXfAmountSplitRuleEnum.SplitPrice, entity -> entity.setUnitPrice(entity.getAmountWithoutTax().divide(entity.getQuantity(), 10, RoundingMode.HALF_UP)))
                 .put(TXfAmountSplitRuleEnum.SplitQuantity, entity -> entity.setQuantity(entity.getAmountWithoutTax().divide(entity.getUnitPrice(), 10, RoundingMode.HALF_UP)))
@@ -262,7 +265,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         List<TXfSettlementItemEntity> entities = settlementItemService.listByIds(ids);
         entities.forEach(it -> {
             it.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getValue());
-            build.get(type).accept(it);
+            splitType.get(type).accept(it);
         });
         new LambdaUpdateChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo)
                 .set(TXfSettlementEntity::getSettlementStatus, TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getValue())
@@ -278,6 +281,15 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             log.error("拆票方法异常,", e);
             throw new EnhanceRuntimeException("拆票方法异常" + e.getClass().getName() + e.getMessage());
         }
+        //操作日志
+        new LambdaQueryChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo).oneOpt()
+                .ifPresent(it -> operateLogService.add(it.getId(), OperateLogEnum.CONFIRM_SETTLEMENT,
+                        TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getDesc(), UserUtil.getUserId(), UserUtil.getUserName()));
         return true;
+    }
+
+    public Settlement companyMessage(String settlementNo) {
+        return new LambdaQueryChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo)
+                .oneOpt().map(statementConverter::map).orElseGet(Settlement::new);
     }
 }

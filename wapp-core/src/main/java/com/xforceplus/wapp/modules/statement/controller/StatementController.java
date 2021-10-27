@@ -111,6 +111,15 @@ public class StatementController {
         return R.ok(PageResult.of(page._1, page._2.getTotal(), page._2.getPages(), page._2.getSize()));
     }
 
+    @ApiOperation("结算单主信息-公司信息")
+    @GetMapping("/settlement/company/{settlementNo}")
+    public R<Settlement> companyMessage(@ApiParam(value = "结算单号", required = true) @PathVariable String settlementNo) {
+        long start = System.currentTimeMillis();
+        val company = statementService.companyMessage(settlementNo);
+        log.info("结算单主信息-公司信息查询,耗时:{}ms", System.currentTimeMillis() - start);
+        return R.ok(company);
+    }
+
     @ApiOperation("结算单详情-开票预览-待开票详情")
     @GetMapping("/settlement/invoice/detail/{invoiceId}")
     public R<PreInvoice> preInvoiceDetail(@ApiParam(value = "发票ID", required = true) @PathVariable Long invoiceId) {

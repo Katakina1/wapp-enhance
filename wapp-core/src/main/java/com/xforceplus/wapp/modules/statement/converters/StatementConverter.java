@@ -18,5 +18,7 @@ import java.util.Set;
 public interface StatementConverter {
     List<Settlement> map(List<TXfSettlementEntity> records);
 
+    Settlement map(TXfSettlementEntity records);
+
     ClaimConfirm map(String businessNo, Set<TXfSettlementItemEntity> items);
 }
