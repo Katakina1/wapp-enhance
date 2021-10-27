@@ -65,11 +65,11 @@ public class ClaimBillService extends DeductService{
                 }
                 BigDecimal taxRate = tXfBillDeductEntity.getTaxRate();
                 if (StringUtils.isEmpty(sellerNo) || StringUtils.isEmpty(purcharseNo) || Objects.isNull(taxRate)) {
-                    log.warn("索赔单{}主信息 不符合要求，sellerNo:{},purcharseNo:{},taxRate:{}",sellerNo,purcharseNo,taxRate);
+                    log.warn("索赔单{} 主信息 不符合要求，sellerNo:{},purcharseNo:{},taxRate:{}",sellerNo,purcharseNo,taxRate);
                     continue;
                 }
                 if (StringUtils.isEmpty(tXfBillDeductEntity.getBusinessNo())  ) {
-                    log.warn("索赔单{}主信息  单号为空 跳过匹配",sellerNo,purcharseNo,taxRate);
+                    log.warn("索赔单 主信息单号为空 跳过匹配 sellerNo:{},purcharseNo:{},taxRate:{} ",sellerNo,purcharseNo,taxRate);
                     continue;
                 }
                 /**
