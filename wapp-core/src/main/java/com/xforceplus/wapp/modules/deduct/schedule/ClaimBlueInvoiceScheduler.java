@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-public class ClaimDeductScheduler {
+public class ClaimBlueInvoiceScheduler {
 
     @Autowired
     private ClaimBillService claimBillService;
-    public static String KEY = "Claim-match";
+    public static String KEY = "Claim-match-blueInfo";
     @Autowired
     private StringRedisTemplate redisTemplate;
     /**
@@ -24,22 +24,22 @@ public class ClaimDeductScheduler {
     @Scheduled(cron=" 0 0 1 * * ?")
     public void claimDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
-            log.info("Claim-match job 已经在执行，结束此次执行");
+            log.info("Claim-match-blueInfo  job 已经在执行，结束此次执行");
             return;
         }
         redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
-        log.info("Claim-match job 已经在执行，开始");
+        log.info("Claim-match-blueInfo job 已经在执行，开始");
         try {
-            claimBillService.matchClaimBill();
+            claimBillService.claimMatchBlueInvoice();
         } catch (Exception e) {
-            log.info("Claim-match job 异常：{}",e);
+            log.info("Claim-match-blueInfo job 异常：{}",e);
         }finally {
             try {
                 redisTemplate.delete(KEY);
             } catch (Exception e) {
-                log.info("Claim-matchjob 释放锁Redis 异常： {}", e);
+                log.info("Claim-match-blueInfo  释放锁Redis 异常： {}", e);
             }
-            log.info("Claim-match job 已经在执行，结束");
+            log.info("Claim-match-blueInfo  job 已经在执行，结束");
         }
     }
 
