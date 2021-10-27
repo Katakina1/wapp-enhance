@@ -11,13 +11,16 @@ import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
+import com.xforceplus.wapp.enums.OperateLogEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDetailDao;
 import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
@@ -110,6 +113,9 @@ public class BackFillService  {
 
     @Autowired
     private RedNotificationOuterService redNotificationOuterService;
+
+    @Autowired
+    private OperateLogService operateLogService;
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                               String tenantId) {
@@ -452,15 +458,21 @@ public class BackFillService  {
                 tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity,updateWrapper);
             }
             log.info("红票回填后匹配--修改结算单状态");
-            TXfSettlementEntity settlementEntity = new TXfSettlementEntity();
-            UpdateWrapper<TXfSettlementEntity> settlementUpdateWrapper = new UpdateWrapper<>();
-            settlementUpdateWrapper.ge(TXfSettlementEntity.SETTLEMENT_NO,request.getSettlementNo());
-            if(tXfPreInvoiceEntities.stream().allMatch(t -> TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus()))){
-                settlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode());
-            }else{
-                settlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
+            QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,request.getSettlementNo());
+            TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(queryWrapper);
+            String businessStatus = "";
+            if(tXfSettlementEntity != null){
+                if(tXfPreInvoiceEntities.stream().allMatch(t -> TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus()))){
+                    tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode());
+                    businessStatus = TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getDesc();
+                }else{
+                    tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
+                    businessStatus = TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getDesc();
+                }
+                tXfSettlementDao.updateById(tXfSettlementEntity);
+                operateLogService.add(tXfSettlementEntity.getId(),OperateLogEnum.UPLOAD_INVOICE,businessStatus, UserUtil.getUserId(),UserUtil.getUserName());
             }
-            tXfSettlementDao.update(settlementEntity,settlementUpdateWrapper);
         }else{
             log.info("发票蓝冲:invoiceNo:{},invoiceCode:{}",request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
 

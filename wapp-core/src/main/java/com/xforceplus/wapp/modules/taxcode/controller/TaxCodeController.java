@@ -67,7 +67,7 @@ public class TaxCodeController {
 
     @ApiOperation("中台税编列表")
     @GetMapping("/tax/code/list")
-    public R<List<TaxCodeBean>> overdueList(@RequestParam("查询数据") String searchText) {
+    public R<List<TaxCodeBean>> overdueList(@ApiParam("查询数据") @RequestParam String searchText) {
         long start = System.currentTimeMillis();
         val either = taxCodeService.searchTaxCode(null, searchText);
         log.info("中台税编列表查询,耗时:{}ms", System.currentTimeMillis() - start);

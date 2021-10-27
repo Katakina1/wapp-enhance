@@ -27,8 +27,8 @@ public class RecordInvoiceController extends AbstractController {
     @ApiOperation(value = "结算单发票列表")
     @GetMapping(value = "/list")
     public R<PageResult<RecordInvoiceResponse>> list(
-            @ApiParam(value = "页码") @RequestParam long pageNo,
-            @ApiParam(value = "页数") @RequestParam long pageSize,
+            @ApiParam(value = "页码" ,required = true) @RequestParam long pageNo,
+            @ApiParam(value = "页数" ,required = true) @RequestParam long pageSize,
             @ApiParam(value = "结算单号") @RequestParam(required = false) String settlementNo,
             @ApiParam(value = "发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常 5-蓝冲") @RequestParam(required = false) String invoiceStatus){
         logger.info("结算单详情发票列表--入参：{}", settlementNo +"--"+invoiceStatus);

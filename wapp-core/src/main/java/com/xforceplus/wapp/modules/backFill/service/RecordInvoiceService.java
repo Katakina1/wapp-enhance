@@ -63,7 +63,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
      */
     public PageResult<RecordInvoiceResponse> queryPageList(long pageNo,long pageSize,String settlementNo,String invoiceStatus,String venderid){
         Page<TDxRecordInvoiceEntity> page=new Page<>(pageNo,pageSize);
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid,true);
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
         BeanUtil.copyList(pageResult.getRecords(),response,RecordInvoiceResponse.class);
@@ -114,7 +114,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
 
     public Integer getCountBySettlementNo(String settlementNo,String invoiceStatus,String venderid){
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid,false);
         return tDxRecordInvoiceDao.selectCount(wrapper);
     }
 
@@ -169,7 +169,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
      * @return R
      */
     public List<InvoiceDetailResponse> queryInvoiceList(String settlementNo,String invoiceStatus,String venderid){
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid);
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid,true);
         List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(wrapper);
         List<InvoiceDetailResponse> response = new ArrayList<>();
         InvoiceDetailResponse invoice;
@@ -185,9 +185,11 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
     }
 
 
-    private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus,String venderid){
+    private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus,String venderid,boolean isOrder){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.orderByDesc(TDxRecordInvoiceEntity.ID);
+        if(isOrder){
+            wrapper.orderByDesc(TDxRecordInvoiceEntity.ID);
+        }
         wrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO.getValue());
         if(StringUtils.isNotEmpty(venderid)){
             wrapper.eq(TDxRecordInvoiceEntity.VENDERID,venderid);

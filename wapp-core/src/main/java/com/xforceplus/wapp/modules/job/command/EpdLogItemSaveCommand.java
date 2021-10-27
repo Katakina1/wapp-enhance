@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
+import static java.lang.Enum.valueOf;
 
 /**
  * @program: wapp-generator
@@ -38,6 +40,8 @@ public class EpdLogItemSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginEpdLogItemService service;
+    @Autowired
+    private Validator validator;
     @Value("${epdBill.remote.path}")
     private String remotePath;
     @Value("${epdBill.local.path}")
@@ -131,7 +135,7 @@ public class EpdLogItemSaveCommand implements Command {
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service);
+        OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service, validator);
         try {
             EasyExcel.read(file, OriginEpdLogItemDto.class, readListener)
                     .sheet(sheetName)
