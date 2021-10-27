@@ -22,7 +22,7 @@ public class ClaimBlueInvoiceScheduler {
      * 索赔单匹配
      */
     @Scheduled(cron=" 0 0 1 * * ?")
-    public void claimDeductDeal(){
+    public void claimBlueInfoDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("Claim-match-blueInfo  job 已经在执行，结束此次执行");
             return;
