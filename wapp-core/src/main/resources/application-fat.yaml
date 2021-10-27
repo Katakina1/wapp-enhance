@@ -26,6 +26,8 @@ wapp:
       discern-callbackUrl: inte-janus.melete
       #下载附件
       downLoadAction: A9EC3ACD57C452AE933AE67B42E452E2
+      # 税编查询
+      tax-code: 88783DD6EF9484C5DB5EE795A0E920C1
     host:
       tcp: janus-tcp-inte-tx.xforceplus.com
       http: https://janus-inte-tx.xforceplus.com:443

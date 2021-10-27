@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.taxcode.controller;
 
 import com.xforceplus.wapp.annotation.EnhanceApiV1;
+import com.xforceplus.wapp.client.TaxCodeRsp;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.dto.IdsDto;
@@ -64,11 +65,11 @@ public class TaxCodeController {
 
 
     @ApiOperation("税编树")
-    @GetMapping("/tax/code/tree")
-    public R<List<TaxCodeTree>> overdueTree() {
+    @GetMapping("/tax/code/list")
+    public R<List<TaxCodeRsp.ResultBean>> overdueList(@RequestParam("查询数据") String searchText) {
         long start = System.currentTimeMillis();
-        List<TaxCodeTree> update = taxCodeService.tree();
+        val either = taxCodeService.searchTaxCode(searchText);
         log.info("税编树查询,耗时:{}ms", System.currentTimeMillis() - start);
-        return R.ok(update);
+        return either.isRight() ? R.ok(either.get()) : R.fail(either.getLeft());
     }
 }
