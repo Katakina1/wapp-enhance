@@ -7,8 +7,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
+import java.util.Objects;
 
 @Mapper
 public interface TXfOriginClaimItemSamsEntityConvertor {
@@ -32,6 +34,7 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     // @Mapping(source = "reportCode", target = "")
     @Mapping(source = "shipQty", target = "quantity")
     // @Mapping(source = "oldItem", target = "")
+    @Mapping(target = "price", expression = "java(calcPrice(tXfOriginClaimItemSamsEntity.getShipQty(),tXfOriginClaimItemSamsEntity.getShipCost()))")
     /**
      * @param tXfOriginClaimItemSamsEntity
      * @return
@@ -48,7 +51,31 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     default BigDecimal parse(String number, int positionIndex) {
         DecimalFormat format = new DecimalFormat();
         format.setParseBigDecimal(true);
-        ParsePosition position = new ParsePosition(positionIndex);
-        return (BigDecimal) format.parse(number, position);
+        try {
+            ParsePosition position = new ParsePosition(positionIndex);
+            return (BigDecimal) format.parse(number, position);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据数量和不含税金额反算单价
+     *
+     * @param shipQty
+     * @param shipCost
+     * @return
+     */
+    default BigDecimal calcPrice(String shipQty, String shipCost) {
+        BigDecimal amountWithoutTax = parse(shipCost, 0);
+        BigDecimal quantity = parse(shipQty, 0);
+        if (Objects.nonNull(amountWithoutTax) && Objects.nonNull(quantity)) {
+            try {
+                return amountWithoutTax.divide(quantity, 15, RoundingMode.HALF_UP).abs();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 }
