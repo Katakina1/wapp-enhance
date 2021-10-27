@@ -62,13 +62,14 @@ public class JanusClient {
             paramMeterMap.put("node", 1);
             log.info("获取中台税编参数:{}", paramMeterMap);
             final String get = httpClientFactory.get(taxCodeAction, paramMeterMap, defaultHeader);
-            log.info("获取中台税编结果:{}", get);
+            log.debug("获取中台税编结果:{}", get);
             TaxCodeRsp taxCodeRsp = gson.fromJson(get, TaxCodeRsp.class);
             if (Objects.nonNull(taxCodeRsp) && "TWTXZZ100".equalsIgnoreCase(taxCodeRsp.getCode())) {
                 List<TaxCodeBean> codeBeans = taxCodeRsp.getResult().stream().map(TaxCodeRsp.ResultBean::getData)
                         .filter(Objects::nonNull).collect(Collectors.toList());
                 return Either.right(codeBeans);
             }
+            log.info("获取中台税编错误:{}", get);
             return Either.left(taxCodeRsp.getMessage());
         } catch (IOException e) {
             log.error("获取税编结果异常:" + e.getMessage(), e);
