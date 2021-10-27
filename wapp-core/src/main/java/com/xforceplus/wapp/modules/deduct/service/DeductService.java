@@ -858,7 +858,7 @@ public class DeductService   {
      * @param tXfSettlementItemEntity
      * @return
      */
-    protected TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+    public TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
         BigDecimal ta = tXfSettlementItemEntity.getQuantity().multiply(tXfSettlementItemEntity.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
         if (ta.compareTo(tXfSettlementItemEntity.getAmountWithoutTax()) != 0) {
             tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
