@@ -48,7 +48,7 @@ public class ClaimBillService extends DeductService{
     public boolean matchClaimBill() {
         Date startDate = DateUtils.getFristDate();
         Date endDate = DateUtils.getLastDate();
-        int limit = 2;
+        int limit = 50;
         /**
          * 查询未匹配明细的索赔单
          */
