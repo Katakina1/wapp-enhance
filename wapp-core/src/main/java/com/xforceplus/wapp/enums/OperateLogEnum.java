@@ -29,7 +29,13 @@ public enum OperateLogEnum {
     CREATE_EPD("15",1,"EPD单创建"),
     LOCK_EPD("16",1,"EPD单锁定"),
     UNLOCK_EPD("17",1,"EPD单解锁"),
-    CANCEL_EPD("18",1,"EPD单撤销");
+    CANCEL_EPD("18",1,"EPD单撤销"),
+
+    REJECT_CANCEL_RED_NOTIFICATION_APPLY("19",0,"拒绝撤销红字信息表申请"),
+    AGREE_CANCEL_RED_NOTIFICATION_APPLY("20",0,"同意撤销红字信息表申请"),
+
+    ;
+
     private String operateCode;
     private Integer operateType;
     private String operateDesc;

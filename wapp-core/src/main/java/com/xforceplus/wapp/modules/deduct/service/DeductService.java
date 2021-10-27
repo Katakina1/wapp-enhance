@@ -26,6 +26,7 @@ import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.overdue.service.DefaultSettingServiceImpl;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
@@ -102,6 +103,9 @@ public class DeductService   {
 
     @Autowired
     protected ApplicationContext applicationContext;
+    @Autowired
+    private OperateLogService operateLogService;
+
     @Autowired
     protected DefaultSettingServiceImpl defaultSettingService;
     @Autowired
@@ -455,6 +459,11 @@ public class DeductService   {
          status = partMatch ? TXfSettlementStatusEnum.WAIT_CONFIRM.getCode() : TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode();
          tXfSettlementEntity.setSettlementStatus(status);
          tXfSettlementDao.insert(tXfSettlementEntity);
+
+         //日志
+         operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
+                 TXfSettlementStatusEnum.getTXfSettlementStatusEnum(tXfSettlementEntity.getSettlementStatus()).getDesc(),
+                 UserUtil.getUserId(),UserUtil.getUserName());
          return tXfSettlementEntity;
     }
 
