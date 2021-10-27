@@ -41,6 +41,8 @@ wapp:
     base-url: 127.0.0.1
   export:
       tmp: E:/tomcattmp
+  rednotification:
+    maxApply: 99
 
 activemq:
   queue-name:

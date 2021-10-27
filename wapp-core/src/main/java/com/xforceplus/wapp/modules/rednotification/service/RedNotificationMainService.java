@@ -42,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,6 +83,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     ThreadPoolExecutor redNotificationThreadPool;
 
     private static final Integer MAX_PDF_RED_NO_SIZE = 500;
+
+    @Value("${wapp.rednotification.maxApply}")
+    private Integer maxApply;
 
 
 
@@ -153,6 +157,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     public Response applyByPage(RedNotificationApplyReverseRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        if (filterData.size() >= maxApply){
+            return  Response.failed("单次申请最大支持:"+maxApply);
+        }
         //构建税件请求
         if (!CollectionUtils.isEmpty(filterData)){
             ApplyRequest applyRequest = new ApplyRequest();
@@ -652,11 +659,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 String pdfUrl;
                 if(Objects.nonNull(result = response.getResult()) && StringUtils.isNotBlank(pdfUrl = result.getPdfUrl())){
                     String fileName;
-                    if(model == RedNoGeneratePdfModel.Merge_All){
-                        fileName = redNoApply.getPurchaserTaxNo() + ".pdf";
-                    }else{
-                        fileName = format("{}/{}.pdf",  head,redNoApply.getPurchaserTaxNo());
-                    }
+//                    if(model == RedNoGeneratePdfModel.Merge_All){
+//                        fileName = redNoApply.getPurchaserTaxNo() + ".pdf";
+//                    }else{
+                        fileName = format("{}.pdf",  redNoApply.getRedNotificationNo());
+//                    }
                     ZipContentInfo zipInfo = new ZipContentInfo();
                     zipInfo.setFile(false);
                     zipInfo.setRelativePath(fileName);
@@ -760,7 +767,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         List<ExportItemInfo> itemInfos = Lists.newArrayList();
         List<ExportInfo> exportInfos = filterData.stream().map(apply -> {
             ExportInfo dto = redNotificationMainMapper.mainEntityToExportInfo(apply);
-            ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApplyingStatus()).orElse(ApproveStatus.OTHERS);
+            ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApproveStatus()).orElse(ApproveStatus.OTHERS);
             dto.setApproveStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
 
             if (StringUtils.isNotBlank(apply.getInvoiceType())){

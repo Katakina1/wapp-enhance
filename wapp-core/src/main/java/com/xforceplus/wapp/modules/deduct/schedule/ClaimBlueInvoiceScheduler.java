@@ -11,36 +11,35 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-public class ClaimSettlementScheduler {
+public class ClaimBlueInvoiceScheduler {
 
     @Autowired
     private ClaimBillService claimBillService;
+    public static String KEY = "Claim-match-blueInfo";
     @Autowired
     private StringRedisTemplate redisTemplate;
-    public static String KEY = "claim-MergeSettlement";
-
     /**
-     * 索赔单生成结算单
+     * 索赔单匹配
      */
-    @Scheduled(cron=" 0 0 3 * * ?")
-    public void claimMergeSettlementDeductDeal(){
+    @Scheduled(cron=" 0 0 1 * * ?")
+    public void claimBlueInfoDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
-            log.info("claim-MergeSettlement job 已经在执行，结束此次执行");
+            log.info("Claim-match-blueInfo  job 已经在执行，结束此次执行");
             return;
         }
         redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
-        log.info("claim-MergeSettlement job 开始");
+        log.info("Claim-match-blueInfo job 已经在执行，开始");
         try {
-            claimBillService.mergeClaimSettlement();
+            claimBillService.claimMatchBlueInvoice();
         } catch (Exception e) {
-            log.info("claim-MergeSettlement job 异常：{}",e);
+            log.info("Claim-match-blueInfo job 异常：{}",e);
         }finally {
             try {
                 redisTemplate.delete(KEY);
             } catch (Exception e) {
-                log.info("claim-MergeSettlement  释放锁Redis 异常： {}", e);
+                log.info("Claim-match-blueInfo  释放锁Redis 异常： {}", e);
             }
-            log.info("claim-MergeSettlement job 结束");
+            log.info("Claim-match-blueInfo  job 已经在执行，结束");
         }
     }
 
