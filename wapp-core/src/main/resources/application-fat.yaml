@@ -27,13 +27,13 @@ wapp:
       #下载附件
       downLoadAction: A9EC3ACD57C452AE933AE67B42E452E2
       # 税编查询
-      tax-code: 978FDBCF06496528939EB352B3711394
+      tax-code: 88783DD6EF9484C5DB5EE795A0E920C1
     host:
       tcp: janus-tcp-inte-tx.xforceplus.com
       http: https://janus-inte-tx.xforceplus.com:443
     sign:
       splitInvoice: 0618de7ca5a54e44b85293cc7929312e
-      tax-code: 0618de7ca5a54e44b85293cc7929312e
+      tax-code: 9afc34ea775683aa44fc1787da9bbeaf
     port:
       tcp: 443
   db2:
