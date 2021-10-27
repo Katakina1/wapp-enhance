@@ -184,13 +184,21 @@ public class ClaimBillService extends DeductService{
         TXfBillDeductEntity tmp = new TXfBillDeductEntity();
         tmp.setId(billId);
         taxAmountDiff = taxAmountOther.compareTo(taxAmount) == 0;
-        if (!matchTaxNoFlag || !taxAmountDiff) {
+        if (!matchTaxNoFlag  ) {
             NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
             newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
-            newExceptionReportEvent.setReportCode(!matchTaxNoFlag?ExceptionReportCodeEnum.NOT_MATCH_GOODS_TAX: ExceptionReportCodeEnum.WITH_DIFF_TAX);
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_GOODS_TAX );
             newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
             applicationContext.publishEvent(newExceptionReportEvent);
-            log.error("索赔单 {}  发送例外报告 {} ", tXfBillDeductEntity.getBusinessNo(), newExceptionReportEvent);
+            log.error("索赔单 {}  发送税编匹配例外报告 {} ", tXfBillDeductEntity.getBusinessNo(), newExceptionReportEvent);
+        }
+        if ( !taxAmountDiff) {
+            NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+            newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.WITH_DIFF_TAX);
+            newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
+            applicationContext.publishEvent(newExceptionReportEvent);
+            log.error("索赔单 {}  发送税差例外报告 {} ", tXfBillDeductEntity.getBusinessNo(), newExceptionReportEvent);
         }
         /**
          * 如果当前金额没有匹配完 为待匹配状态，如果存在未匹配的税编，状态未待匹配税编，如果已经完成匹配税编，简称是否存在不同税率，如果存在状态未待确认税差，如果不存在，状态为待匹配蓝票，
