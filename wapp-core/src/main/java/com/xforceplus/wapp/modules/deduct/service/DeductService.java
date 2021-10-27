@@ -228,12 +228,30 @@ public class DeductService   {
             try {
                 unlockAndCancel(deductionEnum, tXfBillDeductEntity);
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
+                //日志
+                saveCreateDeductLog(tXfBillDeductEntity);
             } catch (Exception e) {
                 log.error("{} 数据保存失败 异常{} 单据数据：{} ", deductionEnum.getDes(), e,tXfBillDeductEntity);
             }
 
         }
         return true;
+    }
+
+    private void saveCreateDeductLog(TXfBillDeductEntity tXfBillDeductEntity) {
+        if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
+            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
+                    TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    UserUtil.getUserId(), UserUtil.getUserName());
+        } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue())) {
+            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_AGREEMENT,
+                    TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    UserUtil.getUserId(), UserUtil.getUserName());
+        } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.EPD_BILL.getValue())) {
+            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_EPD,
+                    TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    UserUtil.getUserId(), UserUtil.getUserName());
+        }
     }
 
     public List<TXfBillDeductEntity> transferBillData(List<DeductBillBaseData> deductBillDataList ,  XFDeductionBusinessTypeEnum deductionEnum) {

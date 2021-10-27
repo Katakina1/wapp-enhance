@@ -2,11 +2,10 @@ package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.enums.*;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +42,8 @@ public class CommClaimService {
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
     @Autowired
     private PreinvoiceService preinvoiceService;
+    @Autowired
+    private OperateLogService operateLogService;
 
     /**
      * 作废整个索赔单流程
@@ -95,6 +96,10 @@ public class CommClaimService {
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
+            //日志
+            operateLogService.add(tXfBillDeduct.getId(), OperateLogEnum.CANCEL_DEDUCT,
+                    TXfBillDeductStatusEnum.CLAIM_DESTROY.getDesc(),
+                    UserUtil.getUserId(),UserUtil.getUserName());
         });
         //已生成结算单的索赔单修改为：待生成结算单 清空结算单编号
         billDeductList2.forEach(tXfBillDeduct -> {
