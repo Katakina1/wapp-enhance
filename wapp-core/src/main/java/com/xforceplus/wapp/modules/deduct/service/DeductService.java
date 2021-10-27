@@ -482,7 +482,7 @@ public class DeductService   {
                 tXfSettlementItemEntity.setTaxRate(tXfBillDeductItemEntity.getTaxRate());
                 tXfSettlementItemEntity.setItemCode(tXfBillDeductItemEntity.getItemNo());
                 tXfSettlementItemEntity.setAmountWithoutTax(tXfBillDeductItemEntity.getAmountWithoutTax().negate());
-                tXfSettlementItemEntity.setTaxAmount(tXfBillDeductItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
+                tXfSettlementItemEntity.setTaxAmount(tXfSettlementItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
                 tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getTaxAmount().add(tXfSettlementItemEntity.getAmountWithoutTax()));
                 tXfSettlementItemEntity.setQuantityUnit(tXfBillDeductItemEntity.getUnit());
                 tXfSettlementItemEntity.setItemSpec(tXfBillDeductItemEntity.getCnDesc());
