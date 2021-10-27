@@ -43,7 +43,7 @@ public class ClaimDeductTaxCodeScheduler {
             return;
         }
         redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
-        log.info("claim-matchTaxCode job job 开始");
+        log.info("claim-matchTaxCode job   开始");
         try {
             Long id = 0L;
             List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());

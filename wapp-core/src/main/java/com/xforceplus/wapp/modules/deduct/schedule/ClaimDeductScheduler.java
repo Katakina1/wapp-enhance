@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.deduct.schedule;
 import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class ClaimDeductScheduler {
     private ClaimBillService claimBillService;
     public static String KEY = "Claim-match";
     @Autowired
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;
     /**
      * 索赔单匹配
      */
@@ -28,7 +28,7 @@ public class ClaimDeductScheduler {
             return;
         }
         redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
-        log.info("Claim-match job 已经在执行，开始");
+        log.info("Claim-match job  开始");
         try {
             claimBillService.matchClaimBill();
         } catch (Exception e) {

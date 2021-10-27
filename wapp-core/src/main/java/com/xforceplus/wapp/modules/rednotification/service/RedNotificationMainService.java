@@ -27,6 +27,9 @@ import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
+import com.xforceplus.wapp.modules.rednotification.validator.CheckMainService;
+import com.xforceplus.wapp.modules.sys.entity.UserEntity;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.sequence.IDSequence;
@@ -34,6 +37,7 @@ import com.xforceplus.wapp.service.CommSettlementService;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.helpers.MessageFormatter;
@@ -48,10 +52,12 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Data
 public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDao, TXfRedNotificationEntity> {
 
     @Autowired
@@ -70,6 +76,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     ExportCommonService exportCommonService;
     @Autowired
     private FtpUtilService ftpUtilService;
+    @Autowired
+    CheckMainService checkMainService;
+    @Autowired
+    ThreadPoolExecutor redNotificationThreadPool;
 
     private static final Integer MAX_PDF_RED_NO_SIZE = 500;
 
@@ -548,19 +558,24 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
     public Response importNotification(MultipartFile file) {
-        InputStream inputStream = null;
-        try {
-            inputStream = new BufferedInputStream(file.getInputStream());
-        } catch (IOException e) {
-            log.error("获取导入文件失败",e);
-            return Response.failed("获取导入文件失败");
-        }
-        //实例化实现了AnalysisEventListener接口的类
-        ExcelListener excelListener = new ExcelListener(this,redNotificationMainMapper);
-        ExcelReader reader = new ExcelReader(inputStream,null,excelListener);
-        //读取信息
-        reader.read(new Sheet(1,1, ImportInfo.class));
-        return Response.ok("导入成功");
+        Tuple3<Long, Long, String> longLongStringTuple3 = exportCommonService.insertRequest(file.getOriginalFilename());
+        redNotificationThreadPool.execute(
+                ()->{
+                    InputStream inputStream = null;
+                    try {
+                        inputStream = new BufferedInputStream(file.getInputStream());
+                    } catch (IOException e) {
+                        log.error("获取导入文件失败",e);
+                    }
+                    //实例化实现了AnalysisEventListener接口的类
+                    ExcelListener excelListener = new ExcelListener(this,redNotificationMainMapper,checkMainService,longLongStringTuple3);
+                    ExcelReader reader = new ExcelReader(inputStream,null,excelListener);
+                    //读取信息
+                    reader.read(new Sheet(1,1, ImportInfo.class));
+                }
+        );
+
+        return Response.ok("导入成功,请到消息中心查看结果");
     }
 
     public Response downloadPdf(RedNotificationExportPdfRequest request) {

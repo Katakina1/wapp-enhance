@@ -7,11 +7,16 @@ import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @program: wapp-generator
@@ -27,6 +32,7 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
     private final OriginClaimItemSamsService service;
+    private final Validator validator;
     /**
      * 缓存的数据
      */
@@ -34,19 +40,25 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
     @Getter
     private long cursor;
 
-    public OriginClaimItemSamsDataListener(int jobId, long cursor, OriginClaimItemSamsService service) {
+    public OriginClaimItemSamsDataListener(int jobId, long cursor, OriginClaimItemSamsService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
+        this.validator = validator;
     }
 
     @Override
     public void invoke(OriginClaimItemSamsDto data, AnalysisContext context) {
-        list.add(data);
-        if (list.size() >= BATCH_COUNT) {
-            saveData();
-            // 存储完成清理 list
-            list = new ArrayList<>();
+        Set<ConstraintViolation<OriginClaimItemSamsDto>> violations = validator.validate(data);
+        if (CollectionUtils.isEmpty(violations)) {
+            list.add(data);
+            if (list.size() >= BATCH_COUNT) {
+                saveData();
+                // 存储完成清理 list
+                list = new ArrayList<>();
+            }
+        } else {
+            log.warn("索赔单Sams明细原始数据校验失败 jobId={} 错误原因={}", jobId, violations.stream().findAny().orElse(null));
         }
     }
 

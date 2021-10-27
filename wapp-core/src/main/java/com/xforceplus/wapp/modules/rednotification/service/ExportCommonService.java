@@ -46,7 +46,7 @@ public class ExportCommonService {
     /**
      * 导出处理中
      * @param request
-     * @return
+     * @return <日志id，用户id,用户名>
      */
     public Tuple3<Long,Long,String> insertRequest(Object request) {
         final Long userId = UserUtil.getUserId();
@@ -71,7 +71,7 @@ public class ExportCommonService {
      * @param status
      * @param ftpPath
      */
-    String updatelogStatus(Long logId, String status,String ftpPath){
+   public   String updatelogStatus(Long logId, String status,String ftpPath){
         final TDxExcelExportlogEntity excelExportlogEntity = excelExportLogService.getById(logId);
         if (ftpPath !=null){
             excelExportlogEntity.setFilepath(ftpPath);
@@ -123,6 +123,21 @@ public class ExportCommonService {
         messagecontrolEntity.setUserAccount(userName);
         messagecontrolEntity.setContent(content);
         messagecontrolEntity.setUrl(getUrl(logId));
+        messagecontrolEntity.setTitle(title);
+        commonMessageService.sendMessage(messagecontrolEntity);
+    }
+
+    /**
+     * 发送消息
+     * 指定Url
+     * @return
+     */
+    public  void sendMessageWithUrl(Long logId,String userName , String title,String content,String url){
+        TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
+        //这里的userAccount是userName
+        messagecontrolEntity.setUserAccount(userName);
+        messagecontrolEntity.setContent(content);
+        messagecontrolEntity.setUrl(url);
         messagecontrolEntity.setTitle(title);
         commonMessageService.sendMessage(messagecontrolEntity);
     }
