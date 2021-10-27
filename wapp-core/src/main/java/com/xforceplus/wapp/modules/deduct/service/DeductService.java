@@ -256,13 +256,15 @@ public class DeductService   {
 
     public List<TXfBillDeductEntity> transferBillData(List<DeductBillBaseData> deductBillDataList ,  XFDeductionBusinessTypeEnum deductionEnum) {
         if (CollectionUtils.isEmpty(deductBillDataList)) {
+            log.error("{} 传入的单据数据为空 保存失败 ！！！！", deductionEnum.getDes()   );
             throw new EnhanceRuntimeException("","传入的单据数据为空");
         }
         Date date = new Date();
         List<TXfBillDeductEntity> list = new ArrayList<>();
         Optional<DeductionHandleEnum> optionalDedcutionHandleEnum = DeductionHandleEnum.getHandleEnum( deductionEnum);
         if (!optionalDedcutionHandleEnum.isPresent()) {
-            throw new EnhanceRuntimeException("","无效的单价类型");
+            log.error("{} 无效的单据类型 保存失败 ！！！！！", deductionEnum.getDes()   );
+            throw new EnhanceRuntimeException("","无效的单据类型");
         }
         DeductionHandleEnum dedcutionHandleEnum = optionalDedcutionHandleEnum.get();
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
