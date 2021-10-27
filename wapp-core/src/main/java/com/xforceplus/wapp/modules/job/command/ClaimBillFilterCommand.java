@@ -21,6 +21,7 @@ import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -232,7 +233,9 @@ public class ClaimBillFilterCommand implements Command {
                 .filter(v -> !v.getCostAmount().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        if (CollectionUtils.isNotEmpty(newList)) {
+            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        }
     }
 
     /**
@@ -247,7 +250,9 @@ public class ClaimBillFilterCommand implements Command {
                 // .filter(v -> v.getLineCost().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimItemHyperEntityConvertor.INSTANCE::toClaimBillItemData)
                 .collect(Collectors.toList());
-        deductService.receiveItemData(newList, null);
+        if (CollectionUtils.isNotEmpty(newList)) {
+            deductService.receiveItemData(newList, null);
+        }
     }
 
     /**
@@ -262,7 +267,9 @@ public class ClaimBillFilterCommand implements Command {
                 // .filter(v -> v.getShipCost().startsWith(NEGATIVE_SYMBOL))
                 .map(TXfOriginClaimItemSamsEntityConvertor.INSTANCE::toClaimBillItemData)
                 .collect(Collectors.toList());
-        deductService.receiveItemData(newList, null);
+        if (CollectionUtils.isNotEmpty(newList)) {
+            deductService.receiveItemData(newList, null);
+        }
     }
 
 }
