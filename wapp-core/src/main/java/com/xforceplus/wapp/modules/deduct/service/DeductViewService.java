@@ -179,7 +179,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
         deductEntity.setStatus(request.getStatus());
 
-        deductEntity.setDeductInvoice(request.getInvoiceNo());
+        deductEntity.setDeductInvoice(request.getDeductInvoice());
 
         deductEntity.setSellerNo(request.getSellerNo());
 
@@ -200,7 +200,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         //定案、入账日期 >> begin
         final String verdictDateBegin = request.getVerdictDateBegin();
         if (StringUtils.isNotBlank(verdictDateBegin)) {
-            wrapper.ge(TXfBillDeductEntity.VERDICT_DATE, deductDateBegin);
+            wrapper.ge(TXfBillDeductEntity.VERDICT_DATE, verdictDateBegin);
         }
         //定案、入账日期 >> end
         String verdictDateEnd = request.getVerdictDateEnd();

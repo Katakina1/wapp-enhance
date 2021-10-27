@@ -41,7 +41,7 @@ public class DeductListRequest {
     @ApiModelProperty("定案日期结束时间，YYYY-MM-DD")
     private String verdictDateEnd;
     @ApiModelProperty("扣款发票号码，YYYY-MM-DD")
-    private String invoiceNo;
+    private String deductInvoice;
     @ApiModelProperty("税率，小数")
     @Max(value = 1,message = "税率仅支持大于0的小数")
     @Min(value = 0,message = "税率仅支持大于0的小数")
