@@ -22,10 +22,12 @@ import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.DiscernService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.VerificationService;
+import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
 import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
+import com.xforceplus.wapp.modules.noneBusiness.dto.TXfNoneBusinessUploadExportDto;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
@@ -95,6 +97,9 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     @Autowired
     private TXfNoneBusinessUploadDetailDao tXfNoneBusinessUploadDetailDao;
 
+    @Value("${wapp.export.tmp}")
+    private String tmp;
+
 
     @Autowired
     private NoneBusinessConverter noneBusinessConverter;
@@ -103,10 +108,10 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     public void parseOfdFile(List<byte[]> ofd, TXfNoneBusinessUploadDetailEntity entity) {
 
         List<TXfNoneBusinessUploadDetailEntity> list = new ArrayList<>();
-        ofd.stream().forEach(ofdEntity ->{
+        ofd.stream().forEach(ofdEntity -> {
             TXfNoneBusinessUploadDetailEntity addEntity = new TXfNoneBusinessUploadDetailEntity();
-            BeanUtil.copyProperties(entity,addEntity);
-                    StringBuffer fileName = new StringBuffer();
+            BeanUtil.copyProperties(entity, addEntity);
+            StringBuffer fileName = new StringBuffer();
             fileName.append(UUID.randomUUID().toString());
             fileName.append(".");
             fileName.append(Constants.SUFFIX_OF_OFD);
@@ -172,9 +177,9 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
 
     public void parsePdfFile(List<byte[]> pdf, TXfNoneBusinessUploadDetailEntity entity) {
         List<TXfNoneBusinessUploadDetailEntity> list = new ArrayList<>();
-        pdf.stream().forEach(pdfEntity ->{
+        pdf.stream().forEach(pdfEntity -> {
             TXfNoneBusinessUploadDetailEntity addEntity = new TXfNoneBusinessUploadDetailEntity();
-            BeanUtil.copyProperties(entity,addEntity);
+            BeanUtil.copyProperties(entity, addEntity);
             StringBuffer fileName = new StringBuffer();
             fileName.append(UUID.randomUUID().toString());
             fileName.append(".");
@@ -210,7 +215,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
 
         });
 
-        
+
     }
 
     public TXfNoneBusinessUploadDetailEntity getObjByVerifyTaskId(String verifyTaskId) {
@@ -276,6 +281,11 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         return tXfNoneBusinessUploadDetailDao.list(dto);
     }
 
+    public List<TXfNoneBusinessUploadDetailDto> getByIds(List<Long> ids) {
+        LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity> wrapper = new LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity>(baseMapper);
+        return tXfNoneBusinessUploadDetailDao.getByIds(ids);
+    }
+
     public void down(List<TXfNoneBusinessUploadDetailEntity> list, FileDownRequest request) {
         String path = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         String ftpPath = ftpUtilService.pathprefix + path;
@@ -325,19 +335,21 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         }
     }
 
-    public R export(TXfNoneBusinessUploadQueryDto dto) {
-        List<TXfNoneBusinessUploadDetailDto> resultList = this.noPaged(dto);
+    public R export(List<TXfNoneBusinessUploadDetailDto> resultList,List<Long> id) {
 
         final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
         ExcelWriter excelWriter;
         ByteArrayInputStream in = null;
         String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
             //创建一个sheet
+            File file = new File(tmp +ftpPath);
+            if(!file.exists()){
+                file.mkdirs();
+            }
+            File excl = new File(file,excelFileName);
+            EasyExcel.write(tmp +ftpPath+ excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
             WriteSheet writeSheet = EasyExcel.writerSheet(0, "非商导出结果信息").build();
-            excelWriter.write(noneBusinessConverter.exportMap(resultList), writeSheet);
-            excelWriter.finish();
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;
             in = new ByteArrayInputStream(out.toByteArray());
@@ -351,7 +363,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             //这里的userAccount是userid
             excelExportlogEntity.setUserAccount(UserUtil.getUserName());
             excelExportlogEntity.setUserName(UserUtil.getLoginName());
-            excelExportlogEntity.setConditions(JSON.toJSONString(dto));
+            excelExportlogEntity.setConditions(JSON.toJSONString(id));
             excelExportlogEntity.setStartDate(new Date());
             excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
             excelExportlogEntity.setServiceType(SERVICE_TYPE);
@@ -360,8 +372,8 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             exportDto.setLogId(excelExportlogEntity.getId());
             exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商结果导出成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
-           log.error("导出异常:{}",e);
-           return R.fail("导出异常");
+            log.error("导出异常:{}", e);
+            return R.fail("导出异常");
         } finally {
             if (in != null) {
                 try {

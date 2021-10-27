@@ -67,4 +67,5 @@ public class TXfNoneBusinessUploadQueryDto {
     @ApiModelProperty("发票上传门店")
     private String invoiceStoreNo;
 
+
 }

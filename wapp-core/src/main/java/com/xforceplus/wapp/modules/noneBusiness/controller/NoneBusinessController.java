@@ -50,7 +50,7 @@ public class NoneBusinessController {
 
 
     @ApiOperation(value = "上传电子发票")
-    @PutMapping(value = "/upload",headers = "content-type=multipart/form-data")
+    @PutMapping(value = "/upload", headers = "content-type=multipart/form-data")
     public R upload(@ApiParam("文件") @RequestParam("files") MultipartFile[] file,
                     @ApiParam("业务类型") @RequestParam() String bussinessType,
                     @ApiParam("门店号") @RequestParam() String storeNo,
@@ -68,7 +68,7 @@ public class NoneBusinessController {
         List<byte[]> pdf = new ArrayList<>();
         try {
             String batchNo = UUID.randomUUID().toString().replace("-", "");
-            for(int i=0;i<file.length;i++){
+            for (int i = 0; i < file.length; i++) {
                 Set<String> fileNames = new HashSet<>();
                 final String filename = file[i].getOriginalFilename();
                 if (!fileNames.add(filename)) {
@@ -284,10 +284,24 @@ public class NoneBusinessController {
 
     }
 
-    @GetMapping("claim/export")
+    @PostMapping("claim/export")
     @ApiOperation(value = "索赔单导出")
     public R export(TXfNoneBusinessUploadQueryDto dto) {
-        noneBusinessService.export(dto);
+//        noneBusinessService.export(dto);
+        return R.ok("单据导出正在处理，请在消息中心");
+    }
+
+    @PostMapping("check/export")
+    @ApiOperation(value = "勾选导出")
+    public R checkExport(@RequestBody @ApiParam("id集合") Long[] ids) {
+        if (ids == null && ids.length == 0) {
+            return R.fail("请勾选数据后进行导出");
+        }
+        if (ids.length > 500) {
+            return R.fail("最大导出数量不能超过五百");
+        }
+        List<TXfNoneBusinessUploadDetailDto> resultList = noneBusinessService.getByIds(Arrays.asList(ids));
+        noneBusinessService.export(resultList, Arrays.asList(ids));
         return R.ok("单据导出正在处理，请在消息中心");
     }
 
