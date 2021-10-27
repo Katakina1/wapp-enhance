@@ -32,8 +32,7 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
     private final OriginClaimItemHyperService service;
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
     /**
      * 缓存的数据
      */
@@ -41,10 +40,11 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
     @Getter
     private long cursor;
 
-    public OriginClaimItemHyperDataListener(int jobId, long cursor, OriginClaimItemHyperService service) {
+    public OriginClaimItemHyperDataListener(int jobId, long cursor, OriginClaimItemHyperService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
+        this.validator = validator;
     }
 
     @Override

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -37,6 +38,8 @@ public class EpdBillSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginEpdBillService service;
+    @Autowired
+    private Validator validator;
     @Value("${epdBill.remote.path}")
     private String remotePath;
     @Value("${epdBill.local.path}")
@@ -124,7 +127,7 @@ public class EpdBillSaveCommand implements Command {
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginEpdBillDataListener readListener = new OriginEpdBillDataListener(jobId, cursor, service);
+        OriginEpdBillDataListener readListener = new OriginEpdBillDataListener(jobId, cursor, service, validator);
         try {
             EasyExcel.read(file, OriginEpdBillDto.class, readListener)
                     .sheet(sheetName)
