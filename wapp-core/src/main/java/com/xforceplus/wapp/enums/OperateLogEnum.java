@@ -17,19 +17,27 @@ public enum OperateLogEnum {
     REJECT_VERDICT("04",0,"不定案驳回"),
     CONFIRM_SETTLEMENT("05",0,"确认结算单"),
     CANCEL_RED_NOTIFICATION_APPLY("06",0,"撤销红字信息表申请"),
-    APPLY_RED_NOTIFICATION("07",0,"申请红字信息表（即重新拆票）"),
-    UPLOAD_INVOICE("08",0,"上传红票"),
-    RECEIVED_INVOICE("09",0,"红票已签收"),
+    REJECT_CANCEL_RED_NOTIFICATION_APPLY("07",0,"拒绝撤销红字信息表申请"),
+    AGREE_CANCEL_RED_NOTIFICATION_APPLY("08",0,"同意撤销红字信息表申请"),
+    APPLY_RED_NOTIFICATION("09",0,"申请红字信息表（即重新拆票）"),
+    UPLOAD_INVOICE("10",0,"上传红票"),
+    RECEIVED_INVOICE("11",0,"红票已签收"),
 
-    CREATE_DEDUCT("10",1,"索赔单创建"),
-    CREATE_AGREEMENT("11",1,"协议单创建"),
-    LOCK_AGREEMENT("12",1,"协议单锁定"),
-    UNLOCK_AGREEMENT("13",1,"协议单解锁"),
-    CANCEL_AGREEMENT("14",1,"协议单撤销"),
-    CREATE_EPD("15",1,"EPD单创建"),
-    LOCK_EPD("16",1,"EPD单锁定"),
-    UNLOCK_EPD("17",1,"EPD单解锁"),
-    CANCEL_EPD("18",1,"EPD单撤销");
+    CREATE_DEDUCT("12",1,"索赔单创建"),
+    CANCEL_DEDUCT("13",1,"索赔单撤销"),
+
+    CREATE_AGREEMENT("14",1,"协议单创建"),
+    LOCK_AGREEMENT("15",1,"协议单锁定"),
+    UNLOCK_AGREEMENT("16",1,"协议单解锁"),
+    CANCEL_AGREEMENT("17",1,"协议单撤销"),
+
+    CREATE_EPD("18",1,"EPD单创建"),
+    LOCK_EPD("19",1,"EPD单锁定"),
+    UNLOCK_EPD("20",1,"EPD单解锁"),
+    CANCEL_EPD("21",1,"EPD单撤销"),
+
+    ;
+
     private String operateCode;
     private Integer operateType;
     private String operateDesc;

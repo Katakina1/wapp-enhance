@@ -80,7 +80,7 @@ public class CommAgreementService {
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改协议单状态
-        billDeductList.forEach(billDeduct -> {
+        billDeductList.parallelStream().forEach(billDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
@@ -89,7 +89,7 @@ public class CommAgreementService {
         });
 
         //作废预制发票
-        pPreInvoiceList.forEach(tXfPreInvoiceEntity -> {
+        pPreInvoiceList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
@@ -103,7 +103,7 @@ public class CommAgreementService {
 
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
-        tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
+        tXfBillDeductInvoiceList.parallelStream().forEach(tXfBillDeductInvoiceEntity -> {
             QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());

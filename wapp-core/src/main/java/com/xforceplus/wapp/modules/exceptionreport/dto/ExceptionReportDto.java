@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -120,4 +121,10 @@ public class ExceptionReportDto {
      */
     @ApiModelProperty("定案日期、入账日期")
     private Date verdictDate;
+
+    @ApiModelProperty("含税金额")
+    private BigDecimal amountWithTax;
+
+    @ApiModelProperty("成本金额/不含税金额")
+    private BigDecimal amountWithoutTax;
 }

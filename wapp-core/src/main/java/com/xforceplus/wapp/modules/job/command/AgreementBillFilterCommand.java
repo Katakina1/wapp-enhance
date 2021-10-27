@@ -15,6 +15,7 @@ import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -136,6 +137,8 @@ public class AgreementBillFilterCommand implements Command {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        if (CollectionUtils.isNotEmpty(newList)) {
+            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        }
     }
 }
