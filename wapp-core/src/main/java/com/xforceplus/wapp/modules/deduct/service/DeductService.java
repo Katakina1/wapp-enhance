@@ -24,9 +24,9 @@ import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.overdue.service.DefaultSettingServiceImpl;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
-import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
@@ -256,13 +256,15 @@ public class DeductService   {
 
     public List<TXfBillDeductEntity> transferBillData(List<DeductBillBaseData> deductBillDataList ,  XFDeductionBusinessTypeEnum deductionEnum) {
         if (CollectionUtils.isEmpty(deductBillDataList)) {
+            log.error("{} 传入的单据数据为空 保存失败 ！！！！", deductionEnum.getDes()   );
             throw new EnhanceRuntimeException("","传入的单据数据为空");
         }
         Date date = new Date();
         List<TXfBillDeductEntity> list = new ArrayList<>();
         Optional<DeductionHandleEnum> optionalDedcutionHandleEnum = DeductionHandleEnum.getHandleEnum( deductionEnum);
         if (!optionalDedcutionHandleEnum.isPresent()) {
-            throw new EnhanceRuntimeException("","无效的单价类型");
+            log.error("{} 无效的单据类型 保存失败 ！！！！！", deductionEnum.getDes()   );
+            throw new EnhanceRuntimeException("","无效的单据类型");
         }
         DeductionHandleEnum dedcutionHandleEnum = optionalDedcutionHandleEnum.get();
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
@@ -392,7 +394,7 @@ public class DeductService   {
      public TXfSettlementEntity trans2Settlement(List<TXfBillDeductEntity> tXfBillDeductEntities,XFDeductionBusinessTypeEnum deductionBusinessTypeEnum) {
         if (CollectionUtils.isEmpty(tXfBillDeductEntities)) {
             log.warn("业务单合并结算单失败：{} 业务单集合为空",deductionBusinessTypeEnum.getDes());
-            return null;
+            throw new RuntimeException(" 业务单集合为空，结算单生成失败");
         }
         String purchaserNo = tXfBillDeductEntities.get(0).getPurchaserNo();
         String sellerNo = tXfBillDeductEntities.get(0).getSellerNo();
@@ -409,9 +411,9 @@ public class DeductService   {
             amountWithTax = amountWithTax.add(tmp.getAmountWithTax());
             taxAmount = taxAmount.add(tmp.getTaxAmount());
         }
-        tXfSettlementEntity.setAmountWithoutTax(amountWithoutTax);
-        tXfSettlementEntity.setAmountWithTax(amountWithTax);
-        tXfSettlementEntity.setTaxAmount(taxAmount);
+        tXfSettlementEntity.setAmountWithoutTax(amountWithoutTax.negate());
+        tXfSettlementEntity.setAmountWithTax(amountWithTax.negate());
+        tXfSettlementEntity.setTaxAmount(taxAmount.negate());
         tXfSettlementEntity.setSellerNo(sellerNo);
         tXfSettlementEntity.setSellerTaxNo(sellerOrgEntity.getTaxNo());
         tXfSettlementEntity.setSellerAddress(defaultValue(sellerOrgEntity.getAddress()));
@@ -450,8 +452,10 @@ public class DeductService   {
                 TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
                 BeanUtils.copyProperties(tXfBillDeductItemEntity,tXfSettlementItemEntity);
                 tXfSettlementItemEntity.setItemName(tXfBillDeductItemEntity.getCnDesc());
+                tXfSettlementItemEntity.setQuantity(tXfBillDeductItemEntity.getQuantity().negate());
                 tXfSettlementItemEntity.setTaxRate(tXfBillDeductItemEntity.getTaxRate());
                 tXfSettlementItemEntity.setItemCode(tXfBillDeductItemEntity.getItemNo());
+                tXfSettlementItemEntity.setAmountWithoutTax(tXfBillDeductItemEntity.getAmountWithoutTax().negate());
                 tXfSettlementItemEntity.setTaxAmount(tXfBillDeductItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
                 tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getTaxAmount().add(tXfSettlementItemEntity.getAmountWithoutTax()));
                 tXfSettlementItemEntity.setQuantityUnit(tXfBillDeductItemEntity.getUnit());

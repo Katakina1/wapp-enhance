@@ -84,7 +84,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         }
         //索赔单
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
-        billDeductList.forEach(x -> {
+        billDeductList.parallelStream().forEach(x -> {
             final boolean bool = Objects.equals(x.getStatus(), TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
             if (bool){
                 throw new EnhanceRuntimeException("索赔单:["+x.getBusinessNo()+"]已经是提交不定案待审核，不需要重新提交");
@@ -97,7 +97,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(wrapper);
 
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
@@ -111,7 +111,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
-        billDeductList.forEach(tXfBillDeduct -> {
+        billDeductList.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
@@ -151,7 +151,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
@@ -165,7 +165,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
-        billDeductList.forEach(tXfBillDeduct -> {
+        billDeductList.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
@@ -226,7 +226,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         }
 
         Map<String, TXfSettlementEntity> settlementMap = new HashMap<>();
-        tXfSettlementEntityList.forEach(x -> {
+        tXfSettlementEntityList.parallelStream().forEach(x -> {
             settlementMap.put(x.getSettlementNo(), x);
         });
         //分组处理不定案

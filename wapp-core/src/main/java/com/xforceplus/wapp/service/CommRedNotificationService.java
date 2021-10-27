@@ -98,7 +98,7 @@ public class CommRedNotificationService {
         //redNotificationMain.setPaymentTime();
         //redNotificationMain.setApplyReason();
         //redNotificationMain.setCustomerNo();
-        List<RedNotificationItem> redNotificationItemList = preInvoiceItemList.stream().map(preInvoiceItem -> {
+        List<RedNotificationItem> redNotificationItemList = preInvoiceItemList.parallelStream().map(preInvoiceItem -> {
             RedNotificationItem redNotificationItem = new RedNotificationItem();
             //TODO
             //redNotificationItem.setDetailNo();
