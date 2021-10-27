@@ -20,7 +20,7 @@ public class OperateLogServiceTest extends BaseUnitTest {
     OperateLogService operateLogService;
     @Test
     public void testAdd() {
-        boolean flag = operateLogService.add(12L, OperateLogEnum.APPLY_RED_NOTIFICATION,"待开票",31L,"测试31");
+        boolean flag = operateLogService.add(12L, OperateLogEnum.APPLY_RED_NOTIFICATION,"待开票",null,null);
         assert flag;
         System.out.println("添加成功");
     }
