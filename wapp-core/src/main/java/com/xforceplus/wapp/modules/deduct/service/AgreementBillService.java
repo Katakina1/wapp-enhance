@@ -3,10 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.DateUtils;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.exceptionreport.event.NewExceptionReportEvent;
@@ -44,13 +41,15 @@ public class AgreementBillService extends DeductService{
      */
     public boolean mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum deductionEnum, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, TXfBillDeductStatusEnum targetStatus ) {
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
-        int expireScale = -100;
         /**
          * 获取超期时间 判断超过此日期的正数单据
          */
-        Date referenceDate = DateUtils.addDate(DateUtils.getNow(), expireScale);
-        //查询大于expireDate， 同一购销对，同一税率 总不含税金额为正的单据
+        Integer referenceDate =  defaultSettingService.getOverdueDay(deductionEnum == XFDeductionBusinessTypeEnum.AGREEMENT_BILL ? DefaultSettingEnum.AGREEMENT_OVERDUE_DEFAULT_DAY : DefaultSettingEnum.EPD_OVERDUE_DEFAULT_DAY);
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitablePositiveBill(referenceDate, deductionEnum.getValue(), tXfBillDeductStatusEnum.getCode(),TXfBillDeductStatusEnum.UNLOCK.getCode());
+        if (CollectionUtils.isEmpty(tXfBillDeductEntities)) {
+            log.info("未找到符合条件的单据，跳过合并单据");
+            return false;
+        }
         for (TXfBillDeductEntity tmp : tXfBillDeductEntities) {
             /**
              * 查询 同一购销对，同一税率 下所有的负数单据
@@ -81,7 +80,9 @@ public class AgreementBillService extends DeductService{
             }
             if (mergeAmount.compareTo(BigDecimal.ZERO) > 0) {
                 try {
-                     excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
+                    Integer expireScale =  overdueService.oneOptBySellerNo(deductionEnum == XFDeductionBusinessTypeEnum.AGREEMENT_BILL ? ServiceTypeEnum.AGREEMENT : ServiceTypeEnum.EPD, sellerNo);
+                    Date expireDate =    DateUtils.addDate(DateUtils.getNow(), expireScale);
+                    excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, expireDate, targetStatus);
                 } catch (NoSuchInvoiceException n ) {
                     NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
                     newExceptionReportEvent.setDeduct(tmp);

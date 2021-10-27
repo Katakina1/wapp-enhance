@@ -59,9 +59,7 @@ public class JobController {
         if (StringUtils.equals("claimDeductScheduler", name)) {
             claimDeductScheduler.claimDeductDeal();
         }
-        if (StringUtils.equals("agreementDeductScheduler", name)) {
-            agreementDeductScheduler.AgreementDeductDeal();
-        }
+
         if (StringUtils.equals("claimDeductTaxCodeScheduler", name)) {
             claimDeductTaxCodeScheduler.matchTaxCode();
         }

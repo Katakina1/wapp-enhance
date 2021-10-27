@@ -256,6 +256,9 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     }
 
     public Page<TXfNoneBusinessUploadDetailDto> page(Long current, Long size, TXfNoneBusinessUploadQueryDto dto) {
+        if ("0".equals(dto.getQueryType())) {
+            dto.setCreateUser(UserUtil.getLoginName());
+        }
         LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity> wrapper = new LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity>(baseMapper);
         Page<TXfNoneBusinessUploadDetailDto> page = new Page<>(current, size);
         if ("0".equals(dto.getQueryType())) {
