@@ -24,6 +24,8 @@ import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
 import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.overdue.service.DefaultSettingServiceImpl;
+import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
@@ -100,7 +102,10 @@ public class DeductService   {
 
     @Autowired
     protected ApplicationContext applicationContext;
-
+    @Autowired
+    protected DefaultSettingServiceImpl defaultSettingService;
+    @Autowired
+    protected OverdueServiceImpl overdueService;
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
