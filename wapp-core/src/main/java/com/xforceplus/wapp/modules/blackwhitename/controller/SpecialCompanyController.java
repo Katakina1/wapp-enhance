@@ -23,10 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
@@ -82,13 +79,14 @@ public class SpecialCompanyController {
     @GetMapping(value = "/template")
     public void template(HttpServletResponse res, HttpServletRequest req){
         try {
-            String name = "黑白名单导入模板";
-            String fileName = name+".xlsx";
-            ServletOutputStream out;
-            res.setContentType("multipart/form-data");
+            String fileName = "1companyTemplate.xlsx";
+            //获取
+
+
+            res.setHeader("content-type","application/octet-stream");
             res.setCharacterEncoding("UTF-8");
-            res.setContentType("text/html");
-            String filePath = getClass().getResource("/excl/" + fileName).getPath();
+            res.setContentType("application/vnd.ms-excel;charset=utf-8");
+            String filePath = "/excl/" + fileName;
             String userAgent = req.getHeader("User-Agent");
             if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
                 fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
@@ -96,13 +94,9 @@ public class SpecialCompanyController {
                 // 非IE浏览器的处理：
                 fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
             }
-            filePath = URLDecoder.decode(filePath, "UTF-8");
-            res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
-            FileInputStream inputStream = null;
-
-            inputStream = new FileInputStream(filePath);
-
-            out = res.getOutputStream();
+            res.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", fileName));
+            InputStream inputStream = this.getClass().getResourceAsStream(filePath);
+            ServletOutputStream   out = res.getOutputStream();
             int b = 0;
             byte[] buffer = new byte[1024];
             while ((b = inputStream.read(buffer)) != -1) {
