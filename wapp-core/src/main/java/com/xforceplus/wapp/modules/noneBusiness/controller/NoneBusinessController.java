@@ -137,6 +137,7 @@ public class NoneBusinessController {
         response.setSubmitCount(list.size());
         response.setWaitSubmit(submitList.size());
         response.setSubmitedCount(list.size() - submitList.size());
+        log.info("查询总数成功");
         return R.ok(response);
     }
 

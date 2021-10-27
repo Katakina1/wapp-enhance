@@ -85,6 +85,10 @@
             and t.ofd_status = #{entity.ofdStatus}
         </if>
 
+        <if test="entity.invoiceStoreNo != null and entity.invoiceStoreNo != ''">
+            and t.invoice_store_no = #{entity.invoiceStoreNo}
+        </if>
+
 
     </select>
 </mapper>
