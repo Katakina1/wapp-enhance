@@ -107,8 +107,8 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
     public List<TDxRecordInvoiceDetailEntity> getInvoiceDetailByUuid(String uuid){
         QueryWrapper<TDxRecordInvoiceDetailEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TDxRecordInvoiceDetailEntity.UUID,uuid);
-        // by Kenny Wong 按照ID排序，保证每次返回的结果顺序一致
-        wrapper.orderByAsc(TDxRecordInvoiceDetailEntity.ID);
+        // by Kenny Wong 按照明细序号排序，保证每次返回的结果顺序一致
+        wrapper.orderByAsc(TDxRecordInvoiceDetailEntity.DETAIL_NO);
         return recordInvoiceDetailsDao.selectList(wrapper);
     }
 
