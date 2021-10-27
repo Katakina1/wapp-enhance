@@ -50,40 +50,50 @@ public class NoneBusinessController {
 
 
     @ApiOperation(value = "上传电子发票")
-    @PutMapping("/upload")
-    public R upload(@ApiParam("文件") @RequestParam("file") MultipartFile file,
+    @PutMapping(value = "/upload",headers = "content-type=multipart/form-data")
+    public R upload(@ApiParam("文件") @RequestParam("files") MultipartFile[] file,
                     @ApiParam("业务类型") @RequestParam() String bussinessType,
                     @ApiParam("门店号") @RequestParam() String storeNo,
                     @ApiParam("发票上传门店") @RequestParam(required = false) String invoiceStoreNo,
                     @ApiParam("发票类型") @RequestParam() String invoiceType,
                     @ApiParam("货物发生期间") @RequestParam(required = false) String storeDate,
                     @ApiParam("业务单号") @RequestParam() String businessNo) {
+        if (file.length == 0) {
+            return R.fail("请选择您要上传的电票文件(pdf/ofd)");
+        }
+        if (file.length > 10) {
+            return R.fail("最多一次性上传10个文件");
+        }
         List<byte[]> ofd = new ArrayList<>();
         List<byte[]> pdf = new ArrayList<>();
         try {
-            Set<String> fileNames = new HashSet<>();
-            final String filename = file.getOriginalFilename();
-            if (!fileNames.add(filename)) {
-                return R.fail("文件[" + filename + "]重复上传！");
-            }
-            final String suffix = filename.substring(filename.lastIndexOf(".") + 1);
-            if (StringUtils.isNotBlank(suffix)) {
-                switch (suffix.toLowerCase()) {
-                    case Constants.SUFFIX_OF_OFD:
-                        //OFD处理
-                        ofd.add(IOUtils.toByteArray(file.getInputStream()));
-                        break;
-                    case Constants.SUFFIX_OF_PDF:
-                        // PDF 处理
-                        pdf.add(IOUtils.toByteArray(file.getInputStream()));
-                        break;
-                    default:
-                        throw new EnhanceRuntimeException("文件:[" + filename + "]类型不正确,应为:[ofd/pdf]");
-                }
-            } else {
-                throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[ofd/pdf]");
-            }
             String batchNo = UUID.randomUUID().toString().replace("-", "");
+            for(int i=0;i<file.length;i++){
+                Set<String> fileNames = new HashSet<>();
+                final String filename = file[i].getOriginalFilename();
+                if (!fileNames.add(filename)) {
+                    return R.fail("文件[" + filename + "]重复上传！");
+                }
+                final String suffix = filename.substring(filename.lastIndexOf(".") + 1);
+                if (StringUtils.isNotBlank(suffix)) {
+                    switch (suffix.toLowerCase()) {
+                        case Constants.SUFFIX_OF_OFD:
+                            //OFD处理
+                            ofd.add(IOUtils.toByteArray(file[i].getInputStream()));
+                            break;
+                        case Constants.SUFFIX_OF_PDF:
+                            // PDF 处理
+                            pdf.add(IOUtils.toByteArray(file[i].getInputStream()));
+                            break;
+                        default:
+                            throw new EnhanceRuntimeException("文件:[" + filename + "]类型不正确,应为:[ofd/pdf]");
+                    }
+                } else {
+                    throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[ofd/pdf]");
+                }
+
+
+            }
             TXfNoneBusinessUploadDetailEntity entity = new TXfNoneBusinessUploadDetailEntity();
             entity.setBussinessType(bussinessType);
             entity.setStoreNo(storeNo);

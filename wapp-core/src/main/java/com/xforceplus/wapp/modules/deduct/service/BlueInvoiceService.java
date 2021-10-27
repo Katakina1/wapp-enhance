@@ -204,7 +204,7 @@ public class BlueInvoiceService {
      * @param deductedAmount
      * @return
      */
-    private List<TDxRecordInvoiceDetailEntity> obtainAvailableItems(String uuid, BigDecimal totalAmountWithoutTax, BigDecimal lastRemainingAmount, BigDecimal deductedAmount) {
+    public List<TDxRecordInvoiceDetailEntity> obtainAvailableItems(String uuid, BigDecimal totalAmountWithoutTax, BigDecimal lastRemainingAmount, BigDecimal deductedAmount) {
         List<TDxRecordInvoiceDetailEntity> list = new ArrayList<>();
         // 之前抵扣的金额
         BigDecimal lastDeductedAmount = totalAmountWithoutTax.subtract(lastRemainingAmount);

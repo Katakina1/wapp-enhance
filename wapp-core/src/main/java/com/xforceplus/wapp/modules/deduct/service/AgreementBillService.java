@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
@@ -145,6 +146,7 @@ public class AgreementBillService extends DeductService{
                 blueInvoiceService.withdrawInvoices(matchResList);
             }
             log.error("结算单匹配蓝票失败：{}", e);
+            e.printStackTrace();
             throw e;
         }
 
@@ -160,23 +162,24 @@ public class AgreementBillService extends DeductService{
     public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
         if (CollectionUtils.isEmpty(ids)) {
             log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
-            throw new RuntimeException("合并的单据id为空");
+            throw new EnhanceRuntimeException("至少选择一张单据");
         }
         String idsStr =  StringUtils.join(ids, ",");
         idsStr = "(" + idsStr + ")";
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableBillById(idsStr, xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         if (CollectionUtils.isEmpty(tXfBillDeductEntities)  ) {
             log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
-            throw new RuntimeException("合并的单据id 查询结果 为空");
+            throw new EnhanceRuntimeException("未查询到待匹配结算单的单据");
         }
+
         if (tXfBillDeductEntities.size() != 1) {
             log.error("选择的{} 单据列表{}，查询符合条件结果分组为{}",xfDeductionBusinessTypeEnum.getDes(),ids,tXfBillDeductEntities.size());
-             throw new RuntimeException("合并的单据存在多个税率");
+            throw new EnhanceRuntimeException("您选择的单据为多税率或购销方不一致");
         }
 
         if (tXfBillDeductEntities.get(0).getAmountWithoutTax().compareTo(BigDecimal.ZERO) <= 0) {
             log.error("选择的{} 单据列表{}，查询结果总金额为{}",xfDeductionBusinessTypeEnum.getDes(),ids,tXfBillDeductEntities.get(0).getAmountWithoutTax());
-            throw new RuntimeException("合并的单据金额之和<=0,不符合合并要求");
+            throw new EnhanceRuntimeException("选择单据的总金额不能小于0");
         }
         TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities, xfDeductionBusinessTypeEnum);
         tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT.getCode());
@@ -230,14 +233,16 @@ public class AgreementBillService extends DeductService{
              * tmp.getAmountWithoutTax().compareTo(BigDecimal.ZERO) <= 0 说明在更新过程钟，新的单据被更新到,而且更新到的负数大于正数，合并失败
              */
             log.error("{}单 超期的正值单据+负数单据，小于 0  sellerNo: {} purchaserNo: {} taxRate:{}",xfDeductionBusinessTypeEnum.getDes(), tmp.getSellerNo(), tmp.getPurchaserNo(), tmp.getTaxRate());
-            throw new RuntimeException("超期的正值单据+负数单据，小于 0");
+            throw new RuntimeException("");
         }
         if ( tmp.getAmountWithoutTax().compareTo(tXfSettlementEntity.getAmountWithoutTax()) <0) {
             /**
              * tmp.getAmountWithoutTax().compareTo(tXfSettlementEntity.getAmountWithoutTax()) <0 说明被合并的单据发生了 取消或锁定,需要回撤操作
              */
             log.error("{}单 存在锁定、取消的 sellerNo: {} purchaserNo: {} taxRate:{}", xfDeductionBusinessTypeEnum.getDes(),tmp.getSellerNo(), tmp.getPurchaserNo(), tmp.getTaxRate());
-            throw new RuntimeException("存在锁定、取消的单据");
+            throw new RuntimeException("");
         }
     }
+
+
 }
