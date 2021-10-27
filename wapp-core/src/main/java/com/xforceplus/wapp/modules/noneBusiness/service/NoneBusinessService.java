@@ -10,21 +10,21 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.utils.Base64;
+import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.DiscernService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.VerificationService;
-import com.xforceplus.wapp.modules.deduct.dto.QueryDeductListResponse;
-import com.xforceplus.wapp.modules.deduct.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
+import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
 import com.xforceplus.wapp.modules.noneBusiness.dto.FileDownRequest;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
@@ -39,7 +39,6 @@ import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.owasp.esapi.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -50,10 +49,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -97,102 +96,121 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     private TXfNoneBusinessUploadDetailDao tXfNoneBusinessUploadDetailDao;
 
 
+    @Autowired
+    private NoneBusinessConverter noneBusinessConverter;
+
+
     public void parseOfdFile(List<byte[]> ofd, TXfNoneBusinessUploadDetailEntity entity) {
-        StringBuffer fileName = new StringBuffer();
-        fileName.append(UUID.randomUUID().toString());
-        fileName.append(".");
-        fileName.append(Constants.SUFFIX_OF_OFD);
-        String uploadResult = null;
-        try {
-            //上传源文件到ftp服务器
-            uploadResult = fileService.uploadFile(ofd.get(0), fileName.toString());
-        } catch (IOException ex) {
-            log.error("非商上传电票到文件服务器失败:{}", ex);
-        }
-        UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
-        UploadFileResultData data = uploadFileResult.getData();
-        entity.setFileType(String.valueOf(Constants.FILE_TYPE_OFD));
-        entity.setSourceUploadId(data.getUploadId());
-        entity.setCreateUser(UserUtil.getLoginName());
-        entity.setSourceUploadPath(data.getUploadPath());
-        //发送验签
-        OfdResponse response = backFillService.signOfd(ofd.get(0));
-        //验签成功
-        if (response.isOk()) {
-            entity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
-            final InvoiceMain invoiceMain = response.getResult().getInvoiceMain();
-            VerificationRequest verificationRequest = new VerificationRequest();
-            verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
-            verificationRequest.setCheckCode(invoiceMain.getCheckCode());
-            verificationRequest.setCustomerNo(customerNo);
-            verificationRequest.setInvoiceCode(invoiceMain.getInvoiceCode());
-            verificationRequest.setInvoiceNo(invoiceMain.getInvoiceNo());
-            verificationRequest.setPaperDrewDate(invoiceMain.getPaperDrewDate());
-            VerificationResponse verificationResponse = verificationService.verify(verificationRequest);
-            if (verificationResponse.isOK()) {
-                entity.setXfVerifyTaskId(verificationResponse.getResult());
-                entity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_DOING);
-            } else {
-                entity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
+
+        List<TXfNoneBusinessUploadDetailEntity> list = new ArrayList<>();
+        ofd.stream().forEach(ofdEntity ->{
+            TXfNoneBusinessUploadDetailEntity addEntity = new TXfNoneBusinessUploadDetailEntity();
+            BeanUtil.copyProperties(entity,addEntity);
+                    StringBuffer fileName = new StringBuffer();
+            fileName.append(UUID.randomUUID().toString());
+            fileName.append(".");
+            fileName.append(Constants.SUFFIX_OF_OFD);
+            String uploadResult = null;
+            try {
+                //上传源文件到ftp服务器
+                uploadResult = fileService.uploadFile(ofdEntity, fileName.toString());
+            } catch (IOException ex) {
+                log.error("非商上传电票到文件服务器失败:{}", ex);
             }
-            if (StringUtils.isNotEmpty(response.getResult().getImageUrl())) {
+            UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
+            UploadFileResultData data = uploadFileResult.getData();
+            addEntity.setFileType(String.valueOf(Constants.FILE_TYPE_OFD));
+            addEntity.setSourceUploadId(data.getUploadId());
+            addEntity.setCreateUser(UserUtil.getLoginName());
+            addEntity.setSourceUploadPath(data.getUploadPath());
+            //发送验签
+            OfdResponse response = backFillService.signOfd(ofdEntity);
+            //验签成功
+            if (response.isOk()) {
+                addEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
+                final InvoiceMain invoiceMain = response.getResult().getInvoiceMain();
+                VerificationRequest verificationRequest = new VerificationRequest();
+                verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
+                verificationRequest.setCheckCode(invoiceMain.getCheckCode());
+                verificationRequest.setCustomerNo(customerNo);
+                verificationRequest.setInvoiceCode(invoiceMain.getInvoiceCode());
+                verificationRequest.setInvoiceNo(invoiceMain.getInvoiceNo());
+                verificationRequest.setPaperDrewDate(invoiceMain.getPaperDrewDate());
+                VerificationResponse verificationResponse = verificationService.verify(verificationRequest);
+                if (verificationResponse.isOK()) {
+                    addEntity.setXfVerifyTaskId(verificationResponse.getResult());
+                    addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_DOING);
+                } else {
+                    addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
+                }
+                if (StringUtils.isNotEmpty(response.getResult().getImageUrl())) {
 
-                try {
-                    String base64 = verificationService.getBase64ByUrl(response.getResult().getImageUrl());
+                    try {
+                        String base64 = verificationService.getBase64ByUrl(response.getResult().getImageUrl());
 
-                    String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
-                    UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
-                    if (null != uploadFileImageResult) {
-                        entity.setUploadId(uploadFileImageResult.getData().getUploadId());
-                        entity.setUploadPath(uploadFileImageResult.getData().getUploadPath());
+                        String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
+                        UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
+                        if (null != uploadFileImageResult) {
+                            addEntity.setUploadId(uploadFileImageResult.getData().getUploadId());
+                            addEntity.setUploadPath(uploadFileImageResult.getData().getUploadPath());
+                        }
+                    } catch (IOException e) {
+                        log.error("非商下载税局OFD图片失败:{}", e);
                     }
-                } catch (IOException e) {
-                    log.error("非商下载税局OFD图片失败:{}", e);
+
                 }
 
+            } else {
+                addEntity.setOfdStatus(Constants.SIGIN_NONE_BUSINESS_FAIL);
+                addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
             }
+            this.save(addEntity);
 
-        } else {
-            entity.setOfdStatus(Constants.SIGIN_NONE_BUSINESS_FAIL);
-            entity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
-        }
+        });
 
-        this.save(entity);
     }
 
     public void parsePdfFile(List<byte[]> pdf, TXfNoneBusinessUploadDetailEntity entity) {
-        StringBuffer fileName = new StringBuffer();
-        fileName.append(UUID.randomUUID().toString());
-        fileName.append(".");
-        fileName.append(Constants.SUFFIX_OF_PDF);
-        String uploadResult = null;
-        try {
-            //上传源文件到ftp服务器
-            uploadResult = fileService.uploadFile(pdf.get(0), fileName.toString());
-        } catch (IOException ex) {
-            log.error("非商上传电票到文件服务器失败:{}", ex);
-        }
-        UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
-        UploadFileResultData data = uploadFileResult.getData();
-        entity.setFileType(String.valueOf(Constants.FILE_TYPE_PDF));
-        entity.setSourceUploadId(data.getUploadId());
-        entity.setCreateUser(UserUtil.getLoginName());
-        entity.setSourceUploadPath(data.getUploadPath());
-        entity.setUploadId(data.getUploadId());
-        entity.setUploadPath(data.getUploadPath());
-        //发送识别
-        String taskId = discernService.discern(pdf.get(0));
-        //发送识别成功
-        if (StringUtils.isNotEmpty(taskId)) {
-            entity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_DOING);
-            entity.setXfDiscernTaskId(taskId);
-            entity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_DOING);
-        } else {
-            entity.setOfdStatus(Constants.SIGIN_NONE_BUSINESS_FAIL);
-            entity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
-        }
+        List<TXfNoneBusinessUploadDetailEntity> list = new ArrayList<>();
+        pdf.stream().forEach(pdfEntity ->{
+            TXfNoneBusinessUploadDetailEntity addEntity = new TXfNoneBusinessUploadDetailEntity();
+            BeanUtil.copyProperties(entity,addEntity);
+            StringBuffer fileName = new StringBuffer();
+            fileName.append(UUID.randomUUID().toString());
+            fileName.append(".");
+            fileName.append(Constants.SUFFIX_OF_PDF);
+            String uploadResult = null;
+            try {
+                //上传源文件到ftp服务器
+                uploadResult = fileService.uploadFile(pdfEntity, fileName.toString());
+            } catch (IOException ex) {
+                log.error("非商上传电票到文件服务器失败:{}", ex);
+            }
+            UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
+            UploadFileResultData data = uploadFileResult.getData();
+            addEntity.setFileType(String.valueOf(Constants.FILE_TYPE_PDF));
+            addEntity.setSourceUploadId(data.getUploadId());
+            addEntity.setCreateUser(UserUtil.getLoginName());
+            addEntity.setSourceUploadPath(data.getUploadPath());
+            addEntity.setUploadId(data.getUploadId());
+            addEntity.setUploadPath(data.getUploadPath());
+            //发送识别
+            String taskId = discernService.discern(pdfEntity);
+            //发送识别成功
+            if (StringUtils.isNotEmpty(taskId)) {
+                addEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_DOING);
+                addEntity.setXfDiscernTaskId(taskId);
+                addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_DOING);
+            } else {
+                addEntity.setOfdStatus(Constants.SIGIN_NONE_BUSINESS_FAIL);
+                addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
+            }
+            list.add(addEntity);
+            this.save(addEntity);
 
-        this.save(entity);
+        });
+
+        
     }
 
     public TXfNoneBusinessUploadDetailEntity getObjByVerifyTaskId(String verifyTaskId) {
@@ -238,6 +256,9 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     }
 
     public Page<TXfNoneBusinessUploadDetailDto> page(Long current, Long size, TXfNoneBusinessUploadQueryDto dto) {
+        if ("0".equals(dto.getQueryType())) {
+            dto.setCreateUser(UserUtil.getLoginName());
+        }
         LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity> wrapper = new LambdaQueryChainWrapper<TXfNoneBusinessUploadDetailEntity>(baseMapper);
         Page<TXfNoneBusinessUploadDetailDto> page = new Page<>(current, size);
         if ("0".equals(dto.getQueryType())) {
@@ -304,7 +325,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         }
     }
 
-    public void export(TXfNoneBusinessUploadQueryDto dto) {
+    public R export(TXfNoneBusinessUploadQueryDto dto) {
         List<TXfNoneBusinessUploadDetailDto> resultList = this.noPaged(dto);
 
         final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
@@ -315,7 +336,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
             //创建一个sheet
             WriteSheet writeSheet = EasyExcel.writerSheet(0, "非商导出结果信息").build();
-            excelWriter.write(resultList, writeSheet);
+            excelWriter.write(noneBusinessConverter.exportMap(resultList), writeSheet);
             excelWriter.finish();
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;
@@ -339,7 +360,8 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             exportDto.setLogId(excelExportlogEntity.getId());
             exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商结果导出成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
-            e.printStackTrace();
+           log.error("导出异常:{}",e);
+           return R.fail("导出异常");
         } finally {
             if (in != null) {
                 try {
@@ -349,6 +371,6 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
                 }
             }
         }
-
+        return R.ok();
     }
 }

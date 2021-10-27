@@ -2,9 +2,13 @@ package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.enums.OperateLogEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
+import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
@@ -39,6 +43,8 @@ public class CommSettlementService {
     private PreinvoiceService preinvoiceService;
     @Autowired
     private RedNotificationOuterService redNotificationOuterService;
+    @Autowired
+    private OperateLogService operateLogService;
 
     /**
      * 申请-作废结算单预制发票（红字信息）
@@ -63,7 +69,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
-            tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+            tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
@@ -79,7 +85,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList2 = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper2);
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList2)) {
-            tXfPreInvoiceEntityList2.forEach(tXfPreInvoiceEntity -> {
+            tXfPreInvoiceEntityList2.parallelStream().forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
@@ -91,6 +97,12 @@ public class CommSettlementService {
         if (CollectionUtils.isEmpty(tXfPreInvoiceEntityList) && CollectionUtils.isEmpty(tXfPreInvoiceEntityList2)) {
             throw new EnhanceRuntimeException("结算单没有可撤销的预制发票(红字信息)");
         }
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+        operateLogService.add(settlementId, OperateLogEnum.CANCEL_RED_NOTIFICATION_APPLY,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -114,12 +126,18 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         });
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+        operateLogService.add(settlementId, OperateLogEnum.REJECT_CANCEL_RED_NOTIFICATION_APPLY,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -143,9 +161,15 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             destroyPreInvoice(tXfPreInvoiceEntity.getId());
         });
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+        operateLogService.add(settlementId, OperateLogEnum.AGREE_CANCEL_RED_NOTIFICATION_APPLY,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -175,12 +199,22 @@ public class CommSettlementService {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
+        TXfPreInvoiceEntity preInvoiceEntity = tXfPreInvoiceDao.selectById(preInvoiceId);
+        if(preInvoiceEntity == null){
+            throw new EnhanceRuntimeException("关联的预制发票不存在");
+        }
         TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         updateTXfPreInvoiceEntity.setId(preInvoiceId);
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         //调用沃尔玛撤销红字信息审批
         commRedNotificationService.applyDestroyRedNotification(preInvoiceId);
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(preInvoiceEntity.getSettlementId());
+        operateLogService.add(settlement.getId(), OperateLogEnum.CANCEL_RED_NOTIFICATION_APPLY,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 
     /**
@@ -248,7 +282,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //作废待审核的预制发票
-        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
+        tXfSettlementEntityList.parallelStream().forEach(tXfSettlementEntity -> {
             agreeDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
@@ -279,7 +313,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //作废结算单
-        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
+        tXfSettlementEntityList.parallelStream().forEach(tXfSettlementEntity -> {
             rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
@@ -323,5 +357,11 @@ public class CommSettlementService {
         TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
         tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity, preInvoiceWrapper);
+
+        //日志
+        TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+        operateLogService.add(settlement.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                UserUtil.getUserId(),UserUtil.getUserName());
     }
 }

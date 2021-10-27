@@ -11,6 +11,7 @@ import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportDto;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ReportCodeResponse;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
@@ -67,7 +68,8 @@ public class ExceptionReportController {
     @ApiOperation(value = "例外报告说明列表")
     public R getCode() {
         final ExceptionReportCodeEnum[] values = ExceptionReportCodeEnum.values();
-        return R.ok(values);
+        final ReportCodeResponse[] reportCodeResponses = exceptionReportMapper.toReportCode(values);
+        return R.ok(reportCodeResponses);
     }
 
     @PostMapping("re-match")

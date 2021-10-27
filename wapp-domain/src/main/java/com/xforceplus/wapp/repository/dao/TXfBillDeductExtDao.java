@@ -31,7 +31,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
        @Select("<script>"+"select top ${limit} * from t_xf_bill_deduct " +
             "where id> #{id} " +
                "<if test='startDate!=null'>"+
-               "and  create_date >= #{startDate} "+
+               "and  create_time >= #{startDate} "+
                "</if>"+
                "  and business_type = #{billType} and status = #{status} and ref_settlement_no = '' " +
             "order by id asc </script>")
@@ -47,7 +47,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     @Select("select bill.purchaser_no,bill.seller_no,bill.tax_rate,(bill.amount_without_tax-res.amount) as amount_without_tax"+
             "from (select deduct_id, sum(use_amount) amount\n"+
             "      from t_xf_bill_deduct_item_ref\n"+
-            "      where create_date => #{startDate} and create_date <= #{endDate} \n"+
+            "      where create_time => #{startDate} and create_time <= #{endDate} \n"+
             "      group by deduct_id) res,\n"+
             "     t_xf_bill_deduct bill\n"+
             "where bill.id = res.deduct_id and bill.business_type = 1\n"+
@@ -60,8 +60,12 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @param referenceDate
      * @return
      */
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate   from t_xf_bill_deduct where deduct_date >= #{referenceDate}  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag} group by purchaser_no, seller_no,tax_rate")
-    public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Date referenceDate,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
+    @Select("select sum(deduct.amount_without_tax) as amount_without_tax,sum(deduct.amount_with_tax) as amount_with_tax,sum(deduct.tax_amount) as tax_amount , deduct.seller_no,deduct.purchaser_no, deduct.tax_rate\n" +
+            "from t_xf_bill_deduct deduct left join t_xf_overdue overdue on overdue.seller_no = deduct.seller_no\n" +
+            "where  deduct.deduct_date > (case overdue.overdue_day when null  then DATEADD(d,0-#{referenceDate},GETDATE()) else    DATEADD(d,0-(overdue.overdue_day),GETDATE()) end)\n" +
+            "  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag}\n" +
+            "group by deduct.purchaser_no, deduct.seller_no,deduct.tax_rate\n")
+    public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Integer referenceDate,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
 
     /**
      *  更加ID列表查询同购销对 同税率的 单据合并信息
@@ -104,7 +108,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     @Update(" update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where purchaser_no  = #{purchaserNo} and seller_no = #{sellerNo} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax < 0 and ref_settlement_no = '' and  lock_flag = #{flag} ")
     public int updateMergeNegativeBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus,@Param("flag") Integer flag );
 
-    @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and create_date >= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0 and ref_settlement_no = '' and  lock_flag = #{flag}")
+    @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and create_time >= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0 and ref_settlement_no = '' and  lock_flag = #{flag}")
     public int updateMergePositiveBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate,@Param("referenceDate") Date referenceDate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus,@Param("flag") Integer flag );
 
     /**
@@ -113,7 +117,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @param status
      * @return
      */
-    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no   from t_xf_bill_deduct where  create_date >= dateadd(d,-day(getdate())+1,getdate()) and business_type = #{type} and status = #{status}  group by purchaser_no,seller_no ")
+    @Select("select sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,seller_no,purchaser_no   from t_xf_bill_deduct where    business_type = #{type} and status = #{status}  group by purchaser_no,seller_no ")
     public List<TXfBillDeductEntity> querySuitableClaimBill( @Param("type")Integer type,@Param("status")Integer status);
 
     /**
@@ -122,7 +126,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @param status
      * @return
      */
-    @Select(" update t_xf_bill_deduct set status = #{targetStatus},ref_settlement_no=#{settlementNo}    where  purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and  business_type = #{type} and status = #{status} and create_date >= dateadd(d,-day(getdate())+1,getdate()) ")
+    @Select(" update t_xf_bill_deduct set status = #{targetStatus},ref_settlement_no=#{settlementNo}    where  purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and  business_type = #{type} and status = #{status} and create_time >= dateadd(d,-day(getdate())+1,getdate()) ")
     public Integer updateSuitableClaimBill(@Param("type")Integer type, @Param("status")Integer status, @Param("targetStatus") Integer targetStatus, @Param("settlementNo")String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo);
 
     @Select("<script>"+

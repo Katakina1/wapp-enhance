@@ -73,5 +73,22 @@
             and t1.venderid = #{entity.venderId}
         </if>
 
+        <if test="entity.submitFlag != null and entity.submitFlag != ''">
+            and t.submit_flag = #{entity.submitFlag}
+        </if>
+
+        <if test="entity.verifyStatus != null and entity.verifyStatus != ''">
+            and t.verify_status = #{entity.verifyStatus}
+        </if>
+
+        <if test="entity.ofdStatus != null and entity.ofdStatus != ''">
+            and t.ofd_status = #{entity.ofdStatus}
+        </if>
+
+        <if test="entity.invoiceStoreNo != null and entity.invoiceStoreNo != ''">
+            and t.invoice_store_no = #{entity.invoiceStoreNo}
+        </if>
+
+
     </select>
 </mapper>

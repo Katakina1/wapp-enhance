@@ -51,6 +51,7 @@ public class OperateLogService {
         operationLogEntity.setBusinessStatus(businessStatus);
         operationLogEntity.setOperateDesc(operateLogEnum.getOperateDesc());
         operationLogEntity.setOperateType(operateLogEnum.getOperateType());
+        operationLogEntity.setOperateCode(operateLogEnum.getOperateCode());
         operationLogEntity.setCreateTime(new Date());
         operationLogEntity.setId(IdGenerator.generate());
         operationLogEntity.setUserId(userId);

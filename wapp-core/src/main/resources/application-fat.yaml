@@ -50,6 +50,7 @@ taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
 spring:
   redis:
     host: wapp-redis
+    port: 6379
 server:
   port: 6060
 
@@ -94,8 +95,8 @@ pro:
     host: 10.100.2.17  #10.44.100.123
     username: wappftp
     password: testwapp123
-    # 授权方式：公私钥和密码选择一个，测试时选择密码
-    auth-method: password
+    # 授权方式：公私钥和密码选择一个，测试时选择密码,pwd密码，private 私钥，默认private
+    auth-method: pwd
     default:
       port: 22
       timeout: 60000

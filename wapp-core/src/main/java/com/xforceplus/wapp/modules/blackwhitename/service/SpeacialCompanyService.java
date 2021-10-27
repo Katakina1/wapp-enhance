@@ -42,7 +42,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         this.companyConverter = companyConverter;
     }
 
-    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type,String createTimeStart,String createTimeEnd) {
+    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type,String createTimeStart,String createTimeEnd,String supplier6d) {
         LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
         wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED);
         if (StringUtils.isNotEmpty(taxNo)) {
@@ -57,6 +57,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
 
         if (StringUtils.isNotEmpty(createTimeStart)) {
             wrapper.ge(TXfBlackWhiteCompanyEntity::getCreateTime, createTimeStart);
+        }
+        if(StringUtils.isNotEmpty(supplier6d)){
+            wrapper.ge(TXfBlackWhiteCompanyEntity::getSupplier6d, supplier6d);
         }
 
         if (StringUtils.isNotEmpty(createTimeEnd)) {

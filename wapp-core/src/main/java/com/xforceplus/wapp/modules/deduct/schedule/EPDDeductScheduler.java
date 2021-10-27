@@ -9,6 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 @Slf4j
 public class EPDDeductScheduler {
@@ -26,9 +28,19 @@ public class EPDDeductScheduler {
             log.info("EPD-MergeSettlement job 已经在执行，结束此次执行");
             return;
         }
+        redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
         log.info("EPD-MergeSettlement job 开始");
-        epdService.mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT);
-        redisTemplate.delete(KEY);
-        log.info("EPD-MergeSettlement job 结束");
+        try {
+            epdService.mergeEPDandAgreementSettlement(XFDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT);
+        } catch (Exception e) {
+            log.info("EPD-MergeSettlement job 异常：{}",e);
+        }finally {
+            try {
+                redisTemplate.delete(KEY);
+            } catch (Exception e) {
+                log.info("EPD-MergeSettlement  释放锁Redis 异常： {}", e);
+            }
+            log.info("EPD-MergeSettlement job 结束");
+        }
     }
 }

@@ -107,7 +107,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             return false;
         }
         final Date date = getOverdueDate(typeEnum,sellerNo);
-        return date.before(deductDate);
+        return date.after(deductDate);
     }
 
 

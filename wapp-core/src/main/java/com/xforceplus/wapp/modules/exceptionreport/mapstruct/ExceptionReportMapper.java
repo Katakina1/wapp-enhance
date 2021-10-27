@@ -1,11 +1,15 @@
 package com.xforceplus.wapp.modules.exceptionreport.mapstruct;
 
 import com.xforceplus.wapp.converters.GlobalConfig;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportDto;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ReportCodeResponse;
+import com.xforceplus.wapp.modules.exceptionreport.dto.ReportExportDto;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -22,4 +26,14 @@ public interface ExceptionReportMapper {
     List<ExceptionReportDto> toDto(List<TXfExceptionReportEntity> entity);
 
     TXfExceptionReportEntity deductToReport(TXfBillDeductEntity entity);
+
+
+    ReportExportDto toExport(TXfExceptionReportEntity entity);
+
+    List<ReportExportDto> toExport(List<TXfExceptionReportEntity> entity);
+
+    @Mapping(target = "text",source = "description")
+    ReportCodeResponse toReportCode(ExceptionReportCodeEnum codeEnums);
+
+    ReportCodeResponse[] toReportCode(ExceptionReportCodeEnum[] codeEnums);
 }

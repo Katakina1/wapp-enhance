@@ -71,11 +71,11 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField("create_date")
-    private Date createDate;
+    @TableField("create_time")
+    private Date createTime;
 
-    @TableField("update_date")
-    private Date updateDate;
+    @TableField("update_time")
+    private Date updateTime;
 
     @TableField("status")
     private Integer status;
@@ -98,9 +98,9 @@ public class TXfBillDeductItemRefEntity extends BaseEntity {
 
     public static final String ID = "id";
 
-    public static final String CREATE_DATE = "create_date";
+    public static final String CREATE_TIME = "create_time";
 
-    public static final String UPDATE_DATE = "update_date";
+    public static final String UPDATE_TIME = "update_time";
 
 
 }

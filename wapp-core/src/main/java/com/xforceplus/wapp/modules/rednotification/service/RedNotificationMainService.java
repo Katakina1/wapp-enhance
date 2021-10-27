@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -734,17 +735,15 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         Tuple3<Long,Long,String> tuple3 = exportCommonService.insertRequest(request);
 
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
-        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+//        List<Long> applyList = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
         //获取明细
-        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, applyList);
-        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
-        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+
 
         List<Long> redNoIds = new ArrayList<>();
+        Map<Long,ExportInfo> exportInfoMap = Maps.newHashMap();
+
         List<ExportItemInfo> itemInfos = Lists.newArrayList();
         List<ExportInfo> exportInfos = filterData.stream().map(apply -> {
-            redNoIds.add(apply.getId());
             ExportInfo dto = redNotificationMainMapper.mainEntityToExportInfo(apply);
             ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApplyingStatus()).orElse(ApproveStatus.OTHERS);
             dto.setApproveStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
@@ -755,15 +754,21 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             if (StringUtils.isNotBlank(apply.getOriginInvoiceType())){
                 dto.setOriginInvoiceType(ValueEnum.getEnumByValue(InvoiceType.class, apply.getOriginInvoiceType()).get().getDescription());
             }
-            // 获取明细
-            List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities1 = listItemMap.get(apply.getId());
-            tXfRedNotificationDetailEntities1.stream().forEach(item->{
-                ExportItemInfo exportItemInfo = redNotificationMainMapper.detailEntityToExportInfo(item, dto);
-                itemInfos.add(exportItemInfo);
-            });
+            redNoIds.add(apply.getId());
+            exportInfoMap.put(apply.getId(),dto);
+
+            //封装1000一批次查询明细
+            if (redNoIds.size()>1000){
+                handleItemInfos(redNoIds, exportInfoMap, itemInfos);
+            }
 
             return dto;
         }).collect(Collectors.toList());
+
+        //最后一批次
+        if (redNoIds.size()>0){
+            handleItemInfos(redNoIds, exportInfoMap, itemInfos);
+        }
 
 
 
@@ -771,6 +776,26 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     }
 
+    private void handleItemInfos(List<Long> redNoIds, Map<Long, ExportInfo> exportInfoMap, List<ExportItemInfo> itemInfos) {
+        LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TXfRedNotificationDetailEntity::getApplyId, redNoIds);
+        List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
+        Map<Long, List<TXfRedNotificationDetailEntity>> listItemMap = tXfRedNotificationDetailEntities.stream().collect(Collectors.groupingBy(TXfRedNotificationDetailEntity::getApplyId));
+
+        redNoIds.stream().forEach(data->{
+            // 获取明细
+            List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities1 = listItemMap.get(data);
+            ExportInfo tmpDto = exportInfoMap.get(data);
+            tXfRedNotificationDetailEntities1.stream().forEach(item->{
+                ExportItemInfo exportItemInfo = redNotificationMainMapper.detailEntityToExportInfo(item, tmpDto);
+                itemInfos.add(exportItemInfo);
+            });
+        });
+        // 清空批次
+        redNoIds.clear();
+        exportInfoMap.clear();
+        listItemMap.clear();
+    }
 
 
     private Response writeExcel(List<? extends BaseRowModel> list, List<? extends BaseRowModel> list2, BaseRowModel object, BaseRowModel object2,Tuple3<Long,Long,String> tuple3) {

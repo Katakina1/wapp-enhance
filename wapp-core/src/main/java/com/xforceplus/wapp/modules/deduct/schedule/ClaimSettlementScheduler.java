@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 @Slf4j
 public class ClaimSettlementScheduler {
@@ -26,10 +28,20 @@ public class ClaimSettlementScheduler {
             log.info("claim-MergeSettlement job 已经在执行，结束此次执行");
             return;
         }
+        redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
         log.info("claim-MergeSettlement job 开始");
-        claimBillService.mergeClaimSettlement();
-        redisTemplate.delete(KEY);
-        log.info("claim-MergeSettlement job 结束");
+        try {
+            claimBillService.mergeClaimSettlement();
+        } catch (Exception e) {
+            log.info("claim-MergeSettlement job 异常：{}",e);
+        }finally {
+            try {
+                redisTemplate.delete(KEY);
+            } catch (Exception e) {
+                log.info("claim-MergeSettlement  释放锁Redis 异常： {}", e);
+            }
+            log.info("claim-MergeSettlement job 结束");
+        }
     }
 
 }

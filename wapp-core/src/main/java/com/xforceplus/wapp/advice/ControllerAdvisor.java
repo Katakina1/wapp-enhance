@@ -41,8 +41,8 @@ public class ControllerAdvisor {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(Exception e) {
-        log.error("系统异常。", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(R.fail("系统异常"));
+        log.error("系统异常。"+e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(R.fail("系统异常:"+e.getMessage()));
     }
 
 

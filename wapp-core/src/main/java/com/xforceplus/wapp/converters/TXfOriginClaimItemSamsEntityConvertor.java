@@ -31,6 +31,7 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     // @Mapping(source = "vendorTaxIdJv", target = "")
     // @Mapping(source = "reportCode", target = "")
     @Mapping(source = "shipQty", target = "quantity")
+    @Mapping(source = "claimNumber", target = "claimNo")
     // @Mapping(source = "oldItem", target = "")
     /**
      * @param tXfOriginClaimItemSamsEntity
