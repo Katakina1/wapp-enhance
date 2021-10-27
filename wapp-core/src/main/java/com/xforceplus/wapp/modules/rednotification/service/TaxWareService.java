@@ -105,7 +105,7 @@ public class TaxWareService {
             log.info("申请请求:{}", reqJson);
             // 集成平台没传递，邮件报警
             defaultHeader.put("serialNo",applyRequest.getSerialNo());
-            final String post = httpClientFactory.post(applyRedAction,defaultHeader,reqJson,"gzip");
+            final String post = httpClientFactory.post(applyRedAction,defaultHeader,reqJson,"");
             log.info("申请结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
         } catch (IOException e) {
