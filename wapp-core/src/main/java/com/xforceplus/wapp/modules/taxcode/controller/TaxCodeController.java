@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.taxcode.controller;
 
 import com.xforceplus.wapp.annotation.EnhanceApiV1;
+import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.client.TaxCodeRsp;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
@@ -64,12 +65,12 @@ public class TaxCodeController {
     }
 
 
-    @ApiOperation("税编树")
+    @ApiOperation("中台税编列表")
     @GetMapping("/tax/code/list")
-    public R<List<TaxCodeRsp.ResultBean>> overdueList(@RequestParam("查询数据") String searchText) {
+    public R<List<TaxCodeBean>> overdueList(@RequestParam("查询数据") String searchText) {
         long start = System.currentTimeMillis();
-        val either = taxCodeService.searchTaxCode(searchText);
-        log.info("税编树查询,耗时:{}ms", System.currentTimeMillis() - start);
+        val either = taxCodeService.searchTaxCode(null, searchText);
+        log.info("中台税编列表查询,耗时:{}ms", System.currentTimeMillis() - start);
         return either.isRight() ? R.ok(either.get()) : R.fail(either.getLeft());
     }
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.client.JanusClient;
+import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.client.TaxCodeRsp;
 import com.xforceplus.wapp.client.WappDb2Client;
 import com.xforceplus.wapp.modules.taxcode.converters.TaxCodeConverter;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -75,7 +77,14 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
         return Optional.ofNullable(taxCode);
     }
 
-    public Either<String, List<TaxCodeRsp.ResultBean>> searchTaxCode(String queryText) {
-        return janusClient.searchTaxCode(queryText);
+    /**
+     * 两个参数不能同时为空
+     *
+     * @param taxCode 税收编码
+     * @param keyWord 搜搜关键字
+     * @return 成功集合/失败原因
+     */
+    public Either<String, List<TaxCodeBean>> searchTaxCode(@Nullable String taxCode, @Nullable String keyWord) {
+        return janusClient.searchTaxCode(taxCode, keyWord);
     }
 }

@@ -4,18 +4,19 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
-import com.xforceplus.wapp.modules.rednotification.model.taxware.GetTerminalResponse;
 import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -23,7 +24,9 @@ import java.util.Map;
 public class JanusClient {
     private final HttpClientFactory httpClientFactory;
     @Value("${wapp.integration.action.tax-code}")
-    private String taxCode;
+    private String taxCodeAction;
+    @Value("${wapp.integration.sign.tax-code}")
+    private String taxCodeSign;
     @Value("${wapp.integration.tenant-id:1203939049971830784}")
     public String tenantId;
     private final Map<String, String> defaultHeader = new HashMap<>();
@@ -42,16 +45,29 @@ public class JanusClient {
         defaultHeader.put("accept-encoding", "");
     }
 
-    public Either<String, List<TaxCodeRsp.ResultBean>> searchTaxCode(String queryText) {
+    public Either<String, List<TaxCodeBean>> searchTaxCode(String taxCode, String keyWord) {
+        if (StringUtils.isBlank(taxCode) && StringUtils.isBlank(keyWord)) {
+            return Either.left("参数不能全为空");
+        }
         try {
+            defaultHeader.put("uiaSign", taxCodeSign);
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
-            paramMeterMap.put("queryText", queryText);
-            paramMeterMap.put("appId", 20);
-            final String get = httpClientFactory.get(taxCode, paramMeterMap, defaultHeader);
-            log.info("获取税编结果:{}", get);
+            if (StringUtils.isNotBlank(taxCode)) {
+                paramMeterMap.put("code", taxCode);
+            }
+            if (StringUtils.isNotBlank(keyWord)) {
+                paramMeterMap.put("taxCodeKeyWord", keyWord);
+            }
+            paramMeterMap.put("appId", "walmart");
+            paramMeterMap.put("node", 1);
+            log.info("获取中台税编参数:{}", paramMeterMap);
+            final String get = httpClientFactory.get(taxCodeAction, paramMeterMap, defaultHeader);
+            log.info("获取中台税编结果:{}", get);
             TaxCodeRsp taxCodeRsp = gson.fromJson(get, TaxCodeRsp.class);
-            if ("".equalsIgnoreCase(taxCodeRsp.getCode())) {
-                return Either.right(taxCodeRsp.getResult());
+            if (Objects.nonNull(taxCodeRsp) && "TWTXZZ100".equalsIgnoreCase(taxCodeRsp.getCode())) {
+                List<TaxCodeBean> codeBeans = taxCodeRsp.getResult().stream().map(TaxCodeRsp.ResultBean::getData)
+                        .filter(Objects::nonNull).collect(Collectors.toList());
+                return Either.right(codeBeans);
             }
             return Either.left(taxCodeRsp.getMessage());
         } catch (IOException e) {
