@@ -69,7 +69,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
-            tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+            tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
@@ -85,7 +85,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList2 = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper2);
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList2)) {
-            tXfPreInvoiceEntityList2.forEach(tXfPreInvoiceEntity -> {
+            tXfPreInvoiceEntityList2.parallelStream().forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
@@ -126,7 +126,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
@@ -161,7 +161,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             destroyPreInvoice(tXfPreInvoiceEntity.getId());
         });
 
@@ -282,7 +282,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //作废待审核的预制发票
-        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
+        tXfSettlementEntityList.parallelStream().forEach(tXfSettlementEntity -> {
             agreeDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
@@ -313,7 +313,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //作废结算单
-        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
+        tXfSettlementEntityList.parallelStream().forEach(tXfSettlementEntity -> {
             rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }

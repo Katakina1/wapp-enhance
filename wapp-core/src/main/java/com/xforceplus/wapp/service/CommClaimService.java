@@ -76,7 +76,7 @@ public class CommClaimService {
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
@@ -91,7 +91,7 @@ public class CommClaimService {
 
         //修改索赔单状态
         //申请中的索赔单修改为：作废
-        billDeductList1.forEach(tXfBillDeduct -> {
+        billDeductList1.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode());
@@ -102,7 +102,7 @@ public class CommClaimService {
                     UserUtil.getUserId(),UserUtil.getUserName());
         });
         //已生成结算单的索赔单修改为：待生成结算单 清空结算单编号
-        billDeductList2.forEach(tXfBillDeduct -> {
+        billDeductList2.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
@@ -115,7 +115,7 @@ public class CommClaimService {
         QueryWrapper<TXfBillDeductItemRefEntity> billDeductItemRefEntityWrapper = new QueryWrapper<>();
         billDeductItemRefEntityWrapper.in(TXfBillDeductItemRefEntity.DEDUCT_ID, billDeductIdList);
         List<TXfBillDeductItemRefEntity> tXfBillDeductItemRefEntityList = tXfBillDeductItemRefDao.selectList(billDeductItemRefEntityWrapper);
-        tXfBillDeductItemRefEntityList.forEach(tXfBillDeductItemRefEntity -> {
+        tXfBillDeductItemRefEntityList.parallelStream().forEach(tXfBillDeductItemRefEntity -> {
             TXfBillDeductItemEntity tXfBillDeductItemEntity = tXfBillDeductItemDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
             //还原额度
             TXfBillDeductItemEntity updateTXfBillDeductItemEntity = new TXfBillDeductItemEntity();
@@ -137,7 +137,7 @@ public class CommClaimService {
 
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
-        tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
+        tXfBillDeductInvoiceList.parallelStream().forEach(tXfBillDeductInvoiceEntity -> {
             QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
