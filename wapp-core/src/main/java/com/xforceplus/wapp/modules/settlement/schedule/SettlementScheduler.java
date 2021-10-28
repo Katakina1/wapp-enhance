@@ -7,7 +7,7 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ public class SettlementScheduler {
     @Autowired
     private PreinvoiceService preinvoiceService;
     @Autowired
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;
     public static String KEY = "Settlement-split";
 
     /**
@@ -39,7 +39,7 @@ public class SettlementScheduler {
         log.info("Settlement-split  job 开始");
         try {
             Long id = 0L;
-            Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
+            Integer status = TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode();
             Integer limit = 100;
             List<TXfSettlementEntity> list = settlementService.querySettlementByStatus(id, status, limit);
             while (CollectionUtils.isNotEmpty(list)) {

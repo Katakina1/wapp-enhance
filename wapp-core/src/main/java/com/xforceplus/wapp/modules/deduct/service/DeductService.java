@@ -242,15 +242,15 @@ public class DeductService   {
         if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
                     TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    UserUtil.getUserId(), UserUtil.getUserName());
+                    0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_AGREEMENT,
                     TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    UserUtil.getUserId(), UserUtil.getUserName());
+                    0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.EPD_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_EPD,
                     TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    UserUtil.getUserId(), UserUtil.getUserName());
+                    0L,"系统");
         }
     }
 
@@ -466,12 +466,14 @@ public class DeductService   {
         tXfSettlementEntity.setUpdateTime(tXfSettlementEntity.getCreateTime());
         tXfSettlementEntity.setUpdateUser(0L);
         tXfSettlementEntity.setCreateUser(0L);
+        tXfSettlementEntity.setInvoiceType(InvoiceTypeEnum.SPECIAL_INVOICE.getValue());
         tXfSettlementEntity.setSettlementType(deductionBusinessTypeEnum.getValue());
         tXfSettlementEntity.setPriceMethod(0);
         /**
          * 索赔单 直接生成 结算单
          */
-         boolean partMatch = false;
+
+         Integer tmpStatus = TXfSettlementItemFlagEnum.NORMAL.getCode();
         if (deductionBusinessTypeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
             List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBill(purchaserNo,sellerNo,type,status);
             for (TXfBillDeductItemEntity tXfBillDeductItemEntity : tXfBillDeductItemEntities) {
@@ -482,7 +484,7 @@ public class DeductService   {
                 tXfSettlementItemEntity.setTaxRate(tXfBillDeductItemEntity.getTaxRate());
                 tXfSettlementItemEntity.setItemCode(tXfBillDeductItemEntity.getItemNo());
                 tXfSettlementItemEntity.setAmountWithoutTax(tXfBillDeductItemEntity.getAmountWithoutTax().negate());
-                tXfSettlementItemEntity.setTaxAmount(tXfBillDeductItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
+                tXfSettlementItemEntity.setTaxAmount(tXfSettlementItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
                 tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getTaxAmount().add(tXfSettlementItemEntity.getAmountWithoutTax()));
                 tXfSettlementItemEntity.setQuantityUnit(tXfBillDeductItemEntity.getUnit());
                 tXfSettlementItemEntity.setItemSpec(tXfBillDeductItemEntity.getCnDesc());
@@ -498,20 +500,26 @@ public class DeductService   {
                 tXfSettlementItemEntity.setUpdateUser(tXfSettlementItemEntity.getCreateUser());
                 tXfSettlementItemEntity.setThridId(tXfBillDeductItemEntity.getId());
                 tXfSettlementItemEntity = checkItem(tXfSettlementItemEntity);
+                if (tmpStatus < tXfSettlementItemEntity.getItemFlag() ) {
+                    tmpStatus = tXfSettlementItemEntity.getItemFlag();
+                }
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
             }
         }
          /**
           * 部分匹配 索赔单明细 需要确认数据单据，如果不需要确认，进入拆票流程，状态是 待拆票
           */
-         status = partMatch ? TXfSettlementStatusEnum.WAIT_CONFIRM.getCode() : TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode();
-         tXfSettlementEntity.setSettlementStatus(status);
+          if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
+         }
+         if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+         }
          tXfSettlementDao.insert(tXfSettlementEntity);
-
          //日志
          operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
                  TXfSettlementStatusEnum.getTXfSettlementStatusEnum(tXfSettlementEntity.getSettlementStatus()).getDesc(),
-                 UserUtil.getUserId(),UserUtil.getUserName());
+                 0L,"系统");
          return tXfSettlementEntity;
     }
 
@@ -873,11 +881,10 @@ public class DeductService   {
                         tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
                         tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
-                        //tXfSettlementItemEntity.setUnitPriceWithTax(tXfSettlementItemEntity.getAmountWithTax().divide(tXfSettlementItemEntity.getQuantity(), 6, RoundingMode.HALF_UP));
-                          tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
+                        tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setAmountWithTax(invoiceItem.getDetailAmount().add(invoiceItem.getTaxAmount()));
 
-                          tXfSettlementItemEntity.setCreateUser(0l);
+                        tXfSettlementItemEntity.setCreateUser(0l);
                         tXfSettlementItemEntity.setUpdateUser(0l);
                         tXfSettlementItemEntity.setId(idSequence.nextId());
                         tXfSettlementItemEntity.setSettlementNo(settlementNo);
@@ -892,7 +899,7 @@ public class DeductService   {
                         tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
                         tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
-                        if (tXfSettlementItemEntity.getItemFlag() != TXfSettlementItemFlagEnum.NORMAL.getCode()) {
+                        if (status < tXfSettlementItemEntity.getItemFlag() ) {
                             status = tXfSettlementItemEntity.getItemFlag();
                         }
                         tXfSettlementItemDao.insert(tXfSettlementItemEntity);
@@ -907,7 +914,6 @@ public class DeductService   {
             tXfBillDeductInvoiceEntity.setCreateTime(date);
             tXfBillDeductInvoiceEntity.setUpdateTime(date);
             tXfBillDeductInvoiceEntity.setThridId(id);
-
             tXfBillDeductInvoiceEntity.setUseAmount(matchRes.deductedAmount);
             tXfBillDeductInvoiceEntity.setStatus(TXfInvoiceDeductStatusEnum.NORMAL.getCode());
             tXfBillDeductInvoiceDao.insert(tXfBillDeductInvoiceEntity);

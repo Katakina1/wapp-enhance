@@ -109,6 +109,9 @@ public class ImportInfo extends BaseRowModel {
    // 补充额外字段
    @JsonIgnore
    private Integer specialInvoiceFlag;
+    // 补充额外字段 版本号
+    @JsonIgnore
+    private String goodsNoVer;
 
 
 

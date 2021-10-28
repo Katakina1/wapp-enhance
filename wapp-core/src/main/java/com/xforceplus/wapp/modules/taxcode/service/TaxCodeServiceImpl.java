@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.taxcode.service;
 
 
+import cn.hutool.json.JSON;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,6 +9,8 @@ import com.xforceplus.wapp.client.JanusClient;
 import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.client.TaxCodeRsp;
 import com.xforceplus.wapp.client.WappDb2Client;
+import com.xforceplus.wapp.common.utils.JsonUtil;
+import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.taxcode.converters.TaxCodeConverter;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.repository.dao.TaxCodeDao;
@@ -18,10 +21,12 @@ import io.vavr.control.Either;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -33,11 +38,13 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
     private final TaxCodeConverter taxCodeConverter;
     private final WappDb2Client wappDb2Client;
     private final JanusClient janusClient;
+    private final RedisTemplate redisTemplate;
 
-    public TaxCodeServiceImpl(TaxCodeConverter taxCodeConverter, WappDb2Client wappDb2Client, JanusClient janusClient) {
+    public TaxCodeServiceImpl(TaxCodeConverter taxCodeConverter, WappDb2Client wappDb2Client, JanusClient janusClient,RedisTemplate redisTemplate) {
         this.taxCodeConverter = taxCodeConverter;
         this.wappDb2Client = wappDb2Client;
         this.janusClient = janusClient;
+        this.redisTemplate = redisTemplate;
     }
 
     public Tuple2<List<TaxCode>, Page<TaxCodeEntity>> page(Long current, Long size,
@@ -85,6 +92,17 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
      * @return 成功集合/失败原因
      */
     public Either<String, List<TaxCodeBean>> searchTaxCode(@Nullable String taxCode, @Nullable String keyWord) {
-        return janusClient.searchTaxCode(taxCode, keyWord);
+        String key =String.format("taxCode:%s-keyWord:%s",StringUtils.isEmpty(taxCode)?"":taxCode,StringUtils.isEmpty(keyWord)?"":keyWord);
+        Object cacheGoodsTaxInfo = redisTemplate.opsForValue().get(key);
+        if ( cacheGoodsTaxInfo != null){
+            List<TaxCodeBean> taxCodeBeans = JsonUtil.fromJsonList(cacheGoodsTaxInfo.toString(), TaxCodeBean.class);
+            return Either.right(taxCodeBeans);
+        }else {
+            Either<String, List<TaxCodeBean>> result = janusClient.searchTaxCode(taxCode, keyWord);
+            if (result.isRight()){
+                redisTemplate.opsForValue().set(key,JsonUtil.toJsonStr(result.get()),3,TimeUnit.SECONDS);
+            }
+            return result ;
+        }
     }
 }

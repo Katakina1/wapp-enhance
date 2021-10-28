@@ -1,11 +1,10 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -149,7 +148,7 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     /**
      * 创建时间
      */
-    @TableField("create_time")
+    @TableField(value="create_time", update="getdate()",fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
@@ -161,7 +160,7 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="getdate()" )
+    @TableField(value="update_time", update="getdate()",fill = FieldFill.UPDATE)
     private Date updateTime;
 
     /**

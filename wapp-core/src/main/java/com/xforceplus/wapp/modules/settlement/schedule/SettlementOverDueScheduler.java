@@ -7,7 +7,7 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ public class SettlementOverDueScheduler {
     @Autowired
     private PreinvoiceService preinvoiceService;
     @Autowired
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate redisTemplate;
     public static String KEY = "Settlement-overdraft";
     /**
      * 自动确认逾期金额 结算单下 所属的单据 全部预期，自动确认

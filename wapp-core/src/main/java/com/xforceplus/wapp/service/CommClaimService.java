@@ -99,7 +99,7 @@ public class CommClaimService {
             //日志
             operateLogService.add(tXfBillDeduct.getId(), OperateLogEnum.CANCEL_DEDUCT,
                     TXfBillDeductStatusEnum.CLAIM_DESTROY.getDesc(),
-                    UserUtil.getUserId(),UserUtil.getUserName());
+                    0L,"系统");
         });
         //已生成结算单的索赔单修改为：待生成结算单 清空结算单编号
         billDeductList2.parallelStream().forEach(tXfBillDeduct -> {
