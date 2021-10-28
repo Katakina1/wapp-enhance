@@ -268,6 +268,10 @@ public class DeductService   {
         }
         DeductionHandleEnum dedcutionHandleEnum = optionalDedcutionHandleEnum.get();
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
+            TAcOrgEntity purchaserOrgEntity = queryOrgInfo(deductBillBaseData.getPurchaserNo(),false);
+            if (Objects.nonNull( purchaserOrgEntity)) {
+                deductBillBaseData.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
+            }
             TXfBillDeductEntity tmp = dedcutionHandleEnum.function.apply(deductBillBaseData);
             tmp.setCreateTime(date);
             tmp.setUpdateTime(tmp.getCreateTime());
@@ -512,8 +516,11 @@ public class DeductService   {
           if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
              tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
          }
-         if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+         else if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
              tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+         }
+         else if(tmpStatus == TXfSettlementItemFlagEnum.NORMAL.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
          }
          tXfSettlementDao.insert(tXfSettlementEntity);
          //日志
@@ -630,7 +637,8 @@ public class DeductService   {
         tXfBillDeductEntity.setBusinessNo(defaultValue(deductBillBaseData.getBusinessNo()));
         tXfBillDeductEntity.setBatchNo(defaultValue(deductBillBaseData.getBatchNo()));
         tXfBillDeductEntity.setTaxRate(defaultValue(deductBillBaseData.getTaxRate()));
-         return tXfBillDeductEntity;
+        tXfBillDeductEntity.setPurchaserName(defaultValue(deductBillBaseData.getPurchaserName()));
+        return tXfBillDeductEntity;
     }
 
     public TXfBillDeductEntity getDeductById(Long id){
@@ -927,6 +935,7 @@ public class DeductService   {
      * @return
      */
     public TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+        tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
         BigDecimal ta = tXfSettlementItemEntity.getQuantity().multiply(tXfSettlementItemEntity.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
         if (ta.compareTo(tXfSettlementItemEntity.getAmountWithoutTax()) != 0) {
             tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());

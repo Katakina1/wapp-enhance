@@ -1,22 +1,22 @@
 package com.xforceplus.wapp.repository.entity;
 
-import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.util.Date;
 /**
  * <p>
     * 业务单据信息
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-28
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -119,8 +119,10 @@ public class TXfBillDeductEntity extends BaseEntity {
     /**
      * 业务单状态
 索赔单:101待匹配明细;102待确认税编;103待确认税差;104待匹配蓝票;105:待匹配结算单;106已匹配结算单;107待审核;108已撤销
-协议单:201待匹配结算单;202已匹配结算单;203已锁定;204已取消
-EPD单:301待匹配结算单;302已匹配结算单
+协议单:201待匹配结算单;202已匹配结算单;204待匹配蓝票;206已作废
+EPD单:301待匹配结算单;302已匹配结算单;303待匹配蓝票;304已作废
+1已锁定
+0解锁
      */
     @TableField("status")
     private Integer status;
@@ -173,13 +175,19 @@ EPD单:301待匹配结算单;302已匹配结算单
     @TableField("source_id")
     private Long sourceId;
 
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    /**
+     * 购方名称、扣款公司名称
+     */
+    @TableField("purchaser_name")
+    private String purchaserName;
 
     @TableField("create_time")
     private Date createTime;
 
-    @TableField("update_time")
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
 
@@ -231,9 +239,11 @@ EPD单:301待匹配结算单;302已匹配结算单
 
     public static final String SOURCE_ID = "source_id";
 
-    public static final String ID = "id";
+    public static final String PURCHASER_NAME = "purchaser_name";
 
     public static final String CREATE_TIME = "create_time";
+
+    public static final String ID = "id";
 
     public static final String UPDATE_TIME = "update_time";
 
