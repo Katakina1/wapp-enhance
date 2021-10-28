@@ -12,4 +12,7 @@ public class RedNotificationExportPdfRequest {
 
     @ApiModelProperty(value = "红字信息筛选条件")
     private QueryModel queryModel;
+
+    //申请完红字信息自动尝试获取pdf
+    private Boolean autoFlag;
 }
