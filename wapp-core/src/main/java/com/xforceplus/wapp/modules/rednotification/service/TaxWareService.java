@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
+import com.xforceplus.wapp.common.enums.InvoiceOrigin;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
@@ -219,6 +220,12 @@ public class TaxWareService {
                 if(SUCCESSFUL_PROCESS_FLAG.equals(redMessageInfo.getProcessFlag())){
                     tXfRedNotificationEntity.setRedNotificationNo(redMessageInfo.getRedNotificationNo());
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
+//                    if (tXfRedNotificationEntity.getInvoiceOrigin().intValue()== InvoiceOrigin.IMPORT.getValue().intValue())
+//                    {
+//
+//                    }
+                    tXfRedNotificationEntity.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
+
                     // 更新申请日期
                     tXfRedNotificationEntity.setInvoiceDate(DateUtils.getCurentIssueDate());
                     redNotificationMainService.updateById(tXfRedNotificationEntity);
