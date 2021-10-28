@@ -39,7 +39,7 @@ public class SettlementScheduler {
         log.info("Settlement-split  job 开始");
         try {
             Long id = 0L;
-            Integer status = TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode();
+            Integer status = TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode();
             Integer limit = 100;
             List<TXfSettlementEntity> list = settlementService.querySettlementByStatus(id, status, limit);
             while (CollectionUtils.isNotEmpty(list)) {

@@ -23,26 +23,26 @@ public class ControllerAdvisor {
 
     @ExceptionHandler(EnhanceRuntimeException.class)
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(EnhanceRuntimeException e) {
-        log.error("参数错误"+e.getMessage(),e);
+        log.error("参数错误" + e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getMessage(), e.getCode()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(MethodArgumentNotValidException e) {
-        log.error("参数错误"+e.getMessage(),e);
+        log.error("参数错误" + e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
     }
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<R<?>> handleBindException(BindException e) {
-        log.error("参数错误"+e.getMessage(),e);
+        log.error("参数错误" + e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(R.fail(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<R<?>> handleEnhanceRuntimeException(Exception e) {
-        log.error("系统异常。"+e.getMessage(), e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(R.fail("系统异常:"+e.getMessage()));
+        log.error("系统异常。" + e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(R.fail("系统异常:" + e.getMessage()));
     }
 
 
