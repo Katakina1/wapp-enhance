@@ -87,6 +87,9 @@ public class BlueInvoiceService {
      * @return
      */
     private List<MatchRes> obtainInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchserTaxNo, boolean withItems) {
+        if (BigDecimal.ZERO.compareTo(amount) >= 0) {
+            throw new NoSuchInvoiceException("非法的负数待匹配金额" + amount);
+        }
         log.info("收到匹配蓝票任务 待匹配金额amount={} settlementNo={} sellerTaxNo={} purchserTaxNo={} withItems={}", amount, settlementNo, sellerTaxNo, purchserTaxNo, withItems);
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
