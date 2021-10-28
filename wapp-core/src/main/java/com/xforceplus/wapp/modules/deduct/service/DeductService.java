@@ -510,6 +510,8 @@ public class DeductService   {
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
                 taxRateTotal = taxRateTotal.add(tXfBillDeductItemEntity.getTaxRate());
             }
+        }else{
+            tXfSettlementEntity.setTaxRate(tXfBillDeductEntities.get(0).getTaxRate());
         }
          /**
           * 部分匹配 索赔单明细 需要确认数据单据，如果不需要确认，进入拆票流程，状态是 待拆票
