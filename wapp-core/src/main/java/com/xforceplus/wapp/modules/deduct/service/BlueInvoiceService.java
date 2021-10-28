@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.converters.TDxRecordInvoiceDetailEntityConvertor;
+import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
@@ -98,8 +99,8 @@ public class BlueInvoiceService {
                             .eq(TDxRecordInvoiceEntity::getGfTaxNo, purchserTaxNo)
                             // 排除状态异常的发票（只要正常的发票）
                             .eq(TDxRecordInvoiceEntity::getInvoiceStatus, "0")
-                            // 排除非专票（只要增值税专票）
-                            .eq(TDxRecordInvoiceEntity::getInvoiceType, "01")
+                            // 排除非专票（只要增值税专票 和 电子专票）
+                            .in(TDxRecordInvoiceEntity::getInvoiceType, InvoiceTypeEnum.SPECIAL_INVOICE.getValue(), InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue())
                             // 排除可用金额=0的发票
                             .gt(TDxRecordInvoiceEntity::getRemainingAmount, BigDecimal.ZERO)
                             // 排除未完成付款的蓝票(已认证)
