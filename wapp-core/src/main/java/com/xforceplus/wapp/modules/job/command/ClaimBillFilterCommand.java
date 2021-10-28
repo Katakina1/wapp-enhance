@@ -230,8 +230,22 @@ public class ClaimBillFilterCommand implements Command {
         List<DeductBillBaseData> newList = list
                 .stream()
                 // 索赔单不含税金额为正数
-                .filter(v -> !v.getCostAmount().startsWith(NEGATIVE_SYMBOL))
-                .map(TXfOriginClaimBillEntityConvertor.INSTANCE::toClaimBillData)
+                .filter(v -> {
+                    if (Objects.isNull(v.getCostAmount())) {
+                        return false;
+                    } else {
+                        return !v.getCostAmount().startsWith(NEGATIVE_SYMBOL);
+                    }
+                })
+                .map(v -> {
+                    try {
+                        return TXfOriginClaimBillEntityConvertor.INSTANCE.toClaimBillData(v);
+                    } catch (Exception e) {
+                        log.warn(e.getMessage(), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
@@ -248,7 +262,16 @@ public class ClaimBillFilterCommand implements Command {
                 .stream()
                 // 索赔单明细不含税金额为负数
                 // .filter(v -> v.getLineCost().startsWith(NEGATIVE_SYMBOL))
-                .map(TXfOriginClaimItemHyperEntityConvertor.INSTANCE::toClaimBillItemData)
+                .map(v -> {
+                            try {
+                                return TXfOriginClaimItemHyperEntityConvertor.INSTANCE.toClaimBillItemData(v);
+                            } catch (Exception e) {
+                                log.warn(e.getMessage(), e);
+                                return null;
+                            }
+                        }
+                )
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             deductService.receiveItemData(newList, null);
@@ -265,7 +288,16 @@ public class ClaimBillFilterCommand implements Command {
                 .stream()
                 // 索赔单明细不含税金额为负数
                 // .filter(v -> v.getShipCost().startsWith(NEGATIVE_SYMBOL))
-                .map(TXfOriginClaimItemSamsEntityConvertor.INSTANCE::toClaimBillItemData)
+                .map(v -> {
+                            try {
+                                return TXfOriginClaimItemSamsEntityConvertor.INSTANCE.toClaimBillItemData(v);
+                            } catch (Exception e) {
+                                log.warn(e.getMessage(), e);
+                                return null;
+                            }
+                        }
+                )
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             deductService.receiveItemData(newList, null);
