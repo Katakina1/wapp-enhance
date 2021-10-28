@@ -472,8 +472,8 @@ public class DeductService   {
         /**
          * 索赔单 直接生成 结算单
          */
-         boolean partMatch = false;
-         boolean noMatchCode = false;
+
+         Integer tmpStatus = TXfSettlementItemFlagEnum.NORMAL.getCode();
         if (deductionBusinessTypeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
             List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBill(purchaserNo,sellerNo,type,status);
             for (TXfBillDeductItemEntity tXfBillDeductItemEntity : tXfBillDeductItemEntities) {
@@ -500,14 +500,21 @@ public class DeductService   {
                 tXfSettlementItemEntity.setUpdateUser(tXfSettlementItemEntity.getCreateUser());
                 tXfSettlementItemEntity.setThridId(tXfBillDeductItemEntity.getId());
                 tXfSettlementItemEntity = checkItem(tXfSettlementItemEntity);
+                if (tmpStatus < tXfSettlementItemEntity.getItemFlag() ) {
+                    tmpStatus = tXfSettlementItemEntity.getItemFlag();
+                }
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
             }
         }
          /**
           * 部分匹配 索赔单明细 需要确认数据单据，如果不需要确认，进入拆票流程，状态是 待拆票
           */
-         status = noMatchCode ? TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode(): (partMatch?TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode():TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode())  ;
-         tXfSettlementEntity.setSettlementStatus(status);
+          if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
+         }
+         if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+         }
          tXfSettlementDao.insert(tXfSettlementEntity);
          //日志
          operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
