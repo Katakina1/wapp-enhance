@@ -40,6 +40,10 @@ public class DeductBillBaseData {
      */
     private String purchaserNo;
     /**
+     * 扣款公司jv_code
+     */
+    private String purchaserName;
+    /**
      * 不含税金额
      */
     private BigDecimal amountWithoutTax;

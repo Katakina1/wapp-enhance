@@ -268,6 +268,10 @@ public class DeductService   {
         }
         DeductionHandleEnum dedcutionHandleEnum = optionalDedcutionHandleEnum.get();
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
+            TAcOrgEntity purchaserOrgEntity = queryOrgInfo(deductBillBaseData.getPurchaserNo(),false);
+            if (Objects.nonNull( purchaserOrgEntity)) {
+                deductBillBaseData.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
+            }
             TXfBillDeductEntity tmp = dedcutionHandleEnum.function.apply(deductBillBaseData);
             tmp.setCreateTime(date);
             tmp.setUpdateTime(tmp.getCreateTime());
@@ -630,7 +634,8 @@ public class DeductService   {
         tXfBillDeductEntity.setBusinessNo(defaultValue(deductBillBaseData.getBusinessNo()));
         tXfBillDeductEntity.setBatchNo(defaultValue(deductBillBaseData.getBatchNo()));
         tXfBillDeductEntity.setTaxRate(defaultValue(deductBillBaseData.getTaxRate()));
-         return tXfBillDeductEntity;
+        tXfBillDeductEntity.setPurchaserName(defaultValue(deductBillBaseData.getPurchaserName()));
+        return tXfBillDeductEntity;
     }
 
     public TXfBillDeductEntity getDeductById(Long id){
