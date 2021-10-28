@@ -164,7 +164,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     public Response applyByPage(RedNotificationApplyReverseRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
-        if (filterData.size() >= maxApply){
+        if (filterData.size() > maxApply){
             return  Response.failed("单次申请最大支持:"+maxApply);
         }
         //构建税件请求
