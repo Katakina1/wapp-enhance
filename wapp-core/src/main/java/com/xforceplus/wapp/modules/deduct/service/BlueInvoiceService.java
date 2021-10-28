@@ -5,6 +5,7 @@ import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.converters.TDxRecordInvoiceDetailEntityConvertor;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceExtService;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
@@ -41,6 +42,9 @@ public class BlueInvoiceService {
      */
     @Autowired
     private RecordInvoiceService invoiceService;
+    @Autowired
+    private RecordInvoiceExtService extInvoiceService;
+
     // /**
     //  * 大象底账明细表
     //  */
@@ -275,14 +279,14 @@ public class BlueInvoiceService {
                             }
                     )
                     .collect(Collectors.toList());
-            return invoiceService.withdrawRemainingAmountById(invoices);
+            return extInvoiceService.withdrawRemainingAmountById(invoices);
         }
         return true;
     }
 
     @Data
     @Builder
-    static class MatchRes {
+    public static class MatchRes {
         String invoiceNo;
         String invoiceCode;
         /**

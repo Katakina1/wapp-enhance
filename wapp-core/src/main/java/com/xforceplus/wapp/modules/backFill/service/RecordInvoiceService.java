@@ -230,32 +230,4 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoice.setPaperDrewDate(entity.getInvoiceDate());
     }
 
-    /**
-     * 根据id将入参实体的剩余金额加回到原发票上
-     *
-     * @param entityList 实体对象集合
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public boolean withdrawRemainingAmountById(Collection<TDxRecordInvoiceEntity> entityList) {
-        return withdrawRemainingAmountById(entityList, DEFAULT_BATCH_SIZE);
-    }
-
-    /**
-     * 根据id将入参实体的剩余金额加回到原发票上
-     *
-     * @param entityList
-     * @param batchSize
-     * @return
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public boolean withdrawRemainingAmountById(Collection<TDxRecordInvoiceEntity> entityList, int batchSize) {
-        String sqlStatement = "update t_dx_record_invoice set remaining_amount = remaining_amount + #{et.remainingAmount} where id = #{et.id}";
-        return executeBatch(entityList, batchSize,
-                (sqlSession, entity) -> {
-                    MapperMethod.ParamMap<TDxRecordInvoiceEntity> param = new MapperMethod.ParamMap<>();
-                    param.put(Constants.ENTITY, entity);
-                    sqlSession.update(sqlStatement, param);
-                }
-        );
-    }
 }
