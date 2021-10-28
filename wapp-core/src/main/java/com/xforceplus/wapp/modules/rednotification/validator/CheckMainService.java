@@ -1,14 +1,19 @@
 package com.xforceplus.wapp.modules.rednotification.validator;
 
+import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.ConvertHelper;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.util.RegexUtils;
+import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
+import io.vavr.control.Either;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -17,6 +22,9 @@ import java.util.Optional;
  */
 @Service
 public class CheckMainService {
+
+    @Autowired
+    TaxCodeServiceImpl taxCodeServiceImpl;
 
     public String checkMainInfo(ImportInfo importInfo){
 
@@ -41,10 +49,46 @@ public class CheckMainService {
         String error5 = checkPriceMethodWithoutTax(importInfo);
         errorBuilder.append(error5);
 
+        //校验税编
+        String error6 = checkGoodsTaxNo(importInfo);
+        errorBuilder.append(error6);
+
         String errorLast = checkOtherFields(importInfo);
         errorBuilder.append(errorLast);
 
         return errorBuilder.toString();
+    }
+
+    private String checkGoodsTaxNo(ImportInfo importInfo) {
+        StringBuilder errorBuilder = new StringBuilder();
+        String goodsTaxNo = importInfo.getGoodsTaxNo();
+        if(goodsTaxNo.startsWith("6")){
+            errorBuilder.append("税收分类编码不能以6开头;");
+        }else{
+            Either<String, List<TaxCodeBean>> result = taxCodeServiceImpl.searchTaxCode(goodsTaxNo, null);
+            if(result.isRight()){
+                List<TaxCodeBean> taxCodeBeans = result.get();
+                if (taxCodeBeans.isEmpty()){
+                    errorBuilder.append("税收分类编码填写错误，当前填写值为【").append(goodsTaxNo).append("】;");
+                }else {
+                    TaxCodeBean taxCodeBean = taxCodeBeans.get(0);
+                    importInfo.setGoodsNoVer(taxCodeBean.getTaxCodeVersion());
+
+                   String cargoName = importInfo.getGoodsName();
+                    if(!StringUtils.isEmpty(cargoName) && !cargoName.matches("^\\*\\W+\\*\\W*")){
+                        cargoName = new StringBuilder("*").append(taxCodeBean.getTaxShortName()).append("*").append(cargoName).toString();
+                        if(cargoName.length()>200){
+                            errorBuilder.append("货物及服务名称加简称长度大于200;");
+                        }else{
+                            importInfo.setGoodsName(cargoName);
+                        }
+                    }
+                }
+            }
+        }
+
+        return errorBuilder.toString();
+
     }
 
 //    private String checkRefinedOilInvoice( ImportInfo importInfo){

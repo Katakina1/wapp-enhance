@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.mapstruct;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,7 +34,12 @@ public class ConvertHelper {
     /**
      * 获取税编版本
      */
-    public static String getGoodsNoVer(){
-        return "33.0";
+    public static String getGoodsNoVer(String goodsNoVer){
+        if (StringUtils.isEmpty(goodsNoVer)){
+            return "33.0";
+        }else {
+            return goodsNoVer;
+        }
+
     }
 }

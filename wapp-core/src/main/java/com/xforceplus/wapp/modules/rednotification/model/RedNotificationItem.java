@@ -84,4 +84,9 @@ public class RedNotificationItem {
 
     @ApiModelProperty("明细主键")
     private Long id;
+
+    /**
+     * 税编版本
+     */
+    private String goodsNoVer;
 }
