@@ -22,7 +22,7 @@ public class ExceptionReportRequest extends PageViewRequest {
     @ApiModelProperty("扣款日期-开始 yyyy-MM-dd")
     private String startDeductDate;
     /**
-     * 扣款日期
+     * 扣款日期purchaserNo
      */
     @ApiModelProperty("扣款日期-结束 yyyy-MM-dd")
     private String endDeductDate;
@@ -44,6 +44,9 @@ public class ExceptionReportRequest extends PageViewRequest {
 
     @ApiModelProperty("扣款")
     private String purchaserNo;
+
+    @ApiModelProperty("例外报告代码")
+    private String code;
 
 
 

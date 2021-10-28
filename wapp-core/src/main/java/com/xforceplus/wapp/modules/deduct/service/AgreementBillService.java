@@ -116,14 +116,14 @@ public class AgreementBillService extends DeductService{
     public void executeMatch(XFDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity,Integer targetStatus) {
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
-        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo());
+        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo());
         if (CollectionUtils.isEmpty(matchResList)) {
             log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
             throw new NoSuchInvoiceException();
         }
         try {
             //匹配税编
-            Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+            Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),deductionEnum);
             if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
                 tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
             }
@@ -134,7 +134,7 @@ public class AgreementBillService extends DeductService{
             TXfBillDeductEntity checkEntity = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(), targetStatus, TXfBillDeductStatusEnum.UNLOCK.getCode());
             if ( checkEntity.getAmountWithoutTax().compareTo(tXfSettlementEntity.getAmountWithoutTax()) < 0 ) {
                 log.error("{}单 存在锁定、取消的 sellerNo: {} purchaserNo: {} taxRate:{}", deductionEnum.getDes(),tXfSettlementEntity.getSellerNo(), tXfSettlementEntity.getPurchaserNo() );
-                throw new RuntimeException();
+                throw new EnhanceRuntimeException("存在已锁定的业务单");
             }
             TXfSettlementEntity updadte = new TXfSettlementEntity();
             updadte.setId(tXfSettlementEntity.getId());
@@ -143,10 +143,10 @@ public class AgreementBillService extends DeductService{
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(matchResList)) {
                 List<String> invoiceList = matchResList.stream().map(x -> x.getInvoiceCode() + "=---" + x.getInvoiceNo()).collect(Collectors.toList());
-                log.error(" 结算匹配蓝票 回撤匹配信息 单  回撤匹配信息:{}", e,invoiceList );
+                log.error(" 结算匹配蓝票 回撤匹配信息 单  回撤匹配信息:{},{}", e,invoiceList );
                 blueInvoiceService.withdrawInvoices(matchResList);
             }
-            log.error("结算单匹配蓝票失败：{}", e);
+            log.error("结算单匹配蓝票失败："+e.getMessage(), e);
             e.printStackTrace();
             throw e;
         }
@@ -167,7 +167,20 @@ public class AgreementBillService extends DeductService{
         }
         String idsStr =  StringUtils.join(ids, ",");
         idsStr = "(" + idsStr + ")";
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableBillById(idsStr, xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
+        TXfBillDeductStatusEnum statusEnum;
+        TXfBillDeductStatusEnum targetStatus;
+        switch (xfDeductionBusinessTypeEnum){
+            case AGREEMENT_BILL:
+                statusEnum=TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
+                targetStatus=TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT;
+                break;
+            case EPD_BILL:
+                statusEnum=TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT;
+                targetStatus=TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT;
+                break;
+            default:throw new EnhanceRuntimeException("手动合并结算单仅支持协议单和EPD");
+        }
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableBillById(idsStr, xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         if (CollectionUtils.isEmpty(tXfBillDeductEntities)  ) {
             log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
             throw new EnhanceRuntimeException("未查询到待匹配结算单的单据");
@@ -183,10 +196,10 @@ public class AgreementBillService extends DeductService{
             throw new EnhanceRuntimeException("选择单据的总金额不能小于0");
         }
         TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities, xfDeductionBusinessTypeEnum);
-        tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT.getCode());
-        TXfBillDeductEntity  tmp = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(),TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
+        tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), targetStatus.getCode());
+        TXfBillDeductEntity  tmp = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(),targetStatus.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         checkDeduct(tmp, tXfSettlementEntity, xfDeductionBusinessTypeEnum);
-        executeMatch(xfDeductionBusinessTypeEnum, tXfSettlementEntity,TXfBillDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT.getCode());
+        executeMatch(xfDeductionBusinessTypeEnum, tXfSettlementEntity,targetStatus.getCode());
         return tXfSettlementEntity;
     }
 
