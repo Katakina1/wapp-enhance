@@ -476,7 +476,7 @@ public class DeductService   {
         /**
          * 索赔单 直接生成 结算单
          */
-
+         BigDecimal taxRateTotal = BigDecimal.ZERO;
          Integer tmpStatus = TXfSettlementItemFlagEnum.NORMAL.getCode();
         if (deductionBusinessTypeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
             List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBill(purchaserNo,sellerNo,type,status);
@@ -508,6 +508,7 @@ public class DeductService   {
                     tmpStatus = tXfSettlementItemEntity.getItemFlag();
                 }
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
+                taxRateTotal = taxRateTotal.add(tXfBillDeductItemEntity.getTaxRate());
             }
         }
          /**
@@ -521,6 +522,9 @@ public class DeductService   {
          }
          else if(tmpStatus == TXfSettlementItemFlagEnum.NORMAL.getCode()){
              tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
+         }
+         if (taxRateTotal.compareTo(BigDecimal.ZERO) == 0) {
+             tXfSettlementEntity.setInvoiceType(InvoiceTypeEnum.GENERAL_INVOICE.getValue());
          }
          tXfSettlementDao.insert(tXfSettlementEntity);
          //日志
