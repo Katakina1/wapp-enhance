@@ -176,7 +176,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
         operateLogService.add(settlementId, OperateLogEnum.REJECT_VERDICT,
                 TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
-                UserUtil.getUserId(),UserUtil.getUserName());
+                0L,"系统");
     }
 
     /**
@@ -193,7 +193,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
         operateLogService.add(settlementId, OperateLogEnum.PASS_VERDICT,
                 TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
-                UserUtil.getUserId(),UserUtil.getUserName());
+                0L,"系统");
     }
 
     /**
