@@ -266,7 +266,9 @@ public class BlueInvoiceService {
      * @return
      */
     public boolean withdrawInvoices(List<MatchRes> list) {
-        if (!org.springframework.util.CollectionUtils.isEmpty(list)) {
+        if (org.springframework.util.CollectionUtils.isEmpty(list)) {
+            log.info("开始撤回抵扣的发票金额，将抵扣金额返还到原有发票上, 发票列表为空，跳过此步骤");
+        } else {
             log.info("开始撤回抵扣的发票金额，将抵扣金额返还到原有发票上, 发票列表={}", CollectionUtils.flattenToString(list));
             List<TDxRecordInvoiceEntity> invoices = list
                     .stream()
