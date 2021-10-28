@@ -87,6 +87,10 @@ public class BlueInvoiceService {
      * @return
      */
     private List<MatchRes> obtainInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchserTaxNo, boolean withItems) {
+        if (BigDecimal.ZERO.compareTo(amount) >= 0) {
+            throw new NoSuchInvoiceException("非法的负数待匹配金额" + amount);
+        }
+        log.info("收到匹配蓝票任务 待匹配金额amount={} settlementNo={} sellerTaxNo={} purchserTaxNo={} withItems={}", amount, settlementNo, sellerTaxNo, purchserTaxNo, withItems);
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         TDxRecordInvoiceEntity tDxRecordInvoiceEntity;
@@ -196,6 +200,7 @@ public class BlueInvoiceService {
         if (BigDecimal.ZERO.compareTo(leftAmount.get()) < 0) {
             throw new NoSuchInvoiceException();
         }
+        log.info("已匹配的发票列表={}", CollectionUtils.flattenToString(list));
         return list;
     }
 
@@ -209,6 +214,7 @@ public class BlueInvoiceService {
      * @return
      */
     public List<TDxRecordInvoiceDetailEntity> obtainAvailableItems(String uuid, BigDecimal totalAmountWithoutTax, BigDecimal lastRemainingAmount, BigDecimal deductedAmount) {
+        log.info("收到匹配蓝票明细任务 发票uuid={} totalAmountWithoutTax={} lastRemainingAmount={} deductedAmount={}", uuid, totalAmountWithoutTax, lastRemainingAmount, deductedAmount);
         List<TDxRecordInvoiceDetailEntity> list = new ArrayList<>();
         // 之前抵扣的金额
         BigDecimal lastDeductedAmount = totalAmountWithoutTax.subtract(lastRemainingAmount);
@@ -243,6 +249,7 @@ public class BlueInvoiceService {
             }
             // 顺序不能颠倒
         }
+        log.info("已匹配的发票明细列表={}", CollectionUtils.flattenToString(list));
         return list;
     }
 
