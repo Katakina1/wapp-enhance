@@ -50,7 +50,7 @@ public class NoneBusinessController {
 
 
     @ApiOperation(value = "上传电子发票")
-    @PutMapping(value = "/upload",headers = "content-type=multipart/form-data")
+    @PutMapping(value = "/upload", headers = "content-type=multipart/form-data")
     public R upload(@ApiParam("文件") @RequestParam("files") MultipartFile[] file,
                     @ApiParam("业务类型") @RequestParam() String bussinessType,
                     @ApiParam("门店号") @RequestParam() String storeNo,
@@ -68,7 +68,7 @@ public class NoneBusinessController {
         List<byte[]> pdf = new ArrayList<>();
         try {
             String batchNo = UUID.randomUUID().toString().replace("-", "");
-            for(int i=0;i<file.length;i++){
+            for (int i = 0; i < file.length; i++) {
                 Set<String> fileNames = new HashSet<>();
                 final String filename = file[i].getOriginalFilename();
                 if (!fileNames.add(filename)) {
@@ -176,7 +176,7 @@ public class NoneBusinessController {
      */
     @ApiOperation("下载源文件")
     @PostMapping(value = "/down")
-    public R down(FileDownRequest request) {
+    public R<String> down(@RequestBody  FileDownRequest request) {
         try {
             if (CollectionUtils.isEmpty(request.getIds())) {
                 throw new RRException("请选中数据后进行下载");
@@ -186,7 +186,7 @@ public class NoneBusinessController {
                 throw new RRException("您所选发票不包含任何附件文件");
             }
             noneBusinessService.down(list, request);
-            return R.ok();
+            return R.ok("下载成功，请往消息中心查看下载结果");
         } catch (Exception e) {
             log.error("非商下载源文件异常:{}", e);
             return R.fail("下载源文件异常" + e.getMessage());
@@ -266,7 +266,7 @@ public class NoneBusinessController {
             response.setInSubmit(submitList.size());
             response.setExSubmit(resultList.size() - submitList.size());
             noneBusinessService.saveOrUpdateBatch(submitList);
-            return R.ok(response);
+            return R.ok(response,"提交成功");
         } else {
             List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
             response.setSubmitCount(list.size());
@@ -278,16 +278,30 @@ public class NoneBusinessController {
             noneBusinessService.saveOrUpdateBatch(noneBusinessConverter.map(submitList));
             response.setInSubmit(submitList.size());
             response.setExSubmit(list.size() - submitList.size());
-            return R.ok(response);
+            return R.ok(response,"提交成功");
 
         }
 
     }
 
-    @GetMapping("claim/export")
+    @PostMapping("claim/export")
     @ApiOperation(value = "索赔单导出")
     public R export(TXfNoneBusinessUploadQueryDto dto) {
-        noneBusinessService.export(dto);
+//        noneBusinessService.export(dto);
+        return R.ok("单据导出正在处理，请在消息中心");
+    }
+
+    @PostMapping("check/export")
+    @ApiOperation(value = "勾选导出")
+    public R checkExport(@RequestBody @ApiParam("id集合") Long[] ids) {
+        if (ids == null && ids.length == 0) {
+            return R.fail("请勾选数据后进行导出");
+        }
+        if (ids.length > 500) {
+            return R.fail("最大导出数量不能超过五百");
+        }
+        List<TXfNoneBusinessUploadDetailDto> resultList = noneBusinessService.getByIds(Arrays.asList(ids));
+        noneBusinessService.export(resultList, Arrays.asList(ids));
         return R.ok("单据导出正在处理，请在消息中心");
     }
 

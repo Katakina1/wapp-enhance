@@ -13,10 +13,7 @@ import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TXfPreInvoiceItemDao;
-import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
-import com.xforceplus.wapp.repository.dao.TXfSettlementItemExtDao;
+import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommRedNotificationService;
@@ -111,6 +108,8 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     private TXfPreInvoiceItemDao tXfPreInvoiceItemDao;
     @Autowired
     private IDSequence idSequence;
+    @Autowired
+    private TXfBillDeductExtDao deductExtDao;
 //    @PostConstruct
 //    public void initData()   {
 //       splitPreInvoice("settlementNo1853061001646081","172164");
@@ -180,6 +179,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(fixAmountList)) {
             for(TXfSettlementItemEntity tXfSettlementItemEntity:fixAmountList){
+                Long id = tXfSettlementItemEntity.getThridId();
                 BigDecimal quantity = tXfSettlementItemEntity.getAmountWithoutTax().divide(tXfSettlementItemEntity.getUnitPrice()).setScale(6, RoundingMode.HALF_UP);
                 tXfSettlementItemEntity.setQuantity(quantity);
             }

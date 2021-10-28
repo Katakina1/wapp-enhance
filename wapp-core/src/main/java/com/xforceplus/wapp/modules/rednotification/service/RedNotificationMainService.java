@@ -28,7 +28,6 @@ import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.DownloadUrlUtils;
 import com.xforceplus.wapp.modules.rednotification.validator.CheckMainService;
-import com.xforceplus.wapp.modules.sys.entity.UserEntity;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.repository.dao.*;
@@ -42,6 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,6 +54,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,8 +82,17 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     CheckMainService checkMainService;
     @Autowired
     ThreadPoolExecutor redNotificationThreadPool;
+    @Autowired
+    RedisTemplate redisTemplate;
 
-    private static final Integer MAX_PDF_RED_NO_SIZE = 500;
+    private static final Integer MAX_PDF_RED_NO_SIZE = 100;
+
+    private static final String GENERATE_PDF_KEY = "generate_pdf_key";
+    private static final String APPLY_REDNOTIFICATION_KEY = "apply_rednotification_key";
+    private static final String EXPORT_REDNOTIFICATION_KEY = "export_rednotification_key";
+
+    @Value("${wapp.rednotification.maxApply}")
+    private Integer maxApply;
 
 
 
@@ -153,6 +164,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     public Response applyByPage(RedNotificationApplyReverseRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+        if (filterData.size() > maxApply){
+            return  Response.failed("单次申请最大支持:"+maxApply);
+        }
         //构建税件请求
         if (!CollectionUtils.isEmpty(filterData)){
             ApplyRequest applyRequest = new ApplyRequest();
@@ -579,8 +593,21 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
     public Response downloadPdf(RedNotificationExportPdfRequest request) {
-        //<logId,userId>
-        Tuple3<Long, Long,String> tuple3 = exportCommonService.insertRequest(request);
+        Tuple3<Long, Long,String> tuple3 = null ;
+        if (request.getAutoFlag()!=null && request.getAutoFlag()){
+            //自动申请pdf 不需要插入日志 ，不校验频率
+        }else {
+            String loginName = UserUtil.getLoginName();
+            String key = GENERATE_PDF_KEY+loginName;
+            if (redisTemplate.opsForValue().get(key) != null){
+                return Response.failed("生成pdf操作频率过高,请耐心等待申请结果后重试");
+            }else {
+                redisTemplate.opsForValue().set(key,GENERATE_PDF_KEY,3, TimeUnit.SECONDS);
+            }
+            //<logId,userId>
+            tuple3 = exportCommonService.insertRequest(request);
+        }
+
         Integer generateModel = request.getGenerateModel();
         QueryModel queryModel = request.getQueryModel();
         queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
@@ -640,27 +667,46 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         List<ZipContentInfo> zipContents = new CopyOnWriteArrayList<>();
         redNoMap.keySet().stream().forEach(head->{
             redNoMap.get(head).parallelStream().forEach(redNoApply->{
-                RedNotificationGeneratePdfRequest request = buildRedNotificationGeneratePdfRequest(redNoApply,detailsMap.get(redNoApply.getId()));
-                log.info("开始生成红字信息pdf:"+request.getSerialNo());
-                long start = System.currentTimeMillis();
-                TaxWareResponse response = taxWareService.generatePdf(request);
-                log.info("红字信息生成pdf耗时:{}ms,流水号:{}",System.currentTimeMillis()-start, request.getSerialNo());
-                if( response.getCode()!=null && !Objects.equals(response.getCode(),TaxWareCode.SUCCESS)){
-                    throw new RRException(response.getMessage());
-                }
-                TaxWareResponse.ResultDTO result;
-                String pdfUrl;
-                if(Objects.nonNull(result = response.getResult()) && StringUtils.isNotBlank(pdfUrl = result.getPdfUrl())){
-                    String fileName;
-                    if(model == RedNoGeneratePdfModel.Merge_All){
-                        fileName = redNoApply.getPurchaserTaxNo() + ".pdf";
-                    }else{
-                        fileName = format("{}/{}.pdf",  head,redNoApply.getPurchaserTaxNo());
+                if (StringUtils.isEmpty(redNoApply.getPdfUrl())){
+                    RedNotificationGeneratePdfRequest request = buildRedNotificationGeneratePdfRequest(redNoApply,detailsMap.get(redNoApply.getId()));
+                    log.info("开始生成红字信息pdf:"+request.getSerialNo());
+                    long start = System.currentTimeMillis();
+                    TaxWareResponse response = taxWareService.generatePdf(request);
+                    log.info("红字信息生成pdf耗时:{}ms,流水号:{}",System.currentTimeMillis()-start, request.getSerialNo());
+                    if( response.getCode()!=null && !Objects.equals(response.getCode(),TaxWareCode.SUCCESS)){
+                        throw new RRException(response.getMessage());
                     }
+                    TaxWareResponse.ResultDTO result;
+                    String pdfUrl;
+                    if(Objects.nonNull(result = response.getResult()) && StringUtils.isNotBlank(pdfUrl = result.getPdfUrl())){
+                        String fileName;
+//                    if(model == RedNoGeneratePdfModel.Merge_All){
+//                        fileName = redNoApply.getPurchaserTaxNo() + ".pdf";
+//                    }else{
+                        fileName = format("{}.pdf",  redNoApply.getRedNotificationNo());
+//                    }
+                        ZipContentInfo zipInfo = new ZipContentInfo();
+                        zipInfo.setFile(false);
+                        zipInfo.setRelativePath(fileName);
+                        zipInfo.setSourceUrl(pdfUrl);
+                        zipContents.add(zipInfo);
+                        //更新数据库
+                        if (StringUtils.isEmpty(redNoApply.getPdfUrl())){
+                            TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+                            record.setPdfUrl(pdfUrl);
+                            record.setId(redNoApply.getId());
+                            log.info("更新pdf路径链接");
+                            updateById(record);
+                        }
+
+                    }
+                }else {
+                    //已经拿到pdf链接了，直接从数据库获取
                     ZipContentInfo zipInfo = new ZipContentInfo();
                     zipInfo.setFile(false);
+                    String  fileName = format("{}.pdf",  redNoApply.getRedNotificationNo());
                     zipInfo.setRelativePath(fileName);
-                    zipInfo.setSourceUrl(pdfUrl);
+                    zipInfo.setSourceUrl(redNoApply.getPdfUrl());
                     zipContents.add(zipInfo);
                 }
             });
@@ -669,6 +715,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
     private String makeRedNoPdfZip(List<ZipContentInfo> zipContents,Tuple3<Long, Long,String> tuple3){
+        //自动申请pdf 无上下文 不处理zip
+        if (tuple3 == null){
+            return "" ;
+        }
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String zipFileNameWithOutSubfix = sdf.format(new Date());
         String zipFile = format("output/{}/{}/{}.zip",  "invoice-service", "redNoZip",zipFileNameWithOutSubfix);
@@ -683,7 +734,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             String s = exportCommonService.putFile(ftpPath,zipFile, zipFileName);
 
             if(s != null){
-                String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, ftpFilePath);
+                String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, null);
                 exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf失败",exportCommonService.getFailContent(s));
                 return s;
             }else {
@@ -760,7 +811,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         List<ExportItemInfo> itemInfos = Lists.newArrayList();
         List<ExportInfo> exportInfos = filterData.stream().map(apply -> {
             ExportInfo dto = redNotificationMainMapper.mainEntityToExportInfo(apply);
-            ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApplyingStatus()).orElse(ApproveStatus.OTHERS);
+            ApproveStatus applyStatus = ValueEnum.getEnumByValue(ApproveStatus.class, apply.getApproveStatus()).orElse(ApproveStatus.OTHERS);
             dto.setApproveStatus(applyStatus!=ApproveStatus.OTHERS?applyStatus.getDesc():"");
 
             if (StringUtils.isNotBlank(apply.getInvoiceType())){
@@ -864,8 +915,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             log.info(" out.close() err!");
         }
         if(s != null){
-            String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.FAIL, ftpFilePath);
-            exportCommonService.sendMessage(tuple3._1,userName,"红字信息表导出失败",exportCommonService.getFailContent(s));
+            String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.FAIL, null);
+            exportCommonService.sendMessageWithUrl(tuple3._1,userName,"红字信息表导出失败",exportCommonService.getFailContent(s),null);
             return Response.failed(s);
         }else {
             String userName = exportCommonService.updatelogStatus(logId, ExcelExportLogService.OK,ftpFilePath);

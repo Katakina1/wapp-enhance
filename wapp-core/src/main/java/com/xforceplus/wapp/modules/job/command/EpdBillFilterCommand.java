@@ -164,14 +164,17 @@ public class EpdBillFilterCommand implements Command {
      * @return
      */
     private String getTaxRate(int jobId, String account, String reference) {
-        TXfOriginEpdLogItemEntity tXfOriginEpdLogItemEntity = itemService.getOne(new QueryWrapper<TXfOriginEpdLogItemEntity>()
-                .lambda()
-                .eq(TXfOriginEpdLogItemEntity::getJobId, jobId)
-                // 《EPD LOG 明细》只选Doc. Type = Z1,Satus Message = Successfully updated
-                .eq(TXfOriginEpdLogItemEntity::getDocType, "Z1")
-                .eq(TXfOriginEpdLogItemEntity::getStatusMessage, "Successfully updated")
-                .eq(TXfOriginEpdLogItemEntity::getVendor, account)
-                .eq(TXfOriginEpdLogItemEntity::getReference, reference));
+        TXfOriginEpdLogItemEntity tXfOriginEpdLogItemEntity = itemService.getOne(
+                new QueryWrapper<TXfOriginEpdLogItemEntity>()
+                        // 只返回第一行数据，否则getOne可能会报错
+                        .select("top 1 *")
+                        .lambda()
+                        .eq(TXfOriginEpdLogItemEntity::getJobId, jobId)
+                        // 《EPD LOG 明细》只选Doc. Type = Z1,Satus Message = Successfully updated
+                        .eq(TXfOriginEpdLogItemEntity::getDocType, "Z1")
+                        .eq(TXfOriginEpdLogItemEntity::getStatusMessage, "Successfully updated")
+                        .eq(TXfOriginEpdLogItemEntity::getVendor, account)
+                        .eq(TXfOriginEpdLogItemEntity::getReference, reference));
         if (Objects.nonNull(tXfOriginEpdLogItemEntity)) {
             return tXfOriginEpdLogItemEntity.getTaxRate();
         }

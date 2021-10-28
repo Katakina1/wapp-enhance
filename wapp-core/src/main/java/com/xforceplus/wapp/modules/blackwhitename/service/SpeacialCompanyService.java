@@ -59,7 +59,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             wrapper.ge(TXfBlackWhiteCompanyEntity::getCreateTime, createTimeStart);
         }
         if(StringUtils.isNotEmpty(supplier6d)){
-            wrapper.ge(TXfBlackWhiteCompanyEntity::getSupplier6d, supplier6d);
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplier6d, supplier6d);
         }
 
         if (StringUtils.isNotEmpty(createTimeEnd)) {

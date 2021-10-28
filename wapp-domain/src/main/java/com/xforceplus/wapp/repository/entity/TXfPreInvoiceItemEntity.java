@@ -1,6 +1,8 @@
 package com.xforceplus.wapp.repository.entity;
 
 import java.math.BigDecimal;
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -140,8 +142,14 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
     @TableField("price_method")
     private String priceMethod;
 
-    @TableField("id")
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
+
+    @TableField(value="update_time", update="getdate()" )
+    private Date updateTime;
+
+    @TableField("create_time")
+    private Date createTime;
 
 
     public static final String PRE_INVOICE_ID = "pre_invoice_id";
@@ -183,5 +191,9 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
     public static final String PRICE_METHOD = "price_method";
 
     public static final String ID = "id";
+
+    public static final String UPDATE_TIME = "update_time";
+
+    public static final String CREATE_TIME = "create_time";
 
 }

@@ -32,8 +32,7 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
     private final OriginEpdLogItemService service;
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
     /**
      * 缓存的数据
      */
@@ -41,10 +40,11 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
     @Getter
     private long cursor;
 
-    public OriginEpdLogItemDataListener(int jobId, long cursor, OriginEpdLogItemService service) {
+    public OriginEpdLogItemDataListener(int jobId, long cursor, OriginEpdLogItemService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
+        this.validator = validator;
     }
 
     @Override

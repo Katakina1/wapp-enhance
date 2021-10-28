@@ -32,8 +32,7 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
     private final OriginClaimItemSamsService service;
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
     /**
      * 缓存的数据
      */
@@ -41,10 +40,11 @@ public class OriginClaimItemSamsDataListener extends AnalysisEventListener<Origi
     @Getter
     private long cursor;
 
-    public OriginClaimItemSamsDataListener(int jobId, long cursor, OriginClaimItemSamsService service) {
+    public OriginClaimItemSamsDataListener(int jobId, long cursor, OriginClaimItemSamsService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
+        this.validator = validator;
     }
 
     @Override
