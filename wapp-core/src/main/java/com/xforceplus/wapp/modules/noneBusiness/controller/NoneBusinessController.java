@@ -266,7 +266,7 @@ public class NoneBusinessController {
             response.setInSubmit(submitList.size());
             response.setExSubmit(resultList.size() - submitList.size());
             noneBusinessService.saveOrUpdateBatch(submitList);
-            return R.ok(response);
+            return R.ok(response,"提交成功");
         } else {
             List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
             response.setSubmitCount(list.size());
@@ -278,7 +278,7 @@ public class NoneBusinessController {
             noneBusinessService.saveOrUpdateBatch(noneBusinessConverter.map(submitList));
             response.setInSubmit(submitList.size());
             response.setExSubmit(list.size() - submitList.size());
-            return R.ok(response);
+            return R.ok(response,"提交成功");
 
         }
 
