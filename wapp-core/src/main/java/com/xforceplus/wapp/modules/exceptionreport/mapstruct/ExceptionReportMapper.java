@@ -35,5 +35,5 @@ public interface ExceptionReportMapper {
     @Mapping(target = "text",source = "description")
     ReportCodeResponse toReportCode(ExceptionReportCodeEnum codeEnums);
 
-    ReportCodeResponse[] toReportCode(ExceptionReportCodeEnum[] codeEnums);
+    List<ReportCodeResponse> toReportCode(List<ExceptionReportCodeEnum> codeEnums);
 }
