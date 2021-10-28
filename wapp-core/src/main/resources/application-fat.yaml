@@ -41,6 +41,8 @@ wapp:
   export_success_queue_gfone: cn.wm.host.export.success.queue.gfone
   export:
     tmp: /tmp/excel
+  rednotification:
+    maxApply: 100
 activemq:
   queue-name:
     export-request: fat-cn.wm.host.enhance.export-request.queue # 导出申请

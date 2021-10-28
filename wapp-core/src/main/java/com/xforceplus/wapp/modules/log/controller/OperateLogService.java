@@ -42,22 +42,26 @@ public class OperateLogService {
 
 
     public boolean add(Long businessId, OperateLogEnum operateLogEnum,String businessStatus, Long userId, String userName){
-        if(businessId == null ||  operateLogEnum ==null || businessStatus == null){
-            log.error("操作日志添加失败 businessId:{},operateLogEnum:{},businessStatus:{}",businessId,operateLogEnum,businessStatus);
+        try {
+            if(businessId == null ||  operateLogEnum ==null || businessStatus == null){
+                log.info("操作日志添加失败 businessId:{},operateLogEnum:{},businessStatus:{}",businessId,operateLogEnum,businessStatus);
+                return false;
+            }
+            TXfOperationLogEntity operationLogEntity = new TXfOperationLogEntity();
+            operationLogEntity.setBusinessId(businessId);
+            operationLogEntity.setBusinessStatus(businessStatus);
+            operationLogEntity.setOperateDesc(operateLogEnum.getOperateDesc());
+            operationLogEntity.setOperateType(operateLogEnum.getOperateType());
+            operationLogEntity.setOperateCode(operateLogEnum.getOperateCode());
+            operationLogEntity.setCreateTime(new Date());
+            operationLogEntity.setId(IdGenerator.generate());
+            operationLogEntity.setUserId(userId);
+            operationLogEntity.setUserName(userName);
+            return tXfOperationLogDao.insert(operationLogEntity) >0;
+        } catch (Exception e) {
+            log.info(e.getMessage());
             return false;
         }
-        TXfOperationLogEntity operationLogEntity = new TXfOperationLogEntity();
-        operationLogEntity.setBusinessId(businessId);
-        operationLogEntity.setBusinessStatus(businessStatus);
-        operationLogEntity.setOperateDesc(operateLogEnum.getOperateDesc());
-        operationLogEntity.setOperateType(operateLogEnum.getOperateType());
-        operationLogEntity.setOperateCode(operateLogEnum.getOperateCode());
-        operationLogEntity.setCreateTime(new Date());
-        operationLogEntity.setId(IdGenerator.generate());
-        operationLogEntity.setUserId(userId);
-        operationLogEntity.setUserName(userName);
-        return tXfOperationLogDao.insert(operationLogEntity) >0;
-
     }
 
 }

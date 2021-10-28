@@ -47,6 +47,10 @@ public class JobController {
     private SettlementScheduler settlementScheduler;
     @Autowired
     private  SettlementTaxCodeScheduler settlementTaxCodeScheduler;
+
+
+    @Autowired
+    private ClaimBlueInvoiceScheduler claimBlueInvoiceScheduler;
     @ApiOperation(value = "手动执行job")
     @GetMapping(value = "/run/{name}")
     public R doJob(@ApiParam(value = "执行job" ,required=true )@PathVariable("name") String name) {
@@ -78,6 +82,10 @@ public class JobController {
         }
         if (StringUtils.equals("settlementTaxCodeScheduler", name)) {
             settlementTaxCodeScheduler.settlementFixTaxCode();
+        }
+        if(StringUtils.equals("claimBlueInvoiceScheduler", name)){
+            claimBlueInvoiceScheduler.claimBlueInfoDeal();
+
         }
         return R.ok("");
 

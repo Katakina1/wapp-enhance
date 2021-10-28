@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -37,6 +38,8 @@ public class ClaimBillSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginClaimBillService service;
+    @Autowired
+    private Validator validator;
     @Value("${claimBill.remote.path}")
     private String remotePath;
     @Value("${claimBill.local.path}")
@@ -126,7 +129,7 @@ public class ClaimBillSaveCommand implements Command {
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginClaimBillDataListener readListener = new OriginClaimBillDataListener(jobId, cursor, service);
+        OriginClaimBillDataListener readListener = new OriginClaimBillDataListener(jobId, cursor, service, validator);
         try {
             EasyExcel.read(file, OriginClaimBillDto.class, readListener)
                     .sheet(sheetName)

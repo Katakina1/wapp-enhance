@@ -380,10 +380,36 @@ public class DeductService   {
         }else{
            tXfBillDeductEntity.setStatus(status.getCode());
         }
-        return tXfBillDeductExtDao.updateById(tXfBillDeductEntity) >0;
+        int count = tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
+        //添加操作日志
+        addOperateLog(tXfBillDeductEntity.getId(),deductionEnum,status,UserUtil.getUserId(),UserUtil.getUserName());
+        return count >0;
     }
 
+    public void addOperateLog(Long id,XFDeductionBusinessTypeEnum typeEnum,TXfBillDeductStatusEnum statusEnum,Long userId,String userName){
+        OperateLogEnum logEnum = null;
+        if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(statusEnum)){
+            logEnum = OperateLogEnum.CANCEL_AGREEMENT;
+        }else if(TXfBillDeductStatusEnum.EPD_DESTROY.equals(statusEnum)){
+            logEnum = OperateLogEnum.CANCEL_EPD;
+        }else if(TXfBillDeductStatusEnum.UNLOCK.equals(statusEnum)){
+            if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(typeEnum)){
+                logEnum = OperateLogEnum.UNLOCK_AGREEMENT;
+            }else{
+                logEnum = OperateLogEnum.UNLOCK_EPD;
+            }
+        }else if(TXfBillDeductStatusEnum.LOCK.equals(statusEnum)){
+            if(XFDeductionBusinessTypeEnum.EPD_BILL.equals(typeEnum)){
+                logEnum = OperateLogEnum.LOCK_EPD;
+            }else{
+                logEnum = OperateLogEnum.LOCK_AGREEMENT;
+            }
+        }else{
+            log.info("无需添加操作日志");
+        }
+        operateLogService.add(id,logEnum,"",UserUtil.getUserId(),UserUtil.getUserName());
 
+    }
 
 
     /**
@@ -456,7 +482,7 @@ public class DeductService   {
                 tXfSettlementItemEntity.setTaxRate(tXfBillDeductItemEntity.getTaxRate());
                 tXfSettlementItemEntity.setItemCode(tXfBillDeductItemEntity.getItemNo());
                 tXfSettlementItemEntity.setAmountWithoutTax(tXfBillDeductItemEntity.getAmountWithoutTax().negate());
-                tXfSettlementItemEntity.setTaxAmount(tXfBillDeductItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
+                tXfSettlementItemEntity.setTaxAmount(tXfSettlementItemEntity.getAmountWithoutTax().multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
                 tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getTaxAmount().add(tXfSettlementItemEntity.getAmountWithoutTax()));
                 tXfSettlementItemEntity.setQuantityUnit(tXfBillDeductItemEntity.getUnit());
                 tXfSettlementItemEntity.setItemSpec(tXfBillDeductItemEntity.getCnDesc());

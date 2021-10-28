@@ -41,6 +41,8 @@ wapp:
     base-url: 127.0.0.1
   export:
       tmp: E:/tomcattmp
+  rednotification:
+    maxApply: 99
 
 activemq:
   queue-name:
@@ -140,3 +142,7 @@ spring:
     port: 23333
     password: 8eSf4M97VLhP6hq8
     database: 2
+
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
