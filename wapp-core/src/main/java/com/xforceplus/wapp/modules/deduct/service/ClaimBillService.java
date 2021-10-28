@@ -126,7 +126,7 @@ public class ClaimBillService extends DeductService{
                  */
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
-                        doItemMatch(tXfBillDeductEntity, matchItem);
+                        tXfBillDeductEntity =  doItemMatch(tXfBillDeductEntity, matchItem);
                         claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
                     } catch (Exception e) {
                         log.error("索赔单 明细匹配 蓝票匹配异常：{}", e);
@@ -151,7 +151,7 @@ public class ClaimBillService extends DeductService{
      * @return
      */
     @Transactional
-    public BigDecimal doItemMatch(TXfBillDeductEntity tXfBillDeductEntity, List<TXfBillDeductItemEntity> tXfBillDeductItemEntitys ) {
+    public TXfBillDeductEntity doItemMatch(TXfBillDeductEntity tXfBillDeductEntity, List<TXfBillDeductItemEntity> tXfBillDeductItemEntitys ) {
         Long billId = tXfBillDeductEntity.getId();
         BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
         BigDecimal taxAmount = tXfBillDeductEntity.getTaxAmount();
@@ -212,12 +212,13 @@ public class ClaimBillService extends DeductService{
             log.error("索赔单 {}  发送税差例外报告 {} ", tXfBillDeductEntity.getBusinessNo(), newExceptionReportEvent);
         }
         /**
-         * 如果当前金额没有匹配完 为待匹配状态，如果存在未匹配的税编，状态未待匹配税编，如果已经完成匹配税编，简称是否存在不同税率，如果存在状态未待确认税差，如果不存在，状态为待匹配蓝票，
+         * 如果存在未匹配的税编，状态未待匹配税编，
          */
-        Integer status = billAmount.compareTo(BigDecimal.ZERO)>0?TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode(): (matchTaxNoFlag ?  TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()  : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
+        Integer status = matchTaxNoFlag ?  TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()  : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode() ;
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
-        return billAmount;
+        tXfBillDeductEntity.setStatus(status);
+        return tXfBillDeductEntity;
     }
 
     /**
@@ -267,6 +268,10 @@ public class ClaimBillService extends DeductService{
     public boolean claimMatchBlueInvoice(TXfBillDeductEntity tXfBillDeductEntity,Map<String, BigDecimal> nosuchInvoiceSeller) {
         List<BlueInvoiceService.MatchRes> matchResList = null;
         try {
+            if (tXfBillDeductEntity.getStatus().compareTo(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) != 0) {
+                log.info("{} 类型单据{} 状态为{} 跳过匹配蓝票 ", "索赔单", tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getStatus());
+                return false;
+            }
             //索赔单 金额 大于 剩余发票金额
             if (nosuchInvoiceSeller.containsKey(tXfBillDeductEntity.getSellerNo()) && nosuchInvoiceSeller.get(tXfBillDeductEntity.getSellerNo()).compareTo(tXfBillDeductEntity.getAmountWithoutTax()) < 0) {
                 log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 单号 {}", "索赔单", tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getBusinessNo());
