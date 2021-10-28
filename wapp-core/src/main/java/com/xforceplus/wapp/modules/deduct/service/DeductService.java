@@ -382,11 +382,11 @@ public class DeductService   {
         }
         int count = tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
         //添加操作日志
-        addOperateLog(tXfBillDeductEntity.getId(),deductionEnum,status,UserUtil.getUserId(),UserUtil.getUserName());
+        addOperateLog(tXfBillDeductEntity.getId(),deductionEnum,status);
         return count >0;
     }
 
-    public void addOperateLog(Long id,XFDeductionBusinessTypeEnum typeEnum,TXfBillDeductStatusEnum statusEnum,Long userId,String userName){
+    public void addOperateLog(Long id,XFDeductionBusinessTypeEnum typeEnum,TXfBillDeductStatusEnum statusEnum){
         OperateLogEnum logEnum = null;
         if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(statusEnum)){
             logEnum = OperateLogEnum.CANCEL_AGREEMENT;
