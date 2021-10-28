@@ -466,6 +466,7 @@ public class DeductService   {
         tXfSettlementEntity.setUpdateTime(tXfSettlementEntity.getCreateTime());
         tXfSettlementEntity.setUpdateUser(0L);
         tXfSettlementEntity.setCreateUser(0L);
+        tXfSettlementEntity.setInvoiceType(InvoiceTypeEnum.SPECIAL_INVOICE.getValue());
         tXfSettlementEntity.setSettlementType(deductionBusinessTypeEnum.getValue());
         tXfSettlementEntity.setPriceMethod(0);
         /**
