@@ -295,6 +295,12 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         file.mkdir();
         String downLoadFileName = path + ".zip";
         for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
+            if ("1".equals(request.getOfd()) && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_PDF)) && !"1".equals(request.getSingle())) {
+                continue;
+            }
+            if ("1".equals(request.getPdf()) && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD)) && !"1".equals(request.getSingle())) {
+                continue;
+            }
 
             final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
             try {
@@ -335,7 +341,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         }
     }
 
-    public R export(List<TXfNoneBusinessUploadDetailDto> resultList,List<Long> id) {
+    public R export(List<TXfNoneBusinessUploadDetailDto> resultList, List<Long> id) {
 
         final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
         ExcelWriter excelWriter;
@@ -343,12 +349,12 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             //创建一个sheet
-            File file = new File(tmp +ftpPath);
-            if(!file.exists()){
+            File file = new File(tmp + ftpPath);
+            if (!file.exists()) {
                 file.mkdirs();
             }
-            File excl = new File(file,excelFileName);
-            EasyExcel.write(tmp +ftpPath+ excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
+            File excl = new File(file, excelFileName);
+            EasyExcel.write(tmp + ftpPath + excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
             WriteSheet writeSheet = EasyExcel.writerSheet(0, "非商导出结果信息").build();
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;

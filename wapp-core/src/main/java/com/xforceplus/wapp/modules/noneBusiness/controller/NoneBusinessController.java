@@ -176,7 +176,7 @@ public class NoneBusinessController {
      */
     @ApiOperation("下载源文件")
     @PostMapping(value = "/down")
-    public R down(FileDownRequest request) {
+    public R down(@RequestBody  FileDownRequest request) {
         try {
             if (CollectionUtils.isEmpty(request.getIds())) {
                 throw new RRException("请选中数据后进行下载");
