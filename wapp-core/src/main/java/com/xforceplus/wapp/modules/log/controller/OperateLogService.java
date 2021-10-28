@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.dao.TXfOperationLogDao;
 import com.xforceplus.wapp.repository.entity.TXfOperationLogEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,12 +41,12 @@ public class OperateLogService {
         return response;
     }
 
-
-    public boolean add(Long businessId, OperateLogEnum operateLogEnum,String businessStatus, Long userId, String userName){
+    @Async
+    public void add(Long businessId, OperateLogEnum operateLogEnum,String businessStatus, Long userId, String userName){
         try {
             if(businessId == null ||  operateLogEnum ==null || businessStatus == null){
                 log.info("操作日志添加失败 businessId:{},operateLogEnum:{},businessStatus:{}",businessId,operateLogEnum,businessStatus);
-                return false;
+                return;
             }
             TXfOperationLogEntity operationLogEntity = new TXfOperationLogEntity();
             operationLogEntity.setBusinessId(businessId);
@@ -57,10 +58,9 @@ public class OperateLogService {
             operationLogEntity.setId(IdGenerator.generate());
             operationLogEntity.setUserId(userId);
             operationLogEntity.setUserName(userName);
-            return tXfOperationLogDao.insert(operationLogEntity) >0;
+            tXfOperationLogDao.insert(operationLogEntity);
         } catch (Exception e) {
             log.info(e.getMessage());
-            return false;
         }
     }
 

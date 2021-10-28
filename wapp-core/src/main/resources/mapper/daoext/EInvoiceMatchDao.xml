@@ -315,7 +315,9 @@
         company_code,
         is_del,
         cipher_text,
-        goods_list_flag
+        goods_list_flag,
+        machinecode,
+        remark
         ) VALUES (
         #{invoiceCode},
         #{invoiceNo},
@@ -343,7 +345,9 @@
         #{companyCode},
         '0',
         #{cipherText},
-        #{goodsListFlag}
+        #{goodsListFlag},
+        #{machinecode},
+        #{remark}
         )
     </insert>
 
@@ -377,7 +381,9 @@
         invoice_status,
         is_del,
         cipher_text,
-        goods_list_flag
+        goods_list_flag,
+        machinecode,
+        remark
         ) VALUES (
         #{invoiceCode},
         #{invoiceNo},
@@ -406,7 +412,9 @@
         #{invoiceStatus},
         '0',
         #{cipherText},
-        #{goodsListFlag}
+        #{goodsListFlag},
+        #{machinecode},
+        #{remark}
         )
     </insert>
 </mapper>
