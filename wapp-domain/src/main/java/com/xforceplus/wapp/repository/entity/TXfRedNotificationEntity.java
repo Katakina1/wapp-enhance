@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-22
+ * @since 2021-10-28
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -275,6 +275,9 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("terminal_type")
     private Integer terminalType;
 
+    @TableField("pdf_url")
+    private String pdfUrl;
+
 
     public static final String ID = "id";
 
@@ -361,5 +364,7 @@ public class TXfRedNotificationEntity extends BaseEntity {
     public static final String REMARK = "remark";
 
     public static final String TERMINAL_TYPE = "terminal_type";
+
+    public static final String PDF_URL = "pdf_url";
 
 }

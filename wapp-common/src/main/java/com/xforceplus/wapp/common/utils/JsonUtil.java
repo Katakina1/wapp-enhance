@@ -18,4 +18,8 @@ public class JsonUtil {
     public static <T> List<T> fromJsonList(String json , Class<T> clz){
         return JSON.parseArray(json,clz);
     }
+
+    public static String toJsonStr(Object object){
+        return JSON.toJSONString(object);
+    }
 }

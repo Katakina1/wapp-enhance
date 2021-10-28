@@ -5,11 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.common.utils.InvoiceUtil;
+import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
+import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
 import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -94,6 +98,12 @@ public class EInvoiceMatchService {
     @Value("${wapp.org-check:false}")
     private boolean needOrgCheck;
 
+    @Autowired
+    private VerificationService verificationService;
+
+    @Autowired
+    private FileService fileService;
+
     static {
         sdf.applyPattern("yyyy-MM-dd");
     }
@@ -139,6 +149,21 @@ public class EInvoiceMatchService {
         successEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
         successEntity.setInvoiceDate(invoiceMain.getPaperDrewDate());
         successEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(invoiceMain.getOfdImageUrl())) {
+            try {
+                String base64 = verificationService.getBase64ByUrl(invoiceMain.getOfdImageUrl());
+
+                String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
+                UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
+                if (null != uploadFileImageResult) {
+                    successEntity.setUploadId(uploadFileImageResult.getData().getUploadId());
+                    successEntity.setUploadPath(uploadFileImageResult.getData().getUploadPath());
+                }
+            } catch (IOException e) {
+                log.error("非商下载税局OFD图片失败:{}", e);
+            }
+
+        }
         noneBusinessService.updateById(successEntity);
         TAcOrgEntity purEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getPurchaserTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
         TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
@@ -163,8 +188,8 @@ public class EInvoiceMatchService {
         map.put("checkNo", invoiceMain.getCheckCode());
         map.put("xfName", invoiceMain.getSellerName());
         map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
-        map.put("cipherText",invoiceMain.getCipherText());
-        map.put("goodsListFlag",invoiceMain.getGoodsListFlag());
+        map.put("cipherText", invoiceMain.getCipherText());
+        map.put("goodsListFlag", invoiceMain.getGoodsListFlag());
         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
         String uuid = invoiceMain.getInvoiceCode() + "" + invoiceMain.getInvoiceNo();
         map.put("uuid", uuid);
@@ -229,32 +254,32 @@ public class EInvoiceMatchService {
         validateTax(invoiceMain, invoiceDetails);
         //校验购销对
         QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
-        settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,electronicUploadRecordDetailEntity.getSettlementNo());
+        settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO, electronicUploadRecordDetailEntity.getSettlementNo());
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(settlementWrapper);
-        if(tXfSettlementEntity == null){
+        if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("未找到对应的结算单");
         }
-        if(!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())){
+        if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
             throw new EnhanceRuntimeException("购方名称不一致");
         }
-        if(!invoiceMain.getPurchaserTaxNo().equals(tXfSettlementEntity.getPurchaserTaxNo())){
+        if (!invoiceMain.getPurchaserTaxNo().equals(tXfSettlementEntity.getPurchaserTaxNo())) {
             throw new EnhanceRuntimeException("购方税号不一致");
         }
-        if(!invoiceMain.getSellerName().equals(tXfSettlementEntity.getSellerName())){
+        if (!invoiceMain.getSellerName().equals(tXfSettlementEntity.getSellerName())) {
             throw new EnhanceRuntimeException("销方名称不一致");
         }
-        if(!invoiceMain.getSellerTaxNo().equals(tXfSettlementEntity.getSellerTaxNo())){
+        if (!invoiceMain.getSellerTaxNo().equals(tXfSettlementEntity.getSellerTaxNo())) {
             throw new EnhanceRuntimeException("销方税号不一致");
         }
         //从备注里截取红字信息编号
         Map<String, Object> map = new HashMap<>();
         if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
-            String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号")+5, invoiceMain.getRemark().indexOf("信息表编号")+21);
+            String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号") + 5, invoiceMain.getRemark().indexOf("信息表编号") + 21);
             if (StringUtils.isNotEmpty(redNo)) {
                 String trim = redNo.trim();
-                if(trim.matches("[0-9]+")){
+                if (trim.matches("[0-9]+")) {
                     map.put("redNoticeNumber", trim);
-                }else{
+                } else {
                     log.error("发票回填--解析红字信息编号失败！");
                     throw new EnhanceRuntimeException("解析红字信息编号失败");
                 }
@@ -279,7 +304,8 @@ public class EInvoiceMatchService {
         map.put("companyCode", orgEntity.getCompany());
 //        底账来源  0-采集 1-查验 2-录入
         map.put("sourceSystem", "1");
-
+        map.put("goodsListFlag",invoiceMain.getGoodsListFlag());
+        map.put("machinecode",invoiceMain.getMachineCode());
 //        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
         map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
         map.put("remark", invoiceMain.getRemark());

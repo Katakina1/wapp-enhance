@@ -99,7 +99,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     private String splitInvoice;
     @Value("${wapp.integration.sign.splitInvoice}")
     private String sign;
-    @Value("${wapp.integration.authentication-split}")
+    @Value("${wapp.integration.authentication}")
     private String authentication;
 
     @Autowired
@@ -199,6 +199,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         defaultHeader.put("tenantId", tenantId);
         defaultHeader.put("Authentication", authentication);
         defaultHeader.put("accept", "application/json");
+        defaultHeader.put("Accept-Encoding", "deflate");
         defaultHeader.put("Content-Type", "application/json");
         defaultHeader.put("x-userinfo", "tenant-gateway.41-tcenter-prod");
         defaultHeader.put("uiaSign", sign);
@@ -207,9 +208,10 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         defaultHeader.put("rpcType", "http");
         defaultHeader.put("appId ", "walmart");
         String post = "";
+        JSONObject res = null;
         try {
-            post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),"");
-            JSONObject res = JSONObject.parseObject(post);
+            post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),null);
+              res = JSONObject.parseObject(post);
             if (!res.get("code").equals("BSCTZZ0001") || res.get("result").equals("[]")) {
                 log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
                 throw new RuntimeException("拆票失败+" + res.get("message"));
@@ -221,7 +223,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         }
         // check 拆票失败
         Date date = new Date();
-        List<SplitPreInvoiceInfo> splitPreInvoiceInfos = JSON.parseArray(post, SplitPreInvoiceInfo.class);
+        List<SplitPreInvoiceInfo> splitPreInvoiceInfos = JSON.parseArray(res.getString("result"), SplitPreInvoiceInfo.class);
         for (SplitPreInvoiceInfo splitPreInvoiceInfo : splitPreInvoiceInfos) {
             TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = new ArrayList<>();

@@ -49,6 +49,11 @@ public class ExportCommonService {
      * @return <日志id，用户id,用户名>
      */
     public Tuple3<Long,Long,String> insertRequest(Object request) {
+        if (UserUtil.getUser() == null){
+            log.info("未获取到上下文，无法插入消息日志");
+            return null;
+        }
+
         final Long userId = UserUtil.getUserId();
 
         TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();

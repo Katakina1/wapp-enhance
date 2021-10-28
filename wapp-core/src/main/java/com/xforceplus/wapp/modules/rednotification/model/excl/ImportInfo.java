@@ -18,97 +18,100 @@ public class ImportInfo extends BaseRowModel {
     private String sellerNumber;
     @ExcelProperty(value = "发票类型", index = 1)
     private String invoiceType;
-    @ExcelProperty(value = "销方编号", index = 2)
-    private String sellerNo;
-    @ExcelProperty(value = "销方名称", index = 3)
+//    @ExcelProperty(value = "销方编号", index = 2)
+//    private String sellerNo;
+    @ExcelProperty(value = "销方名称", index = 2)
     private String sellerName;
-    @ExcelProperty(value = "销方税号", index = 4)
+    @ExcelProperty(value = "销方税号", index = 3)
     private String sellerTaxNo;
 
-    @ExcelProperty(value = "购方编号", index = 5)
-    private String purchaserNo;
-    @ExcelProperty(value = "购方名称", index = 6)
+//    @ExcelProperty(value = "购方编号", index = 5)
+//    private String purchaserNo;
+    @ExcelProperty(value = "购方名称", index = 4)
     private String purchaserName;
-    @ExcelProperty(value = "购方税号",index = 7)
+    @ExcelProperty(value = "购方税号",index = 5)
     private String purchaserTaxNo;
 
-    @ExcelProperty(value = "价格方式", index = 8)
+    @ExcelProperty(value = "价格方式", index = 6)
     private String priceMethod;
 
-    @ExcelProperty(value = "申请类型", index = 9)
+    @ExcelProperty(value = "申请类型", index = 7)
     private Integer applyType;
     //===========明细==========
 
-    @ExcelProperty(value = "税收分类编码", index = 10)
+    @ExcelProperty(value = "税收分类编码", index = 8)
     private String goodsTaxNo;
 
-    @ExcelProperty(value = "货物及服务名称", index = 11)
+    @ExcelProperty(value = "货物及服务名称", index = 9)
     private String goodsName;
 
-    @ExcelProperty(value = "数量单位", index = 12)
+    @ExcelProperty(value = "数量单位", index = 10)
     private String unit;
 
-    @ExcelProperty(value = "规格型号", index = 13)
+    @ExcelProperty(value = "规格型号", index = 11)
     private String model;
 
-    @ExcelProperty(value = "数量", index = 14)
+    @ExcelProperty(value = "数量", index = 12)
     private String num;
 
-    @ExcelProperty(value = "税率", index = 15)
+    @ExcelProperty(value = "税率", index = 13)
     private String taxRate;
 
 
-    @ExcelProperty(value = "不含税单价", index = 16)
+    @ExcelProperty(value = "不含税单价", index = 14)
     private String unitPriceWithTax;
 
-    @ExcelProperty(value = "不含税单价", index = 17)
+    @ExcelProperty(value = "不含税单价", index = 15)
     private String unitPrice;
 
 
-    @ExcelProperty(value = "不含税金额", index = 18)
+    @ExcelProperty(value = "不含税金额", index = 16)
     private BigDecimal amountWithoutTax;
 
-    @ExcelProperty(value = "税额", index = 19)
+    @ExcelProperty(value = "税额", index = 17)
     private BigDecimal taxAmount;
 
-    @ExcelProperty(value = "含税金额", index = 20)
+    @ExcelProperty(value = "含税金额", index = 18)
     private BigDecimal amountWithTax;
 
-    @ExcelProperty(value = "原发票类型", index = 21)
+    @ExcelProperty(value = "原发票类型", index = 19)
     private String originInvoiceType;
 
-    @ExcelProperty(value = "原发票号码", index = 22)
+    @ExcelProperty(value = "原发票号码", index = 20)
     private String originInvoiceNo;
 
-    @ExcelProperty(value = "原发票代码", index = 23)
+    @ExcelProperty(value = "原发票代码", index = 21)
     private String originInvoiceCode;
 
-    @ExcelProperty(value = "原开票日期", index = 24)
+    @ExcelProperty(value = "原开票日期", index = 22)
     private String invoiceDate;
 
     // 结算单号	申请人	联系电话	申请理由	成品油申请原因	是否享受税收优惠政策	享受税收优惠政策内容	零税率标志	扣除额
-    @ExcelProperty(value = "结算单号", index = 25)
+    @ExcelProperty(value = "结算单号", index = 23)
     private String billNo;
-    @ExcelProperty(value = "申请人", index = 26)
+    @ExcelProperty(value = "申请人", index = 24)
     private String userName;
-    @ExcelProperty(value = "联系电话", index = 27)
+    @ExcelProperty(value = "联系电话", index = 25)
     private String tel;
-    @ExcelProperty(value = "申请理由", index = 28)
+    @ExcelProperty(value = "申请理由", index = 26)
     private String applyReason;
-    @ExcelProperty(value = "成品油申请原因", index = 29)
+    @ExcelProperty(value = "成品油申请原因", index = 27)
     private String oliApplyReason;
-    @ExcelProperty(value = "是否享受税收优惠政策", index = 30)
+    @ExcelProperty(value = "是否享受税收优惠政策", index = 28)
     private String taxPre;
-    @ExcelProperty(value = "享受税收优惠政策内容", index = 31)
+    @ExcelProperty(value = "享受税收优惠政策内容", index = 29)
     private String taxPreCon;
-    @ExcelProperty(value = "零税率标志", index = 32)
+    @ExcelProperty(value = "零税率标志", index = 30)
     private String zeroTax;
-    @ExcelProperty(value = "扣除额", index = 33)
+    @ExcelProperty(value = "扣除额", index = 31)
     private BigDecimal deduction;
 
    // 补充额外字段
    @JsonIgnore
    private Integer specialInvoiceFlag;
+    // 补充额外字段 版本号
+    @JsonIgnore
+    private String goodsNoVer;
 
 
 

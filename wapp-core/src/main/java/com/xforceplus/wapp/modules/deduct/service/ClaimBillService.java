@@ -294,7 +294,7 @@ public class ClaimBillService extends DeductService{
         catch (NoSuchInvoiceException n ) {
             NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
             newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
-            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_FOUND_BLUE_TAX_RATE );
             newExceptionReportEvent.setType( ExceptionReportTypeEnum.CLAIM );
             applicationContext.publishEvent(newExceptionReportEvent);
             log.info(" 索赔单 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} businessNo",tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getBusinessNo());

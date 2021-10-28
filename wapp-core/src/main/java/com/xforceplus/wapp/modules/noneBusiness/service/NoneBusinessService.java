@@ -148,28 +148,14 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
                 } else {
                     addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
                 }
-                if (StringUtils.isNotEmpty(response.getResult().getImageUrl())) {
+                this.save(addEntity);
 
-                    try {
-                        String base64 = verificationService.getBase64ByUrl(response.getResult().getImageUrl());
-
-                        String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
-                        UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
-                        if (null != uploadFileImageResult) {
-                            addEntity.setUploadId(uploadFileImageResult.getData().getUploadId());
-                            addEntity.setUploadPath(uploadFileImageResult.getData().getUploadPath());
-                        }
-                    } catch (IOException e) {
-                        log.error("非商下载税局OFD图片失败:{}", e);
-                    }
-
-                }
 
             } else {
                 addEntity.setOfdStatus(Constants.SIGIN_NONE_BUSINESS_FAIL);
                 addEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
             }
-            this.save(addEntity);
+
 
         });
 
@@ -256,6 +242,21 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         }
         if (StringUtils.isNotBlank(entity.getReason())) {
             wrapper.set(TXfNoneBusinessUploadDetailEntity::getReason, entity.getReason());
+        }
+        if (StringUtils.isNotBlank(entity.getOfdStatus())) {
+            wrapper.set(TXfNoneBusinessUploadDetailEntity::getOfdStatus, entity.getOfdStatus());
+        }
+        if (StringUtils.isNotBlank(entity.getUploadId())) {
+            wrapper.set(TXfNoneBusinessUploadDetailEntity::getUploadId, entity.getUploadId());
+        }
+        if (StringUtils.isNotBlank(entity.getUploadPath())) {
+            wrapper.set(TXfNoneBusinessUploadDetailEntity::getUploadPath, entity.getUploadPath());
+        }
+        if (StringUtils.isNotBlank(entity.getSourceUploadId())) {
+            wrapper.set(TXfNoneBusinessUploadDetailEntity::getSourceUploadId, entity.getSourceUploadId());
+        }
+        if (StringUtils.isNotBlank(entity.getSourceUploadPath())) {
+            wrapper.set(TXfNoneBusinessUploadDetailEntity::getSourceUploadPath, entity.getSourceUploadPath());
         }
         return wrapper.update();
     }

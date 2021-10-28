@@ -176,7 +176,7 @@ public class NoneBusinessController {
      */
     @ApiOperation("下载源文件")
     @PostMapping(value = "/down")
-    public R down(@RequestBody  FileDownRequest request) {
+    public R<String> down(@RequestBody  FileDownRequest request) {
         try {
             if (CollectionUtils.isEmpty(request.getIds())) {
                 throw new RRException("请选中数据后进行下载");
@@ -186,7 +186,7 @@ public class NoneBusinessController {
                 throw new RRException("您所选发票不包含任何附件文件");
             }
             noneBusinessService.down(list, request);
-            return R.ok();
+            return R.ok("下载成功，请往消息中心查看下载结果");
         } catch (Exception e) {
             log.error("非商下载源文件异常:{}", e);
             return R.fail("下载源文件异常" + e.getMessage());
@@ -266,7 +266,7 @@ public class NoneBusinessController {
             response.setInSubmit(submitList.size());
             response.setExSubmit(resultList.size() - submitList.size());
             noneBusinessService.saveOrUpdateBatch(submitList);
-            return R.ok(response);
+            return R.ok(response,"提交成功");
         } else {
             List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
             response.setSubmitCount(list.size());
@@ -278,7 +278,7 @@ public class NoneBusinessController {
             noneBusinessService.saveOrUpdateBatch(noneBusinessConverter.map(submitList));
             response.setInSubmit(submitList.size());
             response.setExSubmit(list.size() - submitList.size());
-            return R.ok(response);
+            return R.ok(response,"提交成功");
 
         }
 

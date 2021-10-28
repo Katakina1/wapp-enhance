@@ -221,7 +221,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         val items = new LambdaQueryChainWrapper<>(settlementItemService.getBaseMapper())
                 .eq(TXfSettlementItemEntity::getSettlementNo, settlementNo)
                 .eq(TXfSettlementItemEntity::getItemFlag, 2)
-                .isNull(TXfSettlementItemEntity::getThridId).list();
+                .isNotNull(TXfSettlementItemEntity::getThridId).list();
         log.debug("结算单确认索赔列表查询[查询结算单明细],结果:{}", items);
         if (CollectionUtils.isEmpty(items)) {
             log.info("查询结算单明细为空");
