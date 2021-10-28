@@ -12,6 +12,7 @@ import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tools.ant.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -252,18 +253,22 @@ public class BlueInvoiceService {
      * @return
      */
     public boolean withdrawInvoices(List<MatchRes> list) {
-        List<TDxRecordInvoiceEntity> invoices = list
-                .stream()
-                .map(
-                        v -> {
-                            TDxRecordInvoiceEntity tDxRecordInvoiceEntity = new TDxRecordInvoiceEntity();
-                            tDxRecordInvoiceEntity.setId(v.getInvoiceId());
-                            tDxRecordInvoiceEntity.setRemainingAmount(v.getDeductedAmount());
-                            return tDxRecordInvoiceEntity;
-                        }
-                )
-                .collect(Collectors.toList());
-        return invoiceService.withdrawRemainingAmountById(invoices);
+        if (!org.springframework.util.CollectionUtils.isEmpty(list)) {
+            log.info("开始撤回抵扣的发票金额，将抵扣金额返还到原有发票上, 发票列表={}", CollectionUtils.flattenToString(list));
+            List<TDxRecordInvoiceEntity> invoices = list
+                    .stream()
+                    .map(
+                            v -> {
+                                TDxRecordInvoiceEntity tDxRecordInvoiceEntity = new TDxRecordInvoiceEntity();
+                                tDxRecordInvoiceEntity.setId(v.getInvoiceId());
+                                tDxRecordInvoiceEntity.setRemainingAmount(v.getDeductedAmount());
+                                return tDxRecordInvoiceEntity;
+                            }
+                    )
+                    .collect(Collectors.toList());
+            return invoiceService.withdrawRemainingAmountById(invoices);
+        }
+        return true;
     }
 
     @Data
