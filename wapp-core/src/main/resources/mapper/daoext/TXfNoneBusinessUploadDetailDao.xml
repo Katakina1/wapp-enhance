@@ -91,4 +91,18 @@
 
 
     </select>
+
+    <select id="getByIds" resultMap="noneBusMap">
+        select t.*,t1.jvcode,t1.invoice_amount,t1.tax_amount,t1.total_amount as com from
+        t_xf_none_business_upload_detail t left join t_dx_record_invoice t1
+
+        on t.invoice_no = t1.invoice_no and t.invoice_code=t1.invoice_code
+        where 1=1
+        and t.id IN
+        <foreach item="items" collection="list" open="(" separator="," close=")">
+            #{items}
+        </foreach>
+
+
+    </select>
 </mapper>

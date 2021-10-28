@@ -31,6 +31,7 @@ CREATE TABLE
     status smallint,
     invoice_origin smallint,
     company_code nvarchar(255),
+    pdf_url nvarchar(200),
     device_un varchar(30),
     terminal_un varchar(30),
     terminal_type smallint,
@@ -112,6 +113,8 @@ exec sp_addextendedproperty 'MS_Description', '红字信息来源1.索赔单，2
 
 go
 exec sp_addextendedproperty 'MS_Description', '公司编号','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'company_code';
+go
+exec sp_addextendedproperty 'MS_Description', 'pdf链接','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'pdf_url';
 go
 exec sp_addextendedproperty 'MS_Description', '设备唯一码','SCHEMA', 'dbo', 'TABLE', 't_xf_red_notification', 'COLUMN', 'device_un';
 go
