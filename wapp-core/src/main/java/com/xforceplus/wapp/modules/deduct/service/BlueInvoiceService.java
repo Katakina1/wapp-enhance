@@ -198,6 +198,8 @@ public class BlueInvoiceService {
             }
         } while (Objects.nonNull(tDxRecordInvoiceEntity) && BigDecimal.ZERO.compareTo(leftAmount.get()) < 0);
         if (BigDecimal.ZERO.compareTo(leftAmount.get()) < 0) {
+            log.info("没有足够的待匹配的蓝票，回撤变更的发票");
+            withdrawInvoices(list);
             throw new NoSuchInvoiceException();
         }
         log.info("已匹配的发票列表={}", CollectionUtils.flattenToString(list));
