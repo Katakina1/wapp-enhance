@@ -10,6 +10,8 @@ import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
+import com.xforceplus.wapp.modules.rednotification.model.QueryModel;
+import com.xforceplus.wapp.modules.rednotification.model.RedNotificationExportPdfRequest;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.*;
 import com.xforceplus.wapp.modules.rednotification.util.HttpUtils;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
@@ -25,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +46,8 @@ public class TaxWareService {
     RedNotificationLogService redNotificationLogService;
     @Autowired
     CommPreInvoiceService commPreInvoiceService;
+    @Autowired
+    ThreadPoolExecutor redNotificationThreadPool;
 
 
 
@@ -230,6 +235,22 @@ public class TaxWareService {
                     }catch (Exception e){
                         log.error("回填预制发票异常",e);
                     }
+                    // 尝试申请pdf链接
+                    RedNotificationExportPdfRequest request = new  RedNotificationExportPdfRequest();
+                    request.setAutoFlag(true);
+                    request.setGenerateModel(0);
+                    QueryModel queryModel = new QueryModel();
+                    queryModel.setIncludes(Lists.newArrayList(tXfRedNotificationEntity.getId()));
+                    queryModel.setIsAllSelected(false);
+                    request.setQueryModel(queryModel);
+                    redNotificationThreadPool.execute(
+                            ()->{
+                                redNotificationMainService.downloadPdf(request);
+                            }
+                    );
+
+
+
                 }else {
                     tXfRedNotificationEntity.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPLY.getValue());
                     redNotificationMainService.updateById(tXfRedNotificationEntity);

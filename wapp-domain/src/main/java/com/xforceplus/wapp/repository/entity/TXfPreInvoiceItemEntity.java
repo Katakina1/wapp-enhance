@@ -142,7 +142,7 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
     @TableField("price_method")
     private String priceMethod;
 
-    @TableField("id")
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @TableField(value="update_time", update="getdate()" )

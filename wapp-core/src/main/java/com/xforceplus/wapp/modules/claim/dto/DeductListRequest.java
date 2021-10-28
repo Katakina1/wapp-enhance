@@ -5,10 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 /**
@@ -43,8 +39,6 @@ public class DeductListRequest {
     @ApiModelProperty("扣款发票号码，YYYY-MM-DD")
     private String deductInvoice;
     @ApiModelProperty("税率，小数")
-    @Max(value = 1,message = "税率仅支持大于0的小数")
-    @Min(value = 0,message = "税率仅支持大于0的小数")
     private BigDecimal taxRate;
     @ApiModelProperty("状态")
     private Integer status;
