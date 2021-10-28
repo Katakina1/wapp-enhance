@@ -135,7 +135,15 @@ public class EpdBillFilterCommand implements Command {
                         return speacialCompanyService.hitBlackOrWhiteList("1", v.getAccount());
                     }
                 })
-                .map(TXfOriginEpdBillEntityConvertor.INSTANCE::toEpdBillData)
+                .map(v -> {
+                    try {
+                        return TXfOriginEpdBillEntityConvertor.INSTANCE.toEpdBillData(v);
+                    } catch (Exception e) {
+                        log.warn(e.getMessage(), e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
                 .peek(v ->
                         {
                             if (Objects.isNull(v.getTaxRate())) {
