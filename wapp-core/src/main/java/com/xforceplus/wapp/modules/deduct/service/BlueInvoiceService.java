@@ -91,6 +91,8 @@ public class BlueInvoiceService {
         do {
             tDxRecordInvoiceEntity = invoiceService.getOne(
                     new QueryWrapper<TDxRecordInvoiceEntity>()
+                            // 只返回第一行数据，否则getOne可能会报错
+                            .select("top 1 *")
                             .lambda()
                             .eq(TDxRecordInvoiceEntity::getXfTaxNo, sellerTaxNo)
                             .eq(TDxRecordInvoiceEntity::getGfTaxNo, purchserTaxNo)
