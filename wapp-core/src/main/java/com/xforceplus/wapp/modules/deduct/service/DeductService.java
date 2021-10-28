@@ -516,8 +516,11 @@ public class DeductService   {
           if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
              tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
          }
-         if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+         else if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
              tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+         }
+         else if(tmpStatus == TXfSettlementItemFlagEnum.NORMAL.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
          }
          tXfSettlementDao.insert(tXfSettlementEntity);
          //日志
@@ -932,6 +935,7 @@ public class DeductService   {
      * @return
      */
     public TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+        tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
         BigDecimal ta = tXfSettlementItemEntity.getQuantity().multiply(tXfSettlementItemEntity.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
         if (ta.compareTo(tXfSettlementItemEntity.getAmountWithoutTax()) != 0) {
             tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
