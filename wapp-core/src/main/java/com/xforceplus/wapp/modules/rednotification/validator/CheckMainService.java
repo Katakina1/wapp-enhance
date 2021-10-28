@@ -2,13 +2,17 @@ package com.xforceplus.wapp.modules.rednotification.validator;
 
 import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.enums.*;
+import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.ConvertHelper;
+import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.util.RegexUtils;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
+import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import io.vavr.control.Either;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,6 +20,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 校验红字主信息
@@ -25,6 +30,10 @@ public class CheckMainService {
 
     @Autowired
     TaxCodeServiceImpl taxCodeServiceImpl;
+    @Autowired
+    CompanyService companyService;
+    @Autowired
+    RedisTemplate redisTemplate;
 
     public String checkMainInfo(ImportInfo importInfo){
 
@@ -36,6 +45,10 @@ public class CheckMainService {
                 errorBuilder.append("申请类型为空或者不正确，必须为0—购方申请已抵扣, 1—购方申请未抵扣, 2—销方申请;");
             }
         }
+
+        String error1 = checkCompany(importInfo);
+        errorBuilder.append(error1);
+
 
         String error2 = checkInvoiceMessage( importInfo.getOriginInvoiceCode(), importInfo.getOriginInvoiceNo(), importInfo.getInvoiceType(), importInfo.getOriginInvoiceType());
         errorBuilder.append(error2);
@@ -57,6 +70,33 @@ public class CheckMainService {
         errorBuilder.append(errorLast);
 
         return errorBuilder.toString();
+    }
+
+    private String checkCompany(ImportInfo importInfo) {
+        String taxNo = importInfo.getPurchaserTaxNo();
+        if (StringUtils.isEmpty(taxNo)){
+            return "购方税号必须填写";
+        }
+
+        String key = "purcherseTaxNo:"+taxNo;
+        Object result = redisTemplate.opsForValue().get(key);
+        if ( result != null ){
+            if ("false".equals(result)){
+                return String.format("沃尔玛其下未找到该购方税号:[%s]",taxNo);
+            }else {
+                return "" ;
+            }
+        }
+
+        TAcOrgEntity company = companyService.getByTaxNo(taxNo);
+        if (company != null){
+            redisTemplate.opsForValue().set(key,"true",60, TimeUnit.SECONDS);
+            return "" ;
+        }else {
+            redisTemplate.opsForValue().set(key,"false",60, TimeUnit.SECONDS);
+            return String.format("沃尔玛其下未找到该购方税号:[%s]",taxNo);
+        }
+
     }
 
     private String checkGoodsTaxNo(ImportInfo importInfo) {

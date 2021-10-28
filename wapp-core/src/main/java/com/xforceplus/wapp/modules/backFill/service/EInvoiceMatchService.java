@@ -304,7 +304,8 @@ public class EInvoiceMatchService {
         map.put("companyCode", orgEntity.getCompany());
 //        底账来源  0-采集 1-查验 2-录入
         map.put("sourceSystem", "1");
-
+        map.put("goodsListFlag",invoiceMain.getGoodsListFlag());
+        map.put("machinecode",invoiceMain.getMachineCode());
 //        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
         map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
         map.put("remark", invoiceMain.getRemark());
