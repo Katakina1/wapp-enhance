@@ -51,6 +51,7 @@ public class JanusClient {
         }
         try {
             defaultHeader.put("uiaSign", taxCodeSign);
+            defaultHeader.put("serialNo", taxCode + keyWord);
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
             if (StringUtils.isNotBlank(taxCode)) {
                 paramMeterMap.put("code", taxCode);
