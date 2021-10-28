@@ -242,15 +242,15 @@ public class DeductService   {
         if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
                     TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    UserUtil.getUserId(), UserUtil.getUserName());
+                    0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_AGREEMENT,
                     TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    UserUtil.getUserId(), UserUtil.getUserName());
+                    0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), XFDeductionBusinessTypeEnum.EPD_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_EPD,
                     TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    UserUtil.getUserId(), UserUtil.getUserName());
+                    0L,"系统");
         }
     }
 
@@ -511,7 +511,7 @@ public class DeductService   {
          //日志
          operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
                  TXfSettlementStatusEnum.getTXfSettlementStatusEnum(tXfSettlementEntity.getSettlementStatus()).getDesc(),
-                 UserUtil.getUserId(),UserUtil.getUserName());
+                 0L,"系统");
          return tXfSettlementEntity;
     }
 
