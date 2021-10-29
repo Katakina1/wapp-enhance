@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.phoenix.split.model.*;
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
+import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
@@ -246,6 +248,9 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setOriginPaperDrawDate(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setRedNotificationNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setId(idSequence.nextId());
+            tXfPreInvoiceEntity.setSettlementNo(tXfSettlementEntity.getSettlementNo());
+            String type = InvoiceTypeEnum.invoiceTypeMap().get(tXfSettlementEntity.getInvoiceType());
+            tXfPreInvoiceEntity.setInvoiceType(StringUtils.isEmpty(type) ? StringUtils.EMPTY : type);
             tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
@@ -290,7 +295,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         billInfo.setSellerId(0L);
         billInfo.setSellerTenantId(0l);
         billInfo.setSellerGroupId(0l);
-        billInfo.setInvoiceType("s");
+        billInfo.setInvoiceType(ValueEnum.getEnumByValue(InvoiceTypeEnum.class, tXfSettlementEntity.getInvoiceType()).get().getXfValue());
         billInfo.setSalesbillId(tXfSettlementEntity.getSettlementNo());
 
         List<BillItem> billItems = new ArrayList<>();
