@@ -302,11 +302,13 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         BeanUtil.copyList( tXfSettlementItemEntities,billItems,BillItem.class);
         String settlementNo = tXfSettlementEntity.getSettlementNo();
         int i = 0;
-        for (BillItem billItem : billItems) {
-            billItem.setSalesbillId(settlementNo );
-            billItem.setSalesbillItemId(settlementNo + i);
+        for (TXfSettlementItemEntity tXfSettlementItemEntity : tXfSettlementItemEntities) {
+            BillItem billItem = new BillItem();
+            BeanUtil.copyProperties( tXfSettlementItemEntity,billItem);
+            billItem.setSalesbillId(tXfSettlementEntity.getId()+"" );
+            billItem.setSalesbillItemId(tXfSettlementItemEntity.getId()+"");
             billItem.setSalesbillNo(settlementNo);
-            billItem.setSalesbillItemNo(settlementNo + i);
+            billItem.setSalesbillItemNo(tXfSettlementItemEntity.getSalesbillItemNo();
 
             billItem.setInnerPrepayAmountTax(BigDecimal.ZERO);
             billItem.setInnerPrepayAmountWithoutTax(BigDecimal.ZERO);
@@ -325,6 +327,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
 
             billItem.setDeductions(BigDecimal.ZERO);
+            billItems.add(billItem);
         }
         billInfo.setBillItems(billItems);
         SplitRule splitRule =    JSONObject.parseObject(RULE_INFO, SplitRule.class);
