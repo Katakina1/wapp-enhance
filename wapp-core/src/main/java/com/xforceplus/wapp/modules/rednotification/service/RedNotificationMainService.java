@@ -469,6 +469,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (!CollectionUtils.isEmpty(ids)){
             // 先更新状态为申请中
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.in(TXfRedNotificationEntity::getId,ids);
             TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
             entity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
             getBaseMapper().update(entity,updateWrapper);
