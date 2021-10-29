@@ -35,7 +35,7 @@ public class CommRedNotificationService {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
         // 申请调用沃尔玛接口申请
         AddRedNotificationRequest request = new AddRedNotificationRequest();
-        request.setAutoApplyFlag(2);
+        request.setAutoApplyFlag(1);
         request.setRedNotificationInfoList(Collections.singletonList(redNotificationInfo));
         redNotificationOuterService.add(request);
     }
