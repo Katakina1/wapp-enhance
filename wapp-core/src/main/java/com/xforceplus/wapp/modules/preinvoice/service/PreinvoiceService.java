@@ -249,8 +249,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setRedNotificationNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setId(idSequence.nextId());
             tXfPreInvoiceEntity.setSettlementNo(tXfSettlementEntity.getSettlementNo());
-            String type = InvoiceTypeEnum.invoiceTypeMap().get(tXfSettlementEntity.getInvoiceType());
-            tXfPreInvoiceEntity.setInvoiceType(StringUtils.isEmpty(type) ? StringUtils.EMPTY : type);
+            tXfPreInvoiceEntity.setInvoiceType(tXfSettlementEntity.getInvoiceType());
             tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
