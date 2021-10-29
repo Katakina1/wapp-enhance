@@ -510,6 +510,8 @@ public class DeductService   {
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
                 taxRateTotal = taxRateTotal.add(tXfBillDeductItemEntity.getTaxRate());
             }
+        }else{
+            tXfSettlementEntity.setTaxRate(tXfBillDeductEntities.get(0).getTaxRate());
         }
          /**
           * 部分匹配 索赔单明细 需要确认数据单据，如果不需要确认，进入拆票流程，状态是 待拆票
@@ -531,6 +533,10 @@ public class DeductService   {
          operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
                  TXfSettlementStatusEnum.getTXfSettlementStatusEnum(tXfSettlementEntity.getSettlementStatus()).getDesc(),
                  0L,"系统");
+          tXfSettlementEntity.setAmountWithoutTax(tXfSettlementEntity.getAmountWithoutTax().negate());
+          tXfSettlementEntity.setTaxAmount(tXfSettlementEntity.getTaxAmount().negate());
+          tXfSettlementEntity.setAmountWithTax(tXfSettlementEntity.getAmountWithTax().negate());
+
          return tXfSettlementEntity;
     }
 

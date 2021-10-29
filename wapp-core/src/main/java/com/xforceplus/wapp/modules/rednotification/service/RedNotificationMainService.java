@@ -15,6 +15,7 @@ import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
@@ -466,11 +467,15 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         //更新红字信息表 的申请流水号
         List<Long> ids = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(ids)){
+            // 先更新状态为申请中
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.in(TXfRedNotificationEntity::getId,ids)  ;
             TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
-            entity.setSerialNo(applyRequest.getSerialNo());
             entity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
+            getBaseMapper().update(entity,updateWrapper);
+            //如果是非导入,导入的申请流水号不变化
+            ArrayList<Integer> invoiceOriginList = Lists.newArrayList(InvoiceOrigin.CLAIM.getValue(), InvoiceOrigin.AGREE.getValue(), InvoiceOrigin.EPD.getValue());
+            updateWrapper.in(TXfRedNotificationEntity::getInvoiceOrigin,invoiceOriginList);
+            entity.setSerialNo(applyRequest.getSerialNo());
             getBaseMapper().update(entity,updateWrapper);
         }
 
@@ -570,6 +575,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (tXfRedNotificationEntity!=null){
             redNotificationInfo = new RedNotificationInfo();
             RedNotificationMain redNotificationMain = redNotificationMainMapper.entityToMainInfo(tXfRedNotificationEntity);
+            if (StringUtils.isEmpty(redNotificationMain.getInvoiceDate())){
+                redNotificationMain.setInvoiceDate(DateUtils.getCurentIssueDate());
+            }
+
             LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(TXfRedNotificationDetailEntity::getApplyId,id);
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);
