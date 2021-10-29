@@ -15,63 +15,67 @@ public class OriginAgreementBillFbl5nDto {
 
     private static final long serialVersionUID = 1L;
 
-    @ExcelProperty("客户编码")
-    @Length(max = 20)
-    private String customerNumber;
-
-    @ExcelProperty("客户名称")
-    @Length(max = 100)
-    private String customerName;
-
-    @ExcelProperty("金额(含税)")
+    @ExcelProperty("Cleared/open items symbol")
     @Length(max = 50)
-    private String amountWithTax;
+    private String clearedOpenItemsSymbol;
 
-    @ExcelProperty("协议类型编码")
-    @Length(max = 20)
-    private String reasonCode;
-
-    @ExcelProperty("协议号")
-    @Length(max = 20)
-    private String reference;
-
-    @ExcelProperty("税码")
-    @Length(max = 20)
-    private String taxCode;
-
-    @ExcelProperty("扣款日期")
-    @Length(max = 20)
-    private String clearingDate;
-
-    @ExcelProperty("税率")
-    @Length(max = 20)
-    private String taxRate;
-
-    @ExcelProperty("供应商6D")
-    @Length(max = 20)
-    private String memo;
-
-    @ExcelProperty("协议类型")
-    @Length(max = 50)
-    private String referenceType;
-
-    @ExcelProperty("扣款公司编码")
+    @ExcelProperty("Company Code")
     @Length(max = 20)
     private String companyCode;
 
-    @ExcelProperty("凭证编号")
+    @ExcelProperty("Account")
+    @Length(max = 20)
+    private String account;
+
+    @ExcelProperty("Document Number")
     @Length(max = 20)
     private String documentNumber;
 
-    @ExcelProperty("凭证类型")
+    @ExcelProperty("Document Type")
     @Length(max = 20)
     private String documentType;
 
-    @ExcelProperty("入账日期")
+    @ExcelProperty("Reason code")
+    @Length(max = 20)
+    private String reasonCode;
+
+    @ExcelProperty("Document Date")
+    @Length(max = 20)
+    private String documentDate;
+
+    @ExcelProperty("Posting Date")
     @Length(max = 20)
     private String postingDate;
 
-    @ExcelProperty("税额")
+    @ExcelProperty("Clearing date")
     @Length(max = 20)
-    private String taxAmount;
+    private String clearingDate;
+
+    @ExcelProperty("Reference key 2")
+    @Length(max = 20)
+    private String referenceKey2;
+
+    @ExcelProperty("Reference")
+    @Length(max = 20)
+    private String reference;
+
+    @ExcelProperty("Amount in doc. curr.")
+    @Length(max = 50)
+    private String amountInDocCurr;
+
+    @ExcelProperty("Department")
+    @Length(max = 20)
+    private String department;
+
+    @ExcelProperty("Document Header Text")
+    @Length(max = 20)
+    private String documentHeaderText;
+
+    @ExcelProperty("Text")
+    private String text;
+
+    @ExcelProperty("Tax code")
+    @Length(max = 20)
+    private String taxCode;
+
 }

@@ -15,63 +15,55 @@ public class OriginAgreementBillZarrDto {
 
     private static final long serialVersionUID = 1L;
 
-    @ExcelProperty("客户编码")
+    @ExcelProperty("Sequence Number")
+    @Length(max = 20)
+    private String sequenceNumber;
+
+    @ExcelProperty("Internal Invoice No.")
+    @Length(max = 50)
+    private String internalInvoiceNo;
+
+    @ExcelProperty("Customer Number")
     @Length(max = 20)
     private String customerNumber;
 
-    @ExcelProperty("客户名称")
+    @ExcelProperty("Customer")
     @Length(max = 100)
-    private String customerName;
+    private String customer;
 
-    @ExcelProperty("金额(含税)")
+    @ExcelProperty("Contents")
+    @Length(max = 100)
+    private String contents;
+
+    @ExcelProperty("Quant")
+    @Length(max = 20)
+    private String quant;
+
+    @ExcelProperty("Measurements")
+    private String measurements;
+
+    @ExcelProperty("Unit Prices")
+    @Length(max = 20)
+    private String unitPrices;
+
+    @ExcelProperty("Amount With Tax")
     @Length(max = 50)
     private String amountWithTax;
 
-    @ExcelProperty("协议类型编码")
+    @ExcelProperty("Memo")
+    @Length(max = 100)
+    private String memo;
+
+    @ExcelProperty("Profit Centre")
+    @Length(max = 20)
+    private String profitCentre;
+
+    @ExcelProperty("SAP Accounting Document")
+    @Length(max = 20)
+    private String sapAccountingDocument;
+
+    @ExcelProperty("Reason Code")
     @Length(max = 20)
     private String reasonCode;
 
-    @ExcelProperty("协议号")
-    @Length(max = 20)
-    private String reference;
-
-    @ExcelProperty("税码")
-    @Length(max = 20)
-    private String taxCode;
-
-    @ExcelProperty("扣款日期")
-    @Length(max = 20)
-    private String clearingDate;
-
-    @ExcelProperty("税率")
-    @Length(max = 20)
-    private String taxRate;
-
-    @ExcelProperty("供应商6D")
-    @Length(max = 20)
-    private String memo;
-
-    @ExcelProperty("协议类型")
-    @Length(max = 50)
-    private String referenceType;
-
-    @ExcelProperty("扣款公司编码")
-    @Length(max = 20)
-    private String companyCode;
-
-    @ExcelProperty("凭证编号")
-    @Length(max = 20)
-    private String documentNumber;
-
-    @ExcelProperty("凭证类型")
-    @Length(max = 20)
-    private String documentType;
-
-    @ExcelProperty("入账日期")
-    @Length(max = 20)
-    private String postingDate;
-
-    @ExcelProperty("税额")
-    @Length(max = 20)
-    private String taxAmount;
 }
