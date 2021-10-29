@@ -22,7 +22,7 @@ public interface InvoiceConverter {
     @Mapping(source = "data.purchaserBankNameAccount", target = "gfBankAndNo")
     @Mapping(source = "data.machineCode", target = "machinecode")
     @Mapping(source = "data.amountWithTax", target = "totalAmount")
-    @Mapping(source = "data.amountWithoutTax", target = "invoiceAmount")
+    @Mapping(source = "data.amountWithoutTax", target = "invoiceAmount", defaultValue = "0")
     @Mapping(source = "data.sellerName", target = "xfName")
     @Mapping(source = "data.sellerTaxNo", target = "xfTaxNo")
     @Mapping(source = "data.sellerAddrTel", target = "xfAddressAndPhone")
@@ -42,7 +42,6 @@ public interface InvoiceConverter {
 
     @Named("mapInvoiceType")
     default String mapInvoiceType(String status) {
-//      01 01-10-01、03 02-60-01、04 02-10-01、08 01-10-06、10 02-10-06、11 02-10-02、14 02-20-06
         return INVOICE_TYPE_MAP.get(status);
     }
 
@@ -51,7 +50,6 @@ public interface InvoiceConverter {
 
     @Named("mapInvoiceStatus")
     default String mapInvoiceStatus(String status) {
-        // 0 2、1 0、2 3、3 1、4 4、9 4
         return INVOICE_STATUS_MAP.get(status);
     }
 
