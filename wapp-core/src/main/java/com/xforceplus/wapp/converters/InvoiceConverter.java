@@ -42,7 +42,6 @@ public interface InvoiceConverter {
 
     @Named("mapInvoiceType")
     default String mapInvoiceType(String status) {
-//      01 01-10-01、03 02-60-01、04 02-10-01、08 01-10-06、10 02-10-06、11 02-10-02、14 02-20-06
         return INVOICE_TYPE_MAP.get(status);
     }
 
@@ -51,7 +50,6 @@ public interface InvoiceConverter {
 
     @Named("mapInvoiceStatus")
     default String mapInvoiceStatus(String status) {
-        // 0 2、1 0、2 3、3 1、4 4、9 4
         return INVOICE_STATUS_MAP.get(status);
     }
 
