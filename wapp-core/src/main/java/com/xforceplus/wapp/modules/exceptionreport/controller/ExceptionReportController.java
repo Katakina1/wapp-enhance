@@ -22,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author malong@xforceplus.com
@@ -66,11 +67,19 @@ public class ExceptionReportController {
 
     @GetMapping("codes")
     @ApiOperation(value = "例外报告说明列表")
-    public R getCode() {
-        final ExceptionReportCodeEnum[] values = ExceptionReportCodeEnum.values();
-        final ReportCodeResponse[] reportCodeResponses = exceptionReportMapper.toReportCode(values);
+    public R getCode(@RequestParam(required = false) String type ) {
+        final List<ReportCodeResponse> reportCodeResponses ;
+        final List<ExceptionReportCodeEnum> values ;
+        if (Objects.equals(type,"c")){
+            values = ExceptionReportCodeEnum.getClaimCodes();
+        }else {
+            values = ExceptionReportCodeEnum.getAgreementOrEpdCodes();
+        }
+
+        reportCodeResponses = exceptionReportMapper.toReportCode(values);
         return R.ok(reportCodeResponses);
     }
+
 
     @PostMapping("re-match")
     @ApiOperation(value = "重新匹配")

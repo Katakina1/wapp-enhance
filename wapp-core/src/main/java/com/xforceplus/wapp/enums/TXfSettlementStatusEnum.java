@@ -20,8 +20,7 @@ public enum TXfSettlementStatusEnum implements ValueEnum<Integer> {
     WAIT_MATCH_BLUE_INVOICE(8,"待匹配蓝票"),
     WAIT_SPLIT_INVOICE(9,"待拆票"),
     WAIT_MATCH_TAX_CODE(10,"待匹配税编"),
-    WAIT_MATCH_CONFIRM_AMOUNT(11,"待确认金额"),
-    ;
+     ;
 
     @Getter
     private Integer code;

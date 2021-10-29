@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
-import java.util.Objects;
 
 @Mapper
 public interface TXfOriginClaimItemSamsEntityConvertor {
@@ -52,12 +51,8 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     default BigDecimal parse(String number, int positionIndex) {
         DecimalFormat format = new DecimalFormat();
         format.setParseBigDecimal(true);
-        try {
-            ParsePosition position = new ParsePosition(positionIndex);
-            return (BigDecimal) format.parse(number, position);
-        } catch (Exception e) {
-            return null;
-        }
+        ParsePosition position = new ParsePosition(positionIndex);
+        return (BigDecimal) format.parse(number, position);
     }
 
     /**
@@ -70,13 +65,6 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     default BigDecimal calcPrice(String shipQty, String shipCost) {
         BigDecimal amountWithoutTax = parse(shipCost, 0);
         BigDecimal quantity = parse(shipQty, 0);
-        if (Objects.nonNull(amountWithoutTax) && Objects.nonNull(quantity)) {
-            try {
-                return amountWithoutTax.divide(quantity, 15, RoundingMode.HALF_UP).abs();
-            } catch (Exception e) {
-                return null;
-            }
-        }
-        return null;
+        return amountWithoutTax.divide(quantity, 15, RoundingMode.HALF_UP).abs();
     }
 }

@@ -132,8 +132,8 @@ public class AgreementBillFilterCommand implements Command {
                         return TXfOriginAgreementBillEntityConvertor.INSTANCE.toAgreementBillData(v);
                     } catch (Exception e) {
                         log.warn(e.getMessage(), e);
+                        return null;
                     }
-                    return null;
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

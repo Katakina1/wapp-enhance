@@ -268,6 +268,10 @@ public class DeductService   {
         }
         DeductionHandleEnum dedcutionHandleEnum = optionalDedcutionHandleEnum.get();
         for (DeductBillBaseData deductBillBaseData : deductBillDataList) {
+            TAcOrgEntity purchaserOrgEntity = queryOrgInfo(deductBillBaseData.getPurchaserNo(),false);
+            if (Objects.nonNull( purchaserOrgEntity)) {
+                deductBillBaseData.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
+            }
             TXfBillDeductEntity tmp = dedcutionHandleEnum.function.apply(deductBillBaseData);
             tmp.setCreateTime(date);
             tmp.setUpdateTime(tmp.getCreateTime());
@@ -382,11 +386,11 @@ public class DeductService   {
         }
         int count = tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
         //添加操作日志
-        addOperateLog(tXfBillDeductEntity.getId(),deductionEnum,status,UserUtil.getUserId(),UserUtil.getUserName());
+        addOperateLog(tXfBillDeductEntity.getId(),deductionEnum,status);
         return count >0;
     }
 
-    public void addOperateLog(Long id,XFDeductionBusinessTypeEnum typeEnum,TXfBillDeductStatusEnum statusEnum,Long userId,String userName){
+    public void addOperateLog(Long id,XFDeductionBusinessTypeEnum typeEnum,TXfBillDeductStatusEnum statusEnum){
         OperateLogEnum logEnum = null;
         if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(statusEnum)){
             logEnum = OperateLogEnum.CANCEL_AGREEMENT;
@@ -472,7 +476,7 @@ public class DeductService   {
         /**
          * 索赔单 直接生成 结算单
          */
-
+         BigDecimal taxRateTotal = BigDecimal.ZERO;
          Integer tmpStatus = TXfSettlementItemFlagEnum.NORMAL.getCode();
         if (deductionBusinessTypeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
             List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBill(purchaserNo,sellerNo,type,status);
@@ -504,6 +508,7 @@ public class DeductService   {
                     tmpStatus = tXfSettlementItemEntity.getItemFlag();
                 }
                 tXfSettlementItemDao.insert(tXfSettlementItemEntity);
+                taxRateTotal = taxRateTotal.add(tXfBillDeductItemEntity.getTaxRate());
             }
         }
          /**
@@ -512,8 +517,14 @@ public class DeductService   {
           if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
              tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
          }
-         if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
-             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+         else if(tmpStatus == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_CONFIRM.getCode());
+         }
+         else if(tmpStatus == TXfSettlementItemFlagEnum.NORMAL.getCode()){
+             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
+         }
+         if (taxRateTotal.compareTo(BigDecimal.ZERO) == 0) {
+             tXfSettlementEntity.setInvoiceType(InvoiceTypeEnum.GENERAL_INVOICE.getValue());
          }
          tXfSettlementDao.insert(tXfSettlementEntity);
          //日志
@@ -630,7 +641,8 @@ public class DeductService   {
         tXfBillDeductEntity.setBusinessNo(defaultValue(deductBillBaseData.getBusinessNo()));
         tXfBillDeductEntity.setBatchNo(defaultValue(deductBillBaseData.getBatchNo()));
         tXfBillDeductEntity.setTaxRate(defaultValue(deductBillBaseData.getTaxRate()));
-         return tXfBillDeductEntity;
+        tXfBillDeductEntity.setPurchaserName(defaultValue(deductBillBaseData.getPurchaserName()));
+        return tXfBillDeductEntity;
     }
 
     public TXfBillDeductEntity getDeductById(Long id){
@@ -927,6 +939,7 @@ public class DeductService   {
      * @return
      */
     public TXfSettlementItemEntity checkItem(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+        tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
         BigDecimal ta = tXfSettlementItemEntity.getQuantity().multiply(tXfSettlementItemEntity.getUnitPrice()).setScale(2, RoundingMode.HALF_UP);
         if (ta.compareTo(tXfSettlementItemEntity.getAmountWithoutTax()) != 0) {
             tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
