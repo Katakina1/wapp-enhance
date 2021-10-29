@@ -2,8 +2,12 @@ package com.xforceplus.wapp.modules.job.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
+import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
 import com.xforceplus.wapp.repository.dao.TXfOriginAgreementBillDao;
+import com.xforceplus.wapp.repository.dao.TXfOriginSapZarrDao;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,5 +17,5 @@ import org.springframework.stereotype.Service;
  * @create: 2021-10-15 17:36
  **/
 @Service
-public class OriginAgreementBillServiceImpl extends ServiceImpl<TXfOriginAgreementBillDao, TXfOriginAgreementBillEntity> implements OriginAgreementBillService {
+public class OriginSapZarrServiceImpl extends ServiceImpl<TXfOriginSapZarrDao, TXfOriginSapZarrEntity> implements OriginSapZarrService {
 }
