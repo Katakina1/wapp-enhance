@@ -118,7 +118,7 @@ public class AgreementBillFilterCommand implements Command {
      */
     private void filter(List<TXfOriginAgreementBillEntity> list) {
         // TODO by 李送球
-        List<DeductBillBaseData> newList = list;
+        List<DeductBillBaseData> newList = null;
                 // .stream()
                 // .filter(v -> {
                 //     if (Objects.isNull(v.getMemo())) {
