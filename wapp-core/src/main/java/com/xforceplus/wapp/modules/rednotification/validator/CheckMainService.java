@@ -102,7 +102,7 @@ public class CheckMainService {
         Object result = redisTemplate.opsForValue().get(key);
         if ( result != null ){
             if ("false".equals(result)){
-                return String.format("沃尔玛其下未找到该购方税号:[%s]",taxNo);
+                return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
             }else {
                 return "" ;
             }
@@ -114,7 +114,7 @@ public class CheckMainService {
             return "" ;
         }else {
             redisTemplate.opsForValue().set(key,"false",60, TimeUnit.SECONDS);
-            return String.format("沃尔玛其下未找到该购方税号:[%s]",taxNo);
+            return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
         }
 
     }
