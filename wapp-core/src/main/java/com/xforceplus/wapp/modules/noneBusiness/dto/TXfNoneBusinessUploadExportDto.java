@@ -1,8 +1,12 @@
 package com.xforceplus.wapp.modules.noneBusiness.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.xforceplus.wapp.modules.noneBusiness.convert.BusinessTypeConver;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import com.xforceplus.wapp.modules.noneBusiness.convert.OfdStatusConver;
+import com.xforceplus.wapp.modules.noneBusiness.convert.VerifyStatusConver;
+
 
 @Data
 public class TXfNoneBusinessUploadExportDto {
@@ -17,7 +21,7 @@ public class TXfNoneBusinessUploadExportDto {
     private String invoiceStoreNo;
     @ExcelProperty(value = "货物/服务发生期间", index = 4)
     private String storeDate;
-    @ExcelProperty(value = "业务类型", index = 5)
+    @ExcelProperty(value = "业务类型", index = 5, converter = BusinessTypeConver.class)
     private String bussinessType;
     @ExcelProperty(value = "发票类型", index = 6)
     private String invoiceType;
@@ -27,9 +31,9 @@ public class TXfNoneBusinessUploadExportDto {
     private String invoiceCode;
     @ExcelProperty(value = "发票号码", index = 9)
     private String invoiceNo;
-    @ExcelProperty(value = "验真状态", index = 10)
+    @ExcelProperty(value = "验真状态", index = 10, converter = VerifyStatusConver.class)
     private String verifyStatus;
-    @ExcelProperty(value = "ofd验签状态", index = 11)
+    @ExcelProperty(value = "ofd验签状态", index = 11, converter = OfdStatusConver.class)
     private String ofdStatus;
     @ExcelProperty(value = "失败原因", index = 12)
     private String reason;
