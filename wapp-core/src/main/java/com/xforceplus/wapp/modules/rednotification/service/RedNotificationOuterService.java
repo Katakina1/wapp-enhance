@@ -14,9 +14,7 @@ import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,8 +48,10 @@ public class RedNotificationOuterService {
      * @return
      */
     public Boolean isWaitingApplyBySettlementNo(String settlementNo) {
+
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TXfRedNotificationEntity::getBillNo,settlementNo).eq(TXfRedNotificationEntity::getApplyingStatus, RedNoApplyingStatus.WAIT_TO_APPLY.getValue());
+        queryWrapper.eq(TXfRedNotificationEntity::getBillNo,settlementNo)
+                .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
         Integer count = redNotificationService.getBaseMapper().selectCount(queryWrapper);
         return count > 0 ;
     }
