@@ -1,7 +1,6 @@
 wapp:
   integration:
     authentication: walmart-wapp-fat20211014092441131056839
-    authentication-split: bill-split-service20211020170354134751573
     client-id: T3950544920211014092441131056783
     customer-no: T3950544920211014092441131056783
     tenant-id: 4882809030005538709
@@ -16,7 +15,7 @@ wapp:
       rednotification: C6D28535F2ADE4D5DB655AE71D87375A
       # 获取终端
       terminals: A9F0665B2C933F31D5145B7A1CC571EB
-      splitInvoice: 87E0351D0EFD681BE9610BAA849625F3
+      splitInvoice: 9449D82ECF3D2712E47A489F491A19BD
       # 红字信息撤销
       rollback: E52D6CD30701F28988FBA92E1459AD45
       # 红字信息生成pdf
@@ -30,7 +29,7 @@ wapp:
       tax-code: 88783DD6EF9484C5DB5EE795A0E920C1
     host:
       tcp: janus-tcp-inte-tx.xforceplus.com
-      http: https://janus-inte-tx.xforceplus.com
+      http: https://janus-inte-tx.xforceplus.com:443
     sign:
       splitInvoice: 0618de7ca5a54e44b85293cc7929312e
       tax-code: 9afc34ea775683aa44fc1787da9bbeaf
