@@ -90,6 +90,7 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条原始协议单SAP-ZARR0355数据！", jobId, cursor);
+        // cursor - 1 排除表头行
+        log.info("jobId={}, 已入库{}条原始协议单SAP-ZARR0355数据！", jobId, cursor - 1);
     }
 }

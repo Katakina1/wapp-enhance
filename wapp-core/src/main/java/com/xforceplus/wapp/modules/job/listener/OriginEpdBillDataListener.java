@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -91,6 +90,7 @@ public class OriginEpdBillDataListener extends AnalysisEventListener<OriginEpdBi
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条原始Epd单数据！", jobId, cursor);
+        // cursor - 1 排除表头行
+        log.info("jobId={}, 已入库{}条原始Epd单数据！", jobId, cursor - 1);
     }
 }
