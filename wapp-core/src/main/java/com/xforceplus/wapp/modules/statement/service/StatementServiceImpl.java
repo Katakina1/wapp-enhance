@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -275,19 +276,24 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                 .set(TXfSettlementEntity::getUpdateUser, UserUtil.getUserId())
                 .update();
         settlementItemService.updateBatchById(entities);
-        try {
-            log.info("调用拆票方法参数,settlementNo:{},sellerNo:{}", settlementNo, sellerNo);
-            long pStart = System.currentTimeMillis();
-            preinvoiceService.splitPreInvoice(settlementNo, sellerNo);
-            log.info("调用拆票方法耗时:{}", System.currentTimeMillis() - pStart);
-        } catch (Exception e) {
-            log.error("拆票方法异常,", e);
-            throw new EnhanceRuntimeException("拆票方法异常" + e.getClass().getName() + e.getMessage());
-        }
+        new LambdaUpdateChainWrapper<>(getBaseMapper())
+                .eq(TXfSettlementEntity::getSettlementNo, settlementNo)
+                .set(TXfSettlementEntity::getSettlementStatus, TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode())
+                .update();
         //操作日志
         new LambdaQueryChainWrapper<>(getBaseMapper()).eq(TXfSettlementEntity::getSettlementNo, settlementNo).oneOpt()
                 .ifPresent(it -> operateLogService.add(it.getId(), OperateLogEnum.CONFIRM_SETTLEMENT,
                         TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getDesc(), UserUtil.getUserId(), UserUtil.getUserName()));
+        CompletableFuture.runAsync(() -> {
+            try {
+                log.info("调用拆票方法参数,settlementNo:{},sellerNo:{}", settlementNo, sellerNo);
+                long pStart = System.currentTimeMillis();
+                preinvoiceService.splitPreInvoice(settlementNo, sellerNo);
+                log.info("调用拆票方法耗时:{}", System.currentTimeMillis() - pStart);
+            } catch (Exception e) {
+                log.error("拆票方法异常,", e);
+            }
+        });
         return true;
     }
 
