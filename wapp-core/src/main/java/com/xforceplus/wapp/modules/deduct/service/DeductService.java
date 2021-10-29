@@ -70,6 +70,12 @@ import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogServic
 public class DeductService   {
     @Autowired
     protected TXfBillDeductExtDao  tXfBillDeductExtDao;
+
+    @Autowired
+    protected TXfBillDeductDao  tXfBillDeductDao;
+
+    @Autowired
+    private TXfBillDeductItemDao tXfBillDeductItemDao;
     @Autowired
     protected TXfBillDeductItemExtDao tXfBillDeductItemExtDao;
 
@@ -652,7 +658,7 @@ public class DeductService   {
     }
 
     public TXfBillDeductEntity getDeductById(Long id){
-        return tXfBillDeductExtDao.selectById(id);
+        return tXfBillDeductDao.selectById(id);
     }
 
 
@@ -663,11 +669,11 @@ public class DeductService   {
      */
     public PageResult<QueryDeductListResponse> queryPageList(QueryDeductListRequest request){
         int offset = (request.getPageNo() -1) * request.getPageSize();
-        int next = offset+request.getPageSize();
+        int next = request.getPageSize();
         int count = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-                request.getDeductDate(), request.getPurchaserNo(), request.getKey());
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-                request.getDeductDate(), request.getPurchaserNo(), request.getKey());
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), request.getKey());
+        List<TXfBillDeductExtEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), request.getKey());
         List<QueryDeductListResponse> response = new ArrayList<>();
         BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
         //key为1和2 添加红字信息编号
@@ -685,35 +691,35 @@ public class DeductService   {
     public List<JSONObject> queryPageTab(QueryDeductListRequest request){
         List<JSONObject> list = new ArrayList<>();
         int key0 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.TO_BE_MATCH.getValue());
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), DeductBillTabEnum.TO_BE_MATCH.getValue());
         JSONObject jsonObject0 = new JSONObject();
         jsonObject0.put("key",DeductBillTabEnum.TO_BE_MATCH.getValue());
         jsonObject0.put("count",key0);
         jsonObject0.put("desc",DeductBillTabEnum.TO_BE_MATCH.getDesc());
         list.add(jsonObject0);
         int key1 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.MATCHED_TO_BE_MAKE.getValue());
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), DeductBillTabEnum.MATCHED_TO_BE_MAKE.getValue());
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("key",DeductBillTabEnum.MATCHED_TO_BE_MAKE.getValue());
         jsonObject1.put("count",key1);
         jsonObject1.put("desc",DeductBillTabEnum.MATCHED_TO_BE_MAKE.getDesc());
         list.add(jsonObject1);
         int key2 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.APPLYED_RED_NO.getValue());
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), DeductBillTabEnum.APPLYED_RED_NO.getValue());
         JSONObject jsonObject2 = new JSONObject();
         jsonObject2.put("key",DeductBillTabEnum.APPLYED_RED_NO.getValue());
         jsonObject2.put("count",key2);
         jsonObject2.put("desc",DeductBillTabEnum.APPLYED_RED_NO.getDesc());
         list.add(jsonObject2);
         int key3 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-                request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.MAKEED.getValue());
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), DeductBillTabEnum.MAKEED.getValue());
         JSONObject jsonObject3 = new JSONObject();
         jsonObject3.put("key",DeductBillTabEnum.MAKEED.getValue());
         jsonObject3.put("count",key3);
         jsonObject3.put("desc",DeductBillTabEnum.MAKEED.getDesc());
         list.add(jsonObject3);
         int key4 = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
-        request.getDeductDate(), request.getPurchaserNo(), DeductBillTabEnum.CANCELED.getValue());
+                request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), DeductBillTabEnum.CANCELED.getValue());
         JSONObject jsonObject4 = new JSONObject();
         jsonObject4.put("key",DeductBillTabEnum.CANCELED.getValue());
         jsonObject4.put("count",key4);
@@ -737,7 +743,7 @@ public class DeductService   {
             List<DeductBillItemModel> deductBillItemList = new ArrayList<>();
             if(CollectionUtils.isNotEmpty(tXfBillDeductItemRefEntities)){
                 for (TXfBillDeductItemRefEntity tXfBillDeductItemRefEntity : tXfBillDeductItemRefEntities) {
-                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemExtDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
+                    TXfBillDeductItemEntity itemEntity =  tXfBillDeductItemDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
                     DeductBillItemModel deductBillItemModel;
                     if(itemEntity != null){
                         deductBillItemModel = new DeductBillItemModel();
@@ -870,9 +876,9 @@ public class DeductService   {
         if(request.getBusinessType() != null){
             wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE,request.getBusinessType());
         }
-        if(request.getDeductDate() != null){
-            wrapper.apply("format(deduct_date,'yyyy-MM-dd') = {0}",request.getDeductDate());
-        }
+//        if(request.getDeductDate() != null){
+//            wrapper.apply("format(deduct_date,'yyyy-MM-dd') = {0}",request.getDeductDate());
+//        }
         return wrapper;
     }
 
@@ -984,7 +990,9 @@ public class DeductService   {
         List<DeductBillItemModel> response = new ArrayList<>();
         for (Long id : idList) {
             DeductDetailResponse deductDetailById = getDeductDetailById(id);
-            response.addAll(deductDetailById.getDeductBillItemList());
+            if(deductDetailById != null && CollectionUtils.isNotEmpty(deductDetailById.getDeductBillItemList())){
+                response.addAll(deductDetailById.getDeductBillItemList());
+            }
         }
         return response;
     }

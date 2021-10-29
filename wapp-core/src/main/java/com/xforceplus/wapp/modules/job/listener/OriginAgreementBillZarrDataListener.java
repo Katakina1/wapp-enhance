@@ -2,9 +2,9 @@ package com.xforceplus.wapp.modules.job.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.xforceplus.wapp.modules.job.dto.OriginClaimItemHyperDto;
-import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
-import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
+import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillZarrDto;
+import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -24,22 +24,22 @@ import java.util.Set;
  * @create: 2021-10-15 14:28
  **/
 @Slf4j
-public class OriginClaimItemHyperDataListener extends AnalysisEventListener<OriginClaimItemHyperDto> {
+public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<OriginAgreementBillZarrDto> {
     /**
      * 每隔1000条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
-    private final OriginClaimItemHyperService service;
+    private final OriginSapZarrService service;
     private final Validator validator;
     /**
      * 缓存的数据
      */
-    private List<OriginClaimItemHyperDto> list = new ArrayList<>();
+    private List<OriginAgreementBillZarrDto> list = new ArrayList<>();
     @Getter
     private long cursor;
 
-    public OriginClaimItemHyperDataListener(int jobId, long cursor, OriginClaimItemHyperService service, Validator validator) {
+    public OriginAgreementBillZarrDataListener(int jobId, long cursor, OriginSapZarrService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
@@ -47,8 +47,8 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
     }
 
     @Override
-    public void invoke(OriginClaimItemHyperDto data, AnalysisContext context) {
-        Set<ConstraintViolation<OriginClaimItemHyperDto>> violations = validator.validate(data);
+    public void invoke(OriginAgreementBillZarrDto data, AnalysisContext context) {
+        Set<ConstraintViolation<OriginAgreementBillZarrDto>> violations = validator.validate(data);
         if (CollectionUtils.isEmpty(violations)) {
             list.add(data);
             if (list.size() >= BATCH_COUNT) {
@@ -57,7 +57,7 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
                 list = new ArrayList<>();
             }
         } else {
-            log.warn("索赔单Hyper明细原始数据校验失败 jobId={} 错误原因={}", jobId, violations.stream().findAny().orElse(null));
+            log.warn("协议单原始数据校验失败 jobId={} 错误原因={}", jobId, violations.stream().findAny().orElse(null));
         }
     }
 
@@ -76,11 +76,11 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
      * 加上存储数据库
      */
     private void saveData() {
-        List<TXfOriginClaimItemHyperEntity> entities = new ArrayList<>(list.size());
+        List<TXfOriginSapZarrEntity> entities = new ArrayList<>(list.size());
         Date now = new Date();
         list.forEach(
                 v1 -> {
-                    TXfOriginClaimItemHyperEntity v2 = new TXfOriginClaimItemHyperEntity();
+                    TXfOriginSapZarrEntity v2 = new TXfOriginSapZarrEntity();
                     BeanUtils.copyProperties(v1, v2);
                     v2.setJobId(jobId);
                     v2.setCreateTime(now);
@@ -91,6 +91,6 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
         service.saveBatch(entities);
         cursor += list.size();
         // cursor - 1 排除表头行
-        log.info("jobId={}, 已入库{}条原始索赔单Hyper明细数据！", jobId, cursor - 1);
+        log.info("jobId={}, 已入库{}条原始协议单SAP-ZARR0355数据！", jobId, cursor - 1);
     }
 }

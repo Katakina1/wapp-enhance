@@ -93,6 +93,7 @@ public class VerificationService implements IntegrationResultHandler {
     private VerificationResponse doVerify(VerificationRequest invoiceMain) {
 
         try {
+            defaultHeader.put("serialNo",invoiceMain.getInvoiceCode()+invoiceMain.getInvoiceNo());
             final String post = httpClientFactory.post(verifyAction, defaultHeader, JSONObject.toJSONString(invoiceMain), "");
             log.info("验真结果:{}", post);
             return JSONObject.parseObject(post, VerificationResponse.class);
@@ -102,13 +103,14 @@ public class VerificationService implements IntegrationResultHandler {
         }
     }
 
-    public String getBase64ByUrl(String url) {
+    public String getBase64ByUrl(String url,String uuId) {
 
         try {
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
             String baseUrl=Base64.getEncoder().encodeToString(url.getBytes());
             paramMeterMap.put("ossUrl",baseUrl);
             paramMeterMap.put("type","1");
+            defaultHeader.put("serialNo",uuId);
             final String get = httpClientFactory.get(downLoadAction,paramMeterMap,defaultHeader);
             log.info("获取下载结果:{}", get);
             return get;

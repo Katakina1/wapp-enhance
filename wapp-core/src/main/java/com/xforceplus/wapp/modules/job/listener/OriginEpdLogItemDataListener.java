@@ -91,6 +91,7 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条原始EPD单LOG明细数据！", jobId, cursor);
+        // cursor - 1 排除表头行
+        log.info("jobId={}, 已入库{}条原始EPD单LOG明细数据！", jobId, cursor - 1);
     }
 }
