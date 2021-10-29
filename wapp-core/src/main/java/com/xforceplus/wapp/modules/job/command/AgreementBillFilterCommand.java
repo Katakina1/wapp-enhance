@@ -11,7 +11,7 @@ import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
-import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -116,7 +116,7 @@ public class AgreementBillFilterCommand implements Command {
      *
      * @param list
      */
-    private void filter(List<TXfOriginAgreementBillEntity> list) {
+    private void filter(List<TXfOriginSapFbl5nEntity> list) {
         // TODO by 李送球
         List<DeductBillBaseData> newList = list;
                 // .stream()
