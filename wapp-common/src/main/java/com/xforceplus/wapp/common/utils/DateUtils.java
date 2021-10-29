@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.common.utils;
 
 import cn.hutool.core.date.DateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 
 import java.text.ParseException;
@@ -20,6 +21,7 @@ import java.util.*;
  * @email sunlightcs@gmail.com
  * @date 2016年12月21日 下午12:53:33
  */
+@Slf4j
 public class DateUtils {
     /**
      * 时间格式(yyyy-MM-dd)
@@ -944,5 +946,43 @@ public class DateUtils {
        return formatter2.format(new Date());
     }
 
+    /**
+     * 将date转换为datetime 例如 2020-10-10 转换为2020-101-10:00:00:00
+     * @param dateStr
+     * @return
+     */
+    public static String date2DateTimeStart(String dateStr){
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINESE);
+        try {
+            Date date = dateFormat.parse(dateStr);
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            Date newDate = calendar.getTime();
+            return format(newDate,DATE_TIME_PATTERN);
+        } catch (ParseException e) {
+            log.error("date2DateTime error:{}",e);
+        }
+        return null;
+    }
+
+    public static String date2DateTimeEnd(String dateEnd){
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINESE);
+        try {
+            Date date = dateFormat.parse(dateEnd);
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            Date newDate = calendar.getTime();
+            return format(newDate,DATE_TIME_PATTERN);
+        } catch (ParseException e) {
+            log.error("date2DateTime error:{}",e);
+        }
+        return null;
+    }
 
 }

@@ -9,9 +9,9 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
+import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
-import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -38,7 +38,7 @@ public class AgreementBillFilterCommand implements Command {
      */
     private static final int BATCH_COUNT = 1000;
     @Autowired
-    private OriginAgreementBillService service;
+    private OriginSapFbl5nService service;
     @Autowired
     private SpeacialCompanyService speacialCompanyService;
     @Autowired
@@ -116,7 +116,7 @@ public class AgreementBillFilterCommand implements Command {
      *
      * @param list
      */
-    private void filter(List<TXfOriginAgreementBillEntity> list) {
+    private void filter(List<TXfOriginSapFbl5nEntity> list) {
         // TODO by 李送球
         List<DeductBillBaseData> newList = null;
                 // .stream()
