@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.job.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 
 /**
  * @program: wapp-generator
@@ -9,5 +9,5 @@ import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
  * @author: Kenny Wong
  * @create: 2021-10-15 17:36
  **/
-public interface OriginAgreementBillService extends IService<TXfOriginAgreementBillEntity> {
+public interface OriginSapFbl5nService extends IService<TXfOriginSapFbl5nEntity> {
 }

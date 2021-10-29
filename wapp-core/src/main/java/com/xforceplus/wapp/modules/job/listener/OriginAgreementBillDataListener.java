@@ -3,8 +3,8 @@ package com.xforceplus.wapp.modules.job.listener;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillDto;
-import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
-import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
+import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -30,7 +30,7 @@ public class OriginAgreementBillDataListener extends AnalysisEventListener<Origi
      */
     private static final int BATCH_COUNT = 1000;
     private final int jobId;
-    private final OriginAgreementBillService service;
+    private final OriginSapFbl5nService service;
     private final Validator validator;
     /**
      * 缓存的数据
@@ -39,7 +39,7 @@ public class OriginAgreementBillDataListener extends AnalysisEventListener<Origi
     @Getter
     private long cursor;
 
-    public OriginAgreementBillDataListener(int jobId, long cursor, OriginAgreementBillService service, Validator validator) {
+    public OriginAgreementBillDataListener(int jobId, long cursor, OriginSapFbl5nService service, Validator validator) {
         this.jobId = jobId;
         this.cursor = cursor;
         this.service = service;
@@ -76,11 +76,11 @@ public class OriginAgreementBillDataListener extends AnalysisEventListener<Origi
      * 加上存储数据库
      */
     private void saveData() {
-        List<TXfOriginAgreementBillEntity> entities = new ArrayList<>(list.size());
+        List<TXfOriginSapFbl5nEntity> entities = new ArrayList<>(list.size());
         Date now = new Date();
         list.forEach(
                 v1 -> {
-                    TXfOriginAgreementBillEntity v2 = new TXfOriginAgreementBillEntity();
+                    TXfOriginSapFbl5nEntity v2 = new TXfOriginSapFbl5nEntity();
                     BeanUtils.copyProperties(v1, v2);
                     v2.setJobId(jobId);
                     v2.setCreateTime(now);
