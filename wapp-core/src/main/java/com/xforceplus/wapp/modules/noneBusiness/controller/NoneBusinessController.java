@@ -109,7 +109,7 @@ public class NoneBusinessController {
             if (CollectionUtils.isNotEmpty(pdf)) {
                 noneBusinessService.parsePdfFile(pdf, entity);
             }
-            return R.ok(batchNo);
+            return R.ok(batchNo, "上传成功");
         } catch (Exception e) {
             log.error("上传过程中出现异常:" + e.getMessage(), e);
             return R.fail("上传过程中出现错误，请重试" + e.getMessage());
@@ -176,7 +176,7 @@ public class NoneBusinessController {
      */
     @ApiOperation("下载源文件")
     @PostMapping(value = "/down")
-    public R<String> down(@RequestBody  FileDownRequest request) {
+    public R<String> down(@RequestBody FileDownRequest request) {
         try {
             if (CollectionUtils.isEmpty(request.getIds())) {
                 throw new RRException("请选中数据后进行下载");
@@ -266,7 +266,7 @@ public class NoneBusinessController {
             response.setInSubmit(submitList.size());
             response.setExSubmit(resultList.size() - submitList.size());
             noneBusinessService.saveOrUpdateBatch(submitList);
-            return R.ok(response,"提交成功");
+            return R.ok(response, "提交成功");
         } else {
             List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
             response.setSubmitCount(list.size());
@@ -278,14 +278,14 @@ public class NoneBusinessController {
             noneBusinessService.saveOrUpdateBatch(noneBusinessConverter.map(submitList));
             response.setInSubmit(submitList.size());
             response.setExSubmit(list.size() - submitList.size());
-            return R.ok(response,"提交成功");
+            return R.ok(response, "提交成功");
 
         }
 
     }
 
     @PostMapping("claim/export")
-    @ApiOperation(value = "索赔单导出")
+    @ApiOperation(value = "数据导出")
     public R export(TXfNoneBusinessUploadQueryDto dto) {
 //        noneBusinessService.export(dto);
         return R.ok("单据导出正在处理，请在消息中心");
