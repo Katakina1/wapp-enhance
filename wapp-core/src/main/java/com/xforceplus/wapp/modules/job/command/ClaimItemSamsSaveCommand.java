@@ -64,7 +64,7 @@ public class ClaimItemSamsSaveCommand implements Command {
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
+            log.info("跳过原始索赔单文件Sams明细数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
     }

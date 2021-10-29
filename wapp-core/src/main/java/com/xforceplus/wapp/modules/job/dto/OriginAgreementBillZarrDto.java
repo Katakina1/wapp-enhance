@@ -11,7 +11,7 @@ import org.hibernate.validator.constraints.Length;
  * @since 2021-10-15
  */
 @Data
-public class OriginAgreementBillDto {
+public class OriginAgreementBillZarrDto {
 
     private static final long serialVersionUID = 1L;
 
