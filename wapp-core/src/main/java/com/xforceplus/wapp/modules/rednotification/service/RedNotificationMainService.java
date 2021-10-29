@@ -15,6 +15,7 @@ import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
@@ -166,6 +167,15 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             return  Response.failed("单次申请最大支持:"+maxApply);
         }
 
+        String loginName = UserUtil.getLoginName();
+        String key = APPLY_REDNOTIFICATION_KEY+loginName;
+        if (redisTemplate.opsForValue().get(key) != null){
+            return Response.failed("申请红字信息操作频率过高,请耐心等待申请结果后重试");
+        }else {
+            redisTemplate.opsForValue().set(key,GENERATE_PDF_KEY,3, TimeUnit.SECONDS);
+        }
+
+
         List<List<TXfRedNotificationEntity>> partition = Lists.partition(filterData, 50);
         if (partition.size()>1){
             CompletableFuture<Response> cfA = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(0),request));
@@ -177,12 +187,12 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                     if (resultA.getCode() == 1 && resultB.getCode() == 1) {
                         response.setCode(Response.OK);
                         response.setMessage("请求成功");
-                    } else if (resultA.getCode() == 0 || resultB.getCode() == 0) {
-                        response.setCode(Response.Fail);
-                        response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
-                    } else {
+                    } else if (resultA.getCode() == 0 && resultB.getCode() == 0) {
                         response.setCode(Response.Fail);
                         response.setMessage("申请失败");
+                    } else {
+                        response.setCode(Response.Fail);
+                        response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
                     }
                 }).get();
             } catch (InterruptedException e) {
@@ -457,11 +467,15 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         //更新红字信息表 的申请流水号
         List<Long> ids = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(ids)){
+            // 先更新状态为申请中
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.in(TXfRedNotificationEntity::getId,ids)  ;
             TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
-            entity.setSerialNo(applyRequest.getSerialNo());
             entity.setApplyingStatus(RedNoApplyingStatus.APPLYING.getValue());
+            getBaseMapper().update(entity,updateWrapper);
+            //如果是非导入,导入的申请流水号不变化
+            ArrayList<Integer> invoiceOriginList = Lists.newArrayList(InvoiceOrigin.CLAIM.getValue(), InvoiceOrigin.AGREE.getValue(), InvoiceOrigin.EPD.getValue());
+            updateWrapper.in(TXfRedNotificationEntity::getInvoiceOrigin,invoiceOriginList);
+            entity.setSerialNo(applyRequest.getSerialNo());
             getBaseMapper().update(entity,updateWrapper);
         }
 
@@ -561,6 +575,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (tXfRedNotificationEntity!=null){
             redNotificationInfo = new RedNotificationInfo();
             RedNotificationMain redNotificationMain = redNotificationMainMapper.entityToMainInfo(tXfRedNotificationEntity);
+            if (StringUtils.isEmpty(redNotificationMain.getInvoiceDate())){
+                redNotificationMain.setInvoiceDate(DateUtils.getCurentIssueDate());
+            }
+
             LambdaQueryWrapper<TXfRedNotificationDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(TXfRedNotificationDetailEntity::getApplyId,id);
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities = redNotificationItemService.getBaseMapper().selectList(queryWrapper);

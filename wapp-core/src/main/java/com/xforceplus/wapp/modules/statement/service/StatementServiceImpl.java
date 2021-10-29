@@ -109,6 +109,9 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                     .select(TXfBillDeductEntity::getRefSettlementNo).eq(TXfBillDeductEntity::getBusinessNo, businessNo)
                     .list().stream().map(TXfBillDeductEntity::getRefSettlementNo)
                     .distinct().collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(nos)) {
+                return Tuple.of(Lists.newArrayList(), new Page<>(current, size));
+            }
             wrapper.in(TXfSettlementEntity::getSettlementNo, nos);
         }
         Page<TXfSettlementEntity> page = wrapper.page(new Page<>(current, size));

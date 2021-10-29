@@ -37,6 +37,12 @@ public class TXfNoneBusinessUploadQueryDto {
      */
     private String bussinessType;
 
+    @ApiModelProperty("业务单号")
+    /**
+     * 业务类型  0 水电费 1 leasing in  2 固定资产转移
+     */
+    private String bussinessNo;
+
     @ApiModelProperty("发票类型 1 否 2 SGA 3 IC 4 EC 5 RE 6 SR")
     /**
      * 发票类型 1 否 2 SGA 3 IC 4 EC 5 RE 6 SR
