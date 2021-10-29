@@ -48,9 +48,16 @@ public class RedNotificationOuterService {
      * @return
      */
     public Boolean isWaitingApplyBySettlementNo(String settlementNo) {
-
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TXfRedNotificationEntity::getBillNo,settlementNo)
+                .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
+        Integer count = redNotificationService.getBaseMapper().selectCount(queryWrapper);
+        return count > 0 ;
+    }
+
+    public Boolean isWaitingApplyByPreInvoiceId(List<Long> preInvoiceIdList) {
+        LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TXfRedNotificationEntity::getPid,preInvoiceIdList)
                 .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
         Integer count = redNotificationService.getBaseMapper().selectCount(queryWrapper);
         return count > 0 ;
