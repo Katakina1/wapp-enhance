@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.xforceplus.wapp.converters.InvoiceConverter.INVOICE_TYPE_MAP;
@@ -64,6 +65,7 @@ public class InvoiceHandler implements IntegrationResultHandler {
                     return invoiceService.updateById(invoiceMap);
                 })
                 .orElseGet(() -> {
+                    invoiceMap.setRemainingAmount(BigDecimal.ZERO.max(invoiceMap.getInvoiceAmount()));
                     invoiceService.save(invoiceMap);
                     if (CollectionUtils.isNotEmpty(items)) {
                         invoiceDetailsService.saveBatch(invoiceItemConverter.map(items), 2000);
