@@ -167,14 +167,16 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             return  Response.failed("单次申请最大支持:"+maxApply);
         }
 
-        String loginName = UserUtil.getLoginName();
-        String key = APPLY_REDNOTIFICATION_KEY+loginName;
-        if (redisTemplate.opsForValue().get(key) != null){
-            return Response.failed("申请红字信息操作频率过高,请耐心等待申请结果后重试");
-        }else {
-            redisTemplate.opsForValue().set(key,GENERATE_PDF_KEY,3, TimeUnit.SECONDS);
+        //自动申请没有上下文
+        if(UserUtil.getUser() != null){
+            String loginName = UserUtil.getLoginName();
+            String key = APPLY_REDNOTIFICATION_KEY+loginName;
+            if (redisTemplate.opsForValue().get(key) != null){
+                return Response.failed("申请红字信息操作频率过高,请耐心等待申请结果后重试");
+            }else {
+                redisTemplate.opsForValue().set(key,GENERATE_PDF_KEY,3, TimeUnit.SECONDS);
+            }
         }
-
 
         List<List<TXfRedNotificationEntity>> partition = Lists.partition(filterData, 50);
         if (partition.size()>1){
