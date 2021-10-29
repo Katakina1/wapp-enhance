@@ -82,7 +82,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             List<InvoiceDetail> invoiceDetails = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
             response.setItems(invoiceDetails);
             BeanUtil.copyProperties(invoiceEntity,response);
-            this.convert(invoiceEntity,response);
+            this.convertMain(invoiceEntity,response);
         }
         return response;
     }
@@ -93,7 +93,12 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         List<TDxRecordInvoiceDetailEntity> tDxRecordInvoiceDetailEntities = recordInvoiceDetailsDao.selectList(wrapper);
         List<InvoiceDetail> list = new ArrayList<>();
         if(CollectionUtils.isNotEmpty(tDxRecordInvoiceDetailEntities)){
-            BeanUtil.copyList(tDxRecordInvoiceDetailEntities,list,InvoiceDetail.class);
+            InvoiceDetail invoiceDetail;
+            for (TDxRecordInvoiceDetailEntity tDxRecordInvoiceDetailEntity : tDxRecordInvoiceDetailEntities) {
+                invoiceDetail = new InvoiceDetail();
+                this.convertItem(tDxRecordInvoiceDetailEntity,invoiceDetail);
+                list.add(invoiceDetail);
+            }
         }
         return list;
     }
@@ -178,7 +183,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             List<InvoiceDetail> list = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
             invoice.setItems(list);
             BeanUtil.copyProperties(invoiceEntity,invoice);
-            this.convert(invoiceEntity,invoice);
+            this.convertMain(invoiceEntity,invoice);
             response.add(invoice);
         }
         return response;
@@ -218,7 +223,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
 
 
-    public void convert(TDxRecordInvoiceEntity entity,InvoiceDetailResponse invoice){
+    public void convertMain(TDxRecordInvoiceEntity entity,InvoiceDetailResponse invoice){
         invoice.setPurchaserAddressAndPhone(entity.getGfAddressAndPhone());
         invoice.setPurchaserBankAndNo(entity.getGfBankAndNo());
         invoice.setPurchaserName(entity.getGfName());
@@ -228,6 +233,19 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoice.setSellerName(entity.getXfName());
         invoice.setSellerTaxNo(entity.getXfTaxNo());
         invoice.setPaperDrewDate(entity.getInvoiceDate());
+    }
+
+    public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){
+        invoiceDetail.setAmountWithTax(entity.getDetailAmount());
+        BigDecimal amountWithTax = new BigDecimal(entity.getDetailAmount()).add(new BigDecimal(entity.getTaxAmount()));
+        invoiceDetail.setAmountWithTax(amountWithTax.toPlainString());
+        invoiceDetail.setTaxAmount(entity.getTaxAmount());
+        invoiceDetail.setCargoName(entity.getGoodsName());
+        invoiceDetail.setItemSpec(entity.getModel());
+        invoiceDetail.setQuantity(entity.getNum());
+        invoiceDetail.setQuantityUnit(entity.getUnit());
+        invoiceDetail.setUnitPrice(entity.getUnitPrice());
+        invoiceDetail.setTaxRate(entity.getTaxRate());
     }
 
 }

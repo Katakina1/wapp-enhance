@@ -1,6 +1,8 @@
 package com.xforceplus.wapp.modules.deduct.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -58,6 +60,18 @@ public class ExportClaimBillModel {
     @ExcelProperty("税率")
     private BigDecimal taxRate;
 
+    /**
+     * 不含税金额
+     */
+    @ExcelProperty("不含税金额")
+    private BigDecimal amountWithoutTax;
+
+    /**
+     * 税额
+     */
+    @ExcelProperty("税额")
+    private BigDecimal taxAmount;
+
     @ExcelProperty("定案日期")
     private Date verdictDate;
 
@@ -72,5 +86,23 @@ public class ExportClaimBillModel {
 
     @ExcelProperty("红字信息表编号")
     private String redNotificationNo;
+
+    @ExcelProperty("所扣发票")
+    private String deductInvoice;
+    /**
+     * 明细总不含税金额
+     */
+    @ExcelProperty("明细总不含税金额")
+    private BigDecimal itemWithoutAmount;
+    /**
+     * 明细总含税金额
+     */
+    @ExcelProperty("明细总含税金额")
+    private BigDecimal itemWithAmount;
+    /**
+     * 明细总税额
+     */
+    @ExcelProperty("明细总税额")
+    private BigDecimal itemTaxAmount;
 
 }

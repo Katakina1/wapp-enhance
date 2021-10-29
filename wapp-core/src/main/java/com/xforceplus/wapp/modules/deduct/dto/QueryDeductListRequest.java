@@ -38,11 +38,17 @@ public class QueryDeductListRequest {
     @ApiModelProperty("供应商名称")
     private String sellerName;
     /**
-     * 扣款日期
+     * 扣款开始日期
      */
-    @ApiModelProperty("扣款日期")
+    @ApiModelProperty("扣款开始日期")
     //@DateTimeFormat(pattern = "yyyy-MM-dd")
-    private String deductDate;
+    private String deductStartDate;
+    /**
+     * 扣款截至日期
+     */
+    @ApiModelProperty("扣款截至日期")
+    //@DateTimeFormat(pattern = "yyyy-MM-dd")
+    private String deductEndDate;
     /**
      * 扣款公司jv_code
      */

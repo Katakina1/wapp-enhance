@@ -127,7 +127,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setCreateUser(UserUtil.getLoginName());
             addEntity.setSourceUploadPath(data.getUploadPath());
             //发送验签
-            OfdResponse response = backFillService.signOfd(ofdEntity);
+            OfdResponse response = backFillService.signOfd(ofdEntity,entity.getBussinessNo());
             //验签成功
             if (response.isOk()) {
                 addEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);

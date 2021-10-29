@@ -68,6 +68,17 @@ public class QueryDeductListResponse {
     @ApiModelProperty("含税金额")
     private BigDecimal amountWithTax;
     /**
+     * 不含税金额
+     */
+    @ApiModelProperty("不含税金额")
+    private BigDecimal amountWithoutTax;
+
+    /**
+     * 税额
+     */
+    @ApiModelProperty("税额")
+    private BigDecimal taxAmount;
+    /**
      * 税率
      */
     @ApiModelProperty("税率")
@@ -93,7 +104,20 @@ public class QueryDeductListResponse {
             "EPD单:301待匹配结算单;302已匹配结算单")
     private Integer status;
 
+    @ApiModelProperty("备注")
+    private String remark;
 
+    @ApiModelProperty("所扣发票")
+    private String deductInvoice;
+
+    @ApiModelProperty("明细总不含税金额")
+    private BigDecimal itemWithoutAmount;
+
+    @ApiModelProperty("明细总含税金额")
+    private BigDecimal itemWithAmount;
+
+    @ApiModelProperty("明细总税额")
+    private BigDecimal itemTaxAmount;
 
 
 }
