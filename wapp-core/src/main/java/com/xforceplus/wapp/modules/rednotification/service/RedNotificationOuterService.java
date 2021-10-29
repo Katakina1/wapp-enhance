@@ -65,6 +65,15 @@ public class RedNotificationOuterService {
         return count > 0 ;
     }
 
+    public Boolean isWaitingApplyByPreInvoiceId(List<Long> preInvoiceIdList) {
+        log.info("对外接口判断结算算单是否有待申请的红字信息请求:{}", preInvoiceIdList);
+        LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TXfRedNotificationEntity::getPid,preInvoiceIdList)
+                .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
+        Integer count = redNotificationService.getBaseMapper().selectCount(queryWrapper);
+        return count > 0 ;
+    }
+
     /**
      * 修改已申请的红字信息为撤销待审核,进入审批页面
      * @param pid 预制发id
