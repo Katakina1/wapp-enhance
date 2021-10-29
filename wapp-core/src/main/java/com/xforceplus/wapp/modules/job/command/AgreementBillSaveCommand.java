@@ -6,7 +6,7 @@ import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillDataListener;
-import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
+import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class AgreementBillSaveCommand implements Command {
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private OriginAgreementBillService service;
+    private OriginSapFbl5nService service;
     @Autowired
     private Validator validator;
     @Value("${agreementBill.remote.path}")
