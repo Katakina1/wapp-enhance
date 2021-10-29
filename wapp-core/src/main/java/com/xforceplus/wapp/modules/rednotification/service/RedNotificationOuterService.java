@@ -68,7 +68,7 @@ public class RedNotificationOuterService {
     public Boolean isWaitingApplyByPreInvoiceId(List<Long> preInvoiceIdList) {
         log.info("对外接口判断结算算单是否有待申请的红字信息请求:{}", preInvoiceIdList);
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TXfRedNotificationEntity::getPid,preInvoiceIdList)
+        queryWrapper.in(TXfRedNotificationEntity::getPid,preInvoiceIdList)
                 .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
         Integer count = redNotificationService.getBaseMapper().selectCount(queryWrapper);
         return count > 0 ;
