@@ -9,5 +9,5 @@ import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
  * @author: Kenny Wong
  * @create: 2021-10-15 17:36
  **/
-public interface OriginAgreementBillService extends IService<TXfOriginSapFbl5nEntity> {
+public interface OriginSapFbl5nService extends IService<TXfOriginSapFbl5nEntity> {
 }
