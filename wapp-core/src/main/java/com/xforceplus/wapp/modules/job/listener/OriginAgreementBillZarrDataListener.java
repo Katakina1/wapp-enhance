@@ -2,10 +2,9 @@ package com.xforceplus.wapp.modules.job.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillFbl5nDto;
-import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
+import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillZarrDto;
 import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
-import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -36,7 +35,7 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
     /**
      * 缓存的数据
      */
-    private List<OriginAgreementBillFbl5nDto> list = new ArrayList<>();
+    private List<OriginAgreementBillZarrDto> list = new ArrayList<>();
     @Getter
     private long cursor;
 
@@ -48,8 +47,8 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
     }
 
     @Override
-    public void invoke(OriginAgreementBillFbl5nDto data, AnalysisContext context) {
-        Set<ConstraintViolation<OriginAgreementBillFbl5nDto>> violations = validator.validate(data);
+    public void invoke(OriginAgreementBillZarrDto data, AnalysisContext context) {
+        Set<ConstraintViolation<OriginAgreementBillZarrDto>> violations = validator.validate(data);
         if (CollectionUtils.isEmpty(violations)) {
             list.add(data);
             if (list.size() >= BATCH_COUNT) {
@@ -77,11 +76,11 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
      * 加上存储数据库
      */
     private void saveData() {
-        List<TXfOriginSapFbl5nEntity> entities = new ArrayList<>(list.size());
+        List<TXfOriginSapZarrEntity> entities = new ArrayList<>(list.size());
         Date now = new Date();
         list.forEach(
                 v1 -> {
-                    TXfOriginSapFbl5nEntity v2 = new TXfOriginSapFbl5nEntity();
+                    TXfOriginSapZarrEntity v2 = new TXfOriginSapZarrEntity();
                     BeanUtils.copyProperties(v1, v2);
                     v2.setJobId(jobId);
                     v2.setCreateTime(now);
@@ -91,6 +90,6 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条原始协议单数据！", jobId, cursor);
+        log.info("jobId={}, 已入库{}条原始协议单SAP-ZARR0355数据！", jobId, cursor);
     }
 }

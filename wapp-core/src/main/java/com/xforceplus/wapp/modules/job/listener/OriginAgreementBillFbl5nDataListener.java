@@ -90,6 +90,6 @@ public class OriginAgreementBillFbl5nDataListener extends AnalysisEventListener<
         );
         service.saveBatch(entities);
         cursor += list.size();
-        log.info("jobId={}, 已入库{}条原始协议单数据！", jobId, cursor);
+        log.info("jobId={}, 已入库{}条原始协议单SAP-FBL5N数据！", jobId, cursor);
     }
 }
