@@ -533,6 +533,10 @@ public class DeductService   {
          operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.APPLY_RED_NOTIFICATION,
                  TXfSettlementStatusEnum.getTXfSettlementStatusEnum(tXfSettlementEntity.getSettlementStatus()).getDesc(),
                  0L,"系统");
+          tXfSettlementEntity.setAmountWithoutTax(tXfSettlementEntity.getAmountWithoutTax().negate());
+          tXfSettlementEntity.setTaxAmount(tXfSettlementEntity.getTaxAmount().negate());
+          tXfSettlementEntity.setAmountWithTax(tXfSettlementEntity.getAmountWithTax().negate());
+
          return tXfSettlementEntity;
     }
 
