@@ -22,7 +22,7 @@ public interface InvoiceConverter {
     @Mapping(source = "data.purchaserBankNameAccount", target = "gfBankAndNo")
     @Mapping(source = "data.machineCode", target = "machinecode")
     @Mapping(source = "data.amountWithTax", target = "totalAmount")
-    @Mapping(source = "data.amountWithoutTax", target = "invoiceAmount")
+    @Mapping(source = "data.amountWithoutTax", target = "invoiceAmount", defaultValue = "0")
     @Mapping(source = "data.sellerName", target = "xfName")
     @Mapping(source = "data.sellerTaxNo", target = "xfTaxNo")
     @Mapping(source = "data.sellerAddrTel", target = "xfAddressAndPhone")

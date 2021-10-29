@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.converters;
 
-import com.google.common.collect.Lists;
 import com.xforceplus.wapp.handle.vo.InvoiceVo;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
 import org.mapstruct.Mapper;
