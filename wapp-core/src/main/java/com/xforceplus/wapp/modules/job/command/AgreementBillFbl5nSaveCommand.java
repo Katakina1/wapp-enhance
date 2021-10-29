@@ -4,9 +4,9 @@ import com.alibaba.excel.EasyExcel;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.dto.OriginEpdLogItemDto;
-import com.xforceplus.wapp.modules.job.listener.OriginEpdLogItemDataListener;
-import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
+import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillFbl5nDto;
+import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillFbl5nDataListener;
+import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -24,29 +24,28 @@ import java.util.Optional;
 
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
 import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
-import static java.lang.Enum.valueOf;
 
 /**
  * @program: wapp-generator
- * @description: 原始EPD单入库步骤
+ * @description: 原始协议单SAP-FBL5N入库步骤
  * @author: Kenny Wong
  * @create: 2021-10-14 13:54
  **/
 @Slf4j
 @Component
-public class EpdLogItemSaveCommand implements Command {
+public class AgreementBillFbl5nSaveCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private OriginEpdLogItemService service;
+    private OriginSapFbl5nService service;
     @Autowired
     private Validator validator;
-    @Value("${epdBill.remote.path}")
+    @Value("${agreementBill.remote.path}")
     private String remotePath;
-    @Value("${epdBill.local.path}")
+    @Value("${agreementBill.local.path}")
     private String localPath;
-    @Value("${epdBill.item.sheetName}")
+    @Value("${agreementBill.sheetName}")
     private String sheetName;
 
     @Override
@@ -54,7 +53,7 @@ public class EpdLogItemSaveCommand implements Command {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
-            log.info("开始保存原始EPD单LOG明细数据入库fileName={}, sheetName={}", fileName, sheetName);
+            log.info("开始保存原始协议单SAP-FBL5N数据入库fileName={}, sheetName={}", fileName, sheetName);
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -63,10 +62,9 @@ public class EpdLogItemSaveCommand implements Command {
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                context.put(TXfBillJobEntity.REMARK, e.getMessage());
             }
         } else {
-            log.info("跳过原始EPD单LOG明细数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
+            log.info("跳过原始协议单SAP-FBL5N数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
     }
@@ -88,7 +86,7 @@ public class EpdLogItemSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.isNull(jobAcquisitionObject) || Objects.equals(ITEM.getCode(), jobAcquisitionObject);
+        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -126,7 +124,7 @@ public class EpdLogItemSaveCommand implements Command {
     private void process(String localPath, String fileName, Context context) {
         // 获取当前进度
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
         int cursor = Optional
@@ -135,14 +133,14 @@ public class EpdLogItemSaveCommand implements Command {
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service, validator);
+        OriginAgreementBillFbl5nDataListener readListener = new OriginAgreementBillFbl5nDataListener(jobId, cursor, service, validator);
         try {
-            EasyExcel.read(file, OriginEpdLogItemDto.class, readListener)
+            EasyExcel.read(file, OriginAgreementBillFbl5nDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
+            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
             // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
             context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

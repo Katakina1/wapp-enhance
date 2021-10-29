@@ -4,9 +4,9 @@ import com.alibaba.excel.EasyExcel;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillDto;
-import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillDataListener;
-import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
+import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillZarrDto;
+import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillZarrDataListener;
+import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
@@ -22,29 +22,29 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.BILL;
+import static com.xforceplus.wapp.enums.BillJobAcquisitionObjectEnum.ITEM;
 
 /**
  * @program: wapp-generator
- * @description: 原始协议单入库步骤
+ * @description: 原始协议单SAP-ZARR0355入库步骤
  * @author: Kenny Wong
  * @create: 2021-10-14 13:54
  **/
 @Slf4j
 @Component
-public class AgreementBillSaveCommand implements Command {
+public class AgreementBillZarrSaveCommand implements Command {
 
     @Autowired
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
-    private OriginSapFbl5nService service;
+    private OriginSapZarrService service;
     @Autowired
     private Validator validator;
     @Value("${agreementBill.remote.path}")
     private String remotePath;
     @Value("${agreementBill.local.path}")
     private String localPath;
-    @Value("${agreementBill.sheetName}")
+    @Value("${agreementBill.item.sheetName}")
     private String sheetName;
 
     @Override
@@ -52,7 +52,7 @@ public class AgreementBillSaveCommand implements Command {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
-            log.info("开始保存原始协议单文件数据入库fileName={}, sheetName={}", fileName, sheetName);
+            log.info("开始保存原始协议单SAP-ZARR0355数据入库fileName={}, sheetName={}", fileName, sheetName);
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -63,7 +63,7 @@ public class AgreementBillSaveCommand implements Command {
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
+            log.info("跳过原始协议单SAP-ZARR0355数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
     }
@@ -85,7 +85,7 @@ public class AgreementBillSaveCommand implements Command {
      * @return
      */
     private boolean isValidJobAcquisitionObject(Object jobAcquisitionObject) {
-        return Objects.isNull(jobAcquisitionObject) || Objects.equals(BILL.getCode(), jobAcquisitionObject);
+        return Objects.equals(ITEM.getCode(), jobAcquisitionObject);
     }
 
     /**
@@ -122,19 +122,15 @@ public class AgreementBillSaveCommand implements Command {
      */
     private void process(String localPath, String fileName, Context context) {
         // 获取当前进度
-        if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
-        }
         int cursor = Optional
                 .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
                 .map(v -> Integer.parseInt(String.valueOf(v)))
                 .orElse(1);
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
-        OriginAgreementBillDataListener readListener = new OriginAgreementBillDataListener(jobId, cursor, service, validator);
+        OriginAgreementBillZarrDataListener readListener = new OriginAgreementBillZarrDataListener(jobId, cursor, service, validator);
         try {
-            EasyExcel.read(file, OriginAgreementBillDto.class, readListener)
+            EasyExcel.read(file, OriginAgreementBillZarrDto.class, readListener)
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();

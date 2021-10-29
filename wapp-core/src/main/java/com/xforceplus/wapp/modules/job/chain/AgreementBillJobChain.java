@@ -1,8 +1,9 @@
 package com.xforceplus.wapp.modules.job.chain;
 
 import com.xforceplus.wapp.modules.job.command.AgreementBillDownloadCommand;
+import com.xforceplus.wapp.modules.job.command.AgreementBillFbl5nSaveCommand;
 import com.xforceplus.wapp.modules.job.command.AgreementBillFilterCommand;
-import com.xforceplus.wapp.modules.job.command.AgreementBillSaveCommand;
+import com.xforceplus.wapp.modules.job.command.AgreementBillZarrSaveCommand;
 import org.apache.commons.chain.impl.ChainBase;
 import org.springframework.context.ApplicationContext;
 
@@ -18,7 +19,8 @@ public class AgreementBillJobChain extends ChainBase {
         super();
 
         addCommand(applicationContext.getBean(AgreementBillDownloadCommand.class));
-        addCommand(applicationContext.getBean(AgreementBillSaveCommand.class));
+        addCommand(applicationContext.getBean(AgreementBillFbl5nSaveCommand.class));
+        addCommand(applicationContext.getBean(AgreementBillZarrSaveCommand.class));
         addCommand(applicationContext.getBean(AgreementBillFilterCommand.class));
     }
 

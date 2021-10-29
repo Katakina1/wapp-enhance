@@ -82,17 +82,24 @@ Esb:
     upload: http://10.100.2.17:8083/object/upload
     downLoad: http://10.100.2.17:8083/object/downLoad/
 
-# 注意事项
-# 1、请从研发团队获取标准的EXCEL模板
-# 2、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
+# 注意事项, 上传到SFTP的数据请按照以下模板填充数据，要求
+# 1、文件名可用由用户自己定义（务必全局唯一，对于重名的文件一律不处理）
+# 2、电子表格名称如果需要自定义请通知研发配置（不需要发版）
+# 3、电子表格表头（第一行）不允许变更，如果一定要变更请提前通知研发调整代码，重新发版
+# 4、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
+# 5、SFTP路径定义如下
 agreementBill:
   remote:
+# 协议单SFTP远程目录
     path: /home/wappftp/wapp/vendor/agreement
   local:
     path: /tmp/wapp/vendor/agreement
-  sheetName: 原始协议单
+  sheetName: SAP-FBL5N
+  item:
+    sheetName: SAP-ZARR0355原稿
 claimBill:
   remote:
+# 索赔单及明细SFTP远程目录
     path: /home/wappftp/wapp/vendor/claim
   local:
     path: /tmp/wapp/vendor/claim
@@ -102,6 +109,7 @@ claimBill:
     samsSheetName: 原始索赔单Sams明细
 epdBill:
   remote:
+# EPD单及LOG明细SFTP远程目录
     path: /home/wappftp/wapp/vendor/epd
   local:
     path: /tmp/wapp/vendor/epd
