@@ -5,6 +5,7 @@ import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.converters.TDxRecordInvoiceDetailEntityConvertor;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceExtService;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
@@ -41,6 +42,9 @@ public class BlueInvoiceService {
      */
     @Autowired
     private RecordInvoiceService invoiceService;
+    @Autowired
+    private RecordInvoiceExtService extInvoiceService;
+
     // /**
     //  * 大象底账明细表
     //  */
@@ -198,6 +202,8 @@ public class BlueInvoiceService {
             }
         } while (Objects.nonNull(tDxRecordInvoiceEntity) && BigDecimal.ZERO.compareTo(leftAmount.get()) < 0);
         if (BigDecimal.ZERO.compareTo(leftAmount.get()) < 0) {
+            log.info("没有足够的待匹配的蓝票，回撤变更的发票");
+            withdrawInvoices(list);
             throw new NoSuchInvoiceException();
         }
         log.info("已匹配的发票列表={}", CollectionUtils.flattenToString(list));
@@ -260,7 +266,9 @@ public class BlueInvoiceService {
      * @return
      */
     public boolean withdrawInvoices(List<MatchRes> list) {
-        if (!org.springframework.util.CollectionUtils.isEmpty(list)) {
+        if (org.springframework.util.CollectionUtils.isEmpty(list)) {
+            log.info("开始撤回抵扣的发票金额，将抵扣金额返还到原有发票上, 发票列表为空，跳过此步骤");
+        } else {
             log.info("开始撤回抵扣的发票金额，将抵扣金额返还到原有发票上, 发票列表={}", CollectionUtils.flattenToString(list));
             List<TDxRecordInvoiceEntity> invoices = list
                     .stream()
@@ -273,14 +281,14 @@ public class BlueInvoiceService {
                             }
                     )
                     .collect(Collectors.toList());
-            return invoiceService.withdrawRemainingAmountById(invoices);
+            return extInvoiceService.withdrawRemainingAmountById(invoices);
         }
         return true;
     }
 
     @Data
     @Builder
-    static class MatchRes {
+    public static class MatchRes {
         String invoiceNo;
         String invoiceCode;
         /**

@@ -81,7 +81,7 @@ public class AgreementBillService extends DeductService{
             if (mergeAmount.compareTo(BigDecimal.ZERO) > 0) {
                 try {
                     Integer expireScale =  overdueService.oneOptBySellerNo(deductionEnum == XFDeductionBusinessTypeEnum.AGREEMENT_BILL ? ServiceTypeEnum.AGREEMENT : ServiceTypeEnum.EPD, sellerNo);
-                    Date expireDate =    DateUtils.addDate(DateUtils.getNow(), expireScale);
+                    Date expireDate =    DateUtils.addDate(DateUtils.getNow(), 0-expireScale);
                     excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, expireDate, targetStatus);
                 } catch (NoSuchInvoiceException n ) {
                     NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
@@ -127,8 +127,9 @@ public class AgreementBillService extends DeductService{
             if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
                 tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode());
             }
+
             else if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode()){
-                tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+                tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_CONFIRM.getCode());
             } else if(status == TXfSettlementItemFlagEnum.NORMAL.getCode()){
                 tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode());
             }

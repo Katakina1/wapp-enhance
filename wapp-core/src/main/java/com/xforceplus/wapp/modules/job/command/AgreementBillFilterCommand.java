@@ -9,9 +9,9 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.job.service.OriginAgreementBillService;
+import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
-import com.xforceplus.wapp.repository.entity.TXfOriginAgreementBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -38,7 +38,7 @@ public class AgreementBillFilterCommand implements Command {
      */
     private static final int BATCH_COUNT = 1000;
     @Autowired
-    private OriginAgreementBillService service;
+    private OriginSapFbl5nService service;
     @Autowired
     private SpeacialCompanyService speacialCompanyService;
     @Autowired
@@ -95,19 +95,20 @@ public class AgreementBillFilterCommand implements Command {
         }
         // 先获取分页总数
         long pages;
-        do {
-            Page<TXfOriginAgreementBillEntity> page = service.page(
-                    new Page<>(++last, BATCH_COUNT),
-                    new QueryWrapper<TXfOriginAgreementBillEntity>()
-                            .lambda()
-                            .eq(TXfOriginAgreementBillEntity::getJobId, jobId)
-                            .orderByAsc(TXfOriginAgreementBillEntity::getId)
-            );
-            // 总页数
-            pages = page.getPages();
-            filter(page.getRecords());
-            context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
-        } while (last < pages);
+        // TODO by 李送球
+        // do {
+        //     Page<TXfOriginAgreementBillEntity> page = service.page(
+        //             new Page<>(++last, BATCH_COUNT),
+        //             new QueryWrapper<TXfOriginAgreementBillEntity>()
+        //                     .lambda()
+        //                     .eq(TXfOriginAgreementBillEntity::getJobId, jobId)
+        //                     .orderByAsc(TXfOriginAgreementBillEntity::getId)
+        //     );
+        //     // 总页数
+        //     pages = page.getPages();
+        //     filter(page.getRecords());
+        //     context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
+        // } while (last < pages);
     }
 
     /**
@@ -115,28 +116,29 @@ public class AgreementBillFilterCommand implements Command {
      *
      * @param list
      */
-    private void filter(List<TXfOriginAgreementBillEntity> list) {
-        List<DeductBillBaseData> newList = list
-                .stream()
-                .filter(v -> {
-                    if (Objects.isNull(v.getMemo())) {
-                        return true;
-                    } else {
-                        // 非黑名单供应商
-                        return !speacialCompanyService.hitBlackOrWhiteList("0", v.getMemo());
-                    }
-                })
-                .map(v -> {
-                    // 排除转换异常的数据
-                    try {
-                        return TXfOriginAgreementBillEntityConvertor.INSTANCE.toAgreementBillData(v);
-                    } catch (Exception e) {
-                        log.warn(e.getMessage(), e);
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    private void filter(List<TXfOriginSapFbl5nEntity> list) {
+        // TODO by 李送球
+        List<DeductBillBaseData> newList = null;
+                // .stream()
+                // .filter(v -> {
+                //     if (Objects.isNull(v.getMemo())) {
+                //         return true;
+                //     } else {
+                //         // 非黑名单供应商
+                //         return !speacialCompanyService.hitBlackOrWhiteList("0", v.getMemo());
+                //     }
+                // })
+                // .map(v -> {
+                //     // 排除转换异常的数据
+                //     try {
+                //         return TXfOriginAgreementBillEntityConvertor.INSTANCE.toAgreementBillData(v);
+                //     } catch (Exception e) {
+                //         log.warn(e.getMessage(), e);
+                //         return null;
+                //     }
+                // })
+                // .filter(Objects::nonNull)
+                // .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         }

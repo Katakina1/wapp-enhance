@@ -168,7 +168,7 @@ public class EInvoiceMatchService {
         TAcOrgEntity purEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getPurchaserTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
         TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
         Map<String, Object> map = new HashMap<>();
-        if (null != purEntity) {
+        if (null != sellerEntity) {
             map.put("venderid", sellerEntity.getOrgCode());
             map.put("gfName", sellerEntity.getOrgName());
         }

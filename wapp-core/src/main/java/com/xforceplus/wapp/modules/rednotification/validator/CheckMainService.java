@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.rednotification.validator;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
@@ -8,7 +9,9 @@ import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.util.RegexUtils;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
+import com.xforceplus.wapp.repository.dao.TXfRedNotificationDao;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.vavr.control.Either;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,8 @@ public class CheckMainService {
     CompanyService companyService;
     @Autowired
     RedisTemplate redisTemplate;
+    @Autowired
+    TXfRedNotificationDao tXfRedNotificationDao;
 
     public String checkMainInfo(ImportInfo importInfo){
 
@@ -45,6 +50,21 @@ public class CheckMainService {
                 errorBuilder.append("申请类型为空或者不正确，必须为0—购方申请已抵扣, 1—购方申请未抵扣, 2—销方申请;");
             }
         }
+
+        // 校验申请流水号
+        if(StringUtils.isBlank(importInfo.getSellerNumber()) || importInfo.getSellerNumber().length() >50 || !RegexUtils.composedByNumberOrLetter(importInfo.getSellerNumber())){
+            errorBuilder.append("申请流水号为空或者格式不正确，必须仅由长度不超过50的数字或字母组成;");
+        }else {
+            // 判断流水号是否存在
+            LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TXfRedNotificationEntity::getSerialNo,importInfo.getSellerNumber()).eq(TXfRedNotificationEntity::getStatus,1);
+            Integer count = tXfRedNotificationDao.selectCount(queryWrapper);
+            if( count > 0 ){
+                errorBuilder.append("申请流水号已存在;");
+            }
+        }
+
+
 
         String error1 = checkCompany(importInfo);
         errorBuilder.append(error1);
@@ -82,7 +102,7 @@ public class CheckMainService {
         Object result = redisTemplate.opsForValue().get(key);
         if ( result != null ){
             if ("false".equals(result)){
-                return String.format("沃尔玛其下未找到该购方税号:[%s]",taxNo);
+                return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
             }else {
                 return "" ;
             }
@@ -94,7 +114,7 @@ public class CheckMainService {
             return "" ;
         }else {
             redisTemplate.opsForValue().set(key,"false",60, TimeUnit.SECONDS);
-            return String.format("沃尔玛其下未找到该购方税号:[%s]",taxNo);
+            return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
         }
 
     }
