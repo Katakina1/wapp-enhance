@@ -33,9 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by SunShiyong on 2021/10/16.
@@ -103,7 +102,11 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         return list;
     }
 
+    private static final String NEGATIVE_SYMBOL = "-";
+
     /**
+     * 根据uuid获取该发票的所有正数明细
+     *
      * by Kenny Wong
      *
      * @param uuid
@@ -111,10 +114,15 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
      */
     public List<TDxRecordInvoiceDetailEntity> getInvoiceDetailByUuid(String uuid){
         QueryWrapper<TDxRecordInvoiceDetailEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TDxRecordInvoiceDetailEntity.UUID,uuid);
+        wrapper.eq(TDxRecordInvoiceDetailEntity.UUID, uuid);
+        wrapper.ne(TDxRecordInvoiceDetailEntity.DETAIL_AMOUNT, "0");
         // by Kenny Wong 按照明细序号排序，保证每次返回的结果顺序一致
         wrapper.orderByAsc(TDxRecordInvoiceDetailEntity.DETAIL_NO);
-        return recordInvoiceDetailsDao.selectList(wrapper);
+        return Optional.ofNullable(recordInvoiceDetailsDao.selectList(wrapper))
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(v -> !v.getDetailAmount().startsWith(NEGATIVE_SYMBOL))
+                .collect(Collectors.toList());
     }
 
 
