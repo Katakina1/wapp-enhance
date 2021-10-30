@@ -266,7 +266,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票缺失");
         }
         List<Long> settlementIdList = tXfPreInvoiceEntityList.stream()
-                .map(TXfPreInvoiceEntity::getId).distinct().collect(Collectors.toList());
+                .map(TXfPreInvoiceEntity::getSettlementId).distinct().collect(Collectors.toList());
         List<TXfSettlementEntity> tXfSettlementEntityList = tXfSettlementDao.selectBatchIds(settlementIdList);
         if (CollectionUtils.isEmpty(tXfSettlementEntityList)) {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
