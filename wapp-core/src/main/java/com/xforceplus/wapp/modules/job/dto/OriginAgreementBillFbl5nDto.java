@@ -68,7 +68,6 @@ public class OriginAgreementBillFbl5nDto {
     private String department;
 
     @ExcelProperty("Document Header Text")
-    @Length(max = 20)
     private String documentHeaderText;
 
     @ExcelProperty("Text")
