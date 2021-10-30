@@ -167,6 +167,7 @@ public class BackFillService  {
             try {
                 VerificationResponse verificationResponse = verificationService.verify(verificationRequest);
                 log.info("纸票发票回填--发票验真同步返回结果：{}", JSON.toJSONString(verificationResponse));
+
                 if (verificationResponse.isOK()) {
                     final String verifyTaskId = verificationResponse.getResult();
                     detailEntity.setXfVerifyTaskId(verifyTaskId);
@@ -182,6 +183,7 @@ public class BackFillService  {
                 detailEntity.setStatus(false);
                 detailEntity.setReason(e.getMessage());
             }
+            this.electronicUploadRecordDao.update(recordEntity);
             this.electronicUploadRecordDetailDao.insert(detailEntity);
         }
         return R.ok(batchNo);
@@ -536,10 +538,10 @@ public class BackFillService  {
             }
         } else{
             if(StringUtils.isEmpty(request.getOriginInvoiceCode())){
-                return R.fail("蓝冲发票代码不能为空");
+                return R.fail("被蓝冲发票代码不能为空");
             }
             if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
-                return R.fail("蓝冲发票号码不能为空");
+                return R.fail("被蓝冲发票号码不能为空");
             }
             QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
             invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());

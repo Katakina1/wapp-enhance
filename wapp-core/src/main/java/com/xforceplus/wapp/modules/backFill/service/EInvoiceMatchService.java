@@ -4,6 +4,7 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.apollo.msg.SealedMessage;
+import com.xforceplus.wapp.common.enums.IsDealEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.CommonUtil;
@@ -17,6 +18,7 @@ import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
@@ -78,6 +80,8 @@ public class EInvoiceMatchService {
     @Autowired
     private InvoiceFileService invoiceFileService;
 
+    @Autowired
+    private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat();
 
@@ -406,13 +410,13 @@ public class EInvoiceMatchService {
             } else {
                 result = 1;
                 //存在数据
-                String source = list1.get(0).getSystemSource();
-                String matchstatus = list1.get(0).getDxhyMatchStatus();
-                String tpStatus = list1.get(0).getTpStatus();
-                String flowType = list1.get(0).getFlowType();
-                String hostStatus = list1.get(0).getHostStatus();
-                BigDecimal invoiceAmount = list1.get(0).getInvoiceAmount();
-                //TODO 目前重复的先跳过
+                TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
+                entity.setId(list1.get(0).getId());
+                entity.setIsDel("1");
+                int count = tDxRecordInvoiceDao.updateById(entity);
+                if (count < 1){
+                    throw new EnhanceRuntimeException("修改发票状态失败！");
+                }
                 /*if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
                     throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
                 }
@@ -543,8 +547,13 @@ public class EInvoiceMatchService {
             } else {
                 result = 1;
                 //存在数据
-
-                //TODO
+                if(IsDealEnum.YES.getValue().equals(tDxInvoiceEntity.getIsdel())){
+                    tDxInvoiceEntity.setIsdel(IsDealEnum.NO.getValue());
+                }
+                int count = tDxInvoiceDao.updateById(tDxInvoiceEntity);
+                if (count < 1){
+                    throw new EnhanceRuntimeException("修改扫描发票状态失败！");
+                }
 
             }
         } catch (Exception e) {
