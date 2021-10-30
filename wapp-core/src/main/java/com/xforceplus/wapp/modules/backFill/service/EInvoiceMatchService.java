@@ -253,13 +253,16 @@ public class EInvoiceMatchService {
         validateOrg(invoiceMain, recordEntity, orgEntity);
         validateTax(invoiceMain, invoiceDetails);
         //校验购销对
-        /*QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
+        QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
         settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO, electronicUploadRecordDetailEntity.getSettlementNo());
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(settlementWrapper);
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("未找到对应的结算单");
         }
-        if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
+        if(invoiceMain.getInvoiceType().equals(tXfSettlementEntity.getInvoiceType())){
+            throw new EnhanceRuntimeException("发票类型与结算单不一致");
+        }
+     /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
             throw new EnhanceRuntimeException("购方名称不一致");
         }
         if (!invoiceMain.getPurchaserTaxNo().equals(tXfSettlementEntity.getPurchaserTaxNo())) {

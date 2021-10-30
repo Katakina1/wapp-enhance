@@ -90,9 +90,9 @@ public class DeductController {
 
     @ApiOperation(value = "索赔单发票列表详情")
     @GetMapping(value = "invoice/{settlementNo}")
-    public R<List<InvoiceDetailResponse>> queryInvoiceList(@ApiParam(value = "结算单号",required = true) @PathVariable String settlementNo){
+    public R<List<InvoiceDetailResponse>> queryInvoiceList(@ApiParam(value = "结算单号",required = true) @PathVariable String settlementNo,@ApiParam(value = "红蓝标识 -1蓝字发票 0-红字发票") @RequestParam String invoiceColor){
         logger.info("索赔单发票列表详情--请求参数{}", settlementNo);
-        return R.ok(recordInvoiceService.queryInvoiceList(settlementNo, TXfInvoiceStatusEnum.NORMAL.getCode(),null));
+        return R.ok(recordInvoiceService.queryInvoiceList(settlementNo, TXfInvoiceStatusEnum.NORMAL.getCode(),invoiceColor,null));
     }
 
     @ApiOperation(value = "业务单导出")
