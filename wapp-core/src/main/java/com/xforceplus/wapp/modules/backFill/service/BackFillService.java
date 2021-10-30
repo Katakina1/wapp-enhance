@@ -396,10 +396,12 @@ public class BackFillService  {
                 if (!CollectionUtils.isEmpty(invoices)){
                     final InvoiceEntity invoiceEntity = invoices.get(0);
                     final UploadResult.SucceedInvoice succeedInvoice = succeedInvoiceMapper.toSucceed(invoiceEntity);
-                    if (detailEntity.getFileType()){
-                        succeedInvoice.setFileType(Constants.SUFFIX_OF_OFD);
-                    }else {
-                        succeedInvoice.setFileType(Constants.SUFFIX_OF_PDF);
+                    if(detailEntity.getFileType() != null ){
+                        if (detailEntity.getFileType()){
+                            succeedInvoice.setFileType(Constants.SUFFIX_OF_OFD);
+                        }else {
+                            succeedInvoice.setFileType(Constants.SUFFIX_OF_PDF);
+                        }
                     }
                     invoiceEntities.add(succeedInvoice);
                 } else{

@@ -669,12 +669,8 @@ public class DeductService   {
      * @return PageResult
      */
     public PageResult<QueryDeductListResponse> queryPageList(QueryDeductListRequest request){
-        Integer offset = null;
-        Integer next = null;
-        if(request.getPageSize() != null && request.getPageNo() != null){
-            offset = (request.getPageNo() -1) * request.getPageSize();
-            next = request.getPageSize();
-        }
+        Integer offset = (request.getPageNo() -1) * request.getPageSize();
+        Integer next = request.getPageSize();
         int count = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
                 request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), request.getKey());
         List<TXfBillDeductExtEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
@@ -989,7 +985,7 @@ public class DeductService   {
         }else{
             PageResult<QueryDeductListResponse> pageResult = queryPageList(request);
             if(pageResult != null && CollectionUtils.isNotEmpty(pageResult.getRows())){
-                return response ;
+                return pageResult.getRows() ;
             }
         }
         return null;

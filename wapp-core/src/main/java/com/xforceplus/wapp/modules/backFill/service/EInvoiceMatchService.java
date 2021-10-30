@@ -259,9 +259,11 @@ public class EInvoiceMatchService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("未找到对应的结算单");
         }
-        if(invoiceMain.getInvoiceType().equals(tXfSettlementEntity.getInvoiceType())){
+        String invoiceType = InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode());
+        if(!invoiceType.equals(tXfSettlementEntity.getInvoiceType())){
             throw new EnhanceRuntimeException("发票类型与结算单不一致");
         }
+        invoiceMain.setInvoiceType(invoiceType);
      /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
             throw new EnhanceRuntimeException("购方名称不一致");
         }
@@ -299,7 +301,7 @@ public class EInvoiceMatchService {
         map.put("taxAmount", invoiceMain.getTaxAmount());
         map.put("taxRate", invoiceDetails.get(0).getTaxRate());
         map.put("gfName", orgEntity.getOrgname());
-        map.put("invoiceType", InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode()));
+        map.put("invoiceType", invoiceMain.getInvoiceType());
         map.put("gfTaxno", invoiceMain.getPurchaserTaxNo());
         map.put("checkNo", invoiceMain.getCheckCode());
         map.put("xfName", invoiceMain.getSellerName());
