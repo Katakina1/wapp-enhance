@@ -394,6 +394,7 @@ public class BackFillService  {
             if (detailEntity.getStatus()){
                 final String invoiceNo = detailEntity.getInvoiceNo();
                 final String invoiceCode = detailEntity.getInvoiceCode();
+
                 final List<InvoiceEntity> invoices = matchDao.invoiceQueryList(Collections.singletonMap("uuid", invoiceCode + invoiceNo));
                 if (!CollectionUtils.isEmpty(invoices)){
                     final InvoiceEntity invoiceEntity = invoices.get(0);

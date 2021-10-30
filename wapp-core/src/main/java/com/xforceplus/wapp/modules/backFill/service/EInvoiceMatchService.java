@@ -412,11 +412,8 @@ public class EInvoiceMatchService {
                 //存在数据
                 TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
                 entity.setId(list1.get(0).getId());
-                entity.setIsDel("1");
-                int count = tDxRecordInvoiceDao.updateById(entity);
-                if (count < 1){
-                    throw new EnhanceRuntimeException("修改发票状态失败！");
-                }
+                entity.setIsDel(IsDealEnum.NO.getValue());
+                tDxRecordInvoiceDao.updateById(entity);
                 /*if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
                     throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
                 }
@@ -547,14 +544,8 @@ public class EInvoiceMatchService {
             } else {
                 result = 1;
                 //存在数据
-                if(IsDealEnum.YES.getValue().equals(tDxInvoiceEntity.getIsdel())){
-                    tDxInvoiceEntity.setIsdel(IsDealEnum.NO.getValue());
-                }
-                int count = tDxInvoiceDao.updateById(tDxInvoiceEntity);
-                if (count < 1){
-                    throw new EnhanceRuntimeException("修改扫描发票状态失败！");
-                }
-
+                tDxInvoiceEntity.setIsdel(IsDealEnum.NO.getValue());
+                tDxInvoiceDao.updateById(tDxInvoiceEntity);
             }
         } catch (Exception e) {
             log.error("录入发票:" + e.getMessage(), e);

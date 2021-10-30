@@ -164,6 +164,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         }
         entity.setIsDel(IsDealEnum.YES.getValue());
         entity.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
+        entity.setSettlementNo("");
         int count = tDxRecordInvoiceDao.updateById(entity);
         TDxInvoiceEntity tDxInvoiceEntity = new TDxInvoiceEntity();
         tDxInvoiceEntity.setIsdel(IsDealEnum.YES.getValue());
