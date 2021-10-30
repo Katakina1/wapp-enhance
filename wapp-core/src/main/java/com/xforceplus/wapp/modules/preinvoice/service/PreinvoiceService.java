@@ -140,8 +140,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         }
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
-        List<BillItem> billItems = new ArrayList<>();
-        BeanUtil.copyList( tXfSettlementItemEntities,billItems,BillItem.class);
         CreatePreInvoiceParam createPreInvoiceParam  =  assembleParam(tXfSettlementEntity, tXfSettlementItemEntities, tAcOrgEntity);
 
         return doSplit(createPreInvoiceParam, tXfSettlementEntity);
@@ -350,17 +348,24 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         BigDecimal taxAmount = BigDecimal.ZERO;
         BigDecimal amountWithTax = BigDecimal.ZERO;
         BigDecimal amountWithOutTax = BigDecimal.ZERO;
+        List<TXfSettlementItemEntity> list = new ArrayList<>();
+
         for (TXfPreInvoiceItemEntity tXfPreInvoiceItemEntity : items) {
+            TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
             taxAmount = taxAmount.add(tXfPreInvoiceItemEntity.getTaxAmount());
             amountWithTax = amountWithTax.add(tXfPreInvoiceItemEntity.getAmountWithTax());
             amountWithOutTax = amountWithOutTax.add(tXfPreInvoiceItemEntity.getAmountWithoutTax());
+            BeanUtils.copyProperties (tXfPreInvoiceItemEntity,tXfSettlementItemEntity);
+            tXfSettlementItemEntity.setItemName(tXfPreInvoiceItemEntity.getCargoName());
+            tXfSettlementItemEntity.setItemShortName(tXfPreInvoiceItemEntity.getCargoName());
+            tXfSettlementItemEntity.setItemCode(tXfPreInvoiceItemEntity.getCargoCode());
+            tXfSettlementItemEntity.setQuantityUnit(tXfPreInvoiceItemEntity.getQuantityUnit());
+            list.add(tXfSettlementItemEntity);
         }
         TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
         tXfSettlementEntity.setTaxAmount(taxAmount);
         tXfSettlementEntity.setAmountWithoutTax(amountWithOutTax);
         tXfSettlementEntity.setAmountWithTax(amountWithTax);
-        List<TXfSettlementItemEntity> list = new ArrayList<>();
-        BeanUtil.copyList( items,list,TXfSettlementItemEntity.class);
         CreatePreInvoiceParam createPreInvoiceParam = assembleParam(tXfSettlementEntity, list, tAcOrgEntity);
         return   doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
