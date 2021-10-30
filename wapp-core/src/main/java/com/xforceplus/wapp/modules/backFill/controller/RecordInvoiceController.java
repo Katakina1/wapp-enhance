@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
+import com.xforceplus.wapp.modules.backFill.model.DeleteRecordInvoiceRequest;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
@@ -54,9 +55,9 @@ public class RecordInvoiceController extends AbstractController {
 
     @ApiOperation(value = "红票删除")
     @DeleteMapping(value = "/delete")
-    public R delete(@ApiParam(value = "发票id", required = true) @RequestParam List<Long> ids){
-        logger.info("底账发票列表--入参：{}", JSONArray.toJSONString(ids));
-        for (Long id : ids) {
+    public R delete(@ApiParam(value = "发票id", required = true) @RequestBody DeleteRecordInvoiceRequest request){
+        logger.info("底账发票列表--入参：{}", JSONArray.toJSONString(request));
+        for (Long id : request.getIds()) {
             R r = recordInvoiceService.deleteInvoice(id);
             if(R.FAIL.equals(r.getCode())){
                return r;

@@ -168,6 +168,9 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         tDxInvoiceEntity.setIsdel(IsDealEnum.YES.getValue());
         UpdateWrapper<TDxInvoiceEntity> wrapper = new UpdateWrapper<>();
         wrapper.eq(TDxInvoiceEntity.UUID,entity.getUuid());
+        if(count < 1){
+            throw  new EnhanceRuntimeException("删除失败");
+        }
         int count1 = tDxInvoiceDao.update(tDxInvoiceEntity,wrapper);
         if(count1 < 1){
             throw  new EnhanceRuntimeException("删除失败");
