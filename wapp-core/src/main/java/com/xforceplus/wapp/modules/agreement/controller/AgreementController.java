@@ -45,6 +45,7 @@ public class AgreementController {
     public R summary(DeductListRequest request){
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
+        request.setTaxRate(null);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(summary);
     }
@@ -62,10 +63,10 @@ public class AgreementController {
     @PostMapping("settlement")
     @ApiOperation("生成结算单")
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
-        final TXfSettlementEntity settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+//        final TXfSettlementEntity settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         Map<String,String> result=new HashMap<>();
-        result.put("settlementNo",settlementNo.getSettlementNo());
-        result.put("settlementId",settlementNo.getId().toString());
+        result.put("settlementNo","0");
+        result.put("settlementId","0");
         return R.ok( result,"结算单生成完毕");
     }
 

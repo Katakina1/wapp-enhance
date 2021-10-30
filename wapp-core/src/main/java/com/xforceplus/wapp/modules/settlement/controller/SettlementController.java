@@ -76,9 +76,9 @@ public class SettlementController {
     }
 
 
-    @GetMapping("{settlementId}/matched-invoice")
+    @GetMapping("/matched-invoice")
     @ApiOperation("获取指定协议单已匹配的发票")
-    public R invoiceList(@PathVariable Long settlementId, @RequestParam @ApiParam("1 协议单，2 EPD") int type) {
+    public R invoiceList(Long settlementId, @RequestParam @ApiParam("1 协议单，2 EPD") int type) {
         XFDeductionBusinessTypeEnum typeEnum;
         switch (type) {
             case 1:
@@ -94,9 +94,9 @@ public class SettlementController {
         return R.ok(matchedInvoice);
     }
 
-    @PostMapping("{settlementId}/matched-invoice")
+    @PostMapping("/matched-invoice")
     @ApiOperation("保存手动调整的票单匹配关系")
-    public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
+    public R saveInvoice( Long settlementId, @RequestBody InvoiceMatchedRequest request) {
         //移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
         try {
             invoiceService.saveSettlementMatchedInvoice(settlementId, request);
@@ -134,8 +134,8 @@ public class SettlementController {
 
 
     @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class)
-    @GetMapping(value = "{settlementId}/recommended")
-    public R recommend(@PathVariable Long settlementId, @Valid InvoiceRecommendListRequest request) {
+    @GetMapping(value = "/recommended")
+    public R recommend(Long settlementId, @Valid InvoiceRecommendListRequest request) {
         final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
         return R.ok( recommend);
     }
