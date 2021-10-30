@@ -294,7 +294,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         if (CollectionUtils.isEmpty(request.getIds())) {
             throw new EnhanceRuntimeException("请至少选择一张业务单据");
         }
-        final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(request.getIds(), type);
+        final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(request.getIds(), type,null);
         return tXfSettlementEntity;
     }
 
