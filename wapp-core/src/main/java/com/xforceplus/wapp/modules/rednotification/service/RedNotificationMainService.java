@@ -340,6 +340,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         //判读如果 getIncludes 没有值，queryModel 全选标识没传 。默认true 逻辑
         if (CollectionUtils.isEmpty(queryModel.getIncludes()) && queryModel.getIsAllSelected()==null){
             queryModel.setIsAllSelected(true);
+        }else if (!CollectionUtils.isEmpty(queryModel.getIncludes()) && queryModel.getIsAllSelected()==null){
+            queryModel.setIsAllSelected(false);
         }
 
         //全选
@@ -1015,6 +1017,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
            // 确认 //自动尝试一次 //撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
             record.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
+            record.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPROVE.getValue());
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.in(TXfRedNotificationEntity::getId,list);
             int update = getBaseMapper().update(record, updateWrapper);
