@@ -434,6 +434,7 @@ public class DeductService   {
         }
         String purchaserNo = tXfBillDeductEntities.get(0).getPurchaserNo();
         String sellerNo = tXfBillDeductEntities.get(0).getSellerNo();
+        BigDecimal taxRate = tXfBillDeductEntities.get(0).getTaxRate();
         Integer type = deductionBusinessTypeEnum.getValue();
         Integer status = TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode();
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
@@ -466,7 +467,7 @@ public class DeductService   {
         tXfSettlementEntity.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
         tXfSettlementEntity.setPurchaserTel(defaultValue(purchaserOrgEntity.getPhone()) );
         tXfSettlementEntity.setAvailableAmount(tXfSettlementEntity.getAmountWithoutTax());
-        tXfSettlementEntity.setTaxRate(BigDecimal.valueOf(0.00));
+        tXfSettlementEntity.setTaxRate(taxRate);
         tXfSettlementEntity.setId(idSequence.nextId());
         tXfSettlementEntity.setBatchNo(StringUtils.EMPTY);
         tXfSettlementEntity.setInvoiceType(StringUtils.EMPTY);

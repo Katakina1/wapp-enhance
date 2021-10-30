@@ -56,7 +56,7 @@ public class BlueInvoiceService {
     @Autowired
     private BlueInvoiceRelationService blueInvoiceRelationService;
 
-    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo, String purchserTaxNo) {
+    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo, String purchserTaxNo,BigDecimal taxRate) {
         switch (deductionEnum) {
             case AGREEMENT_BILL:
                 return obtainAgreementInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo);

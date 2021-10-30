@@ -116,7 +116,7 @@ public class AgreementBillService extends DeductService{
     public void executeMatch(XFDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity,Integer targetStatus) {
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
-        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo());
+        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),tXfSettlementEntity.getTaxRate());
         if (CollectionUtils.isEmpty(matchResList)) {
             log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
             throw new NoSuchInvoiceException();
