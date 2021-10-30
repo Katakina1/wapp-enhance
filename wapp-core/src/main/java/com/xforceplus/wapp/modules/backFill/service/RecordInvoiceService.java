@@ -9,21 +9,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.IsDealEnum;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
+import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
-import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDetailDao;
-import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
-import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
-import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
+import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.repository.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +52,9 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
     @Autowired
     private TXfPreInvoiceDao tXfPreInvoiceDao;
 
+    @Autowired
+    private TXfSettlementDao tXfSettlementDao;
+
     /**
      * 正式发票列表
      * @param
@@ -65,7 +65,14 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid,null,true);
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
-        BeanUtil.copyList(pageResult.getRecords(),response,RecordInvoiceResponse.class);
+        RecordInvoiceResponse recordInvoiceResponse = null;
+        for (RecordInvoiceResponse recordInvoice : response) {
+            recordInvoiceResponse = new RecordInvoiceResponse();
+            BeanUtil.copyProperties(recordInvoice,recordInvoiceResponse);
+            BigDecimal taxRate = new BigDecimal(recordInvoice.getTaxRate()).divide(BigDecimal.valueOf(100L), 3, RoundingMode.HALF_UP);
+            recordInvoiceResponse.setTaxRate(taxRate.toPlainString());
+            response.add(recordInvoiceResponse);
+        }
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
     }
 
@@ -152,7 +159,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             return R.fail("电票不允许删除");
         }
         if(!DateUtils.isCurrentMonth(entity.getInvoiceDate())){
-            return R.fail("不是当月开的发票不允许删除");
+            return R.fail("当前发票类型或状态无法作废，重新开票前，请开同税率蓝票进行冲抵");
         }
         entity.setIsDel(IsDealEnum.YES.getValue());
         entity.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
@@ -162,16 +169,34 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         UpdateWrapper<TDxInvoiceEntity> wrapper = new UpdateWrapper<>();
         wrapper.eq(TDxInvoiceEntity.UUID,entity.getUuid());
         int count1 = tDxInvoiceDao.update(tDxInvoiceEntity,wrapper);
+        if(count1 < 1){
+            throw  new EnhanceRuntimeException("删除失败");
+        }
         //修改预制发票状态为待上传
         QueryWrapper<TXfPreInvoiceEntity> preWrapper = new QueryWrapper<>();
         preWrapper.eq(TXfPreInvoiceEntity.INVOICE_CODE,entity.getInvoiceCode());
         preWrapper.eq(TXfPreInvoiceEntity.INVOICE_NO,entity.getInvoiceNo());
         int count2 = tXfPreInvoiceDao.delete(preWrapper);
-        if(count > 0 && count1 >0 && count2>0){
-            return R.ok("删除成功");
-        }else {
-            return R.fail("删除失败");
+        if(count2 < 1){
+            throw  new EnhanceRuntimeException("删除失败");
         }
+        //修改结算单状态
+        QueryWrapper<TDxRecordInvoiceEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,entity.getSettlementNo());
+        TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
+        List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(queryWrapper);
+        if(tDxRecordInvoiceEntities.stream().allMatch(t ->t.getIsDel().equals(TXfInvoiceStatusEnum.CANCEL.getCode()))){
+            tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode());
+        }else{
+            tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
+        }
+        UpdateWrapper<TXfSettlementEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,entity.getSettlementNo());
+        int count3 = tXfSettlementDao.update(tXfSettlementEntity, updateWrapper);
+        if(count3 < 1){
+            throw  new EnhanceRuntimeException("删除失败");
+        }
+        return R.ok("删除成功");
     }
 
     /**

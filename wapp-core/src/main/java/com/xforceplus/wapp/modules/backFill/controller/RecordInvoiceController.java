@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.backFill.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
@@ -10,6 +11,7 @@ import com.xforceplus.wapp.modules.system.controller.AbstractController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.vavr.collection.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,10 +53,16 @@ public class RecordInvoiceController extends AbstractController {
     }
 
     @ApiOperation(value = "红票删除")
-    @DeleteMapping(value = "/delete/{id}")
-    public R delete(@ApiParam(value = "发票id", required = true) @PathVariable Long id){
-        logger.info("底账发票列表--入参：{}", id);
-        return R.ok(recordInvoiceService.deleteInvoice(id));
+    @DeleteMapping(value = "/delete")
+    public R delete(@ApiParam(value = "发票id", required = true) @RequestParam List<Long> ids){
+        logger.info("底账发票列表--入参：{}", JSONArray.toJSONString(ids));
+        for (Long id : ids) {
+            R r = recordInvoiceService.deleteInvoice(id);
+            if(R.FAIL.equals(r.getCode())){
+               return r;
+            }
+        }
+        return R.ok();
     }
 
 }
