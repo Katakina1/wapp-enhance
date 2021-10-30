@@ -88,6 +88,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             final List<DeductListResponse> list = pageResult.getRecords().stream().map(x -> {
                 final DeductListResponse deductListResponse = deductMapper.toResponse(x);
                 deductListResponse.setOverdue(checkOverdue(typeEnum, x.getSellerNo(), x.getDeductDate()) ? 1 : 0);
+                if (Objects.equals(deductListResponse.getLock(),TXfBillDeductStatusEnum.LOCK.getCode())){
+                    deductListResponse.setRefSettlementNo(null);
+                }
                 return deductListResponse;
             }).collect(Collectors.toList());
             responses.addAll(list);

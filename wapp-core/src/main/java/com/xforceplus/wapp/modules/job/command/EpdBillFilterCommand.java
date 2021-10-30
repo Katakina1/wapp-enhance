@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
+import com.xforceplus.wapp.modules.deduct.model.EPDBillData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
@@ -111,7 +112,7 @@ public class EpdBillFilterCommand implements Command {
             );
             // 总页数
             pages = page.getPages();
-            filter(jobId, page.getRecords());
+            filter(jobId, page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
     }
@@ -121,8 +122,9 @@ public class EpdBillFilterCommand implements Command {
      *
      * @param jobId
      * @param list
+     * @param jobName
      */
-    private void filter(int jobId, List<TXfOriginEpdBillEntity> list) {
+    private void filter(int jobId, List<TXfOriginEpdBillEntity> list, String jobName) {
         List<DeductBillBaseData> newList = list
                 .stream()
                 // Document Type 文档类型 只取KO类型
@@ -137,7 +139,9 @@ public class EpdBillFilterCommand implements Command {
                 })
                 .map(v -> {
                     try {
-                        return TXfOriginEpdBillEntityConvertor.INSTANCE.toEpdBillData(v);
+                        EPDBillData data = TXfOriginEpdBillEntityConvertor.INSTANCE.toEpdBillData(v);
+                        data.setBatchNo(jobName);
+                        return data;
                     } catch (Exception e) {
                         log.warn(e.getMessage(), e);
                         return null;

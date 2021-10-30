@@ -140,4 +140,9 @@ public class DeductListResponse {
      */
     private Integer overdue;
 
+    /**
+     * 1 锁定，0未锁定
+     */
+    private Integer lock;
+
 }
