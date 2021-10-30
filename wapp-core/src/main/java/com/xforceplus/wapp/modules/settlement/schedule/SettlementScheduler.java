@@ -45,7 +45,7 @@ public class SettlementScheduler {
             while (CollectionUtils.isNotEmpty(list)) {
                 for (TXfSettlementEntity tXfSettlementEntity : list) {
                     try {
-                        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
+                        preinvoiceService.splitPreInvoice("settlementNo5817463455506432", "172164");
                     } catch (Exception e) {
                         log.error("定时器 拆票失败：{}", e);
                     }
