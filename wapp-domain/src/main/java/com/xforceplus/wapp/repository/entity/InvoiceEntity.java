@@ -338,4 +338,12 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
+
+    public String getRedNoticeNumber() {
+        return redNoticeNumber;
+    }
+
+    public void setRedNoticeNumber(String redNoticeNumber) {
+        this.redNoticeNumber = redNoticeNumber;
+    }
 }

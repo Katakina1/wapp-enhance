@@ -37,6 +37,7 @@ public class EPDController {
     @GetMapping("summary")
     @ApiOperation(value = "EPD页头统计")
     public R summary(DeductListRequest request) {
+        request.setTaxRate(null);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.EPD_BILL);
         return R.ok(summary);
     }

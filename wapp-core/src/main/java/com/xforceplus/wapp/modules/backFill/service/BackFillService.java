@@ -447,6 +447,8 @@ public class BackFillService  {
                     log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
                     Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                     log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
+                }else{
+                    return R.fail("预制发票的红字信息编号匹配失败");
                 }
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
@@ -476,6 +478,8 @@ public class BackFillService  {
                 }
                 tXfSettlementDao.updateById(tXfSettlementEntity);
                 operateLogService.add(tXfSettlementEntity.getId(),OperateLogEnum.UPLOAD_INVOICE,businessStatus, UserUtil.getUserId(),UserUtil.getUserName());
+            }else{
+                throw new EnhanceRuntimeException("未找到结算单");
             }
         }else{
             log.info("发票蓝冲:invoiceNo:{},invoiceCode:{}",request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
