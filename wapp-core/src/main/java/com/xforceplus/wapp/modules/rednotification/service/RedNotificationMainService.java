@@ -156,19 +156,19 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 throw new RRException(String.format("未获取税号[%s]的在线终端",rednotificationMain.getPurchaserTaxNo()));
             }
             //申请
-            return applyByPage(applyRequest);
+            return applyByPage(applyRequest,true);
         }
         return Response.ok("新增成功");
     }
 
-    public Response applyByPage(RedNotificationApplyReverseRequest request) {
+    public Response applyByPage(RedNotificationApplyReverseRequest request,boolean autoFlag) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         if (filterData.size() > maxApply){
             return  Response.failed("单次申请最大支持:"+maxApply);
         }
 
         //自动申请没有上下文
-        if(UserUtil.getUser() != null){
+        if(UserUtil.getUser() != null && !autoFlag){
             String loginName = UserUtil.getLoginName();
             String key = APPLY_REDNOTIFICATION_KEY+loginName;
             if (redisTemplate.opsForValue().get(key) != null){
