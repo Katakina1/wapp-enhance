@@ -669,8 +669,12 @@ public class DeductService   {
      * @return PageResult
      */
     public PageResult<QueryDeductListResponse> queryPageList(QueryDeductListRequest request){
-        int offset = (request.getPageNo() -1) * request.getPageSize();
-        int next = request.getPageSize();
+        Integer offset = null;
+        Integer next = null;
+        if(request.getPageSize() != null && request.getPageNo() != null){
+            offset = (request.getPageNo() -1) * request.getPageSize();
+            next = request.getPageSize();
+        }
         int count = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
                 request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), request.getKey());
         List<TXfBillDeductExtEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
@@ -812,17 +816,21 @@ public class DeductService   {
             excelWriter = EasyExcel.write(out).excelType(ExcelTypeEnum.XLSX).build();
             //创建一个sheet
             WriteSheet writeSheet = EasyExcel.writerSheet(0, "主信息").build();
+            List exportList = new LinkedList();
             if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
+                BeanUtil.copyList(queryDeductListResponse,exportList,ExportClaimBillModel.class);
                 writeSheet.setClazz(ExportClaimBillModel.class);
             }else if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(typeEnum)){
+                BeanUtil.copyList(queryDeductListResponse,exportList,ExportAgreementBillModel.class);
                 writeSheet.setClazz(ExportAgreementBillModel.class);
             }else{
+                BeanUtil.copyList(queryDeductListResponse,exportList,ExportEPDBillModel.class);
                 writeSheet.setClazz(ExportEPDBillModel.class);
             }
-            excelWriter.write(queryDeductListResponse, writeSheet);
+            excelWriter.write(exportList, writeSheet);
             //只有索赔单有明细信息
             if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(typeEnum)){
-                List<DeductBillItemModel> exportItem = getExportItem(queryDeductListResponse.stream().map(QueryDeductListResponse::getId).collect(Collectors.toList()));
+                List<ExportClaimBillItemModel> exportItem = getExportItem(queryDeductListResponse.stream().map(QueryDeductListResponse::getId).collect(Collectors.toList()));
                 //创建一个新的sheet
                 WriteSheet writeSheet1 = EasyExcel.writerSheet(1, "明细信息").build();
                 writeSheet1.setClazz(ExportClaimBillItemModel.class);
@@ -971,28 +979,28 @@ public class DeductService   {
     }
 
     public List<QueryDeductListResponse> getExportMainData(DeductExportRequest request){
+        List<QueryDeductListResponse> response = new ArrayList<>();
         if(request.getIdList() != null){
             QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
             wrapper.in(TXfBillDeductEntity.ID,request.getIdList());
             List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.selectList(wrapper);
-            List<QueryDeductListResponse> response = new ArrayList<>();
             BeanUtil.copyList(tXfBillDeductEntities,response,QueryDeductListResponse.class);
             return response;
         }else{
             PageResult<QueryDeductListResponse> pageResult = queryPageList(request);
             if(pageResult != null && CollectionUtils.isNotEmpty(pageResult.getRows())){
-                return  pageResult.getRows();
+                return response ;
             }
         }
         return null;
     }
 
-    public List<DeductBillItemModel> getExportItem(List<Long> idList){
-        List<DeductBillItemModel> response = new ArrayList<>();
+    public List<ExportClaimBillItemModel> getExportItem(List<Long> idList){
+        List<ExportClaimBillItemModel> response = new ArrayList<>();
         for (Long id : idList) {
             DeductDetailResponse deductDetailById = getDeductDetailById(id);
             if(deductDetailById != null && CollectionUtils.isNotEmpty(deductDetailById.getDeductBillItemList())){
-                response.addAll(deductDetailById.getDeductBillItemList());
+                BeanUtil.copyList(deductDetailById.getDeductBillItemList(),response,ExportClaimBillItemModel.class);
             }
         }
         return response;

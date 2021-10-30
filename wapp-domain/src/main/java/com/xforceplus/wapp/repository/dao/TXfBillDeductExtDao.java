@@ -189,7 +189,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "order by d.id desc offset #{offset} rows fetch next #{next} rows only\n"+
             "</if>"+
             "</script>")
-    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")int offset, @Param("next")int next, @Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
+    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")Integer offset, @Param("next")Integer next, @Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
 
     @Select("<script>"+
             "select count(d.id) from t_xf_bill_deduct d\n" +
