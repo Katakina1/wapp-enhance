@@ -39,7 +39,7 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/apply")
     public Response applyByPage(@RequestBody RedNotificationApplyReverseRequest request){
-        return rednotificationService.applyByPage(request);
+        return rednotificationService.applyByPage(request,false);
     }
 
     @ApiOperation(value = "红字信息申请表新增待申请", notes = "", response = Response.class, tags = {"red-notification",})

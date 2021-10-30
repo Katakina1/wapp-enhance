@@ -11,7 +11,10 @@ import java.util.Date;
  */
 @Data
 public class ExportEPDBillModel {
-
+    /**
+     * 主键
+     */
+    private Long id;
     /**
      * 业务单据编号
      */

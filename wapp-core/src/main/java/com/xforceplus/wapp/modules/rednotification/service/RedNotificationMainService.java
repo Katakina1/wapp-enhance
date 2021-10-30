@@ -156,19 +156,20 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 throw new RRException(String.format("未获取税号[%s]的在线终端",rednotificationMain.getPurchaserTaxNo()));
             }
             //申请
-            return applyByPage(applyRequest);
+            return applyByPage(applyRequest,true);
         }
         return Response.ok("新增成功");
     }
 
-    public Response applyByPage(RedNotificationApplyReverseRequest request) {
+    public Response applyByPage(RedNotificationApplyReverseRequest request,boolean autoFlag) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         if (filterData.size() > maxApply){
             return  Response.failed("单次申请最大支持:"+maxApply);
         }
 
         //自动申请没有上下文
-        if(UserUtil.getUser() != null){
+        log.info("申请标识:{}",autoFlag);
+        if( !autoFlag){
             String loginName = UserUtil.getLoginName();
             String key = APPLY_REDNOTIFICATION_KEY+loginName;
             if (redisTemplate.opsForValue().get(key) != null){
@@ -340,6 +341,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         //判读如果 getIncludes 没有值，queryModel 全选标识没传 。默认true 逻辑
         if (CollectionUtils.isEmpty(queryModel.getIncludes()) && queryModel.getIsAllSelected()==null){
             queryModel.setIsAllSelected(true);
+        }else if (!CollectionUtils.isEmpty(queryModel.getIncludes()) && queryModel.getIsAllSelected()==null){
+            queryModel.setIsAllSelected(false);
         }
 
         //全选
@@ -1008,17 +1011,21 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     public Response<String> operation(RedNotificationConfirmRejectRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         List<Long> list = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+
+        //
+        List<Long> pidList = filterData.stream().map(item->Long.parseLong(item.getPid())).collect(Collectors.toList());
         if (Objects.equals(OperationType.CONFIRM.getValue(),request.getOperationType())){
            // 确认 //自动尝试一次 //撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
             record.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
+            record.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPROVE.getValue());
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.in(TXfRedNotificationEntity::getId,list);
             int update = getBaseMapper().update(record, updateWrapper);
 
             // 同意删除预制发票
             try{
-                commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(list);
+                commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(pidList);
             }catch (EnhanceRuntimeException e){
                 return Response.failed(e.getMessage());
             }
@@ -1037,7 +1044,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             // 驳回保留红字预制发票
             try {
-                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(list);
+                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(pidList);
             }catch (EnhanceRuntimeException e){
                 return Response.failed(e.getMessage());
             }

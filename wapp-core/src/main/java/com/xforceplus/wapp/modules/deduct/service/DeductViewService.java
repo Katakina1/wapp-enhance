@@ -13,6 +13,7 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.ServiceTypeEnum;
+import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
@@ -194,7 +195,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         String deductDateEnd = request.getDeductDateEnd();
         if (StringUtils.isNotBlank(deductDateEnd)) {
             final String format = DateUtils.addDayToYYYYMMDD(deductDateEnd, 1);
-            wrapper.le(TXfBillDeductEntity.DEDUCT_DATE, format);
+            wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, format);
         }
         // ===============================
         //定案、入账日期 >> begin
@@ -206,32 +207,42 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         String verdictDateEnd = request.getVerdictDateEnd();
         if (StringUtils.isNotBlank(verdictDateEnd)) {
             final String format = DateUtils.addDayToYYYYMMDD(verdictDateEnd, 1);
-            wrapper.le(TXfBillDeductEntity.VERDICT_DATE, format);
+            wrapper.lt(TXfBillDeductEntity.VERDICT_DATE, format);
         }
 
         wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE, typeEnum.getValue());
 
-        //超期判断
-        if (request.getOverdue() != null && typeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+        if (typeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+            //协议单和EPD才有超期配置
 
-            final int overdue = getOverdue(typeEnum,request.getSellerNo());
+            //超期判断
+            if (request.getOverdue() != null) {
 
-            final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
-            final Date date = dateTime.setField(DateField.HOUR, 0)
-                    .setField(DateField.MINUTE, 0)
-                    .setField(DateField.SECOND, 0)
-                    .setField(DateField.MILLISECOND, 0)
-                    .toJdkDate();
-            switch (request.getOverdue()) {
-                case 1:
-                    wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, date);
-                    break;
-                case 0:
-                    wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE, date);
-                    break;
+                final int overdue = getOverdue(typeEnum, request.getSellerNo());
+
+                final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
+                final Date date = dateTime.setField(DateField.HOUR, 0)
+                        .setField(DateField.MINUTE, 0)
+                        .setField(DateField.SECOND, 0)
+                        .setField(DateField.MILLISECOND, 0)
+                        .toJdkDate();
+                switch (request.getOverdue()) {
+                    case 1:
+                        wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                        break;
+                    case 0:
+                        wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                        break;
+                }
             }
+        } else {
+            // 索赔单只展示 生成结算单之后的数据
+            wrapper.in(TXfBillDeductEntity.STATUS,
+                    TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode()
+                    ,TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode()
+                    ,TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode()
+            );
         }
-
         return wrapper;
     }
 
