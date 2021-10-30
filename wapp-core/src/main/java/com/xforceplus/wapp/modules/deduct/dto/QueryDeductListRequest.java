@@ -62,10 +62,10 @@ public class QueryDeductListRequest {
     private Integer status;
 
     @ApiModelProperty("页数")
-    private Integer pageSize;
+    private Integer pageSize=99999;
 
     @ApiModelProperty("页码")
-    private Integer pageNo;
+    private Integer pageNo=1;
 
     @ApiModelProperty("tab页标签 待匹配蓝票：0,已匹配待开票：1，已申请红字信息：2，已开票：3，已撤销：4")
     private String key;

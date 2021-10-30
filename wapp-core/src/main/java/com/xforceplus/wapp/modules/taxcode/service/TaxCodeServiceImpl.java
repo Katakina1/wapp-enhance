@@ -38,9 +38,9 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
     private final TaxCodeConverter taxCodeConverter;
     private final WappDb2Client wappDb2Client;
     private final JanusClient janusClient;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public TaxCodeServiceImpl(TaxCodeConverter taxCodeConverter, WappDb2Client wappDb2Client, JanusClient janusClient,RedisTemplate redisTemplate) {
+    public TaxCodeServiceImpl(TaxCodeConverter taxCodeConverter, WappDb2Client wappDb2Client, JanusClient janusClient, RedisTemplate<String, String> redisTemplate) {
         this.taxCodeConverter = taxCodeConverter;
         this.wappDb2Client = wappDb2Client;
         this.janusClient = janusClient;
@@ -92,17 +92,18 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
      * @return 成功集合/失败原因
      */
     public Either<String, List<TaxCodeBean>> searchTaxCode(@Nullable String taxCode, @Nullable String keyWord) {
-        String key =String.format("taxCode:%s-keyWord:%s",StringUtils.isEmpty(taxCode)?"":taxCode,StringUtils.isEmpty(keyWord)?"":keyWord);
-        Object cacheGoodsTaxInfo = redisTemplate.opsForValue().get(key);
-        if ( cacheGoodsTaxInfo != null){
-            List<TaxCodeBean> taxCodeBeans = JsonUtil.fromJsonList(cacheGoodsTaxInfo.toString(), TaxCodeBean.class);
+        String key = String.format("taxCode:%s-keyWord:%s",
+                Objects.toString(taxCode, StringUtils.EMPTY), Objects.toString(keyWord, StringUtils.EMPTY));
+        String cache = redisTemplate.opsForValue().get(key);
+        if (cache != null) {
+            List<TaxCodeBean> taxCodeBeans = JsonUtil.fromJsonList(cache, TaxCodeBean.class);
             return Either.right(taxCodeBeans);
-        }else {
+        } else {
             Either<String, List<TaxCodeBean>> result = janusClient.searchTaxCode(taxCode, keyWord);
-            if (result.isRight()){
-                redisTemplate.opsForValue().set(key,JsonUtil.toJsonStr(result.get()),3,TimeUnit.SECONDS);
+            if (result.isRight()) {
+                redisTemplate.opsForValue().set(key, JsonUtil.toJsonStr(result.get()), 6, TimeUnit.HOURS);
             }
-            return result ;
+            return result;
         }
     }
 }
