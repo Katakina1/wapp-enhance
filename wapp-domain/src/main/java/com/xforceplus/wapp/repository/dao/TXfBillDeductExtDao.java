@@ -2,6 +2,7 @@ package com.xforceplus.wapp.repository.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductExtEntity;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -62,7 +63,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      */
     @Select("select sum(deduct.amount_without_tax) as amount_without_tax,sum(deduct.amount_with_tax) as amount_with_tax,sum(deduct.tax_amount) as tax_amount , deduct.seller_no,deduct.purchaser_no, deduct.tax_rate\n" +
             "from t_xf_bill_deduct deduct left join t_xf_overdue overdue on overdue.seller_no = deduct.seller_no\n" +
-            "where  deduct.deduct_date > (case overdue.overdue_day when null  then DATEADD(d,0-#{referenceDate},GETDATE()) else    DATEADD(d,0-(overdue.overdue_day),GETDATE()) end)\n" +
+            "where  deduct.deduct_date >  IIF(  overdue.overdue_day is null, DATEADD(d, 0 - #{referenceDate}, GETDATE()),  DATEADD(d, 0 - (overdue.overdue_day), GETDATE())) \n" +
             "  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag}\n" +
             "group by deduct.purchaser_no, deduct.seller_no,deduct.tax_rate\n")
     public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Integer referenceDate,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
@@ -130,7 +131,10 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     public Integer updateSuitableClaimBill(@Param("type")Integer type, @Param("status")Integer status, @Param("targetStatus") Integer targetStatus, @Param("settlementNo")String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo);
 
     @Select("<script>"+
-            "select d.*,s.invoice_type from t_xf_bill_deduct d\n" +
+            "select d.id, d.business_no, d.business_type, d.ref_settlement_no, d.verdict_date, d.deduct_date, d.deduct_invoice, d.tax_rate, d.agreement_reason_code, d.agreement_reference, d.agreement_tax_code, d.agreement_memo, d.agreement_document_number, d.agreement_document_type, d.tax_amount, d.remark, d.status, d.create_time, d.update_time, d.purchaser_no, d.seller_no, d.seller_name, d.amount_without_tax, d.amount_with_tax, d.lock_flag, d.batch_no, d.source_id, d.purchaser_name,s.invoice_type," +
+            "sum(di.tax_amount)item_tax_amount,sum(di.amount_with_tax)item_without_amount,sum(di.tax_amount)+sum(di.amount_with_tax)item_with_amount\n"+
+            "from t_xf_bill_deduct d\n" +
+            "left outer join t_xf_bill_deduct_item_ref di on di.deduct_id  = d.id\n"+
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
             "<if test='businessNo!=null'>"+
@@ -148,8 +152,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='businessNo!=null'>"+
             "and d.business_no = #{businessNo}\n"+
             "</if>"+
-            "<if test='deductDate!=null'>"+
-            "and format(d.deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
+            "<if test='deductStartDate!=null'>"+
+            "and d.deduct_date &gt;=  #{deductStartDate}\n"+
+            "</if>"+
+            "<if test='deductEndDate!=null'>"+
+            "and d.deduct_date &lt;=  #{deductEndDate}\n"+
             "</if>"+
             "<if test='purchaserNo!=null'>"+
             "and d.purchaser_no= #{purchaserNo}\n"+
@@ -177,11 +184,12 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='key == 4 and businessType ==3'>"+
             "and d.status = 304\n"+
             "</if>"+
+            "group by d.id, d.business_no, d.business_type, d.ref_settlement_no, d.verdict_date, d.deduct_date, d.deduct_invoice, d.tax_rate, d.agreement_reason_code, d.agreement_reference, d.agreement_tax_code, d.agreement_memo, d.agreement_document_number, d.agreement_document_type, d.tax_amount, d.remark, d.status, d.create_time, d.update_time, d.purchaser_no, d.seller_no, d.seller_name, d.amount_without_tax, d.amount_with_tax, d.lock_flag, d.batch_no, d.source_id, d.purchaser_name,s.invoice_type\n"+
             "<if test='offset != null and next !=null'>"+
             "order by d.id desc offset #{offset} rows fetch next #{next} rows only\n"+
             "</if>"+
             "</script>")
-    List<TXfBillDeductEntity> queryBillPage(@Param("offset")int offset,@Param("next")int next,@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
+    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")int offset, @Param("next")int next, @Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
 
     @Select("<script>"+
             "select count(d.id) from t_xf_bill_deduct d\n" +
@@ -202,8 +210,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='businessNo!=null'>"+
             "and d.business_no = #{businessNo}\n"+
             "</if>"+
-            "<if test='deductDate!=null'>"+
-            "and format(d.deduct_date,'yyyy-MM-dd')= #{deductDate}\n"+
+            "<if test='deductStartDate!=null'>"+
+            "and d.deduct_date &gt;=  #{deductStartDate}\n"+
+            "</if>"+
+            "<if test='deductEndDate!=null'>"+
+            "and d.deduct_date &lt;=  #{deductEndDate}\n"+
             "</if>"+
             "<if test='purchaserNo!=null'>"+
             "and d.purchaser_no= #{purchaserNo}\n"+
@@ -232,5 +243,5 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 304\n"+
             "</if>"+
             "</script>")
-    int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductDate") String deductDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
+    int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductStartDate") String deductStartDate,@Param("deductEndDate") String deductEndDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 }

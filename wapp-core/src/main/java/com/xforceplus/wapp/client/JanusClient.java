@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.client;
 
+import com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
@@ -31,9 +32,11 @@ public class JanusClient {
     public String tenantId;
     private final Map<String, String> defaultHeader = new HashMap<>();
     private final Gson gson = new Gson();
+    private final DefaultIdentifierGenerator generator;
 
     public JanusClient(HttpClientFactory httpClientFactory) {
         this.httpClientFactory = httpClientFactory;
+        this.generator = new DefaultIdentifierGenerator();
     }
 
     @PostConstruct
@@ -50,7 +53,9 @@ public class JanusClient {
             return Either.left("参数不能全为空");
         }
         try {
+            String serialNo = generator.nextId(null).toString();
             defaultHeader.put("uiaSign", taxCodeSign);
+            defaultHeader.put("serialNo", serialNo);
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
             if (StringUtils.isNotBlank(taxCode)) {
                 paramMeterMap.put("code", taxCode);
@@ -60,7 +65,7 @@ public class JanusClient {
             }
             paramMeterMap.put("appId", "walmart");
             paramMeterMap.put("node", 1);
-            log.info("获取中台税编参数:{}", paramMeterMap);
+            log.info("获取中台税编,集成流水号[serialNo]:{},参数:{}", serialNo, paramMeterMap);
             final String get = httpClientFactory.get(taxCodeAction, paramMeterMap, defaultHeader);
             log.debug("获取中台税编结果:{}", get);
             TaxCodeRsp taxCodeRsp = gson.fromJson(get, TaxCodeRsp.class);

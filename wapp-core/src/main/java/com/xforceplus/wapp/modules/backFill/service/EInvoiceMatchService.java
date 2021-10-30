@@ -151,7 +151,7 @@ public class EInvoiceMatchService {
         successEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
         if (org.apache.commons.lang3.StringUtils.isNotEmpty(invoiceMain.getOfdImageUrl())) {
             try {
-                String base64 = verificationService.getBase64ByUrl(invoiceMain.getOfdImageUrl());
+                String base64 = verificationService.getBase64ByUrl(invoiceMain.getOfdImageUrl(),invoiceMain.getInvoiceCode()+invoiceMain.getInvoiceNo());
 
                 String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
                 UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
@@ -168,7 +168,7 @@ public class EInvoiceMatchService {
         TAcOrgEntity purEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getPurchaserTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
         TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
         Map<String, Object> map = new HashMap<>();
-        if (null != purEntity) {
+        if (null != sellerEntity) {
             map.put("venderid", sellerEntity.getOrgCode());
             map.put("gfName", sellerEntity.getOrgName());
         }
@@ -253,7 +253,7 @@ public class EInvoiceMatchService {
         validateOrg(invoiceMain, recordEntity, orgEntity);
         validateTax(invoiceMain, invoiceDetails);
         //校验购销对
-        QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
+        /*QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
         settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO, electronicUploadRecordDetailEntity.getSettlementNo());
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(settlementWrapper);
         if (tXfSettlementEntity == null) {
@@ -270,7 +270,7 @@ public class EInvoiceMatchService {
         }
         if (!invoiceMain.getSellerTaxNo().equals(tXfSettlementEntity.getSellerTaxNo())) {
             throw new EnhanceRuntimeException("销方税号不一致");
-        }
+        }*/
         //从备注里截取红字信息编号
         Map<String, Object> map = new HashMap<>();
         if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {

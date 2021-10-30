@@ -11,4 +11,13 @@ public class NoSuchInvoiceException extends EnhanceRuntimeException {
     public NoSuchInvoiceException() {
         super("没有匹配到合适的蓝票，请稍后重试");
     }
+
+    public NoSuchInvoiceException(String message) {
+        super(message);
+    }
+
+    public NoSuchInvoiceException(String message, String code) {
+        super(message, code);
+    }
+
 }

@@ -63,7 +63,7 @@ public class EpdBillSaveCommand implements Command {
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
+            log.info("跳过原始EPD文件数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
     }

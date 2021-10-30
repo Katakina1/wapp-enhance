@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.noneBusiness.service;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -46,10 +47,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -129,7 +127,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setCreateUser(UserUtil.getLoginName());
             addEntity.setSourceUploadPath(data.getUploadPath());
             //发送验签
-            OfdResponse response = backFillService.signOfd(ofdEntity);
+            OfdResponse response = backFillService.signOfd(ofdEntity,entity.getBussinessNo());
             //验签成功
             if (response.isOk()) {
                 addEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
@@ -345,22 +343,21 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     public R export(List<TXfNoneBusinessUploadDetailDto> resultList, List<Long> id) {
 
         final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
-        ExcelWriter excelWriter;
-        ByteArrayInputStream in = null;
         String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        ExcelWriter excelWriter;
+        FileInputStream inputStream =null;
+        try {
             //创建一个sheet
             File file = new File(tmp + ftpPath);
             if (!file.exists()) {
                 file.mkdirs();
             }
             File excl = new File(file, excelFileName);
-            EasyExcel.write(tmp + ftpPath + excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
-            WriteSheet writeSheet = EasyExcel.writerSheet(0, "非商导出结果信息").build();
+            EasyExcel.write(tmp + ftpPath + "/"+ excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;
-            in = new ByteArrayInputStream(out.toByteArray());
-            ftpUtilService.uploadFile(ftpPath, excelFileName, in);
+            inputStream=FileUtils.openInputStream(excl);
+            ftpUtilService.uploadFile(ftpPath, excelFileName,inputStream );
             final Long userId = UserUtil.getUserId();
             ExceptionReportExportDto exportDto = new ExceptionReportExportDto();
             exportDto.setUserId(userId);
@@ -382,9 +379,9 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             log.error("导出异常:{}", e);
             return R.fail("导出异常");
         } finally {
-            if (in != null) {
+            if (inputStream != null) {
                 try {
-                    in.close();
+                    inputStream.close();
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }

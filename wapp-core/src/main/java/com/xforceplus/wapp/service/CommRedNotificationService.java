@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
+import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationInfo;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationItem;
@@ -35,7 +36,7 @@ public class CommRedNotificationService {
         RedNotificationInfo redNotificationInfo = convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(applyProInvoiceRedNotificationDTO);
         // 申请调用沃尔玛接口申请
         AddRedNotificationRequest request = new AddRedNotificationRequest();
-        request.setAutoApplyFlag(2);
+        request.setAutoApplyFlag(1);
         request.setRedNotificationInfoList(Collections.singletonList(redNotificationInfo));
         redNotificationOuterService.add(request);
     }
@@ -75,10 +76,21 @@ public class CommRedNotificationService {
 
         RedNotificationMain redNotificationMain = new RedNotificationMain();
         //数据转换
+        redNotificationMain.setPid(String.valueOf(preInvoice.getId()));
         redNotificationMain.setId(preInvoice.getId());
         redNotificationMain.setRemark(preInvoice.getRemark());
         redNotificationMain.setUserRole(2);
-        redNotificationMain.setInvoiceType(preInvoice.getInvoiceType());
+        /// 发票类型转换
+        if (InvoiceTypeEnum.SPECIAL_INVOICE.getValue().equals(preInvoice.getInvoiceType())){
+            redNotificationMain.setInvoiceType(InvoiceTypeEnum.SPECIAL_INVOICE.getXfValue());
+        }else if (InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue().equals(preInvoice.getInvoiceType())) {
+            redNotificationMain.setInvoiceType(InvoiceTypeEnum.E_SPECIAL_INVOICE.getXfValue());
+        }else {
+             throw new RuntimeException("不支持的发票票种申请红字信息");
+        }
+
+
+
         redNotificationMain.setOriginInvoiceType(preInvoice.getOriginInvoiceType());
         redNotificationMain.setOriginalInvoiceNo(preInvoice.getOriginInvoiceNo());
         redNotificationMain.setOriginalInvoiceCode(preInvoice.getOriginInvoiceCode());
@@ -103,6 +115,7 @@ public class CommRedNotificationService {
             //TODO
             //redNotificationItem.setDetailNo();
             //redNotificationItem.setTaxConvertCode();
+            redNotificationItem.setGoodsName(preInvoiceItem.getCargoName());
             redNotificationItem.setGoodsTaxNo(preInvoiceItem.getGoodsTaxNo());
             redNotificationItem.setTaxPre(Integer.valueOf(preInvoiceItem.getTaxPre()));
             redNotificationItem.setTaxPreCon(preInvoiceItem.getTaxPreCon());

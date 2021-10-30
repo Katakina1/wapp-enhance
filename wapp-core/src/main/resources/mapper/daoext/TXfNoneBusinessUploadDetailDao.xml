@@ -54,6 +54,10 @@
             and t.bussiness_type = #{entity.bussinessType}
         </if>
 
+        <if test="entity.bussinessNo != null and entity.bussinessNo != ''">
+            and t.bussiness_no = #{entity.bussinessNo}
+        </if>
+
         <if test="entity.storeNo != null and entity.storeNo != ''">
             and t.store_no = #{entity.storeNo}
         </if>
@@ -88,7 +92,6 @@
         <if test="entity.invoiceStoreNo != null and entity.invoiceStoreNo != ''">
             and t.invoice_store_no = #{entity.invoiceStoreNo}
         </if>
-
 
     </select>
 

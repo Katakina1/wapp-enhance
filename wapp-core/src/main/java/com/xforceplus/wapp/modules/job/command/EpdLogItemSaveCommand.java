@@ -54,7 +54,7 @@ public class EpdLogItemSaveCommand implements Command {
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
-            log.info("开始保存原始EPD单文件LOG明细数据入库fileName={}, sheetName={}", fileName, sheetName);
+            log.info("开始保存原始EPD单LOG明细数据入库fileName={}, sheetName={}", fileName, sheetName);
             if (!isLocalFileExists(localPath, fileName)) {
                 log.info("未找到本地文件，需重新下载，当前任务={}, 目录={}", fileName, localPath);
                 downloadFile(remotePath, fileName, localPath);
@@ -66,7 +66,7 @@ public class EpdLogItemSaveCommand implements Command {
                 context.put(TXfBillJobEntity.REMARK, e.getMessage());
             }
         } else {
-            log.info("跳过文件入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
+            log.info("跳过原始EPD单LOG明细数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
     }

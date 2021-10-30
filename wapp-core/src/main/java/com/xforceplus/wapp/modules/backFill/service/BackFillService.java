@@ -187,13 +187,14 @@ public class BackFillService  {
         return R.ok(batchNo);
     }
 
-    public VerificationResponse parseOfd(byte[] ofd) {
+    public VerificationResponse parseOfd(byte[] ofd,String batchNo) {
         OfdParseRequest request = new OfdParseRequest();
         request.setOfdEncode(Base64.encodeBase64String(ofd));
         request.setTenantCode(tenantCode);
         // 仅解析和验签
         request.setType("1");
         try {
+            defaultHeader.put("serialNo",batchNo);
             final String responseBody = httpClientFactory.post(ofdAction, defaultHeader, JSONObject.toJSONString(request), "");
             log.info("发送ofd解析结果:{}", responseBody);
             final OfdResponse ofdResponse = JSONObject.parseObject(responseBody, OfdResponse.class);
@@ -218,13 +219,14 @@ public class BackFillService  {
         }
     }
 
-    public OfdResponse signOfd(byte[] ofd) {
+    public OfdResponse signOfd(byte[] ofd,String businessNo) {
         OfdParseRequest request = new OfdParseRequest();
         request.setOfdEncode(Base64.encodeBase64String(ofd));
         request.setTenantCode(tenantCode);
         // 仅解析和验签
         request.setType("1");
         try {
+            defaultHeader.put("serialNo",businessNo);
             final String responseBody = httpClientFactory.post(ofdAction, defaultHeader, JSONObject.toJSONString(request), "");
             log.info("发送ofd解析结果:{}", responseBody);
             return JSONObject.parseObject(responseBody, OfdResponse.class);
@@ -267,7 +269,7 @@ public class BackFillService  {
                 detailEntity.setId(idSequence.nextId());
                 detailEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
                 try {
-                    final VerificationResponse verificationResponse = this.parseOfd(ofd);
+                    final VerificationResponse verificationResponse = this.parseOfd(ofd,batchNo);
                     if (verificationResponse.isOK()) {
                         final String verifyTaskId = verificationResponse.getResult();
                         detailEntity.setXfVerifyTaskId(verifyTaskId);
