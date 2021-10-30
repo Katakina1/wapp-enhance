@@ -135,11 +135,9 @@ public class SettlementController {
 
     @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class)
     @GetMapping(value = "{settlementId}/recommended")
-    public Response recommend(@PathVariable Long settlementId, @Valid InvoiceRecommendListRequest request) {
-
+    public R recommend(@PathVariable Long settlementId, @Valid InvoiceRecommendListRequest request) {
         final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
-
-        return Response.ok("", recommend);
+        return R.ok( recommend);
     }
 
 
