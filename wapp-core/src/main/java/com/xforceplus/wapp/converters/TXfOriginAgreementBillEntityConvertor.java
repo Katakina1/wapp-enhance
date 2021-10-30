@@ -2,9 +2,8 @@ package com.xforceplus.wapp.converters;
 
 import com.google.common.collect.ImmutableMap;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
-import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginAgreementMergeEntity;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
@@ -64,10 +63,10 @@ public interface TXfOriginAgreementBillEntityConvertor {
     /**
      * 转换成AgreementBillData
      *
-     * @param tXfOriginAgreementBillEntity
+     * @param mergeTmpEntity
      * @return
      */
-    AgreementBillData toAgreementBillData(TXfOriginSapFbl5nEntity tXfOriginSapFbl5nEntity);
+    AgreementBillData toAgreementBillData(TXfOriginAgreementMergeEntity mergeTmpEntity);
 
     /**
      * 将数字类型的字符串（可能含千分符）转换成数字
