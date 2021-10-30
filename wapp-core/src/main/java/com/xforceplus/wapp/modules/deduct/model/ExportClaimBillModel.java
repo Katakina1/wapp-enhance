@@ -15,6 +15,10 @@ import java.util.Date;
 public class ExportClaimBillModel {
 
     /**
+     * 主键
+     */
+    private Long id;
+    /**
      * 业务单据编号
      */
     @ExcelProperty("索赔单号")

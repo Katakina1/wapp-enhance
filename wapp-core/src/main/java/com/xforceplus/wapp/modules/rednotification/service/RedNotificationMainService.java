@@ -168,7 +168,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         }
 
         //自动申请没有上下文
-        if(UserUtil.getUser() != null && !autoFlag){
+        log.info("申请标识:{}",autoFlag);
+        if( !autoFlag){
             String loginName = UserUtil.getLoginName();
             String key = APPLY_REDNOTIFICATION_KEY+loginName;
             if (redisTemplate.opsForValue().get(key) != null){

@@ -42,6 +42,8 @@ public interface TDxRecordInvoiceDetailEntityConvertor {
     @Mapping(source = "taxAmount", target = "taxAmount")
     // 商品编码
     @Mapping(source = "goodsNum", target = "goodsNum")
+
+    @Mapping(source = "id", target = "itemId")
     /**
      * 转换成BlueInvoiceService.InvoiceItem
      *
