@@ -100,19 +100,21 @@ public class RecordInvoiceExtService extends ServiceImpl<TDxRecordInvoiceExtDao,
     }
 
     /**
-     * 从底账表按照先进先出的方式获取合适的蓝票
+     * 从底账表按照先进先出的方式获取一张合适的蓝票
      *
      * @param sellerTaxNo
      * @param purchaserTaxNo
+     * @param taxRate
      * @return
      */
-    public TDxRecordInvoiceEntity getOneAvailableInvoice(String sellerTaxNo, String purchaserTaxNo) {
+    public TDxRecordInvoiceEntity obtainAvailableInvoice(String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate) {
         return getOne(new QueryWrapper<TDxRecordInvoiceEntity>()
                 // 只返回第一行数据，否则getOne可能会报错
                 .select("top 1 *")
                 .lambda()
                 .eq(TDxRecordInvoiceEntity::getXfTaxNo, sellerTaxNo)
                 .eq(TDxRecordInvoiceEntity::getGfTaxNo, purchaserTaxNo)
+                .eq(TDxRecordInvoiceEntity::getTaxRate, taxRate)
                 // 排除状态异常的发票（只要正常的发票）
                 .eq(TDxRecordInvoiceEntity::getInvoiceStatus, "0")
                 // 排除非专票（只要增值税专票 和 电子专票）
