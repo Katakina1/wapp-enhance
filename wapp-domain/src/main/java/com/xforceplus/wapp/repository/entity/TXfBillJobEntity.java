@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-10-30
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -44,19 +44,31 @@ public class TXfBillJobEntity extends BaseEntity {
     private Integer jobStatus;
 
     /**
+     * 任务锁定状态，锁定代表当前任务正在被执行，不允许其他节点或线程重复执行 0-未锁定 1-已锁定
+     */
+    @TableField("job_lock_status")
+    private Boolean jobLockStatus;
+
+    /**
      * 原始数据采集对象 依次为 1-单据 2-单据明细（EPD单log明细或索赔单Hyper明细） 3-单据明细（索赔单Sams明细）
      */
     @TableField("job_acquisition_object")
     private Integer jobAcquisitionObject;
 
     /**
-     * 原始数据采集进度 当前处理完成的数据行数
+     * 原始数据采集进度 当前处理完成的数据行数，起始值是1（表头行）
      */
     @TableField("job_acquisition_progress")
     private Long jobAcquisitionProgress;
 
     /**
-     * 数据梳理录入进度 当前处理完成的数据行数
+     * 原始数据处理对象 依次为 1-单据（job_type为协议单时代表SAP-FBL5N） 2-单据明细（job_type为EPD时代表EPD单log明细，job_type为索赔单时代表Hyper明细，job_type为协议单时代表SAP-ZARR0355原稿） 3-单据明细（索赔单Sams明细）
+     */
+    @TableField("job_entry_object")
+    private Integer jobEntryObject;
+
+    /**
+     * 数据梳理录入进度 当前处理完成的分页数，起始值是0
      */
     @TableField("job_entry_progress")
     private Long jobEntryProgress;
@@ -92,16 +104,16 @@ public class TXfBillJobEntity extends BaseEntity {
     private Date updateTime;
 
     /**
-     * 任务锁定状态，锁定代表当前任务正在被执行，不允许其他节点或线程重复执行 0-未锁定 1-已锁定
+     * 协议单FBL5N合并时已处理完成的分页数，起始是0
      */
-    @TableField("job_lock_status")
-    private Boolean jobLockStatus;
+    @TableField("job_entry_fbl5n_progress ")
+    private Long jobEntryFbl5nProgress ;
 
     /**
-     * 原始数据处理对象 依次为 1-单据 2-单据明细（EPD单log明细或索赔单Hyper明细） 3-单据明细（索赔单Sams明细）
+     * 协议单ZARR0355合并时已处理完成的分页数，起始是0
      */
-    @TableField("job_entry_object")
-    private Integer jobEntryObject;
+    @TableField("job_entry_zarr0355_progress")
+    private Long jobEntryZarr0355Progress;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
@@ -113,9 +125,13 @@ public class TXfBillJobEntity extends BaseEntity {
 
     public static final String JOB_STATUS = "job_status";
 
+    public static final String JOB_LOCK_STATUS = "job_lock_status";
+
     public static final String JOB_ACQUISITION_OBJECT = "job_acquisition_object";
 
     public static final String JOB_ACQUISITION_PROGRESS = "job_acquisition_progress";
+
+    public static final String JOB_ENTRY_OBJECT = "job_entry_object";
 
     public static final String JOB_ENTRY_PROGRESS = "job_entry_progress";
 
@@ -129,9 +145,9 @@ public class TXfBillJobEntity extends BaseEntity {
 
     public static final String UPDATE_TIME = "update_time";
 
-    public static final String JOB_LOCK_STATUS = "job_lock_status";
+    public static final String JOB_ENTRY_FBL5N_PROGRESS  = "job_entry_fbl5n_progress ";
 
-    public static final String JOB_ENTRY_OBJECT = "job_entry_object";
+    public static final String JOB_ENTRY_ZARR0355_PROGRESS = "job_entry_zarr0355_progress";
 
     public static final String ID = "id";
 
