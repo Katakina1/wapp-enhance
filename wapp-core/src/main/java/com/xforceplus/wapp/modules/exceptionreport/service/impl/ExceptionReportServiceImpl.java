@@ -322,6 +322,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         head.put("description", "例外说明");
         head.put("sellerNo", "供应商编号");
         head.put("sellerName", "供应商名称");
+        head.put("purchaserName", "扣款公司");
         head.put("purchaserNo", "扣款公司编号");
         head.put("amountWithTax", "含税金额");
         head.put("agreementTypeCode", "协议类型编码");
@@ -336,8 +337,11 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         Map<String, String> head = new HashMap<>();
         head.put("code", "例外CODE");
         head.put("description", "例外说明");
+        head.put("deductDate", "扣款日期");
+        head.put("purchaserName", "扣款公司");
         head.put("sellerNo", "供应商编号");
         head.put("sellerName", "供应商名称");
+
         head.put("purchaserNo", "扣款公司编号");
         head.put("amountWithoutTax", "成本金额(不含税)");
         head.put("agreementTypeCode", "协议类型编码");

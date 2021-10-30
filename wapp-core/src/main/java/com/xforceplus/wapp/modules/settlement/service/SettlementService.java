@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.settlement.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -75,6 +76,7 @@ public class SettlementService {
                 .ge(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateStart())
                 .le(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateEnd())
         ;
+        wrapper.orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate);
 
         Page<TDxRecordInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
 
