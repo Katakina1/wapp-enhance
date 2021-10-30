@@ -28,6 +28,7 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -132,11 +133,9 @@ public class SettlementController {
     }
 
 
-    @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class, tags = {"发票池",})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class)
     @GetMapping(value = "{settlementId}/recommended")
-    public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request) {
+    public Response recommend(@PathVariable Long settlementId, @Valid InvoiceRecommendListRequest request) {
 
         final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
 

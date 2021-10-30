@@ -62,7 +62,7 @@ public class SettlementService {
         }
 
         final BigDecimal taxRate = byId.getTaxRate();
-        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) > 0 ? taxRate.movePointLeft(2).toPlainString() : taxRate.toPlainString();
+        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) < 0 ? taxRate.movePointRight(2).toPlainString() : taxRate.toPlainString();
         final String sellerNo = byId.getSellerNo();
         final String sellerTaxNo = byId.getSellerTaxNo();
         final String purchaserNo = byId.getPurchaserNo();
