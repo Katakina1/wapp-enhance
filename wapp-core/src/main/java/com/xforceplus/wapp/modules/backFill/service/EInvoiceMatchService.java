@@ -294,7 +294,6 @@ public class EInvoiceMatchService {
                 }
             }
         }
-        //TODO 结果存储-大象记录表
         map.put("venderid", recordEntity.getVendorId());
         map.put("jvcode", recordEntity.getJvCode());
         map.put("invoiceNo", invoiceMain.getInvoiceNo());
