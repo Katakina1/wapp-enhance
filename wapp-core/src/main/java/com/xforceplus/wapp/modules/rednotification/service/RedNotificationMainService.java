@@ -1008,6 +1008,9 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     public Response<String> operation(RedNotificationConfirmRejectRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
         List<Long> list = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+
+        //
+        List<Long> pidList = filterData.stream().map(item->Long.parseLong(item.getPid())).collect(Collectors.toList());
         if (Objects.equals(OperationType.CONFIRM.getValue(),request.getOperationType())){
            // 确认 //自动尝试一次 //撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
@@ -1018,7 +1021,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             // 同意删除预制发票
             try{
-                commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(list);
+                commSettlementService.agreeDestroySettlementPreInvoiceByPreInvoiceId(pidList);
             }catch (EnhanceRuntimeException e){
                 return Response.failed(e.getMessage());
             }
@@ -1037,7 +1040,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             // 驳回保留红字预制发票
             try {
-                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(list);
+                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(pidList);
             }catch (EnhanceRuntimeException e){
                 return Response.failed(e.getMessage());
             }
