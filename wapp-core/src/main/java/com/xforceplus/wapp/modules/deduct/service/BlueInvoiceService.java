@@ -54,30 +54,18 @@ public class BlueInvoiceService {
     @Autowired
     private BlueInvoiceRelationService blueInvoiceRelationService;
 
-    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo, String purchserTaxNo) {
+    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo, String purchserTaxNo, BigDecimal taxRate) {
         switch (deductionEnum) {
             case AGREEMENT_BILL:
-                return obtainAgreementInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo);
+                return obtainAvailableInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, taxRate, true);
             case CLAIM_BILL:
-                return obtainClaimInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo);
+                return obtainAvailableInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, taxRate, false);
             case EPD_BILL:
-                return obtainEpdInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo);
+                return obtainAvailableInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, taxRate, true);
             default:
                 log.error("未识别的单据类型{}", deductionEnum);
                 return Collections.emptyList();
         }
-    }
-
-    private List<MatchRes> obtainAgreementInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchserTaxNo) {
-        return obtainInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, true);
-    }
-
-    private List<MatchRes> obtainClaimInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchserTaxNo) {
-        return obtainInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, false);
-    }
-
-    private List<MatchRes> obtainEpdInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchserTaxNo) {
-        return obtainInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, true);
     }
 
     /**
@@ -85,27 +73,28 @@ public class BlueInvoiceService {
      * @param settlementNo
      * @param sellerTaxNo
      * @param purchaserTaxNo
+     * @param taxRate
      * @param withItems
      * @return
      */
-    private List<MatchRes> obtainInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, boolean withItems) {
+    private List<MatchRes> obtainAvailableInvoices(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate, boolean withItems) {
         if (BigDecimal.ZERO.compareTo(amount) >= 0) {
             throw new NoSuchInvoiceException("非法的负数待匹配金额" + amount);
         }
         log.info("收到匹配蓝票任务 待匹配金额amount={} settlementNo={} sellerTaxNo={} purchaserTaxNo={} withItems={}", amount, settlementNo, sellerTaxNo, purchaserTaxNo, withItems);
         if (withItems) {
-            return obtainInvoicesWithItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo);
+            return obtainAvailableInvoicesWithItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo, taxRate);
         } else {
-            return obtainInvoicesWithoutItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo);
+            return obtainAvailableInvoicesWithoutItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo, taxRate);
         }
     }
 
-    private List<MatchRes> obtainInvoicesWithItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo) {
+    private List<MatchRes> obtainAvailableInvoicesWithItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate) {
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         TDxRecordInvoiceEntity tDxRecordInvoiceEntity;
         do {
-            tDxRecordInvoiceEntity = extInvoiceService.getOneAvailableInvoice(sellerTaxNo, purchaserTaxNo);
+            tDxRecordInvoiceEntity = extInvoiceService.obtainAvailableInvoice(sellerTaxNo, purchaserTaxNo, taxRate);
             if (Objects.nonNull(tDxRecordInvoiceEntity)) {
                 // 排除蓝冲用途的发票（正常的发票）
                 if (!blueInvoiceRelationService.existsByBlueInvoice(tDxRecordInvoiceEntity.getInvoiceNo(), tDxRecordInvoiceEntity.getInvoiceCode())) {
@@ -181,12 +170,12 @@ public class BlueInvoiceService {
         return list;
     }
 
-    private List<MatchRes> obtainInvoicesWithoutItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo) {
+    private List<MatchRes> obtainAvailableInvoicesWithoutItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate) {
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         TDxRecordInvoiceEntity tDxRecordInvoiceEntity;
         do {
-            tDxRecordInvoiceEntity = extInvoiceService.getOneAvailableInvoice(sellerTaxNo, purchaserTaxNo);
+            tDxRecordInvoiceEntity = extInvoiceService.obtainAvailableInvoice(sellerTaxNo, purchaserTaxNo, taxRate);
             if (Objects.nonNull(tDxRecordInvoiceEntity)) {
                 // 排除蓝冲用途的发票（正常的发票）
                 if (!blueInvoiceRelationService.existsByBlueInvoice(tDxRecordInvoiceEntity.getInvoiceNo(), tDxRecordInvoiceEntity.getInvoiceCode())) {

@@ -412,8 +412,8 @@ public class EInvoiceMatchService {
                 String flowType = list1.get(0).getFlowType();
                 String hostStatus = list1.get(0).getHostStatus();
                 BigDecimal invoiceAmount = list1.get(0).getInvoiceAmount();
-
-                if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
+                //TODO 目前重复的先跳过
+                /*if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
                     throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
                 }
                 if ("0".equals(hostStatus) || "10".equals(hostStatus) || "1".equals(hostStatus) || "13".equals(hostStatus) || StringUtils.isEmpty(hostStatus)) {
@@ -469,7 +469,7 @@ public class EInvoiceMatchService {
                     }
                 } else {
                     throw new EnhanceRuntimeException("该发票已在沃尔玛匹配！");
-                }
+                }*/
             }
         } catch (Exception e) {
             log.error("录入发票:" + e.getMessage(), e);
