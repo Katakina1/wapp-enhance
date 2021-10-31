@@ -147,14 +147,14 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         final LambdaQueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.lambdaQuery(entity);
 
         if (StringUtils.isNotBlank(startDeductDate)) {
-            wrapper.gt(TXfExceptionReportEntity::getCreateTime, startDeductDate);
+            wrapper.gt(TXfExceptionReportEntity::getDeductDate, startDeductDate);
         }
 
         if (StringUtils.isNotBlank(request.getEndDeductDate())) {
 
             try {
                 final String format = DateUtils.addDayToYYYYMMDD(request.getEndDeductDate(), 1);
-                wrapper.lt(TXfExceptionReportEntity::getCreateTime, format);
+                wrapper.lt(TXfExceptionReportEntity::getDeductDate, format);
             } catch (Exception e) {
                 log.error("时间转换失败" + e.getMessage(), e);
             }

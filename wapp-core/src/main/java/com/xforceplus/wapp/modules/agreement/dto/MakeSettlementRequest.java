@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.agreement.dto;
 
+import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,8 +14,6 @@ import java.util.List;
  **/
 @Setter
 @Getter
-public class MakeSettlementRequest {
-    private List<Long> ids;
-
-    private List<String> billNos;
+public class MakeSettlementRequest extends PreMakeSettlementRequest {
+    private List<Long> invoiceIds;
 }

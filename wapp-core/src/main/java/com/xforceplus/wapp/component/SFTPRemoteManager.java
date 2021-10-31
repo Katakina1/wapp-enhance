@@ -172,15 +172,19 @@ public class SFTPRemoteManager {
      * @throws SftpException
      */
     public void downloadFile(String path, String fileName, String localPath) throws SftpException, JSchException, IOException {
-        LocalFileSystemManager.createFolderIfNonExist(localPath);
-        // 进入并设置为当前目录
-        sftp.cd(path);
-        // 下载
-        File file = new File(localPath, fileName);
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            sftp.get(fileName, out);
-        } catch (Exception e) {
-            throw e;
+        try {
+            LocalFileSystemManager.createFolderIfNonExist(localPath);
+            // 进入并设置为当前目录
+            sftp.cd(path);
+            // 下载
+            File file = new File(localPath, fileName);
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                sftp.get(fileName, out);
+            } catch (Exception e) {
+                throw e;
+            }
+        }finally {
+            this.closeChannel();
         }
     }
 }
