@@ -105,7 +105,7 @@ public class BlueInvoiceService {
                             leftAmount.get();
                     // 获取该发票的所有正数明细
                     //TODO No+code不正确，大象的逻辑都是 code+no
-                    String uuid = tDxRecordInvoiceEntity.getInvoiceNo() + tDxRecordInvoiceEntity.getInvoiceCode();
+                    String uuid =  tDxRecordInvoiceEntity.getInvoiceCode() + tDxRecordInvoiceEntity.getInvoiceNo() ;
                     List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(uuid, tDxRecordInvoiceEntity.getInvoiceAmount(), lastRemainingAmount, lastRemainingAmount);
                     // 如果该发票没有可用明细，那么跳过
                     if (org.springframework.util.CollectionUtils.isEmpty(items)) {
