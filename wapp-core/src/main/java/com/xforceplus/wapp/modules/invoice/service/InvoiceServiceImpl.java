@@ -57,20 +57,6 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
     @Autowired
     private DeductService deductService;
 
-//    public Response<InvoiceDto> detail(Long id) {
-//        TXfInvoiceEntity tXfInvoiceEntity = getBaseMapper().selectById(id);
-//        if (tXfInvoiceEntity != null) {
-//            LambdaQueryWrapper<TXfInvoiceItemEntity> queryWrapper = new LambdaQueryWrapper<>();
-//            List<TXfInvoiceItemEntity> tXfInvoiceItemEntities = tXfInvoiceItemDao.selectList(queryWrapper);
-//
-//            InvoiceDto invoiceDto = invoiceMapper.entityToInvoiceDto(tXfInvoiceEntity);
-//            List<InvoiceItemDto> invoiceItemDtos = invoiceMapper.entityToInvoiceItemDtoList(tXfInvoiceItemEntities);
-//            invoiceDto.setDetails(invoiceItemDtos);
-//            return Response.ok("查询成功", invoiceDto);
-//        }
-//
-//        return Response.ok("查询成功", null);
-//    }
 
     /**
      * 根据id将入参实体的剩余金额加回到原发票上
@@ -101,29 +87,6 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         );
     }
 
-//    public PageResult<InvoiceDto> recommend(Long settlementId, InvoiceRecommendListRequest request) {
-//        log.info("userCode:{}", UserUtil.getUser().getUsercode());
-//
-//        final TXfSettlementEntity byId = settlementService.getById(settlementId);
-//        if (byId == null) {
-//            throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
-//        }
-//
-//        LambdaQueryWrapper<TDxRecordInvoiceEntity> wrapper = new LambdaQueryWrapper<>();
-//        wrapper.ge(TDxRecordInvoiceEntity::getInvoiceDate, request.getInvoiceDateStart())
-//                .le(TDxRecordInvoiceEntity::getInvoiceDate, request.getInvoiceDateEnd());
-//
-//        Page<TDxRecordInvoiceEntity> page = new Page<>(request.getPage(), request.getSize());
-//
-//        final Page<TDxRecordInvoiceEntity> entityPage = super.page(page, wrapper);
-//
-//        List<InvoiceDto> dtos = new ArrayList<>();
-//        if (CollectionUtils.isNotEmpty(entityPage.getRecords())) {
-//            final List<InvoiceDto> collect = entityPage.getRecords().stream().map(this.invoiceMapper::entityToInvoiceDto).collect(Collectors.toList());
-//            dtos.addAll(collect);
-//        }
-//        return PageResult.of(dtos, entityPage.getTotal(), entityPage.getPages(), entityPage.getSize());
-//    }
 
     /**
      * 保存结算单匹配的蓝票

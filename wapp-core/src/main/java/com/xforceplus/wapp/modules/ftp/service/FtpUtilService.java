@@ -190,35 +190,38 @@ public class FtpUtilService {
     public void uploadFile(String pathname, String fileName,InputStream inputStream) throws Exception{
     	log.debug("开始上传文件");
     	this.initFtpClient();
-    	
     	try {
-            this.sftp.cd(pathname);  
-        } catch (SftpException e) { 
-            //目录不存在，则创建文件夹
-            String [] dirs = pathname.split("/");
-            String tempPath = "";
-            for(String dir:dirs){
-            	if(null==dir || "".equals(dir)) {
-            		continue;
-            	}
-            	tempPath += "/" + dir;
-            	try{ 
-            		this.sftp.cd(tempPath);
-            	}catch(SftpException ex){
-            		this.sftp.mkdir(tempPath);
-            		this.sftp.cd(tempPath);
-            	}
+            try {
+                this.sftp.cd(pathname);
+            } catch (SftpException e) {
+                //目录不存在，则创建文件夹
+                String[] dirs = pathname.split("/");
+                String tempPath = "";
+                for (String dir : dirs) {
+                    if (null == dir || "".equals(dir)) {
+                        continue;
+                    }
+                    tempPath += "/" + dir;
+                    try {
+                        this.sftp.cd(tempPath);
+                    } catch (SftpException ex) {
+                        this.sftp.mkdir(tempPath);
+                        this.sftp.cd(tempPath);
+                    }
+                }
             }
-        }
-    	
+
 //    	File orgFile = new File(originfilename);
 //        inputStream = new FileInputStream(orgFile);
-        //上传文件
-        this.sftp.put(inputStream, fileName);
-        inputStream.close();
-        //删除本地文件，防止服务器空间不足
+            //上传文件
+            this.sftp.put(inputStream, fileName);
+            inputStream.close();
+            //删除本地文件，防止服务器空间不足
 
-        log.debug("上传文件成功");
+            log.debug("上传文件成功");
+        }finally {
+            closeChannel();
+        }
     } 
     
  
@@ -230,29 +233,33 @@ public class FtpUtilService {
      * 
      * @throws Exception 
      */    
-    public boolean downloadFile(String directory, String downloadFile, String saveFile) throws Exception{  
-    	boolean succ = false;
-    	log.debug("开始下载文件!");
-    	//文件存储路径是否存在
-		File filePath = new File(saveFile);
-		if(!filePath.exists()) {
-			filePath.mkdirs();
-		}
-		this.initFtpClient();
-    	if(directory != null && !"".equals(directory)) {  
-    		this.sftp.cd(directory);  
+    public boolean downloadFile(String directory, String downloadFile, String saveFile) throws Exception{
+        try {
+            boolean succ = false;
+            log.debug("开始下载文件!");
+            //文件存储路径是否存在
+            File filePath = new File(saveFile);
+            if (!filePath.exists()) {
+                filePath.mkdirs();
+            }
+            this.initFtpClient();
+            if (directory != null && !"".equals(directory)) {
+                this.sftp.cd(directory);
+            }
+            String file = saveFile + downloadFile;
+            File fileLocal = new File(file);
+            if (fileLocal.exists()) {
+                fileLocal.delete();
+            }
+            fileLocal.createNewFile();
+
+            this.sftp.get(downloadFile, file);
+            succ = true;
+            log.debug("下载文件成功!");
+            return succ;
+        } finally {
+            this.closeChannel();
         }
-    	String file = saveFile + downloadFile;
-    	File fileLocal = new File(file);
-    	if(fileLocal.exists()) {
-    		fileLocal.delete();
-    	}
-    	fileLocal.createNewFile();
-    	
-    	this.sftp.get(downloadFile, file);
-        succ = true;
-        log.debug("下载文件成功!");
-        return succ;
         
     }  
     

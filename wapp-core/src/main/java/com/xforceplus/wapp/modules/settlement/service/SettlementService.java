@@ -75,6 +75,7 @@ public class SettlementService {
                 .eq(TDxRecordInvoiceEntity::getTaxRate,taxRateStr)
                 .ge(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateStart())
                 .le(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateEnd())
+                .eq(TDxRecordInvoiceEntity::getRzhYesorno,1);
         ;
         wrapper.orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate);
 
