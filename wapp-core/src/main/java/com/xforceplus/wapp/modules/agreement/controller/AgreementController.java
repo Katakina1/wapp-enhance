@@ -46,9 +46,11 @@ public class AgreementController {
     @GetMapping("summary")
     @ApiOperation(value = "页头统计")
     public R summary(DeductListRequest request){
+        request.setTaxRate(null);
+        //只显示未超期的数据列表
+        request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        request.setTaxRate(null);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(summary);
     }

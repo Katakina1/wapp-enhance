@@ -15,4 +15,9 @@ public class MybatisPlusConfig {
     public PaginationInterceptor paginationInterceptor() {
         return new PaginationInterceptor();
     }
+
+//    @Bean
+//    public SqlServerOperationInterceptor sqlServerOperationInterceptor(){
+//        return new SqlServerOperationInterceptor();
+//    }
 }

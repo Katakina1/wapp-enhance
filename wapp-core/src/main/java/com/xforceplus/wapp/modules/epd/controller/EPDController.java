@@ -45,6 +45,8 @@ public class EPDController {
         request.setTaxRate(null);
         //只显示未超期的数据列表
         request.setOverdue(0);
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.EPD_BILL);
         return R.ok(summary);
     }
