@@ -194,7 +194,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                     response.setMessage("请求成功");
                 } else if (resultA.getCode() == 0 && resultB.getCode() == 0) {
                     response.setCode(Response.Fail);
-                    response.setMessage("申请失败");
+                    response.setMessage("申请失败,失败原因："+resultA.getMessage());
                 } else {
                     response.setCode(Response.Fail);
                     response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
@@ -226,22 +226,39 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             applyRequest.setSerialNo(String.valueOf(iDSequence.nextId()));
             List<RedInfo> redInfoList = buildRedInfoList(filterData,applyRequest);
             applyRequest.setRedInfoList(redInfoList);
-            TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
-            if (Objects.equals(TaxWareCode.SUCCESS,taxWareResponse.getCode())){
-                return  Response.ok("请求成功" , applyRequest.getSerialNo());
-            }else {
+            try {
+                TaxWareResponse taxWareResponse = taxWareService.applyRedInfo(applyRequest);
+                if (Objects.equals(TaxWareCode.SUCCESS,taxWareResponse.getCode())){
+                    return  Response.ok("请求成功" , applyRequest.getSerialNo());
+                }else {
+                    //更新流水.全部失败
+                    updateRequestFail(applyRequest.getSerialNo(), taxWareResponse.getMessage());
+                    //更新失败原因到主表
+                    List<Long> redIdList = redInfoList.stream().map(item -> Long.parseLong(item.getPid())).collect(Collectors.toList());
+                    TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+                    record.setApplyRemark(taxWareResponse.getMessage());
+                    LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.in(TXfRedNotificationEntity::getId,redIdList);
+                    getBaseMapper().update(record,updateWrapper);
+
+                    return  Response.failed(taxWareResponse.getMessage());
+                }
+            }catch (RRException e){
+                // 异常情况比较特殊
                 //更新流水.全部失败
-                updateRequestFail(applyRequest.getSerialNo(), taxWareResponse);
+                updateRequestFail(applyRequest.getSerialNo(), e.getMessage());
                 //更新失败原因到主表
                 List<Long> redIdList = redInfoList.stream().map(item -> Long.parseLong(item.getPid())).collect(Collectors.toList());
                 TXfRedNotificationEntity record = new TXfRedNotificationEntity();
-                record.setApplyRemark(taxWareResponse.getMessage());
+                record.setApplyRemark(e.getMessage());
                 LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
                 updateWrapper.in(TXfRedNotificationEntity::getId,redIdList);
                 getBaseMapper().update(record,updateWrapper);
 
-                return  Response.failed(taxWareResponse.getMessage());
+                return  Response.failed(e.getMessage());
             }
+
+
         }else {
             return  Response.ok("未找到申请数据");
         }
@@ -272,7 +289,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             return  Response.ok("请求成功" , revokeRequest.getSerialNo());
         }else {
             //更新流水.全部失败
-            updateRequestFail(revokeRequest.getSerialNo(), rollbackResponse);
+            updateRequestFail(revokeRequest.getSerialNo(), rollbackResponse.getMessage());
             return  Response.failed(rollbackResponse.getMessage());
         }
 
@@ -408,14 +425,14 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     /**
      * 更新流失失败
      * @param  serialNo
-     * @param taxWareResponse
+     * @param failMsg
      */
-    private void updateRequestFail(String serialNo, TaxWareResponse taxWareResponse) {
+    private void updateRequestFail(String serialNo, String failMsg) {
         LambdaUpdateWrapper<TXfRedNotificationLogEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(TXfRedNotificationLogEntity::getSerialNo, serialNo);
         TXfRedNotificationLogEntity record = new TXfRedNotificationLogEntity();
         record.setStatus(3);
-        record.setProcessRemark(taxWareResponse.getMessage());
+        record.setProcessRemark(failMsg);
         redNotificationLogService.update(record,updateWrapper);
     }
 
