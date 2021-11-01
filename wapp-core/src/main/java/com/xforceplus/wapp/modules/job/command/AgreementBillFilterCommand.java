@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -182,8 +181,7 @@ public class AgreementBillFilterCommand implements Command {
         deductBillBaseData.setMemo(mergeTmpEntity.getMemo());
         deductBillBaseData.setTaxCode(mergeTmpEntity.getTaxCode());
         deductBillBaseData.setReference(mergeTmpEntity.getReference());
-        //TODO
-        //deductBillBaseData.setReferenceType();
+        deductBillBaseData.setReferenceType(mergeTmpEntity.getReasonCode());
         if(mergeTmpEntity.getPostDate() != null) {
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
             deductBillBaseData.setPostingDate(fmt.format(mergeTmpEntity.getPostDate()));
