@@ -199,9 +199,11 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     private QueryWrapper<TXfBillDeductEntity> wrapper(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
         return doWrapper(request,typeEnum,x->{
-            if (typeEnum!=XFDeductionBusinessTypeEnum.CLAIM_BILL){
+            if (typeEnum !=XFDeductionBusinessTypeEnum.CLAIM_BILL){
                 // 小于0的不展示
                 x.gt(TXfBillDeductEntity.AMOUNT_WITHOUT_TAX,BigDecimal.ZERO);
+            }else {
+                x.eq("1",1);
             }
         });
     }
