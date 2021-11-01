@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.backFill.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.repository.daoExt.TDxRecordInvoiceExtDao;
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * Created by Kenny Wong on 2021/10/28.
@@ -108,7 +112,11 @@ public class RecordInvoiceExtService extends ServiceImpl<TDxRecordInvoiceExtDao,
      * @return
      */
     public TDxRecordInvoiceEntity obtainAvailableInvoice(String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate) {
-        return getOne(new QueryWrapper<TDxRecordInvoiceEntity>()
+        // 获取两年前的日期
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.YEAR, -2);
+        TDxRecordInvoiceEntity record = getOne(new QueryWrapper<TDxRecordInvoiceEntity>()
                 // 只返回第一行数据，否则getOne可能会报错
                 .select("top 1 *")
                 .lambda()
@@ -120,10 +128,80 @@ public class RecordInvoiceExtService extends ServiceImpl<TDxRecordInvoiceExtDao,
                 // 排除非专票（只要增值税专票 和 电子专票）
                 .in(TDxRecordInvoiceEntity::getInvoiceType, InvoiceTypeEnum.SPECIAL_INVOICE.getValue(), InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue())
                 // 排除可用金额=0的发票
-                .gt(TDxRecordInvoiceEntity::getRemainingAmount, BigDecimal.ZERO)
+                .and(
+                        wrapper1 -> wrapper1
+                                // remainingAmount > 0
+                                .gt(TDxRecordInvoiceEntity::getRemainingAmount, BigDecimal.ZERO)
+                                .or(
+                                        wrapper2 -> wrapper2
+                                                // remainingAmount is null and invoiceAmount > 0
+                                                .isNull(TDxRecordInvoiceEntity::getRemainingAmount)
+                                                .gt(TDxRecordInvoiceEntity::getInvoiceAmount, BigDecimal.ZERO)
+                                )
+                )
+                // 开票日期再2年内的
+                .gt(TDxRecordInvoiceEntity::getInvoiceDate, calendar.getTime())
                 // 排除未完成付款的蓝票(已认证)
                 .eq(TDxRecordInvoiceEntity::getRzhYesorno, "1")
                 // 按照发票先进先出
                 .orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate));
+
+        if (Objects.isNull(record.getRemainingAmount())) {
+            record.setRemainingAmount(record.getInvoiceAmount());
+        }
+        return record;
     }
+
+    /**
+     * 从底账表按照先进先出的方式获取一组合适的蓝票
+     *
+     * @param sellerTaxNo
+     * @param purchaserTaxNo
+     * @param taxRate
+     * @return
+     */
+    public Page<TDxRecordInvoiceEntity> obtainAvailableInvoices(String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate, long pageNo, long pageSize) {
+        // 获取两年前的日期
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.YEAR, -2);
+        Page<TDxRecordInvoiceEntity> result = baseMapper.selectPage(new Page<>(pageNo, pageSize),
+                new QueryWrapper<TDxRecordInvoiceEntity>()
+                        .lambda()
+                        .eq(TDxRecordInvoiceEntity::getXfTaxNo, sellerTaxNo)
+                        .eq(TDxRecordInvoiceEntity::getGfTaxNo, purchaserTaxNo)
+                        .eq(TDxRecordInvoiceEntity::getTaxRate, taxRate)
+                        // 排除状态异常的发票（只要正常的发票）
+                        .eq(TDxRecordInvoiceEntity::getInvoiceStatus, "0")
+                        // 排除非专票（只要增值税专票 和 电子专票）
+                        .in(TDxRecordInvoiceEntity::getInvoiceType, InvoiceTypeEnum.SPECIAL_INVOICE.getValue(), InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue())
+                        // 排除可用金额=0的发票
+                        .and(
+                                wrapper1 -> wrapper1
+                                        // remainingAmount > 0
+                                        .gt(TDxRecordInvoiceEntity::getRemainingAmount, BigDecimal.ZERO)
+                                        .or(
+                                                wrapper2 -> wrapper2
+                                                        // remainingAmount is null and invoiceAmount > 0
+                                                        .isNull(TDxRecordInvoiceEntity::getRemainingAmount)
+                                                        .gt(TDxRecordInvoiceEntity::getInvoiceAmount, BigDecimal.ZERO)
+                                        )
+                        )
+                        // 排除未完成付款的蓝票(已认证)
+                        .eq(TDxRecordInvoiceEntity::getRzhYesorno, "1")
+                        // 开票日期再2年内的
+                        .gt(TDxRecordInvoiceEntity::getInvoiceDate, calendar.getTime())
+                        // 按照发票先进先出
+                        .orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate));
+        // remainingAmount初始化为invoiceAmount
+        result.getRecords().forEach(
+                record -> {
+                    if (Objects.isNull(record.getRemainingAmount())) {
+                        record.setRemainingAmount(record.getInvoiceAmount());
+                    }
+                }
+        );
+        return result;
+    }
+
 }
