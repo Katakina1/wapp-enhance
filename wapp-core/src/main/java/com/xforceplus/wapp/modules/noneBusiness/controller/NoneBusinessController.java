@@ -255,26 +255,39 @@ public class NoneBusinessController {
     @PostMapping("/submit")
     public R<ValidSubmitResponse> submit(@RequestBody ValidSubmitRequest request) {
         ValidSubmitResponse response = new ValidSubmitResponse();
+
         if ("0".equals(request.getIsAllSelected())) {
             List<TXfNoneBusinessUploadDetailEntity> resultList = noneBusinessService.listByIds(request.getIncludes());
             response.setSubmitCount(resultList.size());
             List<TXfNoneBusinessUploadDetailEntity> submitList = resultList.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag()
             ) && Constants.SIGN_NONE_BUSINESS_SUCCESS.equals(x.getOfdStatus()) && Constants.VERIFY_NONE_BUSINESS_SUCCESSE.equals(x.getVerifyStatus())).collect(Collectors.toList());
+            List<String> list = new ArrayList<>();
             submitList.stream().forEach(e -> {
                 e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
+                noneBusinessService.deleteSubmitInvoice(e.getInvoiceNo(), e.getInvoiceCode());
+                if (StringUtils.isNotEmpty(e.getInvoiceNo()) && StringUtils.isNotEmpty(e.getInvoiceCode())) {
+                    list.add(e.getInvoiceCode()+e.getInvoiceNo());
+                }
             });
             response.setInSubmit(submitList.size());
             response.setExSubmit(resultList.size() - submitList.size());
             noneBusinessService.saveOrUpdateBatch(submitList);
+            noneBusinessService.updateInvoiceInfo(list);
             return R.ok(response, "提交成功");
         } else {
             List<TXfNoneBusinessUploadDetailDto> list = noneBusinessService.noPaged(request.getExcludes());
             response.setSubmitCount(list.size());
             List<TXfNoneBusinessUploadDetailDto> submitList = list.stream().filter(x -> Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG.equals(x.getSubmitFlag())
                     && Constants.SIGN_NONE_BUSINESS_SUCCESS.equals(x.getOfdStatus()) && Constants.VERIFY_NONE_BUSINESS_SUCCESSE.equals(x.getVerifyStatus())).collect(Collectors.toList());
+            List<String> list1 = new ArrayList<>();
             submitList.stream().forEach(e -> {
                 e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
+                noneBusinessService.deleteSubmitInvoice(e.getInvoiceNo(), e.getInvoiceCode());
+                if (StringUtils.isNotEmpty(e.getInvoiceNo()) && StringUtils.isNotEmpty(e.getInvoiceCode())) {
+                    list1.add(e.getInvoiceCode()+e.getInvoiceNo());
+                }
             });
+            noneBusinessService.updateInvoiceInfo(list1);
             noneBusinessService.saveOrUpdateBatch(noneBusinessConverter.map(submitList));
             response.setInSubmit(submitList.size());
             response.setExSubmit(list.size() - submitList.size());

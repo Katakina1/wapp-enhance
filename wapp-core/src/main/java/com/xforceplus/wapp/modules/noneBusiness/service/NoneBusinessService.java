@@ -2,9 +2,6 @@ package com.xforceplus.wapp.modules.noneBusiness.service;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.support.ExcelTypeEnum;
-import com.alibaba.excel.write.builder.ExcelWriterBuilder;
-import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
@@ -12,7 +9,6 @@ import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWra
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
@@ -23,7 +19,6 @@ import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.DiscernService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.VerificationService;
-import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
@@ -35,6 +30,7 @@ import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.mq.ActiveMqProducer;
 import com.xforceplus.wapp.repository.dao.TXfNoneBusinessUploadDetailDao;
+import com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TDxExcelExportlogEntity;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
@@ -47,7 +43,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -98,7 +96,8 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     @Value("${wapp.export.tmp}")
     private String tmp;
 
-
+    @Autowired
+    private ElectronicInvoiceDao electronicInvoiceDao;
     @Autowired
     private NoneBusinessConverter noneBusinessConverter;
 
@@ -127,7 +126,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setCreateUser(UserUtil.getLoginName());
             addEntity.setSourceUploadPath(data.getUploadPath());
             //发送验签
-            OfdResponse response = backFillService.signOfd(ofdEntity,entity.getBussinessNo());
+            OfdResponse response = backFillService.signOfd(ofdEntity, entity.getBussinessNo());
             //验签成功
             if (response.isOk()) {
                 addEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
@@ -294,10 +293,10 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         file.mkdir();
         String downLoadFileName = path + ".zip";
         for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
-            if ("1".equals(request.getOfd()) && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_PDF)) && !"1".equals(request.getSingle())) {
+            if (1 == request.getOfd() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_PDF)) && !"1".equals(request.getSingle())) {
                 continue;
             }
-            if ("1".equals(request.getPdf()) && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD)) && !"1".equals(request.getSingle())) {
+            if (1 == request.getPdf() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD)) && !"1".equals(request.getSingle())) {
                 continue;
             }
 
@@ -345,7 +344,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         final String excelFileName = ExcelExportUtil.getExcelFileName(UserUtil.getUserId(), "非商数据导出");
         String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         ExcelWriter excelWriter;
-        FileInputStream inputStream =null;
+        FileInputStream inputStream = null;
         try {
             //创建一个sheet
             File file = new File(tmp + ftpPath);
@@ -353,11 +352,11 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
                 file.mkdirs();
             }
             File excl = new File(file, excelFileName);
-            EasyExcel.write(tmp + ftpPath + "/"+ excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
+            EasyExcel.write(tmp + ftpPath + "/" + excelFileName, TXfNoneBusinessUploadExportDto.class).sheet("sheet1").doWrite(noneBusinessConverter.exportMap(resultList));
             //推送sftp
             String ftpFilePath = ftpPath + "/" + excelFileName;
-            inputStream=FileUtils.openInputStream(excl);
-            ftpUtilService.uploadFile(ftpPath, excelFileName,inputStream );
+            inputStream = FileUtils.openInputStream(excl);
+            ftpUtilService.uploadFile(ftpPath, excelFileName, inputStream);
             final Long userId = UserUtil.getUserId();
             ExceptionReportExportDto exportDto = new ExceptionReportExportDto();
             exportDto.setUserId(userId);
@@ -388,5 +387,36 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             }
         }
         return R.ok();
+    }
+
+    /**
+     * 根据发表代码号码删除已经提交的发票信息
+     *
+     * @param invoiceNo
+     * @param invoiceCode
+     */
+    public boolean deleteSubmitInvoice(String invoiceNo, String invoiceCode) {
+        LambdaUpdateChainWrapper<TXfNoneBusinessUploadDetailEntity> wrapper = new LambdaUpdateChainWrapper<>(getBaseMapper());
+        if (StringUtils.isEmpty(invoiceNo) || StringUtils.isEmpty(invoiceCode)) {
+            return false;
+        }
+        wrapper.eq(TXfNoneBusinessUploadDetailEntity::getInvoiceNo, invoiceNo);
+        wrapper.eq(TXfNoneBusinessUploadDetailEntity::getInvoiceCode, invoiceCode);
+        wrapper.eq(TXfNoneBusinessUploadDetailEntity::getSubmitFlag, Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
+        wrapper.set(TXfNoneBusinessUploadDetailEntity::getSubmitFlag, Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG);
+        return wrapper.update();
+    }
+
+    /**
+     * 将发票信息改为可认证
+     *
+     * @param uuid
+     */
+    public void updateInvoiceInfo(List<String> uuid) {
+        if (uuid != null && uuid.size() > 0) {
+            electronicInvoiceDao.updateNoDeduction(uuid);
+        }
+
+
     }
 }

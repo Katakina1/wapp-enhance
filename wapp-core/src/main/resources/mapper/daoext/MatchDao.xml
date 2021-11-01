@@ -157,7 +157,8 @@
         gf_tax_no=#{gfTaxno},
         check_code=#{checkNo},
         flow_type='1',
-        company_code=#{companyCode}
+        company_code=#{companyCode},
+        no_deduction =#{noDeduction}
         where id=#{id} and matchno is null
     </update>
 
@@ -180,7 +181,8 @@
         gf_tax_no=#{gfTaxno},
         check_code=#{checkNo},
         flow_type='1',
-        company_code=#{companyCode}
+        company_code=#{companyCode},
+        no_deduction =#{noDeduction}
         where id=#{id} and matchno is null
     </update>
 
