@@ -38,8 +38,8 @@ public class UploadResult {
     @Getter
     public static class FailureInvoice {
         private String checkCode;
-        private BigDecimal amount;
-        private String paperDrewDate;
+        private BigDecimal invoiceAmount;
+        private String invoiceDate;
         private String invoiceNo;
         private String invoiceCode;
         private String msg;

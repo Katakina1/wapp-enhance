@@ -447,8 +447,8 @@ public class BackFillService {
                 UploadResult.FailureInvoice failureInvoice = new UploadResult.FailureInvoice();
                 failureInvoice.setInvoiceNo(detailEntity.getInvoiceNo());
                 failureInvoice.setInvoiceCode(detailEntity.getInvoiceCode());
-                failureInvoice.setPaperDrewDate(detailEntity.getPaperDrewDate());
-                failureInvoice.setAmount(detailEntity.getAmount());
+                failureInvoice.setInvoiceDate(detailEntity.getPaperDrewDate());
+                failureInvoice.setInvoiceAmount(detailEntity.getAmount());
                 failureInvoice.setCheckCode(detailEntity.getCheckCode());
                 failureInvoice.setMsg(detailEntity.getReason());
                 failureInvoices.add(failureInvoice);
