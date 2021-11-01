@@ -188,7 +188,7 @@ public class AgreementZarrMergeCommand implements Command {
                     }
                     return null;
                 })
-                .filter(mergeTmpEntity -> mergeTmpEntity != null)
+                .filter(Objects::nonNull)
                 .forEach(mergeTmpEntity -> {
                     tXfOriginAgreementMergeDao.insert(mergeTmpEntity);
                 });
