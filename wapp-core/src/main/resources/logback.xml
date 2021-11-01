@@ -4,14 +4,14 @@
 
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} [%line] - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} [%line][uid:%X{uid}] - %msg%n</pattern>
         </encoder>
     </appender>
 
     <appender name="R" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${LOG_FILE}.log</File>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} [%line] - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} [%line][uid:%X{uid}] - %msg%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.log

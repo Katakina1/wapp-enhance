@@ -48,6 +48,13 @@
         update t_dx_invoice set rebateyesorno=#{rebateyesorno} where id=#{id}
     </update>
 
+    <update id="updateNoDeduction">
+        update t_dx_record_invoice set no_deduction = null where uuid in
+        <foreach collection="uuid" close=")" open="(" separator="," item="id">
+        #{id}
+     </foreach>
+    </update>
+
 
     <resultMap id="ElectronInvoiceMap"
                type="com.xforceplus.wapp.repository.entity.TDxInvoiceEntity">

@@ -46,9 +46,20 @@ public class BackFillController  extends AbstractController {
         return backFillService.commitVerify(request);
     }
 
+/*    @ApiOperation(value = "纸票发票回填校验")
+    @PostMapping(value = "/comitVerifyCheck")
+    public R comitVerifyCheck(@ApiParam(value = "BackFillCommitVerifyRequest" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
+        logger.info("纸票发票回填--入参：{}", JSONObject.toJSONString(request));
+        request.setOpUserId(getUserId());
+        request.setOpUserName(getUserName());
+        request.setVendorId(getUser().getUsercode());
+        return backFillService.commitVerify(request);
+    }*/
+
+
     @ApiOperation(value = "电票发票上传" )
     @PostMapping("/upload")
-    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid) {
+    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo) {
         if (files.length == 0) {
             return R.fail("请选择您要上传的电票文件(pdf/ofd)");
         }
@@ -91,7 +102,7 @@ public class BackFillController  extends AbstractController {
             dto.setGfName(gfName);
             dto.setPdfs(pdf);
             dto.setVendorId(vendorid);
-
+            dto.setSettlementNo(settlementNo);
             final String batchNo = backFillService.uploadAndVerify(dto);
 
             return R.ok(batchNo);

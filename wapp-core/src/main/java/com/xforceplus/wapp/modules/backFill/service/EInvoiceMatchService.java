@@ -194,6 +194,8 @@ public class EInvoiceMatchService {
         map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
         map.put("cipherText", invoiceMain.getCipherText());
         map.put("goodsListFlag", invoiceMain.getGoodsListFlag());
+        //非商发票不进手工认证，提交后才进入手工认证
+        map.put("noDeduction", '1');
         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
         String uuid = invoiceMain.getInvoiceCode() + "" + invoiceMain.getInvoiceNo();
         map.put("uuid", uuid);
@@ -210,6 +212,7 @@ public class EInvoiceMatchService {
                 return true;
             });
         } else {
+            map.put("id",list1.get(0).getId());
             if ("04".equals(CommonUtil.getFplx((String) invoiceMain.getInvoiceCode()))) {
                 matchDao.allUpdatePP(map);
             } else {
@@ -443,7 +446,7 @@ public class EInvoiceMatchService {
                                     //覆盖
                                     map.put("id", list1.get(0).getId());
                                     if ("04".equals(CommonUtil.getFplx((String) invoiceCode))) {
-                                        flag = matchDao.allUpdatePP(map) > 0;
+                                        flag = PP(map) > 0;
                                     } else {
                                         flag = matchDao.allUpdate(map) > 0;
                                     }
@@ -465,7 +468,7 @@ public class EInvoiceMatchService {
                         }
                     } else {
                         throw new EnhanceRuntimeException("该发票不是商品发票！");
-
+matchDao.allUpdate
                     }
                 } else {
                     throw new EnhanceRuntimeException("该发票已在沃尔玛匹配！");
