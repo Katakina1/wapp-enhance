@@ -63,7 +63,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      */
     @Select("select sum(deduct.amount_without_tax) as amount_without_tax,sum(deduct.amount_with_tax) as amount_with_tax,sum(deduct.tax_amount) as tax_amount , deduct.seller_no,deduct.purchaser_no, deduct.tax_rate\n" +
             "from t_xf_bill_deduct deduct left join t_xf_overdue overdue on overdue.seller_no = deduct.seller_no\n" +
-            "where  deduct.deduct_date >  IIF(  overdue.overdue_day is null, convert(varchar(10),DATEADD(d, 0 - #{referenceDate}, GETDATE()),120), convert( DATEADD(d, 0 - (overdue.overdue_day), GETDATE()))) \n" +
+            "where  deduct.deduct_date >  IIF(  overdue.overdue_day is null, convert(varchar(10),DATEADD(d, 0 - #{referenceDate}, GETDATE()),120), convert(  varchar(10),DATEADD(d, 0 - (overdue.overdue_day), GETDATE()))) \n" +
             "  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag}\n" +
             "group by deduct.purchaser_no, deduct.seller_no,deduct.tax_rate\n")
     public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Integer referenceDate,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
