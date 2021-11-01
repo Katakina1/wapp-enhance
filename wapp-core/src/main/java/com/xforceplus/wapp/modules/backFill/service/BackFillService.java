@@ -566,11 +566,11 @@ public class BackFillService {
         if (StringUtils.isEmpty(request.getSettlementNo())) {
             return R.fail("结算单号不能为空");
         }
-        if (CollectionUtils.isEmpty(request.getVerifyBeanList())) {
-            return R.fail("上传发票不能为空");
-        }
         if ("0".equals(request.getInvoiceColer())) {
             //红票上传校验
+            if (CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                return R.fail("上传发票不能为空");
+            }
             QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
             preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
             List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
