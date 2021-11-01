@@ -103,6 +103,7 @@ public class BackFillController  extends AbstractController {
             dto.setPdfs(pdf);
             dto.setVendorId(vendorid);
             dto.setSettlementNo(settlementNo);
+            logger.info("电票发票上传--识别入参：{}",JSONObject.toJSONString(dto));
             final String batchNo = backFillService.uploadAndVerify(dto);
 
             return R.ok(batchNo);

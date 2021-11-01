@@ -67,11 +67,13 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
         RecordInvoiceResponse recordInvoiceResponse = null;
-        for (RecordInvoiceResponse recordInvoice : response) {
+        for (TDxRecordInvoiceEntity recordInvoice : pageResult.getRecords()) {
             recordInvoiceResponse = new RecordInvoiceResponse();
             BeanUtil.copyProperties(recordInvoice,recordInvoiceResponse);
-            BigDecimal taxRate = new BigDecimal(recordInvoice.getTaxRate()).divide(BigDecimal.valueOf(100L), 3, RoundingMode.HALF_UP);
-            recordInvoiceResponse.setTaxRate(taxRate.toPlainString());
+            if(recordInvoice.getTaxRate() != null){
+                BigDecimal taxRate = recordInvoice.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
+                recordInvoiceResponse.setTaxRate(taxRate.toPlainString());
+            }
             response.add(recordInvoiceResponse);
         }
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
