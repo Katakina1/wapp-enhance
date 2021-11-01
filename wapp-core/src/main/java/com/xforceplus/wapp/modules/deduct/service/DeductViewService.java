@@ -17,7 +17,6 @@ import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
-import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.mapstruct.MatchedInvoiceMapper;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
@@ -199,9 +198,11 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     private QueryWrapper<TXfBillDeductEntity> wrapper(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
         return doWrapper(request,typeEnum,x->{
-            if (typeEnum!=XFDeductionBusinessTypeEnum.CLAIM_BILL){
+            if (typeEnum !=XFDeductionBusinessTypeEnum.CLAIM_BILL){
                 // 小于0的不展示
                 x.gt(TXfBillDeductEntity.AMOUNT_WITHOUT_TAX,BigDecimal.ZERO);
+            }else {
+                x.eq("1",1);
             }
         });
     }
@@ -344,7 +345,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
         final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainInvoiceByIds(amount, request.getInvoiceIds());
 
-        return agreementBillService.mergeSettlementByManual(request.getBillId(), type,matchRes);
+        return agreementBillService.mergeSettlementByManual(request.getBillIds(), type,matchRes);
     }
 
     public List<MatchedInvoiceListResponse> getMatchedInvoice(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
@@ -369,7 +370,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
     private BigDecimal checkAndGetTotalAmount(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
-        final List<Long> billId = request.getBillId();
+        final List<Long> billId = request.getBillIds();
         BigDecimal amount=BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(billId)) {
             final QueryWrapper<TXfBillDeductEntity> wrapper = Wrappers.query();

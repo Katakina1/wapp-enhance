@@ -283,20 +283,26 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoice.setSellerName(entity.getXfName());
         invoice.setSellerTaxNo(entity.getXfTaxNo());
         invoice.setPaperDrewDate(entity.getInvoiceDate());
+        invoice.setAmountWithoutTax(entity.getInvoiceAmount());
+        invoice.setAmountWithTax(entity.getTotalAmount());
     }
 
     public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){
-        invoiceDetail.setAmountWithTax(entity.getDetailAmount());
-        BigDecimal amountWithTax = new BigDecimal(entity.getDetailAmount()).add(new BigDecimal(entity.getTaxAmount()));
-        invoiceDetail.setAmountWithTax(amountWithTax.toPlainString());
+        invoiceDetail.setAmountWithoutTax(entity.getDetailAmount());
+        if(StringUtils.isNotEmpty(entity.getDetailAmount())&& StringUtils.isNotEmpty(entity.getTaxAmount())){
+            BigDecimal amountWithTax = new BigDecimal(entity.getDetailAmount()).add(new BigDecimal(entity.getTaxAmount()));
+            invoiceDetail.setAmountWithTax(amountWithTax.toPlainString());
+        }
         invoiceDetail.setTaxAmount(entity.getTaxAmount());
         invoiceDetail.setCargoName(entity.getGoodsName());
         invoiceDetail.setItemSpec(entity.getModel());
         invoiceDetail.setQuantity(entity.getNum());
         invoiceDetail.setQuantityUnit(entity.getUnit());
         invoiceDetail.setUnitPrice(entity.getUnitPrice());
-        BigDecimal taxRate = new BigDecimal(entity.getTaxRate()).divide(BigDecimal.valueOf(100L), 3, RoundingMode.HALF_UP);
-        invoiceDetail.setTaxRate(taxRate.toPlainString());
+        if(StringUtils.isNotEmpty(entity.getTaxRate())){
+            BigDecimal taxRate = new BigDecimal(entity.getTaxRate()).divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
+            invoiceDetail.setTaxRate(taxRate.toPlainString());
+        }
     }
 
 }

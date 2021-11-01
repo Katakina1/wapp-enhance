@@ -43,9 +43,14 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {
-        log.info("启动原始索赔单任务生成器");
-        List<String> fileNames = scanFiles(remotePath);
-        createJob(CLAIM_BILL_JOB.getJobType(), fileNames);
+        try {
+
+            log.info("启动原始索赔单任务生成器");
+            List<String> fileNames = scanFiles(remotePath);
+            createJob(CLAIM_BILL_JOB.getJobType(), fileNames);
+        }finally {
+            this.sftpRemoteManager.closeChannel();
+        }
     }
 
     @Override

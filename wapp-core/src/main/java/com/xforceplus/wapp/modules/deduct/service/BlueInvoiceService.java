@@ -80,7 +80,7 @@ public class BlueInvoiceService {
         if (BigDecimal.ZERO.compareTo(amount) >= 0) {
             throw new NoSuchInvoiceException("非法的负数待匹配金额" + amount);
         }
-        log.info("收到匹配蓝票任务 待匹配金额amount={} settlementNo={} sellerTaxNo={} purchaserTaxNo={} withItems={}", amount, settlementNo, sellerTaxNo, purchaserTaxNo, withItems);
+        log.info("收到匹配蓝票任务 待匹配金额amount={} settlementNo={} sellerTaxNo={} purchaserTaxNo={} taxRate={} withItems={}", amount, settlementNo, sellerTaxNo, purchaserTaxNo, taxRate, withItems);
         if (withItems) {
             return obtainAvailableInvoicesWithItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo, taxRate);
         } else {
@@ -105,7 +105,7 @@ public class BlueInvoiceService {
                             leftAmount.get();
                     // 获取该发票的所有正数明细
                     //TODO No+code不正确，大象的逻辑都是 code+no
-                    String uuid =  tDxRecordInvoiceEntity.getInvoiceCode() + tDxRecordInvoiceEntity.getInvoiceNo() ;
+                    String uuid = tDxRecordInvoiceEntity.getInvoiceCode() + tDxRecordInvoiceEntity.getInvoiceNo();
                     List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(uuid, tDxRecordInvoiceEntity.getInvoiceAmount(), lastRemainingAmount, lastRemainingAmount);
                     // 如果该发票没有可用明细，那么跳过
                     if (org.springframework.util.CollectionUtils.isEmpty(items)) {
@@ -147,6 +147,7 @@ public class BlueInvoiceService {
                                 .invoiceNo(tDxRecordInvoiceEntity.getInvoiceNo())
                                 .invoiceCode(tDxRecordInvoiceEntity.getInvoiceCode())
                                 .deductedAmount(deductedAmount)
+                                .invoiceDate(tDxRecordInvoiceEntity.getInvoiceDate())
                                 .invoiceItems(
                                         items
                                                 .stream()
@@ -171,10 +172,10 @@ public class BlueInvoiceService {
     }
 
     private List<MatchRes> obtainAvailableInvoicesWithoutItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate) {
-        return obtainAvailableInvoicesWithoutItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo, taxRate,true);
+        return obtainAvailableInvoicesWithoutItems(amount, settlementNo, sellerTaxNo, purchaserTaxNo, taxRate, true);
     }
 
-    public List<MatchRes> obtainAvailableInvoicesWithoutItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate,boolean deductRemainingAmount) {
+    public List<MatchRes> obtainAvailableInvoicesWithoutItems(BigDecimal amount, String settlementNo, String sellerTaxNo, String purchaserTaxNo, BigDecimal taxRate, boolean deductRemainingAmount) {
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         TDxRecordInvoiceEntity tDxRecordInvoiceEntity;
@@ -193,6 +194,7 @@ public class BlueInvoiceService {
                     deduction.setId(tDxRecordInvoiceEntity.getId());
                     // 设置需要扣除的金额
                     deduction.setRemainingAmount(deductedAmount);
+                    // 如果需要立即扣除可用额度
                     if (deductRemainingAmount) {
                         if (extInvoiceService.deductRemainingAmount(deduction) <= 0) {
                             log.warn("锁定并更新发票剩余可用金额失败，跳过此发票处理，发票id={} 更新前剩余可用金额={} 需要扣除的可用金额={}", tDxRecordInvoiceEntity.getId(), lastRemainingAmount, lastRemainingAmount);
@@ -211,7 +213,10 @@ public class BlueInvoiceService {
         } while (Objects.nonNull(tDxRecordInvoiceEntity) && BigDecimal.ZERO.compareTo(leftAmount.get()) < 0);
         if (BigDecimal.ZERO.compareTo(leftAmount.get()) < 0) {
             log.info("没有足够的待匹配的蓝票，回撤变更的发票");
-            withdrawInvoices(list);
+            // 如果已立即扣除可用额度
+            if (deductRemainingAmount) {
+                withdrawInvoices(list);
+            }
             throw new NoSuchInvoiceException();
         }
         log.info("已匹配到的发票列表={}", CollectionUtils.flattenToString(list));
@@ -221,7 +226,7 @@ public class BlueInvoiceService {
     /**
      * 根据之前的剩余金额，以及本次需要抵扣的可用金额，按照明细顺序找到合适的明细行返回，返回的明细金额总和一定<=需要抵扣的可用金额
      *
-     * @param uuid                  发票号码+发票代码 拼接
+     * @param uuid                  发票代码+发票号码 拼接
      * @param totalAmountWithoutTax
      * @param lastRemainingAmount
      * @param deductedAmount
@@ -399,7 +404,7 @@ public class BlueInvoiceService {
 
 
     @Transactional
-    public List<MatchRes> obtainInvoiceByIds(BigDecimal amount,List<Long> invoiceIds){
+    public List<MatchRes> obtainInvoiceByIds(BigDecimal amount, List<Long> invoiceIds) {
         List<MatchRes> list = new ArrayList<>();
         AtomicReference<BigDecimal> leftAmount = new AtomicReference<>(amount);
         for (Long invoiceId : invoiceIds) {
@@ -408,7 +413,7 @@ public class BlueInvoiceService {
                 throw new EnhanceRuntimeException("参数不合法，发票ID[" + invoiceId + "]不存在");
             }
 
-            if (!Objects.equals(invoice.getInvoiceStatus(),"0")){
+            if (!Objects.equals(invoice.getInvoiceStatus(), "0")) {
                 throw new EnhanceRuntimeException("发票[" + invoice.getInvoiceNo() + "],[" + invoice.getInvoiceCode() + "]不是正常状态发票");
             }
 
@@ -426,7 +431,7 @@ public class BlueInvoiceService {
             }
 
             if (invoice.getRemainingAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new EnhanceRuntimeException("发票[" + invoice.getInvoiceNo() + "],[" + invoice.getInvoiceCode() + "]可用金额["+invoice.getRemainingAmount().toPlainString()+"]不足，不能参与匹配");
+                throw new EnhanceRuntimeException("发票[" + invoice.getInvoiceNo() + "],[" + invoice.getInvoiceCode() + "]可用金额[" + invoice.getRemainingAmount().toPlainString() + "]不足，不能参与匹配");
             }
 
             if (blueInvoiceRelationService.existsByBlueInvoice(invoice.getInvoiceNo(), invoice.getInvoiceCode())) {
@@ -442,7 +447,7 @@ public class BlueInvoiceService {
                     leftAmount.get();
 
             // 获取该发票的所有正数明细
-            String uuid =  invoice.getInvoiceCode() + invoice.getInvoiceNo() ;
+            String uuid = invoice.getInvoiceCode() + invoice.getInvoiceNo();
             List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(uuid, invoice.getInvoiceAmount(), lastRemainingAmount, lastRemainingAmount);
             // 如果该发票没有可用明细，那么跳过
             if (org.springframework.util.CollectionUtils.isEmpty(items)) {

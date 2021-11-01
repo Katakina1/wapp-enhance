@@ -8,6 +8,7 @@ import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
@@ -21,10 +22,7 @@ import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDetailDao;
-import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
-import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
+import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.daoExt.ElectronicUploadRecordDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
 import com.xforceplus.wapp.repository.entity.*;
@@ -117,6 +115,9 @@ public class BackFillService  {
     @Autowired
     private OperateLogService operateLogService;
 
+    @Autowired
+    private TXfElecUploadRecordDao tXfElecUploadRecordDao;
+
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                               String tenantId) {
         this.tenantId=tenantId;
@@ -183,8 +184,8 @@ public class BackFillService  {
                 detailEntity.setStatus(false);
                 detailEntity.setReason(e.getMessage());
             }
-            this.electronicUploadRecordDao.update(recordEntity);
-            this.electronicUploadRecordDetailDao.insert(detailEntity);
+            tXfElecUploadRecordDao.updateById(recordEntity);
+            electronicUploadRecordDetailDao.insert(detailEntity);
         }
         return R.ok(batchNo);
     }
@@ -427,21 +428,21 @@ public class BackFillService  {
     @Transactional
     public R matchPreInvoice(BackFillMatchRequest request){
         if(StringUtils.isEmpty(request.getSettlementNo())){
-            return R.fail("结算单号不能为空");
+            throw new EnhanceRuntimeException("结算单号不能为空");
         }
         if(CollectionUtils.isEmpty(request.getVerifyBeanList())){
-            return R.fail("上传发票不能为空");
+            throw new EnhanceRuntimeException("上传发票不能为空");
         }
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(wrapper);
         if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
-            return R.fail("根据结算单号未找到预制发票");
+            throw new EnhanceRuntimeException("根据结算单号未找到预制发票");
         }
         if("0".equals(request.getInvoiceColer())){
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
                 if(StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())){
-                    return R.fail("预制发票的红字信息编号不能为空");
+                    throw new EnhanceRuntimeException("预制发票的红字信息编号不能为空");
                 }
                 if(request.getVerifyBeanList().stream().anyMatch(t -> preInvoiceEntity.getRedNotificationNo().equals(t.getRedNoticeNumber()))){
                     log.info("发票回填后匹配--修改预制发票状态");
@@ -451,7 +452,7 @@ public class BackFillService  {
                     Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                     log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
                 }else{
-                    return R.fail("预制发票的红字信息编号匹配失败");
+                    throw new EnhanceRuntimeException("预制发票的红字信息编号匹配失败");
                 }
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
@@ -543,6 +544,10 @@ public class BackFillService  {
             }
             if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
                 return R.fail("被蓝冲发票号码不能为空");
+            }
+            boolean isCurrentPaper = request.getVerifyBeanList().stream().anyMatch(t -> (DateUtils.isCurrentMonth(DateUtils.strToDate(t.getPaperDrewDate()))) && !InvoiceTypeEnum.isElectronic(t.getInvoiceType()));
+            if(isCurrentPaper){
+                return R.fail("当前红票可以作废，请直接删除后，再重新上传");
             }
             QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
             invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());

@@ -42,6 +42,7 @@ public interface ElectronicInvoiceDao {
 
     /**
      * 底账发票插入
+     *
      * @param map
      * @return
      */
@@ -49,10 +50,13 @@ public interface ElectronicInvoiceDao {
 
     /**
      * 插入普纸
+     *
      * @param map
      * @return
      */
     Integer saveInvoicePP(Map<String, Object> map);
+
+    void updateNoDeduction(@Param("uuid") List<String> uuid);
 
 
 }

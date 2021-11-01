@@ -18,13 +18,13 @@ import java.util.List;
 @Getter
 @ApiModel
 public class PreMakeSettlementRequest {
-    @ApiModelProperty(value = "购方编码/机构代码",hidden = true)
+    @ApiModelProperty(value = "购方编码/机构代码")
     private String purchaserNo;
 
-    @ApiModelProperty(hidden = true)
+    @ApiModelProperty
     private BigDecimal taxRate;
-
-    private List<Long> billId;
+    @ApiModelProperty
+    private List<Long> billIds;
 
     @ApiModelProperty(hidden = true)
     private String sellerNo;

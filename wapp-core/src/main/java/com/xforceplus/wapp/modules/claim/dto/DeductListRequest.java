@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 @Valid
 public class DeductListRequest {
     @ApiModelProperty("扣款公司代码")
+    @NotNull(message = "必须要选择一个扣款公司")
     private String purchaserNo;
     @ApiModelProperty("索赔号/协议号/EPD号")
     private String billNo;

@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,6 +54,13 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         Page<TAcOrgEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(companyConverter.map(page.getRecords()), page);
+    }
+
+    public TAcOrgEntity getByOrgCode(@NotNull(message = "获取机构时，机构代码不能为空") String orgCode, boolean isSeller) {
+        if (isSeller) {
+            return getOrgInfoByOrgCode(orgCode, "8");
+        }
+        return getOrgInfoByOrgCode(orgCode, "5");
     }
 
     public TAcOrgEntity getByTaxNo(String taxNo) {
