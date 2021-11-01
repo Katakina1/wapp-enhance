@@ -63,7 +63,7 @@ public class BackFillController  extends AbstractController {
         request.setOriginInvoiceNo(originInvoiceNo);
         request.setOriginInvoiceCode(originInvoiceCode);
         request.setSettlementNo(settlementNo);
-        R r = backFillService.checkCommitRequest(request);
+        R r = backFillService.checkCommitRequest(request,files.length);
         if (R.FAIL.equals(r.getCode())) {
             return r;
         }
