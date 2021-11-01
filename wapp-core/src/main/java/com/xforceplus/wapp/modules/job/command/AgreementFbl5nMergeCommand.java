@@ -189,7 +189,7 @@ public class AgreementFbl5nMergeCommand implements Command {
                         if (!companyCodeList.contains(mergeTmpEntity.getCompanyCode())) {
                             return false;
                         }
-                        if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                        if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) >= 0) {
                             return false;
                         }
                         if (!docTypeList.contains(mergeTmpEntity.getDocumentType())) {
