@@ -166,6 +166,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         if(!DateUtils.isCurrentMonth(entity.getInvoiceDate())){
             return R.fail("当前发票类型或状态无法作废，重新开票前，请开同税率蓝票进行冲抵");
         }
+        String settlementNo = entity.getSettlementNo();
         entity.setIsDel(IsDealEnum.YES.getValue());
         entity.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
         entity.setSettlementNo("");
@@ -204,7 +205,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
         }
         UpdateWrapper<TXfSettlementEntity> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,entity.getSettlementNo());
+        updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,settlementNo);
         int count3 = tXfSettlementDao.update(tXfSettlementEntity, updateWrapper);
         if(count3 < 1){
             throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");

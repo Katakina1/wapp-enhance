@@ -452,15 +452,23 @@ public class BackFillService  {
                 if(StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())){
                     throw new EnhanceRuntimeException("预制发票的红字信息编号不能为空");
                 }
-                if(request.getVerifyBeanList().stream().anyMatch(t -> preInvoiceEntity.getRedNotificationNo().equals(t.getRedNoticeNumber()))){
-                    log.info("发票回填后匹配--修改预制发票状态");
-                    preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
-                    preInvoiceDao.updateById(preInvoiceEntity);
-                    log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
-                    Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
-                    log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
-                    success++;
+                for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
+                    if(backFillVerifyBean.getRedNoticeNumber().equals(preInvoiceEntity.getRedNotificationNo())){
+                        log.info("发票回填后匹配--回填预制发票数据");
+                        preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
+                        preInvoiceEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
+                        preInvoiceEntity.setInvoiceNo(backFillVerifyBean.getInvoiceNo());
+                        preInvoiceEntity.setCheckCode(backFillVerifyBean.getCheckCode());
+                        preInvoiceEntity.setMachineCode(backFillVerifyBean.getMachinecode());
+                        preInvoiceEntity.setPaperDrawDate(backFillVerifyBean.getPaperDrewDate());
+                        preInvoiceDao.updateById(preInvoiceEntity);
+                        log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
+                        Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
+                        log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
+                        success++;
+                    }
                 }
+
             }
             if(success == 0){
                 throw new EnhanceRuntimeException("预制发票的红字信息编号匹配失败");
