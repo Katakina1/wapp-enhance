@@ -105,7 +105,7 @@
         <result column="dxhy_match_status" property="dxhyMatchStatus"/>
         <result column="source_system" property="systemSource"/>
         <result column="detail_yesorno" property="detailYesorno"/>
-        <result column="check_code" property="checkNo"/>
+        <result column="check_code" property="checkCode"/>
         <result column="jvcode" property="jvcode"/>
         <result column="matchno" property="matchno"/>
         <result column="dk_invoiceAmount" property="dkinvoiceAmount"/>

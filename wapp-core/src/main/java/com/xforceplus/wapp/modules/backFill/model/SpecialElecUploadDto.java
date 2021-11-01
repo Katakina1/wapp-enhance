@@ -22,5 +22,6 @@ public class SpecialElecUploadDto {
     private String xfName;
     private String xfTaxNo;
     private String gfTaxNo;
+    private String settlementNo;
 
 }
