@@ -75,7 +75,6 @@ public class AgreementFbl5nMergeCommand implements Command {
             try {
                 process(jobId, context);
             } catch (Exception e) {
-                e.printStackTrace();
                 log.error(e.getMessage(), e);
                 context.put(TXfBillJobEntity.REMARK, e.getMessage());
             }
