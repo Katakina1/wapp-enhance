@@ -59,6 +59,11 @@ public class AgreementFbl5nMergeCommand implements Command {
     private TXfOriginSapZarrDao tXfOriginSapZarrDao;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
+    /**
+     * 过滤fbl5n数据
+     */
+    private List<String> companyCodeList = Stream.of("D073").collect(Collectors.toList());
+    private List<String> docTypeList = Stream.of("YC", "YD", "YR", "1C", "1D", "1R", "RV", "DA").collect(Collectors.toList());
 
     @Override
     public boolean execute(Context context) throws Exception {
@@ -121,6 +126,9 @@ public class AgreementFbl5nMergeCommand implements Command {
                     new QueryWrapper<TXfOriginSapFbl5nEntity>()
                             .lambda()
                             .eq(TXfOriginSapFbl5nEntity::getJobId, jobId)
+                            //过滤数据集1
+                            .in(TXfOriginSapFbl5nEntity::getCompanyCode, companyCodeList)
+                            .in(TXfOriginSapFbl5nEntity::getDocumentType, docTypeList)
                             .orderByAsc(TXfOriginSapFbl5nEntity::getId)
             );
             // 总页数
@@ -189,6 +197,7 @@ public class AgreementFbl5nMergeCommand implements Command {
                         if (!companyCodeList.contains(mergeTmpEntity.getCompanyCode())) {
                             return false;
                         }
+                        //过滤数据集2
                         if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) >= 0) {
                             return false;
                         }
