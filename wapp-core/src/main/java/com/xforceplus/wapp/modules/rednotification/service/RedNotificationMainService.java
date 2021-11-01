@@ -991,15 +991,6 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     }
 
-//
-//    public static void main(String[] args) {
-//        String ftpFilePath = "home/wappftp/wapp/excel/20211021040817/1_红字信息表导出_2021-10-21_1634803697146.xlsx";
-//        File localFile = new File(ftpFilePath);
-//        if (!localFile.getParentFile().exists()) {
-//            boolean mkdirs = localFile.getParentFile().mkdirs();
-//            System.out.println(mkdirs);
-//        }
-//    }
 
 
     /**
@@ -1010,10 +1001,19 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      */
     public Response<String> operation(RedNotificationConfirmRejectRequest request) {
         List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
-        List<Long> list = filterData.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+        //获取结算单号 获取弹窗  相同单号 一起审批
+        List<String> billNos = filterData.stream().map(TXfRedNotificationEntity::getBillNo).distinct().collect(Collectors.toList());
+        LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(TXfRedNotificationEntity::getBillNo,billNos)
+                    .eq(TXfRedNotificationEntity::getApproveStatus,ApproveStatus.WAIT_TO_APPROVE.getValue())
+                    .eq(TXfRedNotificationEntity::getStatus,1);
+        List<TXfRedNotificationEntity> tXfRedNotificationEntities = getBaseMapper().selectList(queryWrapper);
 
-        //
-        List<Long> pidList = filterData.stream().map(item->Long.parseLong(item.getPid())).collect(Collectors.toList());
+
+
+        List<Long> list = tXfRedNotificationEntities.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+
+        List<Long> pidList = tXfRedNotificationEntities.stream().map(item->Long.parseLong(item.getPid())).collect(Collectors.toList());
         if (Objects.equals(OperationType.CONFIRM.getValue(),request.getOperationType())){
            // 确认 //自动尝试一次 //撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
@@ -1051,7 +1051,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         }
         return Response.ok("操作成功");
-
-
     }
+
+
+
+
+
 }
