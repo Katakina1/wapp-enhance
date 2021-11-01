@@ -82,6 +82,9 @@ public class TXfOriginSapZarrEntity extends BaseEntity {
     @TableField("contents")
     private String contents;
 
+    @TableField("reference")
+    private String reference;
+
     @TableField("internal_invoice_no")
     private String internalInvoiceNo;
 
@@ -121,6 +124,8 @@ public class TXfOriginSapZarrEntity extends BaseEntity {
     public static final String ID = "id";
 
     public static final String CONTENTS = "contents";
+
+    public static final String REFERENCE = "reference";
 
     public static final String INTERNAL_INVOICE_NO = "internal_invoice_no";
 

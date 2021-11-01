@@ -16,6 +16,7 @@ import com.xforceplus.wapp.repository.dao.TXfOriginSapZarrDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementMergeEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -135,9 +136,9 @@ public class AgreementFbl5nMergeCommand implements Command {
                         TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
                         tXfOriginAgreementMergeTmpEntity.setJobId(fbl5n.getJobId());
                         tXfOriginAgreementMergeTmpEntity.setCustomerNo(fbl5n.getAccount());
-                        // TODO
-                        // tXfOriginAgreementMergeTmpEntity.setCustomerName();
-                        // tXfOriginAgreementMergeTmpEntity.setMemo();
+                        // TODO fbl5n 供应商6D 供应商名称???
+                        tXfOriginAgreementMergeTmpEntity.setCustomerName(getCustomer(fbl5n.getJobId(), fbl5n.getReference()));
+                        tXfOriginAgreementMergeTmpEntity.setMemo(getMemo6D(fbl5n.getJobId(), fbl5n.getReference()));
                         tXfOriginAgreementMergeTmpEntity.setCompanyCode(fbl5n.getCompanyCode());
                         String amountInDocCurr = fbl5n.getAmountInDocCurr().replace(",", "");
                         if (StringUtils.isNotBlank(amountInDocCurr)) {
@@ -213,6 +214,34 @@ public class AgreementFbl5nMergeCommand implements Command {
             return tXfOriginSapFbl5nEntity.getReasonCode();
         }
         return null;
+    }
+
+    private String getCustomer(Integer jobId, String reference) {
+        QueryWrapper<TXfOriginSapZarrEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginSapZarrEntity.JOB_ID, jobId);
+        queryWrapper.eq(TXfOriginSapZarrEntity.REFERENCE, reference);
+        List<TXfOriginSapZarrEntity> list = tXfOriginSapZarrDao.selectList(queryWrapper);
+        return list.stream()
+                .map(zarr -> {
+                    if (StringUtils.isNotBlank(zarr.getCustomer())) {
+                        return zarr.getCustomer();
+                    }
+                    return null;
+                }).findAny().orElse(null);
+    }
+
+    private String getMemo6D(Integer jobId, String reference) {
+        QueryWrapper<TXfOriginSapZarrEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginSapZarrEntity.JOB_ID, jobId);
+        queryWrapper.eq(TXfOriginSapZarrEntity.REFERENCE, reference);
+        List<TXfOriginSapZarrEntity> list = tXfOriginSapZarrDao.selectList(queryWrapper);
+        return list.stream()
+                .map(zarr -> {
+                    if (StringUtils.isNotBlank(zarr.getMemo())) {
+                        return zarr.getMemo().replace("V#", "").substring(0, 6);
+                    }
+                    return null;
+                }).findAny().orElse(null);
     }
 
 
