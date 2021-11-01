@@ -427,21 +427,21 @@ public class BackFillService  {
     @Transactional
     public R matchPreInvoice(BackFillMatchRequest request){
         if(StringUtils.isEmpty(request.getSettlementNo())){
-            return R.fail("结算单号不能为空");
+            throw new EnhanceRuntimeException("结算单号不能为空");
         }
         if(CollectionUtils.isEmpty(request.getVerifyBeanList())){
-            return R.fail("上传发票不能为空");
+            throw new EnhanceRuntimeException("上传发票不能为空");
         }
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(wrapper);
         if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
-            return R.fail("根据结算单号未找到预制发票");
+            throw new EnhanceRuntimeException("根据结算单号未找到预制发票");
         }
         if("0".equals(request.getInvoiceColer())){
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
                 if(StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())){
-                    return R.fail("预制发票的红字信息编号不能为空");
+                    throw new EnhanceRuntimeException("预制发票的红字信息编号不能为空");
                 }
                 if(request.getVerifyBeanList().stream().anyMatch(t -> preInvoiceEntity.getRedNotificationNo().equals(t.getRedNoticeNumber()))){
                     log.info("发票回填后匹配--修改预制发票状态");
@@ -451,7 +451,7 @@ public class BackFillService  {
                     Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                     log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
                 }else{
-                    return R.fail("预制发票的红字信息编号匹配失败");
+                    throw new EnhanceRuntimeException("预制发票的红字信息编号匹配失败");
                 }
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {

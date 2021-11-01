@@ -92,8 +92,8 @@ import java.util.List;
     /**
      * 金额
      */
-    @ApiModelProperty("金额")
-    private BigDecimal invoiceAmount;
+    @ApiModelProperty("不含税金额")
+    private BigDecimal amountWithoutTax;
 
     /**
      * 税额
@@ -104,8 +104,8 @@ import java.util.List;
     /**
      * 价格合计
      */
-    @ApiModelProperty("价格合计")
-    private BigDecimal totalAmount;
+    @ApiModelProperty("含税金额")
+    private BigDecimal amountWithTax;
 
     /**
      * 备注
