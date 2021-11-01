@@ -29,6 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @program: wapp-generator
@@ -58,6 +60,11 @@ public class AgreementZarrMergeCommand implements Command {
     private TXfOriginSapZarrDao tXfOriginSapZarrDao;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
+    /**
+     * 过滤fbl5n数据
+     */
+    private List<String> companyCodeList = Stream.of("D073").collect(Collectors.toList());
+    private List<String> docTypeList = Stream.of("YC", "YD", "YR", "1C", "1D", "1R", "RV", "DA").collect(Collectors.toList());
 
     @Override
     public boolean execute(Context context) throws Exception {
@@ -107,7 +114,7 @@ public class AgreementZarrMergeCommand implements Command {
             // 记录上次完成的页数，这次从last+1开始
             last = Long.parseLong(String.valueOf(jobEntryProgress));
         }
-        if(last == 0){
+        if (last == 0) {
             //如果第一页需要特殊处理把数据此次job数据清理一下（可能之前执行到一半重启，数据已经完成一半但是last没有更新）
             deleteOriginAgreementMerge(jobId);
         }
@@ -195,9 +202,12 @@ public class AgreementZarrMergeCommand implements Command {
     }
 
     private String getTaxCode(Integer jobId, String reference) {
+
         QueryWrapper<TXfOriginSapFbl5nEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfOriginSapFbl5nEntity.JOB_ID, jobId);
         queryWrapper.eq(TXfOriginSapFbl5nEntity.REFERENCE, reference);
+        queryWrapper.in(TXfOriginSapFbl5nEntity.COMPANY_CODE, companyCodeList);
+        queryWrapper.in(TXfOriginSapFbl5nEntity.DOCUMENT_TYPE, docTypeList);
         List<TXfOriginSapFbl5nEntity> list = tXfOriginSapFbl5nDao.selectList(queryWrapper);
         TXfOriginSapFbl5nEntity tXfOriginSapFbl5nEntity = list.stream().filter(fbl5n -> StringUtils.isNotBlank(fbl5n.getReasonCode())).findAny().orElse(null);
         if (tXfOriginSapFbl5nEntity != null) {
@@ -210,8 +220,10 @@ public class AgreementZarrMergeCommand implements Command {
         QueryWrapper<TXfOriginSapFbl5nEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfOriginSapFbl5nEntity.JOB_ID, jobId);
         queryWrapper.eq(TXfOriginSapFbl5nEntity.REFERENCE, reference);
+        queryWrapper.in(TXfOriginSapFbl5nEntity.COMPANY_CODE, companyCodeList);
+        queryWrapper.in(TXfOriginSapFbl5nEntity.DOCUMENT_TYPE, docTypeList);
         List<TXfOriginSapFbl5nEntity> list = tXfOriginSapFbl5nDao.selectList(queryWrapper);
-        TXfOriginSapFbl5nEntity tXfOriginSapFbl5nEntity = list.stream().filter(fbl5n -> StringUtils.isNotBlank(fbl5n.getReasonCode())).findAny().orElse(null);
+        TXfOriginSapFbl5nEntity tXfOriginSapFbl5nEntity = list.stream().filter(fbl5n -> StringUtils.isNotBlank(fbl5n.getClearingDate())).findAny().orElse(null);
         if (tXfOriginSapFbl5nEntity != null) {
             return tXfOriginSapFbl5nEntity.getClearingDate();
         }
@@ -222,15 +234,17 @@ public class AgreementZarrMergeCommand implements Command {
         QueryWrapper<TXfOriginSapFbl5nEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfOriginSapFbl5nEntity.JOB_ID, jobId);
         queryWrapper.eq(TXfOriginSapFbl5nEntity.REFERENCE, reference);
+        queryWrapper.in(TXfOriginSapFbl5nEntity.COMPANY_CODE, companyCodeList);
+        queryWrapper.in(TXfOriginSapFbl5nEntity.DOCUMENT_TYPE, docTypeList);
         List<TXfOriginSapFbl5nEntity> list = tXfOriginSapFbl5nDao.selectList(queryWrapper);
-        TXfOriginSapFbl5nEntity tXfOriginSapFbl5nEntity = list.stream().filter(fbl5n -> StringUtils.isNotBlank(fbl5n.getReasonCode())).findAny().orElse(null);
+        TXfOriginSapFbl5nEntity tXfOriginSapFbl5nEntity = list.stream().filter(fbl5n -> StringUtils.isNotBlank(fbl5n.getDocumentType())).findAny().orElse(null);
         if (tXfOriginSapFbl5nEntity != null) {
             return tXfOriginSapFbl5nEntity.getDocumentType();
         }
         return null;
     }
 
-    private void deleteOriginAgreementMerge(Integer jobId){
+    private void deleteOriginAgreementMerge(Integer jobId) {
         QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
         queryWrapper.eq(TXfOriginAgreementMergeEntity.SOURCE, 2);
