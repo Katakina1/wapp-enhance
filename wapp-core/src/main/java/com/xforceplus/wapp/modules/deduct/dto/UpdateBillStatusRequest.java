@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * Created by SunShiyong on 2021/10/20.
  */
@@ -14,7 +16,7 @@ import lombok.Data;
 public class UpdateBillStatusRequest {
 
     @ApiModelProperty("主键")
-    private Long id;
+    private List<Long> ids;
 
     @ApiModelProperty("业务单据类型 1:索赔;2:协议;3:EPD ")
     private Integer deductType;
