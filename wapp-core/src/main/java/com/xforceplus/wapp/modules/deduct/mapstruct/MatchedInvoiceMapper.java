@@ -21,6 +21,7 @@ public interface MatchedInvoiceMapper {
     @Mapping(target = "matchedAmount", source = "useAmount")
     MatchedInvoiceListResponse toMatchedInvoice(TXfBillDeductInvoiceEntity invoiceEntity);
     @Mapping(target = "matchedAmount",source = "deductedAmount")
+    @Mapping(target = "id",source = "invoiceId")
     MatchedInvoiceListResponse toMatchInvoice(BlueInvoiceService.MatchRes invoiceEntity);
 
     List<MatchedInvoiceListResponse> toMatchedInvoice(List<TXfBillDeductInvoiceEntity> matchedInvoices);

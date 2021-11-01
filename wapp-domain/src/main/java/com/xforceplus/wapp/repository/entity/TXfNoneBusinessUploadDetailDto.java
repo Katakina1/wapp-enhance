@@ -77,9 +77,14 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
     private String storeNo;
 
     /**
-     * 货物/服务发生期间
+     * 货物/服务发生期间 开始时间
      */
-    private String storeDate;
+    private String storeStart;
+
+    /**
+     * 货物/服务发生期间 结束时间
+     */
+    private String storeEnd;
 
     /**
      * 业务类型  0 水电费 1 leasing in  2 固定资产转移
@@ -169,5 +174,43 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
      * 0查询当前用户数据 1 查询所有数据
      */
     private String queryType;
+    /**
+     * 购方税号
+     */
+    private String purTaxNo;
+    /**
+     * 购方名称
+     */
+    private String purTaxName;
+    /**
+     * 销方税号
+     */
+    private String sellerTaxNo;
+    /**
+     * 销方名称
+     */
+    private String sellerTaxName;
+    /**
+     * 税率
+     */
+    private String taxRate;
+    /**
+     * 发票状态
+     */
+    private String invoiceStatus;
+    /**
+     * 认证状态
+     */
+    private String authStatus;
+    /**
+     * 认证日期
+     */
+    private String authDate;
+    /**
+     * sap编号
+     */
+    private String sap;
+
+
 
 }

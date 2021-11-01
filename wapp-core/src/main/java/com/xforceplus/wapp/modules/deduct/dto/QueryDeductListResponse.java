@@ -50,6 +50,12 @@ public class QueryDeductListResponse {
     @ApiModelProperty("扣款公司jv_code")
     private String purchaserNo;
 
+    /**
+     * 扣款公司名称
+     */
+    @ApiModelProperty("扣款公司名称")
+    private String purchaserName;
+
     @ApiModelProperty("协议供应商6D")
     private String agreementMemo;
 

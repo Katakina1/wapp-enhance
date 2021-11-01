@@ -32,6 +32,7 @@ import lombok.Builder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +73,34 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     @Autowired
     private DeductService deductService;
+
+    private List<BigDecimal> taxRates;
+
+    public DeductViewService(@Value("${wapp.tax-rate}") String rates){
+        if (StringUtils.isBlank(rates)){
+            throw new EnhanceRuntimeException("缺少配置 wapp.tax-rate");
+        }
+
+        final String[] split = rates.split("[,]");
+        taxRates=new ArrayList<>();
+        for (String rate : split) {
+            if (StringUtils.isBlank(rate.trim())){
+                throw new EnhanceRuntimeException("[wapp.tax-rate]税率配置以英文逗号隔开，切不能有空");
+            }
+
+            final BigDecimal rateDecimal = new BigDecimal(rate.trim());
+
+            if (rateDecimal.compareTo(BigDecimal.ZERO) < 0){
+                throw new EnhanceRuntimeException("[wapp.tax-rate]指定的税率不能是负数");
+            }
+
+            if (rateDecimal.compareTo(BigDecimal.ONE) > 0){
+                throw new EnhanceRuntimeException("[wapp.tax-rate]指定的税率只能为小数位保留2位的小数");
+            }
+
+            taxRates.add(rateDecimal.setScale(4));
+        }
+    }
 
 
 
@@ -181,11 +210,26 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     private List<SummaryResponse> toSummary(List<Map<String, Object>> objs) {
 
-        final List<SummaryResponse> summaryResponses = objs.stream().map(x -> {
-            final Object taxRate = x.get("taxRate");
-            final Object count = x.get("count");
-            return new SummaryResponse((Integer) count, taxRate.toString());
-        }).sorted(Comparator.comparing(SummaryResponse::getTaxRate)).collect(Collectors.toList());
+        Map<BigDecimal,SummaryResponse> summaries=new HashMap<>();
+        for (BigDecimal taxRate : taxRates) {
+            final SummaryResponse summaryResponse = new SummaryResponse(0, taxRate);
+            summaries.put(taxRate,summaryResponse);
+        }
+        for (Map<String, Object> obj : objs) {
+            final Object taxRate = obj.get("taxRate");
+            final Object count = obj.get("count");
+             SummaryResponse summaryResponse = null;
+            if (taxRate instanceof BigDecimal){
+                summaryResponse=summaries.get(((BigDecimal) taxRate).setScale(4));
+            }else {
+                summaryResponse=summaries.get(new BigDecimal(taxRate.toString()).setScale(4));
+            }
+            Optional.ofNullable(summaryResponse).ifPresent(x->x.setCount((Integer) count));
+        }
+
+        List<SummaryResponse> summaryResponses = new ArrayList<>(summaries.values());
+
+        summaryResponses.sort(Comparator.comparing(SummaryResponse::getTaxRate));
         final SummaryResponse summaryResponse = new SummaryResponse();
         summaryResponse.setAll(true);
         summaryResponse.setTaxRate("-1");
