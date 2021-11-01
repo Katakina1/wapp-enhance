@@ -165,8 +165,8 @@ public class BackFillService  {
             detailEntity.setId(idSequence.nextId());
             detailEntity.setCreateUser(String.valueOf(request.getOpUserId()));
             detailEntity.setSettlementNo(request.getSettlementNo());
-            detailEntity.setInvoiceCode(detailEntity.getInvoiceCode());
-            detailEntity.setInvoiceNo(detailEntity.getInvoiceNo());
+            detailEntity.setInvoiceCode(verificationRequest.getInvoiceCode());
+            detailEntity.setInvoiceNo(verificationRequest.getInvoiceNo());
             detailEntity.setCreateTime(new Date());
             detailEntity.setCreateUser(request.getOpUserId().toString());
             try {
@@ -445,6 +445,7 @@ public class BackFillService  {
             throw new EnhanceRuntimeException("根据结算单号未找到预制发票");
         }
         if("0".equals(request.getInvoiceColer())){
+            int success = 0;
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
                 if(StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())){
                     throw new EnhanceRuntimeException("预制发票的红字信息编号不能为空");
@@ -456,9 +457,13 @@ public class BackFillService  {
                     log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
                     Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                     log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
-                }else{
-                    throw new EnhanceRuntimeException("预制发票的红字信息编号匹配失败");
+                    if(update.getCode().equals(Response.OK)){
+                        success++;
+                    }
                 }
+            }
+            if(success == 0){
+                throw new EnhanceRuntimeException("预制发票的红字信息编号匹配失败");
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
                 log.info("红票回填后匹配--修改发票状态并加上结算单号");
