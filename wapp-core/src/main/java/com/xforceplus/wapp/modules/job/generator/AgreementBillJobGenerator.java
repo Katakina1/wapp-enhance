@@ -43,9 +43,13 @@ public class AgreementBillJobGenerator extends AbstractBillJobGenerator {
     @Scheduled(cron = "* * 23 * * ?")
     @Override
     public void generate() {
-        log.info("启动原始协议单任务生成器");
-        List<String> fileNames = scanFiles(remotePath);
-        createJob(AGREEMENT_BILL_JOB.getJobType(), fileNames);
+        try {
+            log.info("启动原始协议单任务生成器");
+            List<String> fileNames = scanFiles(remotePath);
+            createJob(AGREEMENT_BILL_JOB.getJobType(), fileNames);
+        } finally {
+            sftpRemoteManager.closeChannel();
+        }
     }
 
     @Override
