@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  * @description
  * @create 2021-11-01 14:25
  **/
-//@ConfigurationProperties(prefix = "")
+//@ConfigurationProperties(prefix = "wapp.tax-rate")
 //public class TaxRateProperties {
+//    private
 //}

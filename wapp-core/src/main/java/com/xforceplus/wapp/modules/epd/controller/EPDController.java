@@ -69,8 +69,11 @@ public class EPDController {
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.EPD_BILL);
-        return R.ok( "结算单生成完毕");
+        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        Map<String, Object> map=new HashMap<>();
+        map.put("settlementId",tXfSettlementEntity.getId());
+        map.put("settlementNo",tXfSettlementEntity.getSettlementNo());
+        return R.ok(map, "结算单生成完毕");
     }
 
     @PostMapping("pre-settlement")

@@ -116,3 +116,5 @@ epdBill:
   sheetName: 原始EPD单
   item:
     sheetName: 原始EPD单LOG明细
+wapp:
+  tax-rate: 0.00,0.01,0.03,0.06,0.09,0.10,0.11,0.13

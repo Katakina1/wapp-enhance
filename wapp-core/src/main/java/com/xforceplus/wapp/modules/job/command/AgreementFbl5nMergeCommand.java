@@ -7,7 +7,6 @@ import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.job.service.OriginAgreementMergeService;
 import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
 import com.xforceplus.wapp.repository.dao.TXfOriginAgreementMergeDao;
@@ -60,6 +59,11 @@ public class AgreementFbl5nMergeCommand implements Command {
     private TXfOriginSapZarrDao tXfOriginSapZarrDao;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
+    /**
+     * 过滤fbl5n数据
+     */
+    private List<String> companyCodeList = Stream.of("D073").collect(Collectors.toList());
+    private List<String> docTypeList = Stream.of("YC", "YD", "YR", "1C", "1D", "1R", "RV", "DA").collect(Collectors.toList());
 
     @Override
     public boolean execute(Context context) throws Exception {
@@ -110,6 +114,10 @@ public class AgreementFbl5nMergeCommand implements Command {
             // 记录上次完成的页数，这次从last+1开始
             last = Long.parseLong(String.valueOf(jobEntryProgress));
         }
+        if (last == 0) {
+            //如果第一页需要特殊处理把数据此次job数据清理一下（可能之前执行到一半重启，数据已经完成一半但是last没有更新）
+            deleteOriginAgreementMerge(jobId);
+        }
         // 先获取分页总数
         long pages;
         do {
@@ -118,6 +126,9 @@ public class AgreementFbl5nMergeCommand implements Command {
                     new QueryWrapper<TXfOriginSapFbl5nEntity>()
                             .lambda()
                             .eq(TXfOriginSapFbl5nEntity::getJobId, jobId)
+                            //过滤数据集1
+                            .in(TXfOriginSapFbl5nEntity::getCompanyCode, companyCodeList)
+                            .in(TXfOriginSapFbl5nEntity::getDocumentType, docTypeList)
                             .orderByAsc(TXfOriginSapFbl5nEntity::getId)
             );
             // 总页数
@@ -128,6 +139,7 @@ public class AgreementFbl5nMergeCommand implements Command {
     }
 
     private void filter(List<TXfOriginSapFbl5nEntity> list) {
+        List<String> companyCodeList = Stream.of("D073").collect(Collectors.toList());
         List<String> docTypeList = Stream.of("1D", "RV", "DA").collect(Collectors.toList());
         List<String> reasonCodeList = Stream.of("511", "527", "206", "317").collect(Collectors.toList());
         list.parallelStream()
@@ -182,7 +194,11 @@ public class AgreementFbl5nMergeCommand implements Command {
                         if (mergeTmpEntity == null) {
                             return false;
                         }
-                        if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                        if (!companyCodeList.contains(mergeTmpEntity.getCompanyCode())) {
+                            return false;
+                        }
+                        //过滤数据集2
+                        if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) >= 0) {
                             return false;
                         }
                         if (!docTypeList.contains(mergeTmpEntity.getDocumentType())) {
@@ -242,6 +258,13 @@ public class AgreementFbl5nMergeCommand implements Command {
                     }
                     return null;
                 }).findAny().orElse(null);
+    }
+
+    private void deleteOriginAgreementMerge(Integer jobId) {
+        QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
+        queryWrapper.eq(TXfOriginAgreementMergeEntity.SOURCE, 1);
+        tXfOriginAgreementMergeDao.delete(queryWrapper);
     }
 
 
