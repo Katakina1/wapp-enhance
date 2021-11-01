@@ -118,8 +118,8 @@ public class RecordInvoiceExtService extends ServiceImpl<TDxRecordInvoiceExtDao,
         calendar.add(Calendar.YEAR, -2);
         TDxRecordInvoiceEntity record = getOne(new QueryWrapper<TDxRecordInvoiceEntity>()
                 // 只返回第一行数据，否则getOne可能会报错
-                .select("top 1 "
-                        ,TDxRecordInvoiceEntity.INVOICE_NO
+                .select("top 1  "
+                        + TDxRecordInvoiceEntity.INVOICE_NO
                         ,TDxRecordInvoiceEntity.INVOICE_CODE
                         ,TDxRecordInvoiceEntity.INVOICE_AMOUNT
                         ,TDxRecordInvoiceEntity.REMAINING_AMOUNT
