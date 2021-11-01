@@ -20,8 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author malong@xforceplus.com
@@ -72,8 +71,11 @@ public class AgreementController {
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-        return R.ok( "结算单生成完毕");
+        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        Map<String, Object> map=new HashMap<>();
+        map.put("settlementId",tXfSettlementEntity.getId());
+        map.put("settlementNo",tXfSettlementEntity.getSettlementNo());
+        return R.ok(map, "结算单生成完毕");
     }
 //
 //

@@ -94,9 +94,10 @@ public class TaxWareService {
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
             paramMeterMap.put("taxNo",taxNo);
 
+            Map<String, String> requestHeaderMap = getRequestHeaderMap(defaultHeader);
             // 集成平台没传递，邮件报警
-            defaultHeader.put("serialNo",taxNo);
-            final String get = httpClientFactory.get(getTerminalAction,paramMeterMap,defaultHeader);
+            requestHeaderMap.put("serialNo",taxNo);
+            final String get = httpClientFactory.get(getTerminalAction,paramMeterMap,requestHeaderMap);
             log.info("获取终端结果:{}", get);
             return gson.fromJson(get, GetTerminalResponse.class);
         } catch (IOException e) {
@@ -109,9 +110,11 @@ public class TaxWareService {
         try {
             String reqJson = gson.toJson(applyRequest);
             log.info("申请请求:{}", reqJson);
+            Map<String, String> requestHeaderMap = getRequestHeaderMap(defaultHeader);
+
             // 集成平台没传递，邮件报警
-            defaultHeader.put("serialNo",applyRequest.getSerialNo());
-            final String post = httpClientFactory.post(applyRedAction,defaultHeader,reqJson,"");
+            requestHeaderMap.put("serialNo",applyRequest.getSerialNo());
+            final String post = httpClientFactory.post(applyRedAction,requestHeaderMap,reqJson,"");
             log.info("申请结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
         } catch (IOException e) {
@@ -151,10 +154,11 @@ public class TaxWareService {
             String reqJson = gson.toJson(revokeRequest);
 //            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");
             // 集成平台没传递，邮件报警
-            defaultHeader.put("serialNo",revokeRequest.getSerialNo());
-            HttpUtils.pack(defaultHeader,rollbackAction, this.authentication) ;
+            Map<String, String> requestHeaderMap = getRequestHeaderMap(defaultHeader);
+            requestHeaderMap.put("serialNo",revokeRequest.getSerialNo());
+            HttpUtils.pack(requestHeaderMap,rollbackAction, this.authentication) ;
             log.info("撤销请求:{}", reqJson);
-            final String post = HttpUtils.doPutHttpRequest(host,defaultHeader,reqJson) ;
+            final String post = HttpUtils.doPutHttpRequest(host,requestHeaderMap,reqJson) ;
 //            final String post2 = HttpUtils.doPutJsonSkipSsl(host,defaultHeader,reqJson) ;
             log.info("撤销结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
@@ -163,6 +167,17 @@ public class TaxWareService {
             throw new RRException("撤销发起失败:" + e.getMessage());
         }
     }
+
+    /**
+     * 创建新Map ,不实用静态map传递，不仅流水号会覆盖，还会造成 ConcurrentModificationException
+     * Map<String, String> defaultHeader
+     */
+    Map<String, String> getRequestHeaderMap(Map<String, String> defaultHeader){
+        HashMap<String, String> headerMap = Maps.newHashMap();
+        headerMap.putAll(defaultHeader);
+        return headerMap;
+    }
+
 
 
     /**
@@ -311,7 +326,6 @@ public class TaxWareService {
             }
             redNotificationMainService.updateById(record);
             redNotificationLogService.updateById(logEntity);
-
 
         }
 

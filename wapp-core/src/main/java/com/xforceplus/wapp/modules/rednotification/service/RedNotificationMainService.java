@@ -183,9 +183,12 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (partition.size()>1){
             CompletableFuture<Response> cfA = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(0),request));
             CompletableFuture<Response> cfB = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(1),request));
-
             Response response =  new Response();
-            cfA.thenAcceptBoth(cfB, (resultA, resultB) -> {
+            try {
+                cfA.join();
+                cfB.join();
+                Response resultA = cfA.get();
+                Response resultB = cfB.get();
                 if (resultA.getCode() == 1 && resultB.getCode() == 1) {
                     response.setCode(Response.OK);
                     response.setMessage("请求成功");
@@ -196,8 +199,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                     response.setCode(Response.Fail);
                     response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
                 }
-            }).join();
-
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
             return response;
         }else {
             return  applyByBatch(filterData,request);

@@ -1,11 +1,11 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
-
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
-import io.swagger.annotations.ApiModelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -15,7 +15,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-22
+ * @since 2021-11-01
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -92,10 +92,16 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     private String storeNo;
 
     /**
-     * 货物/服务发生期间
+     * 货物/服务发生期间开始时间
      */
-    @TableField("store_date")
-    private String storeDate;
+    @TableField("store_start")
+    private String storeStart;
+
+    /**
+     * 货物/服务发生期间结束时间
+     */
+    @TableField("store_end")
+    private String storeEnd;
 
     /**
      * 业务类型  0 水电费 1 leasing in  2 固定资产转移
@@ -148,7 +154,7 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     /**
      * 创建时间
      */
-    @TableField(value="create_time", update="getdate()",fill = FieldFill.INSERT)
+    @TableField("create_time")
     private Date createTime;
 
     /**
@@ -160,7 +166,7 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     /**
      * 更新时间
      */
-    @TableField(value="update_time", update="getdate()",fill = FieldFill.UPDATE)
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
     /**
@@ -201,7 +207,9 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
 
     public static final String STORE_NO = "store_no";
 
-    public static final String STORE_DATE = "store_date";
+    public static final String STORE_START = "store_start";
+
+    public static final String STORE_END = "store_end";
 
     public static final String BUSSINESS_TYPE = "bussiness_type";
 

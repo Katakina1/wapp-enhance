@@ -207,6 +207,10 @@ EPD单:301待匹配结算单;302已匹配结算单;303待匹配蓝票;304已作�
     private BigDecimal itemTaxAmount;
 
 
+    @TableField("invoice_type")
+    private String invoiceType;
+
+
     public static final String BUSINESS_NO = "business_no";
 
     public static final String BUSINESS_TYPE = "business_type";

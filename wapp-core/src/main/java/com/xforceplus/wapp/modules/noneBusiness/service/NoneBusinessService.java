@@ -268,6 +268,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             dto.setCreateUser(UserUtil.getLoginName());
         }
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
+
         return tXfNoneBusinessUploadDetailDao.list(page, dto);
     }
 
@@ -293,12 +294,15 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         file.mkdir();
         String downLoadFileName = path + ".zip";
         for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
-            if (1 == request.getOfd() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_PDF)) && !"1".equals(request.getSingle())) {
-                continue;
+            if(StringUtils.isNotEmpty(request.getSingle())){
+                if (1 == request.getOfd() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_PDF)) && !"1".equals(request.getSingle())) {
+                    continue;
+                }
+                if (1 == request.getPdf() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD)) && !"1".equals(request.getSingle())) {
+                    continue;
+                }
             }
-            if (1 == request.getPdf() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD)) && !"1".equals(request.getSingle())) {
-                continue;
-            }
+
 
             final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
             try {

@@ -102,7 +102,7 @@ public class BackFillController  extends AbstractController {
             dto.setGfName(gfName);
             dto.setPdfs(pdf);
             dto.setVendorId(vendorid);
-
+            dto.setSettlementNo(settlementNo);
             final String batchNo = backFillService.uploadAndVerify(dto);
 
             return R.ok(batchNo);
