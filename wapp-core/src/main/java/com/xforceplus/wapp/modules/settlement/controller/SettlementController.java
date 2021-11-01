@@ -15,6 +15,7 @@ import com.xforceplus.wapp.modules.settlement.dto.SettlementItemTaxNoUpdatedRequ
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.TXfSettlementItemEntity;
 import com.xforceplus.wapp.service.CommSettlementService;
 import io.swagger.annotations.ApiOperation;
@@ -131,9 +132,11 @@ public class SettlementController {
 
 
     @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class)
-    @GetMapping(value = "{settlementId}/recommended")
-    public R recommend(@PathVariable Long settlementId, @Valid InvoiceRecommendListRequest request) {
-        final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
+    @GetMapping(value = "invoice/recommended")
+    public R recommend( @Valid InvoiceRecommendListRequest request) {
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
+        final PageResult<InvoiceDto> recommend = settlementService.recommend(request);
         return R.ok( recommend);
     }
 
