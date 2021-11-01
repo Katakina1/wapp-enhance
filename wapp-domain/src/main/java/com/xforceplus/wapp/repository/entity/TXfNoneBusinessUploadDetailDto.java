@@ -174,5 +174,43 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
      * 0查询当前用户数据 1 查询所有数据
      */
     private String queryType;
+    /**
+     * 购方税号
+     */
+    private String purTaxNo;
+    /**
+     * 购方名称
+     */
+    private String purTaxName;
+    /**
+     * 销方税号
+     */
+    private String sellerTaxNo;
+    /**
+     * 销方名称
+     */
+    private String sellerTaxName;
+    /**
+     * 税率
+     */
+    private String taxRate;
+    /**
+     * 发票状态
+     */
+    private String invoiceStatus;
+    /**
+     * 认证状态
+     */
+    private String authStatus;
+    /**
+     * 认证日期
+     */
+    private String authDate;
+    /**
+     * sap编号
+     */
+    private String sap;
+
+
 
 }
