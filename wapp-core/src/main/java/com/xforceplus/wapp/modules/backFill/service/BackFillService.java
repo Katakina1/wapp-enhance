@@ -131,7 +131,7 @@ public class BackFillService  {
 
     public R commitVerify(BackFillCommitVerifyRequest request){
         R r = checkCommitRequest(request);
-        if(R.FAIL.equals(r)){
+        if(R.FAIL.equals(r.getCode())){
             return r;
         }
         String batchNo = UUID.randomUUID().toString().replace("-", "");
