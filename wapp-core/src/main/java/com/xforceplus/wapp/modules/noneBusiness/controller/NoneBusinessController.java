@@ -56,7 +56,8 @@ public class NoneBusinessController {
                     @ApiParam("门店号") @RequestParam() String storeNo,
                     @ApiParam("发票上传门店") @RequestParam(required = false) String invoiceStoreNo,
                     @ApiParam("发票类型") @RequestParam() String invoiceType,
-                    @ApiParam("货物发生期间") @RequestParam(required = false) String storeDate,
+                    @ApiParam("货物发生期间开始") @RequestParam(required = false) String storeStart,
+                    @ApiParam("货物发生期间结束") @RequestParam(required = false) String storeEnd,
                     @ApiParam("业务单号") @RequestParam() String businessNo) {
         if (file.length == 0) {
             return R.fail("请选择您要上传的电票文件(pdf/ofd)");
@@ -97,7 +98,8 @@ public class NoneBusinessController {
             TXfNoneBusinessUploadDetailEntity entity = new TXfNoneBusinessUploadDetailEntity();
             entity.setBussinessType(bussinessType);
             entity.setStoreNo(storeNo);
-            entity.setStoreDate(storeDate);
+            entity.setStoreStart(storeStart);
+            entity.setStoreEnd(storeEnd);
             entity.setBatchNo(batchNo);
             entity.setBussinessNo(businessNo);
             entity.setInvoiceType(invoiceType);
