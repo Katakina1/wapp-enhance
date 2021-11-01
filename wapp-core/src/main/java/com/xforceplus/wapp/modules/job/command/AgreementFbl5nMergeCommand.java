@@ -7,7 +7,6 @@ import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.job.service.OriginAgreementMergeService;
 import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
 import com.xforceplus.wapp.repository.dao.TXfOriginAgreementMergeDao;
@@ -109,6 +108,10 @@ public class AgreementFbl5nMergeCommand implements Command {
         } else {
             // 记录上次完成的页数，这次从last+1开始
             last = Long.parseLong(String.valueOf(jobEntryProgress));
+        }
+        if(last == 0){
+            //如果第一页需要特殊处理把数据此次job数据清理一下（可能之前执行到一半重启，数据已经完成一半但是last没有更新）
+            deleteOriginAgreementMerge(jobId);
         }
         // 先获取分页总数
         long pages;
@@ -242,6 +245,13 @@ public class AgreementFbl5nMergeCommand implements Command {
                     }
                     return null;
                 }).findAny().orElse(null);
+    }
+
+    private void deleteOriginAgreementMerge(Integer jobId){
+        QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
+        queryWrapper.eq(TXfOriginAgreementMergeEntity.SOURCE, 1);
+        tXfOriginAgreementMergeDao.delete(queryWrapper);
     }
 
 

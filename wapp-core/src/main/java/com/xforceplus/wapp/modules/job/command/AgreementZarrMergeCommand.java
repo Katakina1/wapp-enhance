@@ -107,6 +107,10 @@ public class AgreementZarrMergeCommand implements Command {
             // 记录上次完成的页数，这次从last+1开始
             last = Long.parseLong(String.valueOf(jobEntryProgress));
         }
+        if(last == 0){
+            //如果第一页需要特殊处理把数据此次job数据清理一下（可能之前执行到一半重启，数据已经完成一半但是last没有更新）
+            deleteOriginAgreementMerge(jobId);
+        }
         // 先获取分页总数
         long pages;
         do {
@@ -224,6 +228,13 @@ public class AgreementZarrMergeCommand implements Command {
             return tXfOriginSapFbl5nEntity.getDocumentType();
         }
         return null;
+    }
+
+    private void deleteOriginAgreementMerge(Integer jobId){
+        QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
+        queryWrapper.eq(TXfOriginAgreementMergeEntity.SOURCE, 2);
+        tXfOriginAgreementMergeDao.delete(queryWrapper);
     }
 
 }
