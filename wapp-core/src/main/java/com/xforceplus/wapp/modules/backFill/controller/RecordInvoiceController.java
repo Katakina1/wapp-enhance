@@ -54,16 +54,10 @@ public class RecordInvoiceController extends AbstractController {
     }
 
     @ApiOperation(value = "红票删除")
-    @DeleteMapping(value = "/delete")
-    public R delete(@ApiParam(value = "发票id", required = true) @RequestBody DeleteRecordInvoiceRequest request){
-        logger.info("底账发票列表--入参：{}", JSONArray.toJSONString(request));
-        for (Long id : request.getIds()) {
-            R r = recordInvoiceService.deleteInvoice(id);
-            if(R.FAIL.equals(r.getCode())){
-               return r;
-            }
-        }
-        return R.ok();
+    @DeleteMapping(value = "/delete/{id}")
+    public R delete(@ApiParam(value = "发票id", required = true) @PathVariable Long id){
+        logger.info("底账发票列表--入参：{}", id);
+        return recordInvoiceService.deleteInvoice(id);
     }
 
 }

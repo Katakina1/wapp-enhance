@@ -305,10 +305,4 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         }
     }
 
-
-    public static void main(String[] args) {
-
-        BigDecimal amountWithTax = new BigDecimal("").add(new BigDecimal(12));
-        System.out.println(amountWithTax);
-    }
 }

@@ -53,18 +53,19 @@ public class DeductController {
         logger.info("修改业务单状态--请求参数{}", JSONObject.toJSONString(request));
         XFDeductionBusinessTypeEnum deductionEnum = ValueEnum.getEnumByValue(XFDeductionBusinessTypeEnum.class, request.getDeductType()).get();
         TXfBillDeductStatusEnum status = TXfBillDeductStatusEnum.getEnumByCode(request.getDeductStatus());
-        TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
-        tXfBillDeductEntity.setId(request.getId());
-        TXfBillDeductEntity deductById = deductService.getDeductById(request.getId());
-        if (deductById == null) {
-            return R.fail("根据id未找到业务单");
+        for (Long id : request.getIds()) {
+            TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
+            tXfBillDeductEntity.setId(id);
+            TXfBillDeductEntity deductById = deductService.getDeductById(id);
+            if (deductById == null) {
+                return R.fail("根据id未找到业务单");
+            }
+            tXfBillDeductEntity.setStatus(deductById.getStatus());
+            if (!deductService.updateBillStatus(deductionEnum, tXfBillDeductEntity, status)) {
+                return R.fail("修改失败");
+            }
         }
-        tXfBillDeductEntity.setStatus(deductById.getStatus());
-        if (deductService.updateBillStatus(deductionEnum, tXfBillDeductEntity, status)) {
-            return R.ok("修改成功");
-        } else {
-            return R.fail("修改失败");
-        }
+        return R.ok("修改成功");
     }
 
     @ApiOperation(value = "业务单列表")
