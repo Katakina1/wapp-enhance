@@ -153,7 +153,7 @@ public class RecordInvoiceExtService extends ServiceImpl<TDxRecordInvoiceExtDao,
                 // 按照发票先进先出
                 .orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate));
 
-        if (Objects.isNull(record.getRemainingAmount())) {
+        if (Objects.nonNull(record) && Objects.isNull(record.getRemainingAmount())) {
             record.setRemainingAmount(record.getInvoiceAmount());
         }
         return record;

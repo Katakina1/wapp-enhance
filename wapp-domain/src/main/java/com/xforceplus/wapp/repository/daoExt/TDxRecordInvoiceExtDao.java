@@ -15,10 +15,11 @@ public interface TDxRecordInvoiceExtDao extends BaseMapper<TDxRecordInvoiceEntit
      * @param tDxRecordInvoiceEntity
      * @return
      */
-    @Update("update t_dx_record_invoice set remaining_amount = remaining_amount - #{et.remainingAmount} " +
+    @Update("update t_dx_record_invoice set remaining_amount = IIF(remaining_amount is null , invoice_amount - #{et.remainingAmount}  , remaining_amount - #{et.remainingAmount} )" +
             "where id = #{et.id} " +
-            "and (remaining_amount - #{et.remainingAmount}) >= 0 " +
-            "and (remaining_amount - #{et.remainingAmount}) <= invoice_amount")
+            "and IIF(remaining_amount is null ,invoice_amount-#{et.remainingAmount}, remaining_amount - #{et.remainingAmount}) >= 0 "
+//            + "and IIF(remaining_amount is null ,remaining_amount - #{et.remainingAmount}) <= invoice_amount"
+    )
     int deductRemainingAmount(@Param(Constants.ENTITY) TDxRecordInvoiceEntity tDxRecordInvoiceEntity);
 
     /**
@@ -27,9 +28,9 @@ public interface TDxRecordInvoiceExtDao extends BaseMapper<TDxRecordInvoiceEntit
      * @param tDxRecordInvoiceEntity
      * @return
      */
-    @Update("update t_dx_record_invoice set remaining_amount = remaining_amount + #{et.remainingAmount} " +
+    @Update("update t_dx_record_invoice set remaining_amount = IIF(remaining_amount is null , invoice_amount - #{et.remainingAmount}  ,  remaining_amount + #{et.remainingAmount} )" +
             "where id = #{et.id} " +
-            "and (remaining_amount + #{et.remainingAmount}) >= 0 ")
+            "and IIF(remaining_amount is null , invoice_amount - #{et.remainingAmount}  , remaining_amount + #{et.remainingAmount}) >= 0 ")
             // "and (remaining_amount + #{et.remainingAmount}) <= invoice_amount")
     int withdrawRemainingAmount(@Param(Constants.ENTITY) TDxRecordInvoiceEntity tDxRecordInvoiceEntity);
 }

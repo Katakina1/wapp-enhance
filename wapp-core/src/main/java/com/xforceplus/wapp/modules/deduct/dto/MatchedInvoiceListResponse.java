@@ -40,5 +40,5 @@ public class MatchedInvoiceListResponse {
     private BigDecimal matchedAmount;
 
     @ApiModelProperty("发票ID")
-    private Long invoiceId;
+    private Long id;
 }
