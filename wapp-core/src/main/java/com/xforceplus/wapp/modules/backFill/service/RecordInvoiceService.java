@@ -289,7 +289,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
     public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){
         invoiceDetail.setAmountWithoutTax(entity.getDetailAmount());
-        if(entity.getDetailAmount() != null){
+        if(StringUtils.isNotEmpty(entity.getDetailAmount())&& StringUtils.isNotEmpty(entity.getTaxAmount())){
             BigDecimal amountWithTax = new BigDecimal(entity.getDetailAmount()).add(new BigDecimal(entity.getTaxAmount()));
             invoiceDetail.setAmountWithTax(amountWithTax.toPlainString());
         }
@@ -299,10 +299,16 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoiceDetail.setQuantity(entity.getNum());
         invoiceDetail.setQuantityUnit(entity.getUnit());
         invoiceDetail.setUnitPrice(entity.getUnitPrice());
-        if(entity.getTaxRate() != null){
+        if(StringUtils.isNotEmpty(entity.getTaxRate())){
             BigDecimal taxRate = new BigDecimal(entity.getTaxRate()).divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
             invoiceDetail.setTaxRate(taxRate.toPlainString());
         }
     }
 
+
+    public static void main(String[] args) {
+
+        BigDecimal amountWithTax = new BigDecimal("").add(new BigDecimal(12));
+        System.out.println(amountWithTax);
+    }
 }
