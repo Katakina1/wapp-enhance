@@ -132,36 +132,49 @@ public class AgreementZarrMergeCommand implements Command {
                         tXfOriginAgreementMergeTmpEntity.setJobId(zarr.getJobId());
                         tXfOriginAgreementMergeTmpEntity.setCustomerNo(zarr.getCustomerNumber());
                         tXfOriginAgreementMergeTmpEntity.setCustomerName(zarr.getCustomer());
-                        String memo = zarr.getMemo().replace("V#", "").substring(0, 6);
-                        tXfOriginAgreementMergeTmpEntity.setMemo(memo);
-                        String companyCode = zarr.getInternalInvoiceNo().substring(zarr.getInternalInvoiceNo().length() - 4, zarr.getInternalInvoiceNo().length());
-                        tXfOriginAgreementMergeTmpEntity.setCompanyCode(companyCode);
-                        String amountWithTax = zarr.getAmountWithTax().replace(",", "");
-                        if (StringUtils.isNotBlank(amountWithTax)) {
+                        if (StringUtils.isNotBlank(zarr.getMemo())) {
+                            String memo = zarr.getMemo().replace("V#", "").substring(0, 6);
+                            tXfOriginAgreementMergeTmpEntity.setMemo(memo);
+                            SimpleDateFormat fmt2 = new SimpleDateFormat("yyyy-MM-dd");
+                            String postDate = zarr.getMemo().substring(zarr.getMemo().length() - 10, zarr.getMemo().length());
+                            if (StringUtils.isNotBlank(postDate)) {
+                                tXfOriginAgreementMergeTmpEntity.setPostDate(fmt2.parse(postDate));
+                            }
+                        }
+                        if (StringUtils.isNotBlank(zarr.getInternalInvoiceNo())) {
+                            String companyCode = zarr.getInternalInvoiceNo().substring(zarr.getInternalInvoiceNo().length() - 4, zarr.getInternalInvoiceNo().length());
+                            tXfOriginAgreementMergeTmpEntity.setCompanyCode(companyCode);
+                        }
+                        if (StringUtils.isNotBlank(zarr.getAmountWithTax())) {
+                            String amountWithTax = zarr.getAmountWithTax().replace(",", "");
                             tXfOriginAgreementMergeTmpEntity.setWithAmount(new BigDecimal(amountWithTax));
                         }
-                        tXfOriginAgreementMergeTmpEntity.setReasonCode(zarr.getReasonCode().replace(" ", ""));
-                        String reference = zarr.getContents().substring(zarr.getContents().length() - 10, zarr.getContents().length());
-                        tXfOriginAgreementMergeTmpEntity.setReference(reference);
-                        tXfOriginAgreementMergeTmpEntity.setTaxCode(getTaxCode(zarr.getJobId(), reference));
+                        if (StringUtils.isNotBlank(zarr.getReasonCode())) {
+                            tXfOriginAgreementMergeTmpEntity.setReasonCode(zarr.getReasonCode().replace(" ", ""));
+                        }
+                        if (StringUtils.isNotBlank(zarr.getContents())) {
+                            String reference = zarr.getContents().substring(zarr.getContents().length() - 10, zarr.getContents().length());
+                            tXfOriginAgreementMergeTmpEntity.setReference(reference);
+                            tXfOriginAgreementMergeTmpEntity.setTaxCode(getTaxCode(zarr.getJobId(), reference));
+                            SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
+                            String deductDate = getDeductDate(zarr.getJobId(), reference);
+                            if (StringUtils.isNotBlank(deductDate)) {
+                                tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(deductDate));
+                            }
+                            tXfOriginAgreementMergeTmpEntity.setDocumentType(getDocumentType(zarr.getJobId(), reference));
+                        }
                         BigDecimal taxRate = TXfOriginAgreementBillEntityConvertor.TAX_CODE_TRANSLATOR.get(tXfOriginAgreementMergeTmpEntity.getTaxCode());
-                        tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
-                        SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
-                        String deductDate = getDeductDate(zarr.getJobId(), reference);
-                        if(StringUtils.isNotBlank(deductDate)) {
-                            tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(deductDate));
+                        if (taxRate != null) {
+                            tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
                         }
-                        tXfOriginAgreementMergeTmpEntity.setDocumentType(getDocumentType(zarr.getJobId(), reference));
                         tXfOriginAgreementMergeTmpEntity.setDocumentNumber(zarr.getSapAccountingDocument());
-                        SimpleDateFormat fmt2 = new SimpleDateFormat("yyyy-MM-dd");
-                        String postDate = zarr.getMemo().substring(zarr.getMemo().length() - 10, zarr.getMemo().length());
-                        if(StringUtils.isNotBlank(postDate)) {
-                            tXfOriginAgreementMergeTmpEntity.setPostDate(fmt2.parse(postDate));
+                        if (tXfOriginAgreementMergeTmpEntity.getWithAmount() != null &&
+                                tXfOriginAgreementMergeTmpEntity.getTaxRate() != null) {
+                            BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
+                                    .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
+                                    .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                            tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
                         }
-                        BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
-                                .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE),2, BigDecimal.ROUND_HALF_UP)
-                                .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
                         tXfOriginAgreementMergeTmpEntity.setSource(2);
                         tXfOriginAgreementMergeTmpEntity.setCreateTime(new Date());
                         tXfOriginAgreementMergeTmpEntity.setUpdateTime(new Date());
@@ -174,7 +187,7 @@ public class AgreementZarrMergeCommand implements Command {
                 .filter(mergeTmpEntity -> mergeTmpEntity != null)
                 .forEach(mergeTmpEntity -> {
                     tXfOriginAgreementMergeDao.insert(mergeTmpEntity);
-        });
+                });
     }
 
     private String getTaxCode(Integer jobId, String reference) {

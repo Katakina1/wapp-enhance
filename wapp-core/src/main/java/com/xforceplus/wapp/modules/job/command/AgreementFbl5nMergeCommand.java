@@ -152,14 +152,21 @@ public class AgreementFbl5nMergeCommand implements Command {
                         BigDecimal taxRate = TXfOriginAgreementBillEntityConvertor.TAX_CODE_TRANSLATOR.get(fbl5n.getTaxCode());
                         tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
                         SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
-                        tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(fbl5n.getClearingDate()));
+                        if (fbl5n.getClearingDate() != null) {
+                            tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(fbl5n.getClearingDate()));
+                        }
                         tXfOriginAgreementMergeTmpEntity.setDocumentType(fbl5n.getDocumentType());
                         tXfOriginAgreementMergeTmpEntity.setDocumentNumber(fbl5n.getDocumentNumber());
-                        tXfOriginAgreementMergeTmpEntity.setPostDate(fmt.parse(fbl5n.getPostingDate()));
-                        BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
-                                .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
-                                .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
+                        if (fbl5n.getPostingDate() != null) {
+                            tXfOriginAgreementMergeTmpEntity.setPostDate(fmt.parse(fbl5n.getPostingDate()));
+                        }
+                        if (tXfOriginAgreementMergeTmpEntity.getWithAmount() != null &&
+                                tXfOriginAgreementMergeTmpEntity.getTaxRate() != null) {
+                            BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
+                                    .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
+                                    .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                            tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
+                        }
                         tXfOriginAgreementMergeTmpEntity.setSource(1);
                         tXfOriginAgreementMergeTmpEntity.setCreateTime(new Date());
                         tXfOriginAgreementMergeTmpEntity.setUpdateTime(new Date());
