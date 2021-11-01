@@ -119,7 +119,7 @@ public class AgreementBillFilterCommand implements Command {
      *
      * @param list
      */
-    private void filter(List<TXfOriginAgreementMergeEntity> list, Context context,Integer jobId) {
+    private void filter(List<TXfOriginAgreementMergeEntity> list, Context context, Integer jobId) {
         List<DeductBillBaseData> newList = list.stream()
                 .filter(mergeTmpEntity -> mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) != 0)
                 .filter(mergeTmpEntity -> {
@@ -131,17 +131,19 @@ public class AgreementBillFilterCommand implements Command {
                     }
                 })
                 .map(mergeTmpEntity -> {
-                    // 排除转换异常的数据
+                    // 根据reference合并数据 重新计算税额 含税金额
                     try {
                         QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.REFERENCE, mergeTmpEntity.getReference());
                         List<TXfOriginAgreementMergeEntity> originAgreementMergeList = tXfOriginAgreementMergeDao.selectList(queryWrapper);
-                        if(CollectionUtils.isNotEmpty(originAgreementMergeList)) {
-                            TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.get(0);
+                        TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.stream()
+                                .filter(mergeTmp -> mergeTmp.getWithAmount() != null && mergeTmp.getTaxRate() != null)
+                                .findFirst().orElse(null);
+                        if (originAgreementMergeTmp != null) {
                             originAgreementMergeTmp.setWithAmount(originAgreementMergeTmp.getWithAmount());
                             BigDecimal taxAmount = originAgreementMergeTmp.getWithAmount()
-                                    .divide(originAgreementMergeTmp.getTaxRate().add(BigDecimal.ONE),2, BigDecimal.ROUND_HALF_UP)
+                                    .divide(originAgreementMergeTmp.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
                                     .multiply(originAgreementMergeTmp.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
                             originAgreementMergeTmp.setTaxAmount(taxAmount);
                             return convertDeductBillBaseData(originAgreementMergeTmp, context);
@@ -160,7 +162,7 @@ public class AgreementBillFilterCommand implements Command {
     }
 
     private AgreementBillData convertDeductBillBaseData(TXfOriginAgreementMergeEntity mergeTmpEntity, Context context) {
-        if(mergeTmpEntity == null){
+        if (mergeTmpEntity == null) {
             return null;
         }
         AgreementBillData deductBillBaseData = new AgreementBillData();
@@ -182,7 +184,7 @@ public class AgreementBillFilterCommand implements Command {
         deductBillBaseData.setTaxCode(mergeTmpEntity.getTaxCode());
         deductBillBaseData.setReference(mergeTmpEntity.getReference());
         deductBillBaseData.setReferenceType(mergeTmpEntity.getReasonCode());
-        if(mergeTmpEntity.getPostDate() != null) {
+        if (mergeTmpEntity.getPostDate() != null) {
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
             deductBillBaseData.setPostingDate(fmt.format(mergeTmpEntity.getPostDate()));
         }

@@ -135,7 +135,7 @@ public class AgreementFbl5nMergeCommand implements Command {
                         TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
                         tXfOriginAgreementMergeTmpEntity.setJobId(fbl5n.getJobId());
                         tXfOriginAgreementMergeTmpEntity.setCustomerNo(fbl5n.getAccount());
-                        // TODO
+                        // TODO fbl5n 供应商6D 供应商名称
                         // tXfOriginAgreementMergeTmpEntity.setCustomerName();
                         // tXfOriginAgreementMergeTmpEntity.setMemo();
                         tXfOriginAgreementMergeTmpEntity.setCompanyCode(fbl5n.getCompanyCode());
