@@ -457,9 +457,7 @@ public class BackFillService  {
                     log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
                     Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                     log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
-                    if(update.getCode().equals(Response.OK)){
-                        success++;
-                    }
+                    success++;
                 }
             }
             if(success == 0){
