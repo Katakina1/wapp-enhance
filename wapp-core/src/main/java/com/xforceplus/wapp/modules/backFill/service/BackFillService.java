@@ -271,6 +271,7 @@ public class BackFillService  {
                 detailEntity.setBatchNo(batchNo);
                 detailEntity.setId(idSequence.nextId());
                 detailEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
+                detailEntity.setSettlementNo(specialElecUploadDto.getSettlementNo());
                 try {
                     final VerificationResponse verificationResponse = this.parseOfd(ofd,batchNo);
                     if (verificationResponse.isOK()) {
@@ -544,10 +545,6 @@ public class BackFillService  {
             }
             if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
                 return R.fail("被蓝冲发票号码不能为空");
-            }
-            boolean isCurrentPaper = request.getVerifyBeanList().stream().anyMatch(t -> (DateUtils.isCurrentMonth(DateUtils.strToDate(t.getPaperDrewDate()))) && !InvoiceTypeEnum.isElectronic(t.getInvoiceType()));
-            if(isCurrentPaper){
-                return R.fail("当前红票可以作废，请直接删除后，再重新上传");
             }
             QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
             invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());

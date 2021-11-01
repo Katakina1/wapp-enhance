@@ -73,7 +73,7 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
 
     private Boolean isEmpty;
 
-    private String checkNo;
+    private String checkCode;
 
     private String taxType;
     private BigDecimal settlementAmount;
@@ -172,12 +172,12 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
         this.taxType = taxType;
     }
 
-    public String getCheckNo() {
-        return checkNo;
+    public String getCheckCode() {
+        return checkCode;
     }
 
-    public void setCheckNo(String checkNo) {
-        this.checkNo = checkNo;
+    public void setCheckCode(String checkCode) {
+        this.checkCode = checkCode;
     }
 
     public Boolean getEmpty() {
