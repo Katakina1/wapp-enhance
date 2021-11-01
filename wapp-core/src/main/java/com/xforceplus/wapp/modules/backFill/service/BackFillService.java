@@ -131,7 +131,7 @@ public class BackFillService  {
 
     public R commitVerify(BackFillCommitVerifyRequest request){
         R r = checkCommitRequest(request);
-        if(R.FAIL.equals(r)){
+        if(R.FAIL.equals(r.getCode())){
             return r;
         }
         String batchNo = UUID.randomUUID().toString().replace("-", "");
@@ -165,6 +165,10 @@ public class BackFillService  {
             detailEntity.setId(idSequence.nextId());
             detailEntity.setCreateUser(String.valueOf(request.getOpUserId()));
             detailEntity.setSettlementNo(request.getSettlementNo());
+            detailEntity.setInvoiceCode(detailEntity.getInvoiceCode());
+            detailEntity.setInvoiceNo(detailEntity.getInvoiceNo());
+            detailEntity.setCreateTime(new Date());
+            detailEntity.setCreateUser(request.getOpUserId().toString());
             try {
                 VerificationResponse verificationResponse = verificationService.verify(verificationRequest);
                 log.info("纸票发票回填--发票验真同步返回结果：{}", JSON.toJSONString(verificationResponse));
