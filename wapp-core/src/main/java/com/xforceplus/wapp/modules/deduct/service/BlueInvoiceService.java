@@ -147,6 +147,7 @@ public class BlueInvoiceService {
                                 .invoiceNo(tDxRecordInvoiceEntity.getInvoiceNo())
                                 .invoiceCode(tDxRecordInvoiceEntity.getInvoiceCode())
                                 .deductedAmount(deductedAmount)
+                                .invoiceDate(tDxRecordInvoiceEntity.getInvoiceDate())
                                 .invoiceItems(
                                         items
                                                 .stream()
