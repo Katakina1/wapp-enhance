@@ -1,10 +1,8 @@
 package com.xforceplus.wapp.modules.deduct.service;
 
 import cn.hutool.core.date.DateField;
-import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,24 +17,28 @@ import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
+import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.mapstruct.MatchedInvoiceMapper;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
+import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
+import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import lombok.Builder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -66,11 +68,18 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     @Autowired
     private MatchedInvoiceMapper matchedInvoiceMapper;
 
+    @Autowired
+    private BlueInvoiceService blueInvoiceService;
+
+    @Autowired
+    private DeductService deductService;
+
 
 
     public List<SummaryResponse> summary(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
 
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(request, typeEnum);
+
 
         wrapper.select(TXfBillDeductEntity.TAX_RATE + " as taxRate", "count(1) as count");
 
@@ -81,6 +90,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     public PageResult<DeductListResponse> deductByPage(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
 
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(request, typeEnum);
+
         Page<TXfBillDeductEntity> page = new Page<>(request.getPage(), request.getSize());
         final Page<TXfBillDeductEntity> pageResult = this.page(page, wrapper);
         final List<DeductListResponse> responses = new ArrayList<>();
@@ -88,11 +98,30 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             final List<DeductListResponse> list = pageResult.getRecords().stream().map(x -> {
                 final DeductListResponse deductListResponse = deductMapper.toResponse(x);
                 deductListResponse.setOverdue(checkOverdue(typeEnum, x.getSellerNo(), x.getDeductDate()) ? 1 : 0);
+                if (Objects.equals(deductListResponse.getLock(),TXfBillDeductStatusEnum.LOCK.getCode())){
+                    deductListResponse.setRefSettlementNo(null);
+                }
                 return deductListResponse;
             }).collect(Collectors.toList());
             responses.addAll(list);
         }
         return PageResult.of(responses, pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
+    }
+
+    public BigDecimal sumDueAndNegative(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum){
+        return sumDueAndNegative(request.getPurchaserNo(),request.getSellerNo(),typeEnum,request.getTaxRate());
+    }
+    public BigDecimal sumDueAndNegative(String purchaserNo,String sellerNo, XFDeductionBusinessTypeEnum typeEnum,BigDecimal taxRate){
+        DeductListRequest sumRequest=new DeductListRequest();
+        sumRequest.setOverdue(1);
+        sumRequest.setSellerNo(sellerNo);
+        sumRequest.setPurchaserNo(purchaserNo);
+        sumRequest.setTaxRate(taxRate);
+        final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(sumRequest, typeEnum);
+
+        wrapper.select("sum(amount_without_tax) amount_without_tax");
+        final TXfBillDeductEntity deductEntity = this.getBaseMapper().selectOne(wrapper);
+        return Optional.ofNullable(deductEntity).map(TXfBillDeductEntity::getAmountWithoutTax).orElse(BigDecimal.ZERO);
     }
 
     /**
@@ -169,6 +198,22 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
 
     private QueryWrapper<TXfBillDeductEntity> wrapper(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
+        return doWrapper(request,typeEnum,x->{
+            if (typeEnum!=XFDeductionBusinessTypeEnum.CLAIM_BILL){
+                // 小于0的不展示
+                x.gt(TXfBillDeductEntity.AMOUNT_WITHOUT_TAX,BigDecimal.ZERO);
+            }
+        });
+    }
+
+    /**
+     * 封装查询wrapper
+     * @param request 参数
+     * @param typeEnum 单据类型
+     * @param and 额外的and拼接
+     * @return
+     */
+    private QueryWrapper<TXfBillDeductEntity> doWrapper(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum, Consumer<QueryWrapper<TXfBillDeductEntity>> and) {
         TXfBillDeductEntity deductEntity = new TXfBillDeductEntity();
         deductEntity.setBusinessNo(request.getBillNo());
         deductEntity.setPurchaserNo(request.getPurchaserNo());
@@ -243,6 +288,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                     ,TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode()
             );
         }
+        if (and!=null) {
+            wrapper.and(and);
+        }
         return wrapper;
     }
 
@@ -287,40 +335,99 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
 
+    @Transactional
     public TXfSettlementEntity makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type) {
-        if (CollectionUtils.isEmpty(request.getIds())) {
+        if (CollectionUtils.isEmpty(request.getInvoiceIds())) {
             throw new EnhanceRuntimeException("请至少选择一张业务单据");
         }
-        final TXfSettlementEntity tXfSettlementEntity = agreementBillService.mergeSettlementByManual(request.getIds(), type);
-        return tXfSettlementEntity;
+        final BigDecimal amount = checkAndGetTotalAmount(request, type);
+
+        final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainInvoiceByIds(amount, request.getInvoiceIds());
+
+        return agreementBillService.mergeSettlementByManual(request.getBillId(), type,matchRes);
     }
 
-    public List<MatchedInvoiceListResponse> getMatchedInvoice(Long settlementId, XFDeductionBusinessTypeEnum typeEnum){
+    public List<MatchedInvoiceListResponse> getMatchedInvoice(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
 
 
-        final List<TXfBillDeductInvoiceEntity> matchedInvoices = deductInvoiceService.getBySettlementId(settlementId, typeEnum);
+        final BigDecimal amount = checkAndGetTotalAmount(request, typeEnum);
 
-        final LambdaQueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = Wrappers.lambdaQuery(TDxRecordInvoiceEntity.class)
-                .select(TDxRecordInvoiceEntity::getInvoiceNo,TDxRecordInvoiceEntity::getInvoiceCode,TDxRecordInvoiceEntity::getInvoiceDate)
-                ;
-        matchedInvoices.forEach(x->{
-            invoiceWrapper.or((wrapper)->{
-                wrapper.eq(TDxRecordInvoiceEntity::getUuid,x.getInvoiceCode()+x.getInvoiceNo());
-            });
-        });
-        final List<TDxRecordInvoiceEntity> tXfInvoiceEntities = this.tDxRecordInvoiceDao.selectList(invoiceWrapper);
-        final Map<String, TDxRecordInvoiceEntity> invoiceDateMap = tXfInvoiceEntities.stream().collect(Collectors.toMap(x -> x.getInvoiceCode() + x.getInvoiceNo(), Function.identity(), (o, n) -> n));
-        final List<MatchedInvoiceListResponse> matchedInvoiceListResponses = this.matchedInvoiceMapper.toMatchedInvoice(matchedInvoices);
+        final TAcOrgEntity purchaserOrg = deductService.queryOrgInfo(request.getPurchaserNo(), false);
+        if (Objects.isNull(purchaserOrg)){
+            throw new EnhanceRuntimeException("扣款公司代码:["+ request.getPurchaserNo()+"]不存在");
+        }
+        final TAcOrgEntity sellerOrg = deductService.queryOrgInfo(request.getSellerNo(), true);
 
-        matchedInvoiceListResponses.forEach(x->{
-            final TDxRecordInvoiceEntity entity = invoiceDateMap.get(x.getInvoiceCode() + x.getInvoiceNo());
-            if(entity!=null) {
-                final String format = DateUtil.format(entity.getInvoiceDate(), DatePattern.NORM_DATE_PATTERN);
-                x.setInvoiceDate(format);
+        if (Objects.isNull(sellerOrg)){
+            throw new EnhanceRuntimeException("供应商编号:["+ request.getSellerNo()+"]不存在");
+        }
+
+        final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainAvailableInvoicesWithoutItems(amount, null,
+                sellerOrg.getTaxNo(), purchaserOrg.getTaxNo(), request.getTaxRate().movePointRight(2), false);
+
+        return this.matchedInvoiceMapper.toMatchInvoice(matchRes);
+    }
+
+    private BigDecimal checkAndGetTotalAmount(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
+        final List<Long> billId = request.getBillId();
+        BigDecimal amount=BigDecimal.ZERO;
+        if (CollectionUtils.isNotEmpty(billId)) {
+            final QueryWrapper<TXfBillDeductEntity> wrapper = Wrappers.query();
+            wrapper.select(
+                    "sum(amount_without_tax) amount_without_tax"
+                    ,TXfBillDeductEntity.TAX_RATE
+                    ,TXfBillDeductEntity.SELLER_NO
+                    ,TXfBillDeductEntity.PURCHASER_NO
+            );
+            TXfBillDeductStatusEnum statusEnum;
+            switch (typeEnum){
+                case AGREEMENT_BILL:
+                    statusEnum=TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
+                    break;
+                case EPD_BILL:
+                    statusEnum=TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT;
+                    break;
+                default:throw new EnhanceRuntimeException("手动合并结算单仅支持协议单和EPD");
             }
-        });
+            wrapper.in(TXfBillDeductEntity.ID, billId)
+                    .eq(TXfBillDeductEntity.BUSINESS_TYPE,typeEnum.getValue())
+                    .eq(TXfBillDeductEntity.STATUS,statusEnum.getCode())
+                    .eq(TXfBillDeductEntity.LOCK_FLAG,TXfBillDeductStatusEnum.UNLOCK.getCode())
+                    .groupBy(TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.TAX_RATE)
+            ;
+            final List<TXfBillDeductEntity> entities = getBaseMapper().selectList(wrapper);
+            if (CollectionUtils.isNotEmpty(entities)) {
+                if (entities.size() > 1) {
+                    throw new EnhanceRuntimeException("您选择了存在多税率或者多购销方的单据，不能完成此操作");
+                }
+            } else {
+                throw new EnhanceRuntimeException("您选择的单据不存在，或已被使用/锁定，请刷新重试");
+            }
+            TXfBillDeductEntity entity  = entities.get(0);
+            if (!Objects.equals(entity.getPurchaserNo(),request.getPurchaserNo())){
+                throw new EnhanceRuntimeException("单据扣款公司代码与参数不一致");
+            }
 
-        return matchedInvoiceListResponses;
+            if (entity.getTaxRate().compareTo(request.getTaxRate())!=0){
+                throw new EnhanceRuntimeException("单据税率与参数不一致");
+            }
+
+            amount=amount.add(entity.getAmountWithoutTax());
+        }
+
+        final BigDecimal decimal = sumDueAndNegative(request.getPurchaserNo(), request.getSellerNo(), typeEnum,request.getTaxRate());
+        amount = amount.add(decimal);
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new EnhanceRuntimeException("负数和超期单据总额小于0，生成结算单的单据总额必须大于0，请返回重新选择正数单据");
+        }
+        return amount;
+    }
+
+    @Builder
+    private static class PreSettlementDto{
+        BigDecimal amount;
+        String sellerTaxNo;
+        String purchaserTaxNo;
     }
 
 }

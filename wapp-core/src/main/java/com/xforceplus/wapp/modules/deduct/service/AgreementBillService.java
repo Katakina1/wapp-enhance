@@ -105,7 +105,7 @@ public class AgreementBillService extends DeductService{
     @Transactional
     public void excuteMergeAndMatch(XFDeductionBusinessTypeEnum deductionEnum,TXfBillDeductEntity tmp,TXfBillDeductEntity negativeBill, TXfBillDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfBillDeductStatusEnum targetStatus) {
         TXfSettlementEntity tXfSettlementEntity = executeMerge(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
-        executeMatch(deductionEnum, tXfSettlementEntity,targetStatus.getCode());
+        executeMatch(deductionEnum, tXfSettlementEntity,targetStatus.getCode(),null);
     }
 
     /**
@@ -113,10 +113,12 @@ public class AgreementBillService extends DeductService{
      * @param deductionEnum
      * @param tXfSettlementEntity
      */
-    public void executeMatch(XFDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity,Integer targetStatus) {
+    public void executeMatch(XFDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity,Integer targetStatus,List<BlueInvoiceService.MatchRes> matchResList) {
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
-        List<BlueInvoiceService.MatchRes> matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo());
+        if (CollectionUtils.isEmpty(matchResList)) {
+            matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),tXfSettlementEntity.getTaxRate());
+        }
         if (CollectionUtils.isEmpty(matchResList)) {
             log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
             throw new NoSuchInvoiceException();
@@ -163,7 +165,7 @@ public class AgreementBillService extends DeductService{
      * @return
      */
     @Transactional
-    public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum) {
+    public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum,List<BlueInvoiceService.MatchRes> matchResList) {
         if (CollectionUtils.isEmpty(ids)) {
             log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
             throw new EnhanceRuntimeException("至少选择一张单据");
@@ -202,7 +204,7 @@ public class AgreementBillService extends DeductService{
         tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), targetStatus.getCode());
         TXfBillDeductEntity  tmp = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(),targetStatus.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         checkDeduct(tmp, tXfSettlementEntity, xfDeductionBusinessTypeEnum);
-        executeMatch(xfDeductionBusinessTypeEnum, tXfSettlementEntity,targetStatus.getCode());
+        executeMatch(xfDeductionBusinessTypeEnum, tXfSettlementEntity,targetStatus.getCode(),matchResList);
         return tXfSettlementEntity;
     }
 

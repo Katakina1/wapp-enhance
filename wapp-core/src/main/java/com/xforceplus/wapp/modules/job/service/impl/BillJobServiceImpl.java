@@ -91,6 +91,12 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
         if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS)))) {
             tXfBillJobEntity.setJobEntryProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS))));
         }
+        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_FBL5N_PROGRESS)))) {
+            tXfBillJobEntity.setJobEntryFbl5nProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_FBL5N_PROGRESS))));
+        }
+        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS)))) {
+            tXfBillJobEntity.setJobEntryZarr0355Progress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS))));
+        }
         return updateById(tXfBillJobEntity);
     }
 }

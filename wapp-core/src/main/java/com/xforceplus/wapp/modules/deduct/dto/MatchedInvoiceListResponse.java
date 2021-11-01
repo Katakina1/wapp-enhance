@@ -38,4 +38,7 @@ public class MatchedInvoiceListResponse {
      */
     @ApiModelProperty("匹配金额")
     private BigDecimal matchedAmount;
+
+    @ApiModelProperty("发票ID")
+    private Long invoiceId;
 }

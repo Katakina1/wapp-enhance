@@ -434,6 +434,7 @@ public class DeductService   {
         }
         String purchaserNo = tXfBillDeductEntities.get(0).getPurchaserNo();
         String sellerNo = tXfBillDeductEntities.get(0).getSellerNo();
+        BigDecimal taxRate = tXfBillDeductEntities.get(0).getTaxRate();
         Integer type = deductionBusinessTypeEnum.getValue();
         Integer status = TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode();
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
@@ -466,7 +467,7 @@ public class DeductService   {
         tXfSettlementEntity.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
         tXfSettlementEntity.setPurchaserTel(defaultValue(purchaserOrgEntity.getPhone()) );
         tXfSettlementEntity.setAvailableAmount(tXfSettlementEntity.getAmountWithoutTax());
-        tXfSettlementEntity.setTaxRate(BigDecimal.valueOf(0.00));
+        tXfSettlementEntity.setTaxRate(taxRate);
         tXfSettlementEntity.setId(idSequence.nextId());
         tXfSettlementEntity.setBatchNo(StringUtils.EMPTY);
         tXfSettlementEntity.setInvoiceType(StringUtils.EMPTY);
@@ -669,12 +670,8 @@ public class DeductService   {
      * @return PageResult
      */
     public PageResult<QueryDeductListResponse> queryPageList(QueryDeductListRequest request){
-        Integer offset = null;
-        Integer next = null;
-        if(request.getPageSize() != null && request.getPageNo() != null){
-            offset = (request.getPageNo() -1) * request.getPageSize();
-            next = request.getPageSize();
-        }
+        Integer offset = (request.getPageNo() -1) * request.getPageSize();
+        Integer next = request.getPageSize();
         int count = tXfBillDeductExtDao.countBillPage(request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
                 request.getDeductStartDate(),request.getDeductEndDate(), request.getPurchaserNo(), request.getKey());
         List<TXfBillDeductExtEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryBillPage(offset,next,request.getBusinessNo(), request.getBusinessType(), request.getSellerNo(), request.getSellerName(),
@@ -989,7 +986,7 @@ public class DeductService   {
         }else{
             PageResult<QueryDeductListResponse> pageResult = queryPageList(request);
             if(pageResult != null && CollectionUtils.isNotEmpty(pageResult.getRows())){
-                return response ;
+                return pageResult.getRows() ;
             }
         }
         return null;

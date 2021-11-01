@@ -144,7 +144,7 @@ public class ClaimBillFilterCommand implements Command {
             );
             // 总页数
             pages = page.getPages();
-            filterBill(page.getRecords());
+            filterBill(page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
         // 全部处理完成后清空处理进度
@@ -180,7 +180,7 @@ public class ClaimBillFilterCommand implements Command {
             );
             // 总页数
             pages = page.getPages();
-            filterItemHyper(page.getRecords());
+            filterItemHyper(page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
         // 全部处理完成后清空处理进度
@@ -216,7 +216,7 @@ public class ClaimBillFilterCommand implements Command {
             );
             // 总页数
             pages = page.getPages();
-            filterItemSams(page.getRecords());
+            filterItemSams(page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
         } while (last < pages);
     }
@@ -225,8 +225,9 @@ public class ClaimBillFilterCommand implements Command {
      * 过滤转换入库
      *
      * @param list
+     * @param jobName
      */
-    private void filterBill(List<TXfOriginClaimBillEntity> list) {
+    private void filterBill(List<TXfOriginClaimBillEntity> list, String jobName) {
         List<DeductBillBaseData> newList = list
                 .stream()
                 // 索赔单不含税金额为正数
@@ -239,7 +240,9 @@ public class ClaimBillFilterCommand implements Command {
                 })
                 .map(v -> {
                     try {
-                        return TXfOriginClaimBillEntityConvertor.INSTANCE.toClaimBillData(v);
+                        DeductBillBaseData data = TXfOriginClaimBillEntityConvertor.INSTANCE.toClaimBillData(v);
+                        data.setBatchNo(jobName);
+                        return data;
                     } catch (Exception e) {
                         log.warn(e.getMessage(), e);
                         return null;
@@ -256,8 +259,9 @@ public class ClaimBillFilterCommand implements Command {
      * 过滤转换入库
      *
      * @param list
+     * @param jobName
      */
-    private void filterItemHyper(List<TXfOriginClaimItemHyperEntity> list) {
+    private void filterItemHyper(List<TXfOriginClaimItemHyperEntity> list, String jobName) {
         List<ClaimBillItemData> newList = list
                 .stream()
                 // 索赔单明细不含税金额为负数
@@ -282,8 +286,9 @@ public class ClaimBillFilterCommand implements Command {
      * 过滤转换入库
      *
      * @param list
+     * @param jobName
      */
-    private void filterItemSams(List<TXfOriginClaimItemSamsEntity> list) {
+    private void filterItemSams(List<TXfOriginClaimItemSamsEntity> list, String jobName) {
         List<ClaimBillItemData> newList = list
                 .stream()
                 // 索赔单明细不含税金额为负数

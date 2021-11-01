@@ -26,6 +26,8 @@ public class PageResult<T> {
     @ApiModelProperty("分页数据信息") private List<T> rows;
     @ApiModelProperty("分页统计") private Summary summary;
 
+    @ApiModelProperty("扩展返回数据") private Object ext;
+
     @Data
     @Builder
     @NoArgsConstructor

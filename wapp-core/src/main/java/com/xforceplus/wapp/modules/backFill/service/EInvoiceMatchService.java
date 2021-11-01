@@ -4,6 +4,7 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.apollo.msg.SealedMessage;
+import com.xforceplus.wapp.common.enums.IsDealEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.CommonUtil;
@@ -17,6 +18,7 @@ import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.daoExt.ElectronicInvoiceDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
@@ -78,6 +80,8 @@ public class EInvoiceMatchService {
     @Autowired
     private InvoiceFileService invoiceFileService;
 
+    @Autowired
+    private TDxRecordInvoiceDao tDxRecordInvoiceDao;
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat();
 
@@ -259,9 +263,11 @@ public class EInvoiceMatchService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("未找到对应的结算单");
         }
-        if(invoiceMain.getInvoiceType().equals(tXfSettlementEntity.getInvoiceType())){
+        String invoiceType = InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode());
+        if(!invoiceType.equals(tXfSettlementEntity.getInvoiceType())){
             throw new EnhanceRuntimeException("发票类型与结算单不一致");
         }
+        invoiceMain.setInvoiceType(invoiceType);
      /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
             throw new EnhanceRuntimeException("购方名称不一致");
         }
@@ -288,7 +294,6 @@ public class EInvoiceMatchService {
                 }
             }
         }
-        //TODO 结果存储-大象记录表
         map.put("venderid", recordEntity.getVendorId());
         map.put("jvcode", recordEntity.getJvCode());
         map.put("invoiceNo", invoiceMain.getInvoiceNo());
@@ -299,7 +304,7 @@ public class EInvoiceMatchService {
         map.put("taxAmount", invoiceMain.getTaxAmount());
         map.put("taxRate", invoiceDetails.get(0).getTaxRate());
         map.put("gfName", orgEntity.getOrgname());
-        map.put("invoiceType", InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode()));
+        map.put("invoiceType", invoiceMain.getInvoiceType());
         map.put("gfTaxno", invoiceMain.getPurchaserTaxNo());
         map.put("checkNo", invoiceMain.getCheckCode());
         map.put("xfName", invoiceMain.getSellerName());
@@ -404,14 +409,11 @@ public class EInvoiceMatchService {
             } else {
                 result = 1;
                 //存在数据
-                String source = list1.get(0).getSystemSource();
-                String matchstatus = list1.get(0).getDxhyMatchStatus();
-                String tpStatus = list1.get(0).getTpStatus();
-                String flowType = list1.get(0).getFlowType();
-                String hostStatus = list1.get(0).getHostStatus();
-                BigDecimal invoiceAmount = list1.get(0).getInvoiceAmount();
-
-                if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
+                TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
+                entity.setId(list1.get(0).getId());
+                entity.setIsDel(IsDealEnum.NO.getValue());
+                tDxRecordInvoiceDao.updateById(entity);
+                /*if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
                     throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
                 }
                 if ("0".equals(hostStatus) || "10".equals(hostStatus) || "1".equals(hostStatus) || "13".equals(hostStatus) || StringUtils.isEmpty(hostStatus)) {
@@ -467,7 +469,7 @@ public class EInvoiceMatchService {
                     }
                 } else {
                     throw new EnhanceRuntimeException("该发票已在沃尔玛匹配！");
-                }
+                }*/
             }
         } catch (Exception e) {
             log.error("录入发票:" + e.getMessage(), e);
@@ -541,9 +543,8 @@ public class EInvoiceMatchService {
             } else {
                 result = 1;
                 //存在数据
-
-                //TODO
-
+                tDxInvoiceEntity.setIsdel(IsDealEnum.NO.getValue());
+                tDxInvoiceDao.updateById(tDxInvoiceEntity);
             }
         } catch (Exception e) {
             log.error("录入发票:" + e.getMessage(), e);

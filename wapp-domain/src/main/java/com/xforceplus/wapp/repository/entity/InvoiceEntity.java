@@ -87,6 +87,15 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
 
     private BigDecimal deductibleTax;
     private String hostStatus;
+    private String isDel;
+
+    public String getIsDel() {
+        return isDel;
+    }
+
+    public void setIsDel(String isDel) {
+        this.isDel = isDel;
+    }
 
     public String getHostStatus() {
         return hostStatus;
@@ -337,5 +346,13 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getRedNoticeNumber() {
+        return redNoticeNumber;
+    }
+
+    public void setRedNoticeNumber(String redNoticeNumber) {
+        this.redNoticeNumber = redNoticeNumber;
     }
 }

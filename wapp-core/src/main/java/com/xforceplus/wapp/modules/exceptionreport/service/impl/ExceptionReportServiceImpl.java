@@ -147,14 +147,14 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         final LambdaQueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.lambdaQuery(entity);
 
         if (StringUtils.isNotBlank(startDeductDate)) {
-            wrapper.gt(TXfExceptionReportEntity::getCreateTime, startDeductDate);
+            wrapper.gt(TXfExceptionReportEntity::getDeductDate, startDeductDate);
         }
 
         if (StringUtils.isNotBlank(request.getEndDeductDate())) {
 
             try {
                 final String format = DateUtils.addDayToYYYYMMDD(request.getEndDeductDate(), 1);
-                wrapper.lt(TXfExceptionReportEntity::getCreateTime, format);
+                wrapper.lt(TXfExceptionReportEntity::getDeductDate, format);
             } catch (Exception e) {
                 log.error("时间转换失败" + e.getMessage(), e);
             }
@@ -322,6 +322,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         head.put("description", "例外说明");
         head.put("sellerNo", "供应商编号");
         head.put("sellerName", "供应商名称");
+        head.put("purchaserName", "扣款公司");
         head.put("purchaserNo", "扣款公司编号");
         head.put("amountWithTax", "含税金额");
         head.put("agreementTypeCode", "协议类型编码");
@@ -336,8 +337,11 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         Map<String, String> head = new HashMap<>();
         head.put("code", "例外CODE");
         head.put("description", "例外说明");
+        head.put("deductDate", "扣款日期");
+        head.put("purchaserName", "扣款公司");
         head.put("sellerNo", "供应商编号");
         head.put("sellerName", "供应商名称");
+
         head.put("purchaserNo", "扣款公司编号");
         head.put("amountWithoutTax", "成本金额(不含税)");
         head.put("agreementTypeCode", "协议类型编码");

@@ -29,6 +29,7 @@ public class OperateLogService {
 
     public List<QueryOperationLogResponse> query(Long businessId, Long userId){
         QueryWrapper<TXfOperationLogEntity> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc(TXfOperationLogEntity.ID);
         if(businessId !=null){
             wrapper.eq(TXfOperationLogEntity.BUSINESS_ID,businessId);
         }

@@ -89,6 +89,10 @@ public class ClaimItem {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal amountWithoutTax;
 
+    @ApiModelProperty("含税金额")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private BigDecimal amountWithTax;
+
     @ApiModelProperty("更新时间")
     private Long updateDate;
 }

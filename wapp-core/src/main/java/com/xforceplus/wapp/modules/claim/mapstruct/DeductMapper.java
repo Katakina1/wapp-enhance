@@ -13,5 +13,6 @@ public interface DeductMapper {
     List<DeductListResponse> toResponse(List<TXfBillDeductEntity> entities);
 
     @Mapping(target = "billNo",source = "businessNo")
+    @Mapping(target = "lock",source = "lockFlag")
     DeductListResponse toResponse(TXfBillDeductEntity entity);
 }

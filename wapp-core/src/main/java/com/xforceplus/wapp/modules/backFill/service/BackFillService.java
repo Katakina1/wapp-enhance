@@ -167,6 +167,7 @@ public class BackFillService  {
             try {
                 VerificationResponse verificationResponse = verificationService.verify(verificationRequest);
                 log.info("纸票发票回填--发票验真同步返回结果：{}", JSON.toJSONString(verificationResponse));
+
                 if (verificationResponse.isOK()) {
                     final String verifyTaskId = verificationResponse.getResult();
                     detailEntity.setXfVerifyTaskId(verifyTaskId);
@@ -182,6 +183,7 @@ public class BackFillService  {
                 detailEntity.setStatus(false);
                 detailEntity.setReason(e.getMessage());
             }
+            this.electronicUploadRecordDao.update(recordEntity);
             this.electronicUploadRecordDetailDao.insert(detailEntity);
         }
         return R.ok(batchNo);
@@ -392,14 +394,17 @@ public class BackFillService  {
             if (detailEntity.getStatus()){
                 final String invoiceNo = detailEntity.getInvoiceNo();
                 final String invoiceCode = detailEntity.getInvoiceCode();
+
                 final List<InvoiceEntity> invoices = matchDao.invoiceQueryList(Collections.singletonMap("uuid", invoiceCode + invoiceNo));
                 if (!CollectionUtils.isEmpty(invoices)){
                     final InvoiceEntity invoiceEntity = invoices.get(0);
                     final UploadResult.SucceedInvoice succeedInvoice = succeedInvoiceMapper.toSucceed(invoiceEntity);
-                    if (detailEntity.getFileType()){
-                        succeedInvoice.setFileType(Constants.SUFFIX_OF_OFD);
-                    }else {
-                        succeedInvoice.setFileType(Constants.SUFFIX_OF_PDF);
+                    if(detailEntity.getFileType() != null ){
+                        if (detailEntity.getFileType()){
+                            succeedInvoice.setFileType(Constants.SUFFIX_OF_OFD);
+                        }else {
+                            succeedInvoice.setFileType(Constants.SUFFIX_OF_PDF);
+                        }
                     }
                     invoiceEntities.add(succeedInvoice);
                 } else{
@@ -445,6 +450,8 @@ public class BackFillService  {
                     log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
                     Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                     log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
+                }else{
+                    return R.fail("预制发票的红字信息编号匹配失败");
                 }
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
@@ -474,6 +481,8 @@ public class BackFillService  {
                 }
                 tXfSettlementDao.updateById(tXfSettlementEntity);
                 operateLogService.add(tXfSettlementEntity.getId(),OperateLogEnum.UPLOAD_INVOICE,businessStatus, UserUtil.getUserId(),UserUtil.getUserName());
+            }else{
+                throw new EnhanceRuntimeException("未找到结算单");
             }
         }else{
             log.info("发票蓝冲:invoiceNo:{},invoiceCode:{}",request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
@@ -530,10 +539,10 @@ public class BackFillService  {
             }
         } else{
             if(StringUtils.isEmpty(request.getOriginInvoiceCode())){
-                return R.fail("蓝冲发票代码不能为空");
+                return R.fail("被蓝冲发票代码不能为空");
             }
             if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
-                return R.fail("蓝冲发票号码不能为空");
+                return R.fail("被蓝冲发票号码不能为空");
             }
             QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
             invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());

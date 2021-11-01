@@ -7,8 +7,11 @@ import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
+import com.xforceplus.wapp.modules.claim.dto.NegativeAndOverDueSummary;
+import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
+import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import io.swagger.annotations.Api;
@@ -16,7 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +46,9 @@ public class AgreementController {
     @GetMapping("summary")
     @ApiOperation(value = "页头统计")
     public R summary(DeductListRequest request){
+        request.setTaxRate(null);
+        //只显示未超期的数据列表
+        request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
         final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
@@ -55,6 +61,8 @@ public class AgreementController {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        final BigDecimal sum = deductService.sumDueAndNegative(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        page.setExt(NegativeAndOverDueSummary.builder().negativeOverDueAmount(sum.toPlainString()).build());
         return R.ok(page);
     }
 
@@ -62,11 +70,20 @@ public class AgreementController {
     @PostMapping("settlement")
     @ApiOperation("生成结算单")
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
-        final TXfSettlementEntity settlementNo = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-        Map<String,String> result=new HashMap<>();
-        result.put("settlementNo",settlementNo.getSettlementNo());
-        result.put("settlementId",settlementNo.getId().toString());
-        return R.ok( result,"结算单生成完毕");
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
+        deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        return R.ok( "结算单生成完毕");
+    }
+//
+//
+    @PostMapping("pre-settlement")
+    @ApiOperation("结算单预匹配发票")
+    public R preSettlement(@RequestBody PreMakeSettlementRequest request) {
+        final String usercode = UserUtil.getUser().getUsercode();
+        request.setSellerNo(usercode);
+        final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        return R.ok(matchedInvoice);
     }
 
 

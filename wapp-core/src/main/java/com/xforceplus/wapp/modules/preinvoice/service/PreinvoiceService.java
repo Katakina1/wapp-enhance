@@ -23,6 +23,7 @@ import com.xforceplus.wapp.service.CommSettlementService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             "\t\t\t\"fieldName\": \"remark\"\n" +
             "\t\t}],\n" +
             "\t\t\"ruleId\": 687162585176363000,\n" +
+            "\t\t\"invoiceMaxErrorAmount\": 0.05,\n" +
             "\t\t\"saleListOption\": \"1\",\n" +
             "\t\t\"salesListMaxRow\": 2000,\n" +
             "\t\t\"showSpecification\": true,\n" +
@@ -138,8 +140,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         }
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
-        List<BillItem> billItems = new ArrayList<>();
-        BeanUtil.copyList( tXfSettlementItemEntities,billItems,BillItem.class);
         CreatePreInvoiceParam createPreInvoiceParam  =  assembleParam(tXfSettlementEntity, tXfSettlementItemEntities, tAcOrgEntity);
 
         return doSplit(createPreInvoiceParam, tXfSettlementEntity);
@@ -291,6 +291,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         billInfo.setPurchaserId(0L);
         billInfo.setPurchaserGroupId(0L);
         billInfo.setPurchaserTenantId(0l);
+
         billInfo.setSellerId(0L);
         billInfo.setSellerTenantId(0l);
         billInfo.setSellerGroupId(0l);
@@ -298,10 +299,12 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         billInfo.setSalesbillId(tXfSettlementEntity.getSettlementNo());
 
         List<BillItem> billItems = new ArrayList<>();
-        BeanUtil.copyList( tXfSettlementItemEntities,billItems,BillItem.class);
+
         String settlementNo = tXfSettlementEntity.getSettlementNo();
         int i = 0;
-        for (BillItem billItem : billItems) {
+        for (TXfSettlementItemEntity tXfSettlementItemEntity : tXfSettlementItemEntities) {
+            BillItem billItem = new BillItem();
+            BeanUtils.copyProperties( tXfSettlementItemEntity,billItem);
             billItem.setSalesbillId(settlementNo );
             billItem.setSalesbillItemId(settlementNo + i);
             billItem.setSalesbillNo(settlementNo);
@@ -322,8 +325,8 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
-
             billItem.setDeductions(BigDecimal.ZERO);
+            billItems.add(billItem);
         }
         billInfo.setBillItems(billItems);
         SplitRule splitRule =    JSONObject.parseObject(RULE_INFO, SplitRule.class);
@@ -345,17 +348,24 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         BigDecimal taxAmount = BigDecimal.ZERO;
         BigDecimal amountWithTax = BigDecimal.ZERO;
         BigDecimal amountWithOutTax = BigDecimal.ZERO;
+        List<TXfSettlementItemEntity> list = new ArrayList<>();
+
         for (TXfPreInvoiceItemEntity tXfPreInvoiceItemEntity : items) {
+            TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
             taxAmount = taxAmount.add(tXfPreInvoiceItemEntity.getTaxAmount());
             amountWithTax = amountWithTax.add(tXfPreInvoiceItemEntity.getAmountWithTax());
             amountWithOutTax = amountWithOutTax.add(tXfPreInvoiceItemEntity.getAmountWithoutTax());
+            BeanUtils.copyProperties (tXfPreInvoiceItemEntity,tXfSettlementItemEntity);
+            tXfSettlementItemEntity.setItemName(tXfPreInvoiceItemEntity.getCargoName());
+            tXfSettlementItemEntity.setItemShortName(tXfPreInvoiceItemEntity.getCargoName());
+            tXfSettlementItemEntity.setItemCode(tXfPreInvoiceItemEntity.getCargoCode());
+            tXfSettlementItemEntity.setQuantityUnit(tXfPreInvoiceItemEntity.getQuantityUnit());
+            list.add(tXfSettlementItemEntity);
         }
         TAcOrgEntity tAcOrgEntity = companyService.getOrgInfoByOrgCode(sellerNo, "8");
         tXfSettlementEntity.setTaxAmount(taxAmount);
         tXfSettlementEntity.setAmountWithoutTax(amountWithOutTax);
         tXfSettlementEntity.setAmountWithTax(amountWithTax);
-        List<TXfSettlementItemEntity> list = new ArrayList<>();
-        BeanUtil.copyList( items,list,TXfSettlementItemEntity.class);
         CreatePreInvoiceParam createPreInvoiceParam = assembleParam(tXfSettlementEntity, list, tAcOrgEntity);
         return   doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }

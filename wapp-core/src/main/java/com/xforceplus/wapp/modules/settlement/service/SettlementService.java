@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.settlement.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -62,7 +63,7 @@ public class SettlementService {
         }
 
         final BigDecimal taxRate = byId.getTaxRate();
-        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) > 0 ? taxRate.movePointLeft(2).toPlainString() : taxRate.toPlainString();
+        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) < 0 ? taxRate.movePointRight(2).toPlainString() : taxRate.toPlainString();
         final String sellerNo = byId.getSellerNo();
         final String sellerTaxNo = byId.getSellerTaxNo();
         final String purchaserNo = byId.getPurchaserNo();
@@ -74,7 +75,9 @@ public class SettlementService {
                 .eq(TDxRecordInvoiceEntity::getTaxRate,taxRateStr)
                 .ge(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateStart())
                 .le(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateEnd())
+                .eq(TDxRecordInvoiceEntity::getRzhYesorno,1);
         ;
+        wrapper.orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate);
 
         Page<TDxRecordInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
 

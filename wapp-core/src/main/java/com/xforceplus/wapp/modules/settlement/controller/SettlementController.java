@@ -4,17 +4,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.SettlementApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
-import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
-import com.xforceplus.wapp.modules.settlement.dto.InvoiceMatchedRequest;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementItemTaxNoUpdatedRequest;
 import com.xforceplus.wapp.modules.settlement.dto.SettlementUndoRedNotificationRequest;
 import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
@@ -22,13 +18,12 @@ import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.repository.entity.TXfSettlementItemEntity;
 import com.xforceplus.wapp.service.CommSettlementService;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import javax.validation.Valid;
 
 /**
  * @author malong@xforceplus.com
@@ -75,35 +70,38 @@ public class SettlementController {
     }
 
 
-    @GetMapping("{settlementId}/matched-invoice")
-    @ApiOperation("获取指定协议单已匹配的发票")
-    public R invoiceList(@PathVariable Long settlementId, @RequestParam @ApiParam("1 协议单，2 EPD") int type) {
-        XFDeductionBusinessTypeEnum typeEnum;
-        switch (type) {
-            case 1:
-                typeEnum = XFDeductionBusinessTypeEnum.AGREEMENT_BILL;
-                break;
-            case 2:
-                typeEnum = XFDeductionBusinessTypeEnum.EPD_BILL;
-                break;
-            default:
-                throw new EnhanceRuntimeException("单据类型不正确，应为(协议单:1；EPD:2)");
-        }
-        final List<MatchedInvoiceListResponse> matchedInvoice = deductViewService.getMatchedInvoice(settlementId, typeEnum);
-        return R.ok(matchedInvoice);
-    }
-
-    @PostMapping("{settlementId}/matched-invoice")
-    @ApiOperation("保存手动调整的票单匹配关系")
-    public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
-        //移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
-        try {
-            invoiceService.saveSettlementMatchedInvoice(settlementId, request);
-        }catch (Exception e){
-            return R.fail(e.getMessage());
-        }
-        return R.ok();
-    }
+//    @PostMapping("/matched-invoice")
+//    @ApiOperation("获取指定协议单已匹配的发票")
+//    public R invoiceList(@RequestBody GetMatchInvoiceRequest request) {
+//        final String usercode = UserUtil.getUser().getUsercode();
+//        request.setSellerNo(usercode);
+//        XFDeductionBusinessTypeEnum typeEnum;
+//        switch (request.getType()) {
+//            case 1:
+//                typeEnum = XFDeductionBusinessTypeEnum.AGREEMENT_BILL;
+//                break;
+//            case 2:
+//                typeEnum = XFDeductionBusinessTypeEnum.EPD_BILL;
+//                break;
+//            default:
+//                throw new EnhanceRuntimeException("单据类型不正确，应为(协议单:1；EPD:2)");
+//        }
+//        final List<MatchedInvoiceListResponse> matchedInvoice = deductViewService.getMatchedInvoice(request, typeEnum);
+//        return R.ok(matchedInvoice);
+//    }
+//
+//    //TODO  可能去掉
+//    @PostMapping("{settlementId}/matched-invoice")
+//    @ApiOperation("保存手动调整的票单匹配关系")
+//    public R saveInvoice(@PathVariable Long settlementId, @RequestBody InvoiceMatchedRequest request) {
+//        //移除的发票要解除关系释放可用金额，添加的发票要建立关系减去占用金额
+//        try {
+//            invoiceService.saveSettlementMatchedInvoice(settlementId, request);
+//        }catch (Exception e){
+//            return R.fail(e.getMessage());
+//        }
+//        return R.ok();
+//    }
 
     @PostMapping("details/tax-no")
     @ApiOperation("修改明细税编")
@@ -132,15 +130,11 @@ public class SettlementController {
     }
 
 
-    @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class, tags = {"发票池",})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
+    @ApiOperation(value = "推荐发票列表", notes = "", response = Response.class)
     @GetMapping(value = "{settlementId}/recommended")
-    public Response recommend(@PathVariable Long settlementId, InvoiceRecommendListRequest request) {
-
+    public R recommend(@PathVariable Long settlementId, @Valid InvoiceRecommendListRequest request) {
         final PageResult<InvoiceDto> recommend = settlementService.recommend(settlementId, request);
-
-        return Response.ok("", recommend);
+        return R.ok( recommend);
     }
 
 
