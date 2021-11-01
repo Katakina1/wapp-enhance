@@ -21,6 +21,7 @@ import java.util.List;
  * @create 2021-10-14 13:39
  **/
 @Configuration
+//@EnableConfigurationProperties({TaxRateProperties.class})
 public class WappConfigration {
 
     @Bean
