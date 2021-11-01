@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -36,6 +37,9 @@ public class UploadResult {
     @Setter
     @Getter
     public static class FailureInvoice {
+        private String checkCode;
+        private BigDecimal amount;
+        private String paperDrewDate;
         private String invoiceNo;
         private String invoiceCode;
         private String msg;

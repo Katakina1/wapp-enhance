@@ -46,15 +46,12 @@ public class BackFillController  extends AbstractController {
         return backFillService.commitVerify(request);
     }
 
-/*    @ApiOperation(value = "纸票发票回填校验")
-    @PostMapping(value = "/comitVerifyCheck")
-    public R comitVerifyCheck(@ApiParam(value = "BackFillCommitVerifyRequest" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
-        logger.info("纸票发票回填--入参：{}", JSONObject.toJSONString(request));
-        request.setOpUserId(getUserId());
-        request.setOpUserName(getUserName());
-        request.setVendorId(getUser().getUsercode());
-        return backFillService.commitVerify(request);
-    }*/
+    @ApiOperation(value = "蓝冲校验")
+    @GetMapping(value = "/comitVerifyCheck/{id}")
+    public R comitVerifyCheck(@ApiParam(value = "被蓝冲的发票id",required = true) @PathVariable Long id){
+        logger.info("纸票发票回填--入参：{}",id);
+        return backFillService.commitVerifyCheck(id);
+    }
 
 
     @ApiOperation(value = "电票发票上传" )

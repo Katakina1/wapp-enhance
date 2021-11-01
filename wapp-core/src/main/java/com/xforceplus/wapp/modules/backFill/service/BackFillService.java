@@ -128,6 +128,19 @@ public class BackFillService  {
         defaultHeader.put("accept-encoding","");
     }
 
+    public R commitVerifyCheck(Long id){
+        TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(id);
+        if(entity != null){
+            if(DateUtils.isCurrentMonth(entity.getInvoiceDate()) && !InvoiceTypeEnum.isElectronic(entity.getInvoiceType())){
+                return R.fail("当前红票可以作废，请直接删除后，再重新上传");
+            }
+        }else{
+            return R.fail("未查到发票");
+        }
+        return R.ok("校验通过");
+    }
+
+
 
     public R commitVerify(BackFillCommitVerifyRequest request){
         R r = checkCommitRequest(request);
@@ -165,8 +178,11 @@ public class BackFillService  {
             detailEntity.setId(idSequence.nextId());
             detailEntity.setCreateUser(String.valueOf(request.getOpUserId()));
             detailEntity.setSettlementNo(request.getSettlementNo());
-            detailEntity.setInvoiceCode(verificationRequest.getInvoiceCode());
-            detailEntity.setInvoiceNo(verificationRequest.getInvoiceNo());
+            detailEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
+            detailEntity.setInvoiceNo(backFillVerifyBean.getInvoiceNo());
+            detailEntity.setPaperDrewDate(backFillVerifyBean.getPaperDrewDate());
+            detailEntity.setAmount(new BigDecimal(backFillVerifyBean.getAmount()));
+            detailEntity.setCheckCode(backFillVerifyBean.getCheckCode());
             detailEntity.setCreateTime(new Date());
             detailEntity.setCreateUser(request.getOpUserId().toString());
             try {
@@ -208,6 +224,17 @@ public class BackFillService  {
             if (ofdResponse.isOk()) {
                 final OfdResponse.OfdResponseResult result = ofdResponse.getResult();
                 final InvoiceMain invoiceMain = result.getInvoiceMain();
+
+                TXfElecUploadRecordDetailEntity detailEntity = new TXfElecUploadRecordDetailEntity();
+                detailEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
+                detailEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
+                detailEntity.setPaperDrewDate(invoiceMain.getPaperDrewDate());
+                detailEntity.setAmount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
+                detailEntity.setCheckCode(invoiceMain.getCheckCode());
+                UpdateWrapper<TXfElecUploadRecordDetailEntity> updateWrapper  = new UpdateWrapper<>();
+                updateWrapper.set(TXfElecUploadRecordDetailEntity.BATCH_NO,batchNo);
+                electronicUploadRecordDetailDao.update(detailEntity,updateWrapper);
+
                 VerificationRequest verificationRequest = new VerificationRequest();
                 verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
                 verificationRequest.setCheckCode(invoiceMain.getCheckCode());
@@ -419,6 +446,9 @@ public class BackFillService  {
                     UploadResult.FailureInvoice failureInvoice = new UploadResult.FailureInvoice();
                     failureInvoice.setInvoiceNo(detailEntity.getInvoiceNo());
                     failureInvoice.setInvoiceCode(detailEntity.getInvoiceCode());
+                    failureInvoice.setPaperDrewDate(detailEntity.getPaperDrewDate());
+                    failureInvoice.setAmount(detailEntity.getAmount());
+                    failureInvoice.setCheckCode(detailEntity.getCheckCode());
                     failureInvoice.setMsg(detailEntity.getReason());
                     failureInvoices.add(failureInvoice);
                 }

@@ -4,7 +4,6 @@ import cn.hutool.core.codec.Base64Encoder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import com.google.common.io.BaseEncoding;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.apollo.msg.SealedMessage.Header;
@@ -245,6 +244,12 @@ public class DiscernService implements IntegrationResultHandler {
         DiscernResultDetail discernResultDetail = JSON.parseObject(discernResult.getDiscernResult(), typeRef);
         final String taskId = discernResult.getTaskId();
         final TXfElecUploadRecordDetailEntity detailEntity = electronicUploadRecordDetailService.getByDiscernTaskId(taskId);
+        detailEntity.setInvoiceCode(discernResultDetail.getInvoiceCode());
+        detailEntity.setInvoiceNo(discernResultDetail.getInvoiceNo());
+        detailEntity.setPaperDrewDate(discernResultDetail.getInvoiceTime());
+        detailEntity.setAmount(discernResultDetail.getTotalAmount());
+        detailEntity.setCheckCode(discernResultDetail.getCheckCode());
+        electronicUploadRecordDetailDao.updateById(detailEntity);
 
         VerificationRequest invoice = new VerificationRequest();
         invoice.setInvoiceCode(discernResultDetail.getInvoiceCode());
