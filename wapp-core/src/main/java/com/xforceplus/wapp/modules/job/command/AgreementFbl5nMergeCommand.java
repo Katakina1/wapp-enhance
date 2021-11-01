@@ -109,7 +109,7 @@ public class AgreementFbl5nMergeCommand implements Command {
             // 记录上次完成的页数，这次从last+1开始
             last = Long.parseLong(String.valueOf(jobEntryProgress));
         }
-        if(last == 0){
+        if (last == 0) {
             //如果第一页需要特殊处理把数据此次job数据清理一下（可能之前执行到一半重启，数据已经完成一半但是last没有更新）
             deleteOriginAgreementMerge(jobId);
         }
@@ -131,6 +131,7 @@ public class AgreementFbl5nMergeCommand implements Command {
     }
 
     private void filter(List<TXfOriginSapFbl5nEntity> list) {
+        List<String> companyCodeList = Stream.of("D073").collect(Collectors.toList());
         List<String> docTypeList = Stream.of("1D", "RV", "DA").collect(Collectors.toList());
         List<String> reasonCodeList = Stream.of("511", "527", "206", "317").collect(Collectors.toList());
         list.parallelStream()
@@ -185,7 +186,10 @@ public class AgreementFbl5nMergeCommand implements Command {
                         if (mergeTmpEntity == null) {
                             return false;
                         }
-                        if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                        if (!companyCodeList.contains(mergeTmpEntity.getCompanyCode())) {
+                            return false;
+                        }
+                        if (mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) >= 0) {
                             return false;
                         }
                         if (!docTypeList.contains(mergeTmpEntity.getDocumentType())) {
@@ -247,7 +251,7 @@ public class AgreementFbl5nMergeCommand implements Command {
                 }).findAny().orElse(null);
     }
 
-    private void deleteOriginAgreementMerge(Integer jobId){
+    private void deleteOriginAgreementMerge(Integer jobId) {
         QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
         queryWrapper.eq(TXfOriginAgreementMergeEntity.SOURCE, 1);
