@@ -7,6 +7,8 @@ import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.LockFlag;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.common.utils.JsonUtil;
+import com.xforceplus.wapp.modules.rednotification.log.LogOperate;
+import com.xforceplus.wapp.modules.rednotification.log.LogOperateType;
 import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
 import com.xforceplus.wapp.modules.rednotification.model.QueryModel;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationApplyReverseRequest;
@@ -28,8 +30,8 @@ public class RedNotificationOuterService {
     /**
      * 新增红字信息
      */
+    @LogOperate(value = "对外接口新增红字信息",type = LogOperateType.ADD)
     public Response<String> add(AddRedNotificationRequest request) {
-        log.info("对外接口新增红字信息请求:{}", JsonUtil.toJsonStr(request));
         Response add = redNotificationService.add(request);
         log.info("对外接口新增红字信息返回:{}",JsonUtil.toJsonStr(add));
         return add ;
@@ -39,15 +41,15 @@ public class RedNotificationOuterService {
      * 红字信息撤销
      * pid 预制发票id
      */
+    @LogOperate(value = "对外接口红字信息撤销",type = LogOperateType.MODIFY)
     public Response<String> rollback(Long pid) {
-        log.info("对外接口红字信息撤销请求:{}", pid);
         RedNotificationApplyReverseRequest redNotificationApplyReverseRequest = new RedNotificationApplyReverseRequest();
         QueryModel queryModel = new QueryModel();
         ArrayList<Long> pidList = Lists.newArrayList(pid);
         queryModel.setPidList(pidList);
         redNotificationApplyReverseRequest.setQueryModel(queryModel);
         Response rollback = redNotificationService.rollback(redNotificationApplyReverseRequest);
-        log.info("对外接口红字信息撤销返回:{}", pid);
+        log.info("对外接口红字信息撤销返回:{}", rollback);
         return rollback ;
     }
 
@@ -56,8 +58,8 @@ public class RedNotificationOuterService {
      * @param settlementNo
      * @return
      */
+    @LogOperate(value = "对外接口判断结算算单是否有待申请的红字信息",type = LogOperateType.QUERY)
     public Boolean isWaitingApplyBySettlementNo(String settlementNo) {
-        log.info("对外接口判断结算算单是否有待申请的红字信息请求:{}", settlementNo);
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TXfRedNotificationEntity::getBillNo,settlementNo)
                 .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
@@ -65,8 +67,8 @@ public class RedNotificationOuterService {
         return count > 0 ;
     }
 
+    @LogOperate(value = "对外接口判断结算算单是否有待申请的红字信息",type = LogOperateType.QUERY)
     public Boolean isWaitingApplyByPreInvoiceId(List<Long> preInvoiceIdList) {
-        log.info("对外接口判断结算算单是否有待申请的红字信息请求:{}", preInvoiceIdList);
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(TXfRedNotificationEntity::getPid,preInvoiceIdList)
                 .in(TXfRedNotificationEntity::getApplyingStatus, Arrays.asList(RedNoApplyingStatus.APPLIED.getValue(),RedNoApplyingStatus.APPLYING.getValue()));
@@ -79,8 +81,8 @@ public class RedNotificationOuterService {
      * @param pid 预制发id
      * @return
      */
+    @LogOperate(value = "对外接口修改已申请的红字信息为撤销待审核",type = LogOperateType.MODIFY)
     public Response<String> updateAppliedToWaitAppproveByPid(Long pid) {
-        log.info("对外接口修改已申请的红字信息为撤销待审核,进入审批页面请求:{}", pid);
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TXfRedNotificationEntity::getPid,pid).eq(TXfRedNotificationEntity::getApplyingStatus,RedNoApplyingStatus.APPLIED.getValue());
         TXfRedNotificationEntity tXfRedNotificationEntity = redNotificationService.getBaseMapper().selectOne(queryWrapper);
@@ -98,8 +100,8 @@ public class RedNotificationOuterService {
      * 根据结算号
      * 查询待申请的红字信息预制发票id
      */
+    @LogOperate(value = "对外接口查询待申请的红字信息预制发票id请求",type = LogOperateType.QUERY)
     public List<Long> getWaitApplyPreIds(String settlementNo){
-        log.info("对外接口查询待申请的红字信息预制发票id请求:{}", settlementNo);
          LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
          queryWrapper.eq(TXfRedNotificationEntity::getBillNo,settlementNo).eq(TXfRedNotificationEntity::getLockFlag, LockFlag.NORMAL.getValue()).eq(TXfRedNotificationEntity::getStatus,1);
          List<TXfRedNotificationEntity> entityList = redNotificationService.getBaseMapper().selectList(queryWrapper);
@@ -110,8 +112,8 @@ public class RedNotificationOuterService {
     /**
      * 删除待申请的红字信息
      */
+    @LogOperate(value = "对外接口删除待申请的红字信息请求",type = LogOperateType.MODIFY)
     public void deleteRednotification(List<Long> pidList){
-        log.info("对外接口删除待申请的红字信息请求:{}", JsonUtil.toJsonStr(pidList));
          LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
          updateWrapper.in(TXfRedNotificationEntity::getPid , pidList);
          TXfRedNotificationEntity record = new TXfRedNotificationEntity();
@@ -127,8 +129,8 @@ public class RedNotificationOuterService {
      * @param redNotification 红字信息表编号
      * @return
      */
+    @LogOperate(value = "对外接口修改已申请的红字信息表编号请求",type = LogOperateType.MODIFY)
     public Response<String> update(String redNotification,ApproveStatus approveStatus) {
-        log.info("对外接口修改已申请的红字信息表编号请求:{}", redNotification);
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TXfRedNotificationEntity::getRedNotificationNo,redNotification).eq(TXfRedNotificationEntity::getApplyingStatus,RedNoApplyingStatus.APPLIED.getValue());
         TXfRedNotificationEntity tXfRedNotificationEntity = redNotificationService.getBaseMapper().selectOne(queryWrapper);
