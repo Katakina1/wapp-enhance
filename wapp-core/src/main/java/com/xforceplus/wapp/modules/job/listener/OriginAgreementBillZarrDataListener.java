@@ -8,6 +8,7 @@ import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import javax.validation.ConstraintViolation;
@@ -85,6 +86,10 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
                     v2.setJobId(jobId);
                     v2.setCreateTime(now);
                     v2.setUpdateTime(now);
+                    if (StringUtils.isNotBlank(v2.getContents())) {
+                        String reference = v2.getContents().substring(v2.getContents().length() - 10, v2.getContents().length());
+                        v2.setReference(reference);
+                    }
                     entities.add(v2);
                 }
         );
