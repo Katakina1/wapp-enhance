@@ -73,6 +73,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             if(recordInvoice.getTaxRate() != null){
                 BigDecimal taxRate = recordInvoice.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
                 recordInvoiceResponse.setTaxRate(taxRate.toPlainString());
+                recordInvoiceResponse.setRedNotificationNo(recordInvoice.getRedNoticeNumber());
             }
             response.add(recordInvoiceResponse);
         }
@@ -287,6 +288,11 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoice.setPaperDrewDate(entity.getInvoiceDate());
         invoice.setAmountWithoutTax(entity.getInvoiceAmount());
         invoice.setAmountWithTax(entity.getTotalAmount());
+        invoice.setRedNotificationNo(entity.getRedNoticeNumber());
+        if(entity.getTaxRate() != null){
+            BigDecimal taxRate = entity.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
+            invoice.setTaxRate(taxRate.toPlainString());
+        }
     }
 
     public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){

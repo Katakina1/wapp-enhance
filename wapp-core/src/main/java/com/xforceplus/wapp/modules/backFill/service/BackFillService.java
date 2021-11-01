@@ -275,6 +275,7 @@ public class BackFillService  {
                 detailEntity.setBatchNo(batchNo);
                 detailEntity.setId(idSequence.nextId());
                 detailEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
+                detailEntity.setCreateTime(new Date());
                 detailEntity.setSettlementNo(specialElecUploadDto.getSettlementNo());
                 try {
                     final VerificationResponse verificationResponse = this.parseOfd(ofd,batchNo);
@@ -309,7 +310,8 @@ public class BackFillService  {
                     detailEntity.setStatus(true);
                     detailEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
                     detailEntity.setFileType(true);
-
+                    detailEntity.setSettlementNo(specialElecUploadDto.getSettlementNo());
+                    detailEntity.setCreateTime(new Date());
                     //文件上传
                     uploadFile(m.getValue(), Constants.FILE_TYPE_PDF, detailEntity);
                     this.electronicUploadRecordDetailDao.insert(detailEntity);
