@@ -7,6 +7,7 @@ import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
+import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementMergeService;
@@ -21,9 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -158,11 +159,11 @@ public class AgreementBillFilterCommand implements Command {
         }
     }
 
-    private DeductBillBaseData convertDeductBillBaseData(TXfOriginAgreementMergeEntity mergeTmpEntity, Context context) {
+    private AgreementBillData convertDeductBillBaseData(TXfOriginAgreementMergeEntity mergeTmpEntity, Context context) {
         if(mergeTmpEntity == null){
             return null;
         }
-        DeductBillBaseData deductBillBaseData = new DeductBillBaseData();
+        AgreementBillData deductBillBaseData = new AgreementBillData();
         deductBillBaseData.setBusinessNo(mergeTmpEntity.getReference());
         deductBillBaseData.setBusinessType(2);
         deductBillBaseData.setSellerNo(mergeTmpEntity.getCustomerNo());
@@ -174,6 +175,17 @@ public class AgreementBillFilterCommand implements Command {
         deductBillBaseData.setTaxRate(mergeTmpEntity.getTaxRate());
         deductBillBaseData.setTaxAmount(mergeTmpEntity.getTaxAmount());
         deductBillBaseData.setBatchNo(String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
+        deductBillBaseData.setDocumentType(mergeTmpEntity.getDocumentType());
+        deductBillBaseData.setDocumentNo(mergeTmpEntity.getDocumentNumber());
+        deductBillBaseData.setReasonCode(mergeTmpEntity.getReasonCode());
+        deductBillBaseData.setMemo(mergeTmpEntity.getMemo());
+        deductBillBaseData.setTaxCode(mergeTmpEntity.getTaxCode());
+        deductBillBaseData.setReference(mergeTmpEntity.getReference());
+        deductBillBaseData.setReferenceType(mergeTmpEntity.getReasonCode());
+        if(mergeTmpEntity.getPostDate() != null) {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+            deductBillBaseData.setPostingDate(fmt.format(mergeTmpEntity.getPostDate()));
+        }
         return deductBillBaseData;
     }
 
