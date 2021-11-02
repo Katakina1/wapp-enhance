@@ -22,6 +22,6 @@ public class TaxCodeBean {
         if (CollectionUtils.isEmpty(taxRateList)) {
             return StringUtils.EMPTY;
         }
-        return String.join(",", taxRateList);
+        return taxRateList.get(0);
     }
 }
