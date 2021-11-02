@@ -48,7 +48,7 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "上传发票校验")
     @GetMapping(value = "/comitVerifyCheck")
-    public R comitVerifyCheck(@ApiParam(value = "被蓝冲的发票id") @RequestParam Long id,@ApiParam(value = "结算单号",required = true) @RequestParam String settlementNo){
+    public R comitVerifyCheck(@ApiParam(value = "被蓝冲的发票id") @RequestParam(required = false) Long id,@ApiParam(value = "结算单号") @RequestParam(required = false)  String settlementNo){
         logger.info("上传发票校验--id：{}",id);
         logger.info("上传发票校验--settlementNo：{}",settlementNo);
         return backFillService.commitVerifyCheck(id,settlementNo);
