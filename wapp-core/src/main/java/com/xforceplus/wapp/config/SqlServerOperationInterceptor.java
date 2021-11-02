@@ -52,7 +52,6 @@ public class SqlServerOperationInterceptor extends AbstractSqlParserHandler impl
             case INSERT:
                 break;
             case SELECT:
-
                 break;
         }
 
