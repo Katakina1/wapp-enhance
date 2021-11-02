@@ -35,7 +35,7 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
     private ApplicationContext applicationContext;
 
     @Async
-    @Scheduled(cron = "* * 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     @Override
     public void execute() {
         log.info("启动原始索赔单任务执行器");
