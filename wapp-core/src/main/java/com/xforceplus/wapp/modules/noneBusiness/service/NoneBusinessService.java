@@ -40,6 +40,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -47,10 +48,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -101,6 +100,9 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
     @Autowired
     private NoneBusinessConverter noneBusinessConverter;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+    private static String KEY = "NOBUSINESS_SIGN_";
 
     public void parseOfdFile(List<byte[]> ofd, TXfNoneBusinessUploadDetailEntity entity) {
 
@@ -131,6 +133,10 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             if (response.isOk()) {
                 addEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
                 final InvoiceMain invoiceMain = response.getResult().getInvoiceMain();
+                if (StringUtils.isNotEmpty(response.getResult().getImageUrl())) {
+                    String base64 = Base64.getEncoder().encodeToString(response.getResult().getImageUrl().getBytes());
+                    redisTemplate.opsForValue().set(KEY + invoiceMain.getInvoiceCode() + invoiceMain.getInvoiceNo(), base64, 10, TimeUnit.MINUTES);
+                }
                 VerificationRequest verificationRequest = new VerificationRequest();
                 verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
                 verificationRequest.setCheckCode(invoiceMain.getCheckCode());
@@ -294,7 +300,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         file.mkdir();
         String downLoadFileName = path + ".zip";
         for (TXfNoneBusinessUploadDetailEntity fileEntity : list) {
-            if(StringUtils.isNotEmpty(request.getSingle())){
+            if (StringUtils.isNotEmpty(request.getSingle())) {
                 if (1 == request.getOfd() && fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_PDF)) && !"1".equals(request.getSingle())) {
                     continue;
                 }

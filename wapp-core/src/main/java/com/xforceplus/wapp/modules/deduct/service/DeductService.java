@@ -362,43 +362,42 @@ public class DeductService   {
         }
         if(XFDeductionBusinessTypeEnum.CLAIM_BILL.equals(deductionEnum)){
             if(TXfBillDeductStatusEnum.CLAIM_DESTROY.equals(status)){
-                if(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                    log.info("只有待匹配结算单的索赔单才能撤销");
-                    return false;
-                }
-                deleteBillDeductItemRef(tXfBillDeductEntity.getId());
+                log.info("索赔单不能撤销");
+                return false;
             }
-            if(TXfBillDeductStatusEnum.LOCK.equals(status)){
-                if(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                    log.info("只有待匹配结算单的协议单才能锁定");
-                    return false;
-                }
+            if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+                log.info("索赔单不能锁定或解锁");
+                return false;
             }
         }else if(XFDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
             if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
-                if(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
+                if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus()) &&
+                        !TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
                     log.info("只有待匹配结算单的协议单才能撤销");
                     return false;
                 }
                 deleteBillDeductItemRef(tXfBillDeductEntity.getId());
             }
-            if(TXfBillDeductStatusEnum.LOCK.equals(status)){
-                if(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
-                    log.info("只有待匹配结算单的协议单才能锁定");
+            if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+                if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus()) &&
+                        !TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
+                    log.info("只有待匹配结算单的协议单才能锁定或解锁");
                     return false;
                 }
             }
         }else if(XFDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
             if(TXfBillDeductStatusEnum.EPD_DESTROY.equals(status)){
-                if(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())) {
+                if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus()) &&
+                        !TXfBillDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
                     log.info("只有待匹配结算单的EPD才能撤销");
                     return false;
                 }
                 deleteBillDeductItemRef(tXfBillDeductEntity.getId());
             }
-            if(TXfBillDeductStatusEnum.LOCK.equals(status)){
-                if(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())) {
-                    log.info("只有待匹配结算单的EPD才能锁定");
+            if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+                if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus()) &&
+                        !TXfBillDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
+                    log.info("只有待匹配结算单的EPD才能锁定或解锁");
                     return false;
                 }
             }

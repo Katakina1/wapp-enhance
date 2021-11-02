@@ -16,6 +16,7 @@ import com.xforceplus.wapp.modules.backFill.model.VerificationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -60,7 +61,9 @@ public class VerificationService implements IntegrationResultHandler {
     @Autowired
     private EInvoiceMatchService eInvoiceMatchService;
 
-
+    private static String KEY = "NOBUSINESS_SIGN_";
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     public VerificationService(@Value("${wapp.integration.tenant-id}")
                                      String tenantId) {
@@ -103,11 +106,11 @@ public class VerificationService implements IntegrationResultHandler {
         }
     }
 
-    public String getBase64ByUrl(String url,String uuId) {
+    public String getBase64ByUrl(String uuId) {
 
         try {
             HashMap<String, Object> paramMeterMap = Maps.newHashMap();
-            String baseUrl=Base64.getEncoder().encodeToString(url.getBytes());
+            String baseUrl=(String)redisTemplate.opsForValue().get(KEY+uuId);
             paramMeterMap.put("ossUrl",baseUrl);
             paramMeterMap.put("type","1");
             defaultHeader.put("serialNo",uuId);

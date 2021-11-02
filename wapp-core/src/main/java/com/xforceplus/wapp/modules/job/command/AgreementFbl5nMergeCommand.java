@@ -217,7 +217,8 @@ public class AgreementFbl5nMergeCommand implements Command {
                         log.error(e.getMessage(), e);
                     }
                     return false;
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             originAgreementMergeService.saveBatch(newList);
         }
