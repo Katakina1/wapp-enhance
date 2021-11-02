@@ -48,9 +48,9 @@ public class BackFillCommitVerifyRequest {
     @ApiModelProperty("购方名称")
     private String gfName = null;
 
-    @JsonProperty("invoiceColer")
+    @JsonProperty("invoiceColor")
     @ApiModelProperty("发票颜色  0红票 1蓝票")
-    private String invoiceColer = null;
+    private String invoiceColor = null;
 
     @JsonProperty("verifyBeanList")
     @ApiModelProperty("回填发票列表")

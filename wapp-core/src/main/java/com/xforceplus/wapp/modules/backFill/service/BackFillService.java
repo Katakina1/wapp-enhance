@@ -476,7 +476,7 @@ public class BackFillService {
         if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
             throw new EnhanceRuntimeException("根据结算单号未找到预制发票");
         }
-        if ("0".equals(request.getInvoiceColer())) {
+        if ("0".equals(request.getInvoiceColor())) {
             int success = 0;
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
                 if (StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())) {
@@ -579,7 +579,10 @@ public class BackFillService {
         if (StringUtils.isEmpty(request.getSettlementNo())) {
             return R.fail("结算单号不能为空");
         }
-        if ("0".equals(request.getInvoiceColer())) {
+        if (StringUtils.isEmpty(request.getInvoiceColor())) {
+            return R.fail("发票颜色不能为空");
+        }
+        if ("0".equals(request.getInvoiceColor())) {
             //红票上传校验
             QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
             preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
