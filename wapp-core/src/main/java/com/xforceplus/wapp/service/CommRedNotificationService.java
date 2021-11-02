@@ -52,17 +52,17 @@ public class CommRedNotificationService {
         redNotificationOuterService.updateAppliedToWaitAppproveByPid(preInvoiceId);
     }
 
-    /**
-     * 直接调用沃尔玛接口作废
-     *
-     * @param preInvoiceId
-     */
-    public void confirmDestroyRedNotification(Long preInvoiceId) {
-        redNotificationOuterService.rollback(preInvoiceId);
-    }
+//    /**
+//     * 直接调用沃尔玛接口作废
+//     *
+//     * @param preInvoiceId
+//     */
+//    public void confirmDestroyRedNotification(Long preInvoiceId) {
+//        redNotificationOuterService.rollback(preInvoiceId);
+//    }
 
     /**
-     * 删除申请红字信息记录
+     * 直接删除申请红字信息记录
      * @param preInvoiceId
      */
     public void deleteRedNotification(Long preInvoiceId){
