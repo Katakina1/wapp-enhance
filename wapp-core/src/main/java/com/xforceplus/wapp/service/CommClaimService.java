@@ -113,7 +113,7 @@ public class CommClaimService {
         QueryWrapper<TXfBillDeductItemRefEntity> billDeductItemRefEntityWrapper = new QueryWrapper<>();
         billDeductItemRefEntityWrapper.in(TXfBillDeductItemRefEntity.DEDUCT_ID, billDeductIdList);
         List<TXfBillDeductItemRefEntity> tXfBillDeductItemRefEntityList = tXfBillDeductItemRefDao.selectList(billDeductItemRefEntityWrapper);
-        tXfBillDeductItemRefEntityList.parallelStream().forEach(tXfBillDeductItemRefEntity -> {
+        tXfBillDeductItemRefEntityList.forEach(tXfBillDeductItemRefEntity -> {
             TXfBillDeductItemEntity tXfBillDeductItemEntity = tXfBillDeductItemDao.selectById(tXfBillDeductItemRefEntity.getDeductItemId());
             //还原额度
             TXfBillDeductItemEntity updateTXfBillDeductItemEntity = new TXfBillDeductItemEntity();
@@ -135,7 +135,7 @@ public class CommClaimService {
 
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
-        tXfBillDeductInvoiceList.parallelStream().forEach(tXfBillDeductInvoiceEntity -> {
+        tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
             QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
@@ -146,13 +146,13 @@ public class CommClaimService {
                 updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
                 tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
             }
+            //删除蓝票关系
+            //释放索赔单蓝票额度（作废的索赔单）
+            TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
+            updateTXfBillDeductInvoiceEntity.setId(tXfBillDeductInvoiceEntity.getId());
+            updateTXfBillDeductInvoiceEntity.setStatus(1);
+            tXfBillDeductInvoiceDao.updateById(updateTXfBillDeductInvoiceEntity);
         });
-
-        //删除蓝票关系
-        //释放索赔单蓝票额度（作废的索赔单）
-        TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
-        updateTXfBillDeductInvoiceEntity.setStatus(1);
-        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity, tXfBillDeductInvoiceWrapper);
     }
 
     /**
