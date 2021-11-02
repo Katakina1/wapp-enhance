@@ -7,6 +7,7 @@ import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
+import com.xforceplus.wapp.modules.job.service.OriginAgreementMergeService;
 import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
 import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
 import com.xforceplus.wapp.repository.dao.TXfOriginAgreementMergeDao;
@@ -19,6 +20,7 @@ import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,6 +61,8 @@ public class AgreementFbl5nMergeCommand implements Command {
     private TXfOriginSapZarrDao tXfOriginSapZarrDao;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
+    @Autowired
+    private OriginAgreementMergeService originAgreementMergeService;
     /**
      * 过滤fbl5n数据
      */
@@ -141,7 +145,7 @@ public class AgreementFbl5nMergeCommand implements Command {
         List<String> companyCodeList = Stream.of("D073").collect(Collectors.toList());
         List<String> docTypeList = Stream.of("1D", "RV", "DA").collect(Collectors.toList());
         List<String> reasonCodeList = Stream.of("511", "527", "206", "317").collect(Collectors.toList());
-        list.parallelStream()
+        List<TXfOriginAgreementMergeEntity> newList = list.parallelStream()
                 .map(fbl5n -> {
                     try {
                         TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
@@ -213,10 +217,10 @@ public class AgreementFbl5nMergeCommand implements Command {
                         log.error(e.getMessage(), e);
                     }
                     return false;
-                })
-                .forEach(mergeTmpEntity -> {
-                    tXfOriginAgreementMergeDao.insert(mergeTmpEntity);
-                });
+                }).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(newList)) {
+            originAgreementMergeService.saveBatch(newList);
+        }
     }
 
     private String getReasonCode(Integer jobId, String reference) {

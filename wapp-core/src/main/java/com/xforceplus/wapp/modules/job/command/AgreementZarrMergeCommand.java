@@ -20,6 +20,7 @@ import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -60,6 +61,8 @@ public class AgreementZarrMergeCommand implements Command {
     private TXfOriginSapZarrDao tXfOriginSapZarrDao;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
+    @Autowired
+    private OriginAgreementMergeService originAgreementMergeService;
     /**
      * 过滤fbl5n数据
      */
@@ -136,7 +139,7 @@ public class AgreementZarrMergeCommand implements Command {
     }
 
     private void filter(List<TXfOriginSapZarrEntity> list) {
-        list.parallelStream()
+        List<TXfOriginAgreementMergeEntity> newList = list.parallelStream()
                 .map(zarr -> {
                     try {
                         TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
@@ -195,10 +198,10 @@ public class AgreementZarrMergeCommand implements Command {
                     }
                     return null;
                 })
-                .filter(Objects::nonNull)
-                .forEach(mergeTmpEntity -> {
-                    tXfOriginAgreementMergeDao.insert(mergeTmpEntity);
-                });
+                .filter(Objects::nonNull).collect(Collectors.toList());
+        if(CollectionUtils.isNotEmpty(newList)) {
+            originAgreementMergeService.saveBatch(newList);
+        }
     }
 
     private String getTaxCode(Integer jobId, String reference) {
