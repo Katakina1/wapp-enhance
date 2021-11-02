@@ -1,13 +1,13 @@
 package com.xforceplus.wapp.modules.settlement.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
-import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendResponse;
+import com.xforceplus.wapp.modules.deduct.mapstruct.InvoiceRecommendMapper;
 import com.xforceplus.wapp.modules.recordinvoice.mapstruct.InvoiceDtoMapper;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
@@ -49,6 +49,9 @@ public class SettlementService {
     @Autowired
     private CompanyService companyService;
 
+    @Autowired
+    private InvoiceRecommendMapper invoiceRecommendMapper;
+
 
     public List<TXfSettlementEntity> querySettlementByStatus(Long id, Integer status, Integer limit ) {
         return settlementDao.querySettlementByStatus(status, id, limit);
@@ -60,7 +63,7 @@ public class SettlementService {
         return settlementDao.selectById(id);
     }
 
-    public PageResult<InvoiceDto> recommend(InvoiceRecommendListRequest request) {
+    public PageResult<InvoiceRecommendResponse> recommend(InvoiceRecommendListRequest request) {
         log.info("userCode:{}", UserUtil.getUser().getUsercode());
 
 //        final TXfSettlementEntity byId = getById(settlementId);
@@ -92,9 +95,9 @@ public class SettlementService {
 
         final Page<TDxRecordInvoiceEntity> entityPage = tDxRecordInvoiceDao.selectPage(page, wrapper);
 
-        List<InvoiceDto> dtos=new ArrayList<>();
+        List<InvoiceRecommendResponse> dtos=new ArrayList<>();
         if (CollectionUtils.isNotEmpty(entityPage.getRecords())){
-            final List<InvoiceDto> collect = entityPage.getRecords().stream().map(this.invoiceMapper::toDto).collect(Collectors.toList());
+            final List<InvoiceRecommendResponse> collect = entityPage.getRecords().stream().map(this.invoiceRecommendMapper::toDto).collect(Collectors.toList());
             dtos.addAll(collect);
         }
         return PageResult.of(dtos,entityPage.getTotal(),entityPage.getPages(),entityPage.getSize());
