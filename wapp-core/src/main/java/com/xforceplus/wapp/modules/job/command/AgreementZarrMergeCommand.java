@@ -17,6 +17,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementMergeEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
+import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -63,6 +64,8 @@ public class AgreementZarrMergeCommand implements Command {
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
     @Autowired
     private OriginAgreementMergeService originAgreementMergeService;
+    @Autowired
+    private IDSequence idSequence;
     /**
      * 过滤fbl5n数据
      */
@@ -143,6 +146,7 @@ public class AgreementZarrMergeCommand implements Command {
                 .map(zarr -> {
                     try {
                         TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
+                        tXfOriginAgreementMergeTmpEntity.setId(idSequence.nextId());
                         tXfOriginAgreementMergeTmpEntity.setJobId(zarr.getJobId());
                         tXfOriginAgreementMergeTmpEntity.setCustomerNo(zarr.getCustomerNumber());
                         tXfOriginAgreementMergeTmpEntity.setCustomerName(zarr.getCustomer());

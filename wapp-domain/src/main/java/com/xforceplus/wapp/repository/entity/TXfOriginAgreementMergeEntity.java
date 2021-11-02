@@ -125,7 +125,7 @@ public class TXfOriginAgreementMergeEntity extends BaseEntity {
     @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @TableField("create_time")
