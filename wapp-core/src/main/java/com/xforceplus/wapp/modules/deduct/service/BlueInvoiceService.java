@@ -214,7 +214,7 @@ public class BlueInvoiceService {
                                 .invoiceDate(invoiceEntity.getInvoiceDate())
                                 .build());
 
-                        if(BigDecimal.ZERO.compareTo(leftAmount.get()) < 0){
+                        if(BigDecimal.ZERO.compareTo(leftAmount.get()) >= 0){
                             break;
                         }
                     }
