@@ -214,7 +214,7 @@ public class BlueInvoiceService {
                                 .invoiceDate(invoiceEntity.getInvoiceDate())
                                 .build());
 
-                        if(BigDecimal.ZERO.compareTo(leftAmount.get()) < 0){
+                        if(BigDecimal.ZERO.compareTo(leftAmount.get()) >= 0){
                             break;
                         }
                     }
@@ -461,7 +461,7 @@ public class BlueInvoiceService {
 
             // 获取该发票的所有正数明细
             String uuid = invoice.getInvoiceCode() + invoice.getInvoiceNo();
-            List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(uuid, invoice.getInvoiceAmount(), lastRemainingAmount, lastRemainingAmount);
+            List<TDxRecordInvoiceDetailEntity> items = obtainAvailableItems(uuid, invoice.getInvoiceAmount(), lastRemainingAmount, deductedAmount);
             // 如果该发票没有可用明细，那么跳过
             if (org.springframework.util.CollectionUtils.isEmpty(items)) {
                 log.info("丢弃没有明细的发票 号码={} 代码={}", invoice.getInvoiceNo(), invoice.getInvoiceCode());

@@ -155,7 +155,7 @@ public class EInvoiceMatchService {
         successEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
         if (org.apache.commons.lang3.StringUtils.isNotEmpty(invoiceMain.getOfdImageUrl())) {
             try {
-                String base64 = verificationService.getBase64ByUrl(invoiceMain.getOfdImageUrl(),invoiceMain.getInvoiceCode()+invoiceMain.getInvoiceNo());
+                String base64 = verificationService.getBase64ByUrl(invoiceMain.getInvoiceCode() + invoiceMain.getInvoiceNo());
 
                 String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
                 UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
@@ -212,7 +212,7 @@ public class EInvoiceMatchService {
                 return true;
             });
         } else {
-            map.put("id",list1.get(0).getId());
+            map.put("id", list1.get(0).getId());
             if ("04".equals(CommonUtil.getFplx((String) invoiceMain.getInvoiceCode()))) {
                 matchDao.allUpdatePP(map);
             } else {
@@ -267,9 +267,10 @@ public class EInvoiceMatchService {
             throw new EnhanceRuntimeException("未找到对应的结算单");
         }
         String invoiceType = InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode());
-        if(!invoiceType.equals(tXfSettlementEntity.getInvoiceType())){
-            throw new EnhanceRuntimeException("发票类型与结算单不一致");
-        }
+
+//        if (!invoiceType.equals(tXfSettlementEntity.getInvoiceType())) {
+//            throw new EnhanceRuntimeException("发票类型与结算单不一致");
+//        }
         invoiceMain.setInvoiceType(invoiceType);
      /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
             throw new EnhanceRuntimeException("购方名称不一致");
@@ -315,8 +316,8 @@ public class EInvoiceMatchService {
         map.put("companyCode", orgEntity.getCompany());
 //        底账来源  0-采集 1-查验 2-录入
         map.put("sourceSystem", "1");
-        map.put("goodsListFlag",invoiceMain.getGoodsListFlag());
-        map.put("machinecode",invoiceMain.getMachineCode());
+        map.put("goodsListFlag", invoiceMain.getGoodsListFlag());
+        map.put("machinecode", invoiceMain.getMachineCode());
 //        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
         map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
         map.put("remark", invoiceMain.getRemark());

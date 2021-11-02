@@ -15,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +45,16 @@ public class CommEpdService {
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
     @Autowired
     private PreinvoiceService preinvoiceService;
+    private final List<Integer> canDestroyStatus;
+
+    public CommEpdService() {
+        canDestroyStatus= Arrays.asList(
+                TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode()
+                ,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode()
+                ,TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode()
+                ,TXfSettlementStatusEnum.WAIT_MATCH_BLUE_INVOICE.getCode()
+        );
+    }
 
     /**
      * 作废EPD单 作废结算单 蓝票释放额度 如果有预制发票 作废预制发票
@@ -61,7 +73,7 @@ public class CommEpdService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if(!Objects.equals(tXfSettlementEntity.getSettlementStatus(),TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode())){
+        if(!canDestroyStatus.contains(tXfSettlementEntity.getSettlementStatus())){
             throw new EnhanceRuntimeException("结算单已上传红票不能操作");
         }
 
@@ -72,7 +84,7 @@ public class CommEpdService {
 
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
+        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         List<TXfPreInvoiceEntity> pPreInvoiceList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改作废状态====
@@ -92,12 +104,12 @@ public class CommEpdService {
         });
 
         //作废预制发票
-        pPreInvoiceList.parallelStream().forEach(tXfPreInvoiceEntity -> {
+        Optional.ofNullable(pPreInvoiceList).ifPresent(x->x.parallelStream().forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-        });
+        }));
 
         //释放结算单蓝票
         QueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new QueryWrapper();
@@ -106,7 +118,7 @@ public class CommEpdService {
 
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
-        tXfBillDeductInvoiceList.parallelStream().forEach(tXfBillDeductInvoiceEntity -> {
+        tXfBillDeductInvoiceList.forEach(tXfBillDeductInvoiceEntity -> {
             QueryWrapper<TDxRecordInvoiceEntity> tDxInvoiceEntityQueryWrapper = new QueryWrapper<>();
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
@@ -117,11 +129,12 @@ public class CommEpdService {
                 updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
                 tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
             }
+            //删除蓝票关系
+            TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
+            updateTXfBillDeductInvoiceEntity.setId(tXfBillDeductInvoiceEntity.getId());
+            updateTXfBillDeductInvoiceEntity.setStatus(1);
+            tXfBillDeductInvoiceDao.updateById(updateTXfBillDeductInvoiceEntity);
         });
-        //删除结算单蓝票关系
-        TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
-        updateTXfBillDeductInvoiceEntity.setStatus(1);
-        tXfBillDeductInvoiceDao.update(updateTXfBillDeductInvoiceEntity,tXfBillDeductInvoiceWrapper);
     }
 
     /**
