@@ -75,6 +75,8 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
 
     private String checkCode;
 
+    private String machinecode;
+
     private String taxType;
     private BigDecimal settlementAmount;
     private String matchno;
