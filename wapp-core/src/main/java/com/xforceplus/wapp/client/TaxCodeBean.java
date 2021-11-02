@@ -17,7 +17,6 @@ public class TaxCodeBean {
     private String taxName;
     private String taxShortName;
     private String taxCodeVersion;
-    @Getter(value = AccessLevel.NONE)
     private List<String> taxRateList;
     private String specialManagement;
 
