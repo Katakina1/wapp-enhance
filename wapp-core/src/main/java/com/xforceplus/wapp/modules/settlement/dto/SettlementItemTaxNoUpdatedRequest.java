@@ -15,6 +15,6 @@ import java.util.List;
 @Setter
 @Getter
 public class SettlementItemTaxNoUpdatedRequest {
-    private List<TXfSettlementItemEntity> item;
+    private List<TXfSettlementItemEntity> items;
 
 }

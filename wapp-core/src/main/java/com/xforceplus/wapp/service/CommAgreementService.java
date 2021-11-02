@@ -74,6 +74,10 @@ public class CommAgreementService {
             throw new EnhanceRuntimeException("结算单不存在");
         }
         if (!canDestroyStatus.contains(tXfSettlementEntity.getSettlementStatus())) {
+            switch (tXfSettlementEntity.getSettlementStatus()){
+                case 7:
+                    throw new EnhanceRuntimeException("结算单["+tXfSettlementEntity.getSettlementNo()+"]已经作废不能再次被作废");
+            }
             throw new EnhanceRuntimeException("结算单已上传红票不能操作");
         }
         //协议单

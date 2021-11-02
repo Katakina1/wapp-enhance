@@ -147,6 +147,23 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
     public TXfBillDeductEntity getSumDueAndNegativeBill(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
+        final QueryWrapper<TXfBillDeductEntity> wrapper = wrapperOverDueNegativeBills(purchaserNo, sellerNo, typeEnum, taxRate);
+
+        wrapper.groupBy(TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.TAX_RATE);
+
+        wrapper.select("sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate");
+
+        return this.getBaseMapper().selectOne(wrapper);
+    }
+
+
+    public List<TXfBillDeductEntity> getOverDueNegativeBills(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
+        final QueryWrapper<TXfBillDeductEntity> wrapper = wrapperOverDueNegativeBills(purchaserNo, sellerNo, typeEnum, taxRate);
+        wrapper.select(TXfBillDeductEntity.ID);
+        return this.getBaseMapper().selectList(wrapper);
+    }
+
+    private QueryWrapper<TXfBillDeductEntity> wrapperOverDueNegativeBills(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
         DeductListRequest sumRequest=new DeductListRequest();
         sumRequest.setOverdue(null);
         sumRequest.setSellerNo(sellerNo);
@@ -166,16 +183,10 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
         sumRequest.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
 
-        final QueryWrapper<TXfBillDeductEntity> wrapper = doWrapper(sumRequest, typeEnum,x->{
+        return doWrapper(sumRequest, typeEnum, x->{
             overDueWrapper(sellerNo,typeEnum,1,x);
             x.or(s->s.lt(TXfBillDeductEntity.AMOUNT_WITHOUT_TAX,BigDecimal.ZERO));
         });
-
-        wrapper.groupBy(TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.TAX_RATE);
-
-        wrapper.select("sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate");
-
-        return this.getBaseMapper().selectOne(wrapper);
     }
 
     /**
@@ -419,8 +430,16 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         final BigDecimal amount = checkAndGetTotalAmount(request, type);
 
         final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainInvoiceByIds(amount, request.getInvoiceIds());
-        final TXfBillDeductEntity deductEntity = getSumDueAndNegativeBill(request.getPurchaserNo(), request.getSellerNo(), type, request.getTaxRate());
-        return agreementBillService.mergeSettlementByManual(request.getBillIds(), deductEntity,type,matchRes);
+        final List<TXfBillDeductEntity> bills = getOverDueNegativeBills(request.getPurchaserNo(), request.getSellerNo(), type, request.getTaxRate());
+        final List<Long> collect = bills.parallelStream().map(TXfBillDeductEntity::getId).collect(Collectors.toList());
+        List<Long> ids=new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(collect)){
+            ids.addAll(collect);
+        }
+        if (CollectionUtils.isNotEmpty(request.getBillIds())){
+            ids.addAll(request.getBillIds());
+        }
+        return agreementBillService.mergeSettlementByManual(ids,type,matchRes);
     }
 
     public List<MatchedInvoiceListResponse> getMatchedInvoice(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
