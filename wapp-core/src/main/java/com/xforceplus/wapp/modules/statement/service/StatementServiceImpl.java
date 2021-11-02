@@ -8,11 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.enums.OperateLogEnum;
-import com.xforceplus.wapp.enums.TXfAmountSplitRuleEnum;
-import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.modules.billdeduct.converters.BillDeductConverter;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
 import com.xforceplus.wapp.modules.billdeduct.service.BillDeductServiceImpl;
@@ -168,6 +164,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         log.info("待开票列表查询,入参,settlementNo:{},分页数据,current:{},size:{}", settlementNo, current, size);
         val page = new LambdaQueryChainWrapper<>(preinvoiceService.getBaseMapper())
                 .eq(TXfPreInvoiceEntity::getSettlementNo, settlementNo)
+                .ne(TXfPreInvoiceEntity::getPreInvoiceStatus, TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode())
                 .page(new Page<>(current, size));
         log.debug("待开票列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(preInvoiceConverter.map(page.getRecords()), page);

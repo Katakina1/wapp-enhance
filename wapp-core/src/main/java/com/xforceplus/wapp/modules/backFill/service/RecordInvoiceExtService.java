@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by Kenny Wong on 2021/10/28.
@@ -201,13 +198,13 @@ public class RecordInvoiceExtService extends ServiceImpl<TDxRecordInvoiceExtDao,
                         // 按照发票先进先出
                         .orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate));
         // remainingAmount初始化为invoiceAmount
-        result.getRecords().forEach(
+        Optional.ofNullable(result.getRecords()).ifPresent(x->x.forEach(
                 record -> {
                     if (Objects.isNull(record.getRemainingAmount())) {
                         record.setRemainingAmount(record.getInvoiceAmount());
                     }
                 }
-        );
+        ));
         return result;
     }
 

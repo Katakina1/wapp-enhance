@@ -7,6 +7,7 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.claim.dto.SettlementApplyVerdictRequest;
 import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
+import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.invoice.dto.InvoiceDto;
 import com.xforceplus.wapp.modules.invoice.service.InvoiceServiceImpl;
@@ -136,7 +137,7 @@ public class SettlementController {
     public R recommend( @Valid InvoiceRecommendListRequest request) {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final PageResult<InvoiceDto> recommend = settlementService.recommend(request);
+        final PageResult<InvoiceRecommendResponse> recommend = settlementService.recommend(request);
         return R.ok( recommend);
     }
 

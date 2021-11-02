@@ -165,11 +165,12 @@ public class AgreementBillService extends DeductService{
      * @return
      */
     @Transactional
-    public TXfSettlementEntity mergeSettlementByManual(List<Long> ids, XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum,List<BlueInvoiceService.MatchRes> matchResList) {
-        if (CollectionUtils.isEmpty(ids)) {
+    public TXfSettlementEntity mergeSettlementByManual(List<Long> ids,TXfBillDeductEntity negativeAndOverDueBill,  XFDeductionBusinessTypeEnum xfDeductionBusinessTypeEnum,List<BlueInvoiceService.MatchRes> matchResList) {
+        if (CollectionUtils.isEmpty(ids) && Objects.isNull(negativeAndOverDueBill)) {
             log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
             throw new EnhanceRuntimeException("至少选择一张单据");
         }
+
         String idsStr =  StringUtils.join(ids, ",");
         idsStr = "(" + idsStr + ")";
         TXfBillDeductStatusEnum statusEnum;
@@ -185,22 +186,48 @@ public class AgreementBillService extends DeductService{
                 break;
             default:throw new EnhanceRuntimeException("手动合并结算单仅支持协议单和EPD");
         }
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableBillById(idsStr, xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
-        if (CollectionUtils.isEmpty(tXfBillDeductEntities)  ) {
-            log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
-            throw new EnhanceRuntimeException("未查询到待匹配结算单的单据");
+
+        TXfBillDeductEntity deductBill = new TXfBillDeductEntity();
+        if (Objects.nonNull(negativeAndOverDueBill)){
+            deductBill=negativeAndOverDueBill;
+        }
+        if (CollectionUtils.isNotEmpty(ids)){
+            List<TXfBillDeductEntity> entities = tXfBillDeductExtDao.querySuitableBillById(idsStr, xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
+
+            if (CollectionUtils.isEmpty(entities)  ) {
+                log.error("选择的{} 单据列表{}，查询符合条件结果为空",xfDeductionBusinessTypeEnum.getDes(),ids);
+                throw new EnhanceRuntimeException("未查询到待匹配结算单的单据");
+            }
+            if (entities.size() != 1) {
+                log.error("选择的{} 单据列表{}，查询符合条件结果分组为{}",xfDeductionBusinessTypeEnum.getDes(),ids,entities.size());
+                throw new EnhanceRuntimeException("您选择的单据为多税率或购销方不一致");
+            }
+
+            final TXfBillDeductEntity deductEntity = entities.get(0);
+
+            if (Objects.nonNull(negativeAndOverDueBill)){
+                if (!Objects.equals(deductEntity.getSellerNo(),negativeAndOverDueBill.getSellerNo())){
+                    log.warn("选择的单据中供应商号[{}]与登录账号[供应商号:{}]的不一致",deductEntity.getSellerNo(),negativeAndOverDueBill.getSellerNo());
+                    throw new EnhanceRuntimeException("选择的单据中供应商号["+deductEntity.getSellerNo()+"]与登录账号[供应商号:"+negativeAndOverDueBill.getSellerNo()+"]的不一致");
+                }
+
+                if (!Objects.equals(deductEntity.getPurchaserNo(),negativeAndOverDueBill.getPurchaserNo())){
+                    log.warn("选择的单据中购方代码[{}]与参数的购方代码[{}]的不一致",deductEntity.getPurchaserNo(),negativeAndOverDueBill.getPurchaserNo());
+                    throw new EnhanceRuntimeException("选择的单据中购方代码["+deductEntity.getPurchaserNo()+"]与参数的购方代码["+negativeAndOverDueBill.getPurchaserNo()+"]的不一致");
+                }
+                deductBill.setAmountWithoutTax(deductEntity.getAmountWithoutTax().add(negativeAndOverDueBill.getAmountWithoutTax()));
+                deductBill.setAmountWithTax(deductEntity.getAmountWithTax().add(negativeAndOverDueBill.getAmountWithTax()));
+                deductBill.setTaxAmount(deductEntity.getTaxAmount().add(negativeAndOverDueBill.getTaxAmount()));
+            } else {
+                deductBill = deductEntity;
+            }
         }
 
-        if (tXfBillDeductEntities.size() != 1) {
-            log.error("选择的{} 单据列表{}，查询符合条件结果分组为{}",xfDeductionBusinessTypeEnum.getDes(),ids,tXfBillDeductEntities.size());
-            throw new EnhanceRuntimeException("您选择的单据为多税率或购销方不一致");
-        }
-
-        if (tXfBillDeductEntities.get(0).getAmountWithoutTax().compareTo(BigDecimal.ZERO) <= 0) {
-            log.error("选择的{} 单据列表{}，查询结果总金额为{}",xfDeductionBusinessTypeEnum.getDes(),ids,tXfBillDeductEntities.get(0).getAmountWithoutTax());
+        if (deductBill.getAmountWithoutTax().compareTo(BigDecimal.ZERO) <= 0) {
+            log.error("选择的{} 单据列表{}，查询结果总金额为{}",xfDeductionBusinessTypeEnum.getDes(),ids,deductBill.getAmountWithoutTax());
             throw new EnhanceRuntimeException("选择单据的总金额不能小于0");
         }
-        TXfSettlementEntity tXfSettlementEntity = trans2Settlement(tXfBillDeductEntities, xfDeductionBusinessTypeEnum);
+        TXfSettlementEntity tXfSettlementEntity = trans2Settlement(Collections.singletonList(deductBill), xfDeductionBusinessTypeEnum);
         tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), targetStatus.getCode());
         TXfBillDeductEntity  tmp = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(),targetStatus.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         checkDeduct(tmp, tXfSettlementEntity, xfDeductionBusinessTypeEnum);

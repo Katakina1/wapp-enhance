@@ -50,4 +50,7 @@ public class DeductListRequest {
 
     @ApiModelProperty(hidden = true,value = "销方编号,vendorId,userCode")
     private String sellerNo;
+
+    @ApiModelProperty(hidden = true)
+    private Integer lockFlag;
 }
