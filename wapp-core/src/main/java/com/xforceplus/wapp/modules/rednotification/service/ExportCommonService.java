@@ -202,7 +202,7 @@ public class ExportCommonService {
             res.setContentType("multipart/form-data");
             res.setCharacterEncoding("UTF-8");
             res.setContentType("text/html");
-            String filePath = "/excl/" + fileName;
+            String filePath = "/excel/api/v1/" + fileName;
             String userAgent = req.getHeader("User-Agent");
             if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
                 fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
