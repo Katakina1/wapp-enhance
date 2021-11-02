@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -139,17 +140,42 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     public BigDecimal sumDueAndNegative(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum){
         return sumDueAndNegative(request.getPurchaserNo(),request.getSellerNo(),typeEnum,request.getTaxRate());
     }
+
     public BigDecimal sumDueAndNegative(String purchaserNo,String sellerNo, XFDeductionBusinessTypeEnum typeEnum,BigDecimal taxRate){
+        final TXfBillDeductEntity deductEntity = getSumDueAndNegativeBill(purchaserNo, sellerNo, typeEnum, taxRate);
+        return Optional.ofNullable(deductEntity).map(TXfBillDeductEntity::getAmountWithoutTax).orElse(BigDecimal.ZERO);
+    }
+
+    public TXfBillDeductEntity getSumDueAndNegativeBill(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
         DeductListRequest sumRequest=new DeductListRequest();
-        sumRequest.setOverdue(1);
+        sumRequest.setOverdue(null);
         sumRequest.setSellerNo(sellerNo);
         sumRequest.setPurchaserNo(purchaserNo);
         sumRequest.setTaxRate(taxRate);
-        final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(sumRequest, typeEnum);
+        switch (typeEnum){
+            case CLAIM_BILL:
+                sumRequest.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+                break;
+            case EPD_BILL:
+                sumRequest.setStatus(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
+                break;
+            case AGREEMENT_BILL:
+                sumRequest.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+                break;
+        }
 
-        wrapper.select("sum(amount_without_tax) amount_without_tax");
-        final TXfBillDeductEntity deductEntity = this.getBaseMapper().selectOne(wrapper);
-        return Optional.ofNullable(deductEntity).map(TXfBillDeductEntity::getAmountWithoutTax).orElse(BigDecimal.ZERO);
+        sumRequest.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
+
+        final QueryWrapper<TXfBillDeductEntity> wrapper = doWrapper(sumRequest, typeEnum,x->{
+            overDueWrapper(sellerNo,typeEnum,1,x);
+            x.or(s->s.lt(TXfBillDeductEntity.AMOUNT_WITHOUT_TAX,BigDecimal.ZERO));
+        });
+
+        wrapper.groupBy(TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.TAX_RATE);
+
+        wrapper.select("sum(amount_without_tax) as amount_without_tax,sum(amount_with_tax) as amount_with_tax,sum(tax_amount) as tax_amount ,sum(amount_with_tax) as amount_with_tax,seller_no,purchaser_no, tax_rate");
+
+        return this.getBaseMapper().selectOne(wrapper);
     }
 
     /**
@@ -274,6 +300,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
         deductEntity.setSellerNo(request.getSellerNo());
 
+        deductEntity.setLockFlag(request.getLockFlag());
+
         QueryWrapper<TXfBillDeductEntity> wrapper = Wrappers.query(deductEntity);
         //扣款日期>>Begin
         final String deductDateBegin = request.getDeductDateBegin();
@@ -307,23 +335,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
             //超期判断
             if (request.getOverdue() != null) {
-
-                final int overdue = getOverdue(typeEnum, request.getSellerNo());
-
-                final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
-                final Date date = dateTime.setField(DateField.HOUR, 0)
-                        .setField(DateField.MINUTE, 0)
-                        .setField(DateField.SECOND, 0)
-                        .setField(DateField.MILLISECOND, 0)
-                        .toJdkDate();
-                switch (request.getOverdue()) {
-                    case 1:
-                        wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, date);
-                        break;
-                    case 0:
-                        wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE, date);
-                        break;
-                }
+                overDueWrapper(request.getSellerNo(),typeEnum,request.getOverdue(),wrapper);
             }
         } else {
             // 索赔单只展示 生成结算单之后的数据
@@ -337,6 +349,25 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             wrapper.and(and);
         }
         return wrapper;
+    }
+
+    private void overDueWrapper(String sellerNo, XFDeductionBusinessTypeEnum typeEnum, Integer overDue, QueryWrapper<TXfBillDeductEntity> wrapper){
+        final int overdue = getOverdue(typeEnum, sellerNo);
+
+        final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
+        final Date date = dateTime.setField(DateField.HOUR, 0)
+                .setField(DateField.MINUTE, 0)
+                .setField(DateField.SECOND, 0)
+                .setField(DateField.MILLISECOND, 0)
+                .toJdkDate();
+        switch (overDue) {
+            case 1:
+                wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                break;
+            case 0:
+                wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                break;
+        }
     }
 
 
@@ -388,8 +419,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         final BigDecimal amount = checkAndGetTotalAmount(request, type);
 
         final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainInvoiceByIds(amount, request.getInvoiceIds());
-
-        return agreementBillService.mergeSettlementByManual(request.getBillIds(), type,matchRes);
+        final TXfBillDeductEntity deductEntity = getSumDueAndNegativeBill(request.getPurchaserNo(), request.getSellerNo(), type, request.getTaxRate());
+        return agreementBillService.mergeSettlementByManual(request.getBillIds(), deductEntity,type,matchRes);
     }
 
     public List<MatchedInvoiceListResponse> getMatchedInvoice(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
