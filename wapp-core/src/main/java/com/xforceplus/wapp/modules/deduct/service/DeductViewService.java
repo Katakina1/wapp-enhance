@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -23,6 +24,7 @@ import com.xforceplus.wapp.modules.deduct.mapstruct.MatchedInvoiceMapper;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
+import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
@@ -74,6 +76,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     @Autowired
     private DeductService deductService;
+
+    @Autowired
+    private SettlementService settlementService;
 
     private List<BigDecimal> taxRates;
 
@@ -393,9 +398,12 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(responses)) {
             final List<String> settlementNos = responses.stream().map(DeductListResponse::getRefSettlementNo).distinct().collect(Collectors.toList());
             final Map<String, Integer> invoiceCount = getInvoiceCountBySettlement(settlementNos);
+            final Map<String, Integer> settlementStatus = this.settlementService.getSettlementStatus(settlementNos);
             responses.forEach(x -> {
                 final Integer count = Optional.ofNullable(invoiceCount.get(x.getRefSettlementNo())).orElse(0);
                 x.setInvoiceCount(count);
+                final Integer status = Optional.ofNullable(settlementStatus.get(x.getRefSettlementNo())).orElse(null);
+                x.setSettlementStatus(status);
             });
         }
         return result;
