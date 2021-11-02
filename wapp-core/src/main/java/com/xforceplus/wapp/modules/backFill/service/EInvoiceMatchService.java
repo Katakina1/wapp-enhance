@@ -267,9 +267,10 @@ public class EInvoiceMatchService {
             throw new EnhanceRuntimeException("未找到对应的结算单");
         }
         String invoiceType = InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode());
-        if (!invoiceType.equals(tXfSettlementEntity.getInvoiceType())) {
-            throw new EnhanceRuntimeException("发票类型与结算单不一致");
-        }
+
+//        if (!invoiceType.equals(tXfSettlementEntity.getInvoiceType())) {
+//            throw new EnhanceRuntimeException("发票类型与结算单不一致");
+//        }
         invoiceMain.setInvoiceType(invoiceType);
      /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
             throw new EnhanceRuntimeException("购方名称不一致");
