@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xforceplus.wapp.common.dto.R;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
 import com.xforceplus.wapp.modules.preinvoice.dto.SplitAgainRequest;
@@ -54,7 +55,13 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
             case 2:
             case 3:
                 //限额 和 不做任何修改
-                commSettlementService.againSplitSettlementPreInvoice(Long.parseLong(request.getSettlementId()));
+                try {
+                    commSettlementService.againSplitSettlementPreInvoice(Long.parseLong(request.getSettlementId()));
+                } catch (EnhanceRuntimeException e) {
+                    log.error("重新拆票错误,失败原因:{}",e.getMessage());
+                    return R.fail(e.getMessage());
+                }
+                return R.ok(null,"重新拆票成功");
             case 4:
                 //撤销结算单
                 return rollBackSettlement(request);

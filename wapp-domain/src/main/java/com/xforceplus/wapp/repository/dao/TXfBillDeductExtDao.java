@@ -161,8 +161,14 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='purchaserNo!=null'>"+
             "and d.purchaser_no= #{purchaserNo}\n"+
             "</if>"+
-            "<if test='key == 0'>"+
-            "and s.settlement_status = 8\n"+
+            "<if test='key == 0 and businessType ==1'>"+
+            "and d.status = 104\n"+
+            "</if>"+
+            "<if test='key == 0 and businessType ==2'>"+
+            "and d.status = 205\n"+
+            "</if>"+
+            "<if test='key == 0 and businessType ==3'>"+
+            "and d.status = 303\n"+
             "</if>"+
             "<if test='key == 1'>"+
             "and s.settlement_status = 2\n"+
@@ -219,8 +225,14 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='purchaserNo!=null'>"+
             "and d.purchaser_no= #{purchaserNo}\n"+
             "</if>"+
-            "<if test='key == 0'>"+
-            "and s.settlement_status = 8\n"+
+            "<if test='key == 0 and businessType ==1'>"+
+            "and d.status = 104\n"+
+            "</if>"+
+            "<if test='key == 0 and businessType ==2'>"+
+            "and d.status = 205\n"+
+            "</if>"+
+            "<if test='key == 0 and businessType ==3'>"+
+            "and d.status = 303\n"+
             "</if>"+
             "<if test='key == 1'>"+
             "and s.settlement_status = 2\n"+

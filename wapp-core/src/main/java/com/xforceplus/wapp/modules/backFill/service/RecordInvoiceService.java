@@ -182,11 +182,16 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         if(count1 < 1){
             throw  new EnhanceRuntimeException("删除失败,未找到扫描发票");
         }
-        //修改预制发票状态为待上传
+        //修改预制发票状态为待上传并制空字段
         UpdateWrapper<TXfPreInvoiceEntity> preWrapper = new UpdateWrapper<>();
         preWrapper.eq(TXfPreInvoiceEntity.INVOICE_CODE,entity.getInvoiceCode());
         preWrapper.eq(TXfPreInvoiceEntity.INVOICE_NO,entity.getInvoiceNo());
         TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+        tXfPreInvoiceEntity.setInvoiceCode("");
+        tXfPreInvoiceEntity.setInvoiceNo("");
+        tXfPreInvoiceEntity.setMachineCode("");
+        tXfPreInvoiceEntity.setPaperDrawDate("");
+        tXfPreInvoiceEntity.setCheckCode("");
         tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         int count2 = tXfPreInvoiceDao.update(tXfPreInvoiceEntity,preWrapper);
         if(count2 < 1){

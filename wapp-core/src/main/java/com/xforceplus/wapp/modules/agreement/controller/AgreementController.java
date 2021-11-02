@@ -9,11 +9,13 @@ import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.claim.dto.NegativeAndOverDueSummary;
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
+import com.xforceplus.wapp.modules.deduct.dto.SettlementCancelRequest;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
 import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import com.xforceplus.wapp.service.CommAgreementService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,9 @@ public class AgreementController {
 
     @Autowired
     private DeductViewService deductService;
+
+    @Autowired
+    private CommAgreementService commAgreementService;
 
     // 使用全局配置 PropertyEditorRegistrar
 //    @InitBinder
@@ -86,6 +91,12 @@ public class AgreementController {
         request.setSellerNo(usercode);
         final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(matchedInvoice);
+    }
+
+    @PostMapping("cancel-settlement")
+    public R cancelSettlement(@RequestBody SettlementCancelRequest request){
+        commAgreementService.destroyAgreementSettlement(request.getSettlementId());
+        return R.ok("结算单取消成功");
     }
 
 

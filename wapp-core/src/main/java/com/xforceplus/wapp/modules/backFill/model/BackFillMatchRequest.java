@@ -20,9 +20,9 @@ public class BackFillMatchRequest {
     @ApiModelProperty("结算单号")
     private String settlementNo = null;
 
-    @JsonProperty("invoiceColer")
+    @JsonProperty("invoiceColor")
     @ApiModelProperty("发票颜色  0红票 1蓝票")
-    private String invoiceColer = null;
+    private String invoiceColor = null;
 
     @JsonProperty("venderId")
     @ApiModelProperty("供应商号")

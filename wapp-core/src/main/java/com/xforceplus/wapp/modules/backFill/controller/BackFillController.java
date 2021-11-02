@@ -56,9 +56,9 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "电票发票上传" )
     @PostMapping("/upload")
-    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo, @RequestParam("invoiceColer")String invoiceColer) {
+    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo, @RequestParam("invoiceColor")String invoiceColor) {
         BackFillCommitVerifyRequest request = new BackFillCommitVerifyRequest();
-        request.setInvoiceColer(invoiceColer);
+        request.setInvoiceColor(invoiceColor);
         request.setSettlementNo(settlementNo);
         R r = backFillService.checkCommitRequest(request,files.length);
         if (R.FAIL.equals(r.getCode())) {
@@ -135,7 +135,7 @@ public class BackFillController  extends AbstractController {
     @ApiOperation(value = "excel批量上传")
     @PostMapping("/upload/excel")
     public R upload(@RequestParam MultipartFile file, @RequestParam String gfName, @RequestParam String jvcode, @RequestParam("vendorId") String vendorid,
-                    @RequestParam String settlementNo,@RequestParam String invoiceColer) {
+                    @RequestParam String settlementNo,@RequestParam String invoiceColor) {
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
         } else if (file.isEmpty()) {
@@ -158,7 +158,7 @@ public class BackFillController  extends AbstractController {
 //                request.setOpUserId(getUserId());
 //                request.setOpUserName(getUserName());
                 request.setSettlementNo(settlementNo);
-                request.setInvoiceColer(invoiceColer);
+                request.setInvoiceColor(invoiceColor);
                 request.setGfName(gfName);
                 request.setJvCode(jvcode);
                 request.setVendorId(vendorid);
