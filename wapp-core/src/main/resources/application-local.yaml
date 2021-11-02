@@ -46,7 +46,7 @@ wapp:
 
 activemq:
   queue-name:
-    export-request: local-cn.wm.host.enhance.export-request.queue # 导出申请
+    export-request: local-cn.wm.host.enhance.export-request.queue-ml # 导出申请
     enhance-claim-verdict-queue: local-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
     export-success-queue-gfone: local-cn.wm.host.export.success.queue.gfone
 taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00

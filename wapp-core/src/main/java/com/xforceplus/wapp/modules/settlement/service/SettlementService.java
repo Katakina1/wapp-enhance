@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.settlement.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -11,6 +12,7 @@ import com.xforceplus.wapp.modules.deduct.mapstruct.InvoiceRecommendMapper;
 import com.xforceplus.wapp.modules.recordinvoice.mapstruct.InvoiceDtoMapper;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
@@ -21,9 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -52,9 +52,24 @@ public class SettlementService {
     @Autowired
     private InvoiceRecommendMapper invoiceRecommendMapper;
 
+    @Autowired
+    private TXfSettlementDao tXfSettlementDao;
+
 
     public List<TXfSettlementEntity> querySettlementByStatus(Long id, Integer status, Integer limit ) {
         return settlementDao.querySettlementByStatus(status, id, limit);
+    }
+
+    public Map<String,Integer> getSettlementStatus(List<String> settlementNos){
+        final LambdaQueryWrapper<TXfSettlementEntity> wrapper = Wrappers.lambdaQuery(TXfSettlementEntity.class).in(TXfSettlementEntity::getSettlementNo, settlementNos).select(TXfSettlementEntity::getSettlementStatus, TXfSettlementEntity::getSettlementNo);
+        final List<TXfSettlementEntity> entities = this.tXfSettlementDao.selectList(wrapper);
+        Map<String,Integer> result = new HashMap<>();
+        Optional.ofNullable(entities).ifPresent(x->{
+            for (TXfSettlementEntity tXfSettlementEntity : x) {
+                result.put(tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getSettlementStatus());
+            }
+        });
+        return result;
     }
 
 

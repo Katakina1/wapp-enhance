@@ -18,12 +18,13 @@ public class ReportExportDto {
     private String description;
     private String sellerNo;
     private String sellerName;
+    private String purchaserName;
     private String purchaserNo;
-    private String amountWithoutTax;
+    private String amountWithTax;
     private String agreementTypeCode;
     private String billNo;
     private String taxCode;
-    private String verdictDate;
+    private String deductDate;
     private String taxRate;
 
     public void setTaxRate(String taxRate) {

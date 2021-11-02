@@ -145,4 +145,6 @@ public class DeductListResponse {
      */
     private Integer lock;
 
+    private Integer settlementStatus;
+
 }

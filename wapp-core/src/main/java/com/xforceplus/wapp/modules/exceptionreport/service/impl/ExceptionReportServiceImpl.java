@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.exceptionreport.service.impl;
 import cn.hutool.poi.excel.BigExcelWriter;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,7 +16,6 @@ import com.xforceplus.wapp.export.ExportHandlerEnum;
 import com.xforceplus.wapp.export.IExportHandler;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
-import com.xforceplus.wapp.modules.claim.service.ClaimService;
 import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
@@ -203,13 +204,31 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         //这里的userAccount是userName
         messagecontrolEntity.setUserAccount(exportDto.getLoginName());
         messagecontrolEntity.setContent(getSuccContent());
+        String filePrefix=this.filePrefix;
+
+        switch (typeEnum){
+            case CLAIM:
+                filePrefix="索赔单"+filePrefix;
+                break;
+            case AGREEMENT:
+                filePrefix="协议单"+filePrefix;
+                break;
+            case EPD:
+                filePrefix="EPD"+filePrefix;
+                break;
+            default:
+        }
 
         List<TXfExceptionReportEntity> list = getExportData(request, typeEnum, 0);
         try (BigExcelWriter bigExcelWriter = new BigExcelWriter()) {
             Map<String, String> head = typeEnum == ExceptionReportTypeEnum.CLAIM ? headClaim : headEPD;
+            Function<List<TXfExceptionReportEntity>,List> toExport = typeEnum == ExceptionReportTypeEnum.CLAIM ?
+                    this.exceptionReportMapper::toClaimExport :
+                    this.exceptionReportMapper::toExport;
             bigExcelWriter.setHeaderAlias(head);
+            bigExcelWriter.autoSizeColumnAll();
             while (CollectionUtils.isNotEmpty(list)) {
-                final List<ReportExportDto> reportExportDtos = this.exceptionReportMapper.toExport(list);
+                final List reportExportDtos = toExport.apply(list);
                 bigExcelWriter.write(reportExportDtos);
                 long lastId = list.get(list.size() - 1).getId();
                 list = getExportData(request, typeEnum, lastId);
@@ -229,14 +248,14 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
                 ftpUtilService.uploadFile(ftpPath, excelFileName, is);
                 messagecontrolEntity.setUrl(getUrl(excelExportlogEntity.getId()));
                 excelExportlogEntity.setFilepath(ftpFilePath);
-                messagecontrolEntity.setTitle(this.filePrefix + "导出成功");
+                messagecontrolEntity.setTitle(filePrefix + "导出成功");
 
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("例外报告导出失败:" + e.getMessage(), e);
                 excelExportlogEntity.setExportStatus(ExcelExportLogService.FAIL);
                 excelExportlogEntity.setErrmsg(e.getMessage());
-                messagecontrolEntity.setTitle(this.filePrefix + "导出失败");
+                messagecontrolEntity.setTitle(filePrefix + "导出失败");
                 messagecontrolEntity.setContent(getFailContent(e.getMessage()));
 
             } finally {
@@ -250,23 +269,25 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         TXfExceptionReportEntity entity = exceptionReportMapper.toEntity(request);
         entity.setType(typeEnum.getType());
         final String startDeductDate = request.getStartDeductDate();
-        final LambdaQueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.lambdaQuery(entity);
+        final QueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.query(entity);
 
-        wrapper.gt(TXfExceptionReportEntity::getId, lastId);
+        wrapper.gt(TXfExceptionReportEntity.ID, lastId);
         if (StringUtils.isNotBlank(startDeductDate)) {
-            wrapper.gt(TXfExceptionReportEntity::getCreateTime, startDeductDate);
+            wrapper.gt(TXfExceptionReportEntity.DEDUCT_DATE, startDeductDate);
         }
 
         if (StringUtils.isNotBlank(request.getEndDeductDate())) {
 
             try {
                 final String format = DateUtils.addDayToYYYYMMDD(request.getEndDeductDate(), 1);
-                wrapper.lt(TXfExceptionReportEntity::getCreateTime, format);
+                wrapper.lt(TXfExceptionReportEntity.DEDUCT_DATE, format);
             } catch (Exception e) {
                 log.error("时间转换失败" + e.getMessage(), e);
             }
         }
-        wrapper.orderByAsc(TXfExceptionReportEntity::getId);
+
+        wrapper.select("top 100 1,*");
+        wrapper.orderByAsc(TXfExceptionReportEntity.ID);
 
         return this.list(wrapper);
 
@@ -317,7 +338,7 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
 
 
     private Map<String, String> excelHeadEPD() {
-        Map<String, String> head = new HashMap<>();
+        Map<String, String> head = new LinkedHashMap<>();
         head.put("code", "例外CODE");
         head.put("description", "例外说明");
         head.put("sellerNo", "供应商编号");
@@ -334,14 +355,14 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     }
 
     private Map<String, String> excelHeadClaim() {
-        Map<String, String> head = new HashMap<>();
+        Map<String, String> head = new LinkedHashMap<>();
         head.put("code", "例外CODE");
         head.put("description", "例外说明");
         head.put("deductDate", "扣款日期");
         head.put("purchaserName", "扣款公司");
         head.put("sellerNo", "供应商编号");
         head.put("sellerName", "供应商名称");
-        head.put("agreementTypeCode", "协议类型编码");
+        head.put("documentType", "类型");
         head.put("billNo", "索赔号/换货号");
         head.put("verdictDate", "定案日期");
         head.put("amountWithoutTax", "成本金额(不含税)");
