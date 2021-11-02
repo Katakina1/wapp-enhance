@@ -129,14 +129,33 @@ public class BackFillService {
         defaultHeader.put("accept-encoding", "");
     }
 
-    public R commitVerifyCheck(Long id) {
-        TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(id);
-        if (entity != null) {
-            if (DateUtils.isCurrentMonth(entity.getInvoiceDate()) && !InvoiceTypeEnum.isElectronic(entity.getInvoiceType())) {
-                return R.fail("当前红票可以作废，请直接删除后，再重新上传");
+    public R commitVerifyCheck(Long id,String settlementNo,Integer count) {
+        if(id != null){
+            TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(id);
+            if (entity != null) {
+                if (DateUtils.isCurrentMonth(entity.getInvoiceDate()) && !InvoiceTypeEnum.isElectronic(entity.getInvoiceType())) {
+                    return R.fail("当前红票可以作废，请直接删除后，再重新上传");
+                }
+            } else {
+                return R.fail("未查到发票");
             }
-        } else {
-            return R.fail("未查到发票");
+        }
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(settlementNo) && count != null){
+            QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
+            preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, settlementNo);
+            List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
+            if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
+                return R.fail("根据结算单号未找到预制发票");
+            }
+            if (tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))) {
+                return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
+                        "完成后，您可以继续添加发票！\r\n" +
+                        "请及时关注票据状态！或联系购货方联系");
+            }
+            long countPre = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus())).count();
+            if (count > countPre) {
+                return R.fail("您最多只需要上传" + countPre + "张发票，请确认后再试");
+            }
         }
         return R.ok("校验通过");
     }
@@ -483,7 +502,7 @@ public class BackFillService {
                     throw new EnhanceRuntimeException("预制发票的红字信息编号不能为空");
                 }
                 for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
-                    if (backFillVerifyBean.getRedNoticeNumber().equals(preInvoiceEntity.getRedNotificationNo())) {
+                    if (preInvoiceEntity.getRedNotificationNo().equals(backFillVerifyBean.getRedNoticeNumber())) {
                         log.info("发票回填后匹配--回填预制发票数据");
                         preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
                         preInvoiceEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
@@ -584,7 +603,7 @@ public class BackFillService {
         }
         if ("0".equals(request.getInvoiceColor())) {
             //红票上传校验
-            QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
+            /*QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
             preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
             List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
             if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
@@ -604,7 +623,7 @@ public class BackFillService {
                 return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
                         "完成后，您可以继续添加发票！\r\n" +
                         "请及时关注票据状态！或联系购货方联系");
-            }
+            }*/
         } else {
             if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
                 if (StringUtils.isEmpty(request.getOriginInvoiceCode())) {

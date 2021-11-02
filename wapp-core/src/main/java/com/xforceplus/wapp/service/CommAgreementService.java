@@ -133,7 +133,6 @@ public class CommAgreementService {
                 tDxRecordInvoiceDao.updateById(updateTDxInvoiceEntity);
             }
             //删除蓝票关系
-            //释放索赔单蓝票额度（作废的索赔单）
             TXfBillDeductInvoiceEntity updateTXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
             updateTXfBillDeductInvoiceEntity.setId(tXfBillDeductInvoiceEntity.getId());
             updateTXfBillDeductInvoiceEntity.setStatus(1);
