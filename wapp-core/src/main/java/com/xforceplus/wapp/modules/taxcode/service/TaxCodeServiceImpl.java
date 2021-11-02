@@ -1,16 +1,13 @@
 package com.xforceplus.wapp.modules.taxcode.service;
 
 
-import cn.hutool.json.JSON;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.client.JanusClient;
 import com.xforceplus.wapp.client.TaxCodeBean;
-import com.xforceplus.wapp.client.TaxCodeRsp;
 import com.xforceplus.wapp.client.WappDb2Client;
 import com.xforceplus.wapp.common.utils.JsonUtil;
-import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.taxcode.converters.TaxCodeConverter;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.repository.dao.TaxCodeDao;
@@ -25,7 +22,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
