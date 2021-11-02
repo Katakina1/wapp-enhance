@@ -603,13 +603,13 @@ public class BackFillService {
                         "请及时关注票据状态！或联系购货方联系");
             }
         } else {
-            if (StringUtils.isEmpty(request.getOriginInvoiceCode())) {
-                return R.fail("被蓝冲发票代码不能为空");
-            }
-            if (StringUtils.isEmpty(request.getOriginInvoiceNo())) {
-                return R.fail("被蓝冲发票号码不能为空");
-            }
             if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                if (StringUtils.isEmpty(request.getOriginInvoiceCode())) {
+                    return R.fail("被蓝冲发票代码不能为空");
+                }
+                if (StringUtils.isEmpty(request.getOriginInvoiceNo())) {
+                    return R.fail("被蓝冲发票号码不能为空");
+                }
                 QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
                 invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID, request.getOriginInvoiceCode() + request.getOriginInvoiceNo());
                 TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);

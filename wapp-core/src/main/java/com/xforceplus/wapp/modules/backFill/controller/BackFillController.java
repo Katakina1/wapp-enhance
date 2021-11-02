@@ -56,12 +56,9 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "电票发票上传" )
     @PostMapping("/upload")
-    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo,
-                    @RequestParam("originInvoiceNo") String originInvoiceNo,@RequestParam("originInvoiceCode") String originInvoiceCode,@RequestParam("invoiceColer")String invoiceColer) {
+    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo, @RequestParam("invoiceColer")String invoiceColer) {
         BackFillCommitVerifyRequest request = new BackFillCommitVerifyRequest();
         request.setInvoiceColer(invoiceColer);
-        request.setOriginInvoiceNo(originInvoiceNo);
-        request.setOriginInvoiceCode(originInvoiceCode);
         request.setSettlementNo(settlementNo);
         R r = backFillService.checkCommitRequest(request,files.length);
         if (R.FAIL.equals(r.getCode())) {
