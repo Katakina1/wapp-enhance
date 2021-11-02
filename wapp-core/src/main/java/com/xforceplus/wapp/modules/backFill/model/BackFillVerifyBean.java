@@ -34,6 +34,10 @@ public class BackFillVerifyBean {
     @ApiModelProperty("不含税金额")
     private String amount = null;
 
+    @JsonProperty("machinecode")
+    @ApiModelProperty("机器码")
+    private String machinecode = null;
+
     @JsonProperty("redNoticeNumber")
     @ApiModelProperty("红字信息编码")
     private String redNoticeNumber = null;

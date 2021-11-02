@@ -28,7 +28,7 @@ public class CodeGenerator {
 
 
     public static void main(String[] args) {
-        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity","t_xf_origin_agreement_merge"
+        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity","t_xf_elec_upload_record_detail"
                 );
 //         generateMainCode();
         // generateItemCode();

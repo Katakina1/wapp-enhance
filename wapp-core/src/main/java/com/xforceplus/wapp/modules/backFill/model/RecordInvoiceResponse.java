@@ -241,7 +241,7 @@ public class RecordInvoiceResponse {
     private Long id;
 
     @ApiModelProperty("红字信息编号")
-    private String redNoticeNumber;
+    private String redNotificationNo;
 
     @ApiModelProperty("税率")
     private String taxRate;

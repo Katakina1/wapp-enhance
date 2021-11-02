@@ -1,10 +1,8 @@
 package com.xforceplus.wapp.modules.backFill.controller;
 
-import com.alibaba.fastjson.JSONArray;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.modules.backFill.model.DeleteRecordInvoiceRequest;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
@@ -12,7 +10,6 @@ import com.xforceplus.wapp.modules.system.controller.AbstractController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.vavr.collection.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

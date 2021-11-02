@@ -67,11 +67,14 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         Page<TDxRecordInvoiceEntity> pageResult = tDxRecordInvoiceDao.selectPage(page,wrapper);
         List<RecordInvoiceResponse> response = new ArrayList<>();
         RecordInvoiceResponse recordInvoiceResponse = null;
-        for (RecordInvoiceResponse recordInvoice : response) {
+        for (TDxRecordInvoiceEntity recordInvoice : pageResult.getRecords()) {
             recordInvoiceResponse = new RecordInvoiceResponse();
             BeanUtil.copyProperties(recordInvoice,recordInvoiceResponse);
-            BigDecimal taxRate = new BigDecimal(recordInvoice.getTaxRate()).divide(BigDecimal.valueOf(100L), 3, RoundingMode.HALF_UP);
-            recordInvoiceResponse.setTaxRate(taxRate.toPlainString());
+            if(recordInvoice.getTaxRate() != null){
+                BigDecimal taxRate = recordInvoice.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
+                recordInvoiceResponse.setTaxRate(taxRate.toPlainString());
+                recordInvoiceResponse.setRedNotificationNo(recordInvoice.getRedNoticeNumber());
+            }
             response.add(recordInvoiceResponse);
         }
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
@@ -163,6 +166,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         if(!DateUtils.isCurrentMonth(entity.getInvoiceDate())){
             return R.fail("当前发票类型或状态无法作废，重新开票前，请开同税率蓝票进行冲抵");
         }
+        String settlementNo = entity.getSettlementNo();
         entity.setIsDel(IsDealEnum.YES.getValue());
         entity.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
         entity.setSettlementNo("");
@@ -201,7 +205,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
         }
         UpdateWrapper<TXfSettlementEntity> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,entity.getSettlementNo());
+        updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,settlementNo);
         int count3 = tXfSettlementDao.update(tXfSettlementEntity, updateWrapper);
         if(count3 < 1){
             throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");
@@ -285,6 +289,11 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoice.setPaperDrewDate(entity.getInvoiceDate());
         invoice.setAmountWithoutTax(entity.getInvoiceAmount());
         invoice.setAmountWithTax(entity.getTotalAmount());
+        invoice.setRedNotificationNo(entity.getRedNoticeNumber());
+        if(entity.getTaxRate() != null){
+            BigDecimal taxRate = entity.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
+            invoice.setTaxRate(taxRate.toPlainString());
+        }
     }
 
     public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){

@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.repository.entity;
 
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
@@ -15,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-11-01
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -121,6 +122,24 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     @TableField("settlementNo")
     private String settlementNo;
 
+    /**
+     * 开票日期
+     */
+    @TableField("paper_drew_date")
+    private String paperDrewDate;
+
+    /**
+     * 不含税金额
+     */
+    @TableField("amount")
+    private BigDecimal amount;
+
+    /**
+     * 校验码后六位
+     */
+    @TableField("check_code")
+    private String checkCode;
+
 
     public static final String ID = "id";
 
@@ -153,5 +172,11 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     public static final String UPLOAD_PATH = "upload_path";
 
     public static final String SETTLEMENTNO = "settlementNo";
+
+    public static final String PAPER_DREW_DATE = "paper_drew_date";
+
+    public static final String AMOUNT = "amount";
+
+    public static final String CHECK_CODE = "check_code";
 
 }

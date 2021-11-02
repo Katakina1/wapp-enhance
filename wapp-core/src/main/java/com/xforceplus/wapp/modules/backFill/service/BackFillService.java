@@ -49,7 +49,7 @@ import java.util.*;
  **/
 @Service
 @Slf4j
-public class BackFillService  {
+public class BackFillService {
 
     @Value("${wapp.integration.customer-no}")
     private String customerNo;
@@ -117,21 +117,34 @@ public class BackFillService  {
 
     @Autowired
     private TXfElecUploadRecordDao tXfElecUploadRecordDao;
+    private List<InvoiceEntity> invoices;
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
-                              String tenantId) {
-        this.tenantId=tenantId;
-        defaultHeader =  new HashMap<>();
+                                   String tenantId) {
+        this.tenantId = tenantId;
+        defaultHeader = new HashMap<>();
         defaultHeader.put("rpcType", "http");
         defaultHeader.put("x-app-client", "janus");
         defaultHeader.put("tenant-id", tenantId);
-        defaultHeader.put("accept-encoding","");
+        defaultHeader.put("accept-encoding", "");
+    }
+
+    public R commitVerifyCheck(Long id) {
+        TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(id);
+        if (entity != null) {
+            if (DateUtils.isCurrentMonth(entity.getInvoiceDate()) && !InvoiceTypeEnum.isElectronic(entity.getInvoiceType())) {
+                return R.fail("当前红票可以作废，请直接删除后，再重新上传");
+            }
+        } else {
+            return R.fail("未查到发票");
+        }
+        return R.ok("校验通过");
     }
 
 
-    public R commitVerify(BackFillCommitVerifyRequest request){
-        R r = checkCommitRequest(request);
-        if(R.FAIL.equals(r.getCode())){
+    public R commitVerify(BackFillCommitVerifyRequest request) {
+        R r = checkCommitRequest(request,null);
+        if (R.FAIL.equals(r.getCode())) {
             return r;
         }
         String batchNo = UUID.randomUUID().toString().replace("-", "");
@@ -165,8 +178,11 @@ public class BackFillService  {
             detailEntity.setId(idSequence.nextId());
             detailEntity.setCreateUser(String.valueOf(request.getOpUserId()));
             detailEntity.setSettlementNo(request.getSettlementNo());
-            detailEntity.setInvoiceCode(verificationRequest.getInvoiceCode());
-            detailEntity.setInvoiceNo(verificationRequest.getInvoiceNo());
+            detailEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
+            detailEntity.setInvoiceNo(backFillVerifyBean.getInvoiceNo());
+            detailEntity.setPaperDrewDate(backFillVerifyBean.getPaperDrewDate());
+            detailEntity.setAmount(new BigDecimal(backFillVerifyBean.getAmount()));
+            detailEntity.setCheckCode(backFillVerifyBean.getCheckCode());
             detailEntity.setCreateTime(new Date());
             detailEntity.setCreateUser(request.getOpUserId().toString());
             try {
@@ -194,20 +210,31 @@ public class BackFillService  {
         return R.ok(batchNo);
     }
 
-    public VerificationResponse parseOfd(byte[] ofd,String batchNo) {
+    public VerificationResponse parseOfd(byte[] ofd, String batchNo) {
         OfdParseRequest request = new OfdParseRequest();
         request.setOfdEncode(Base64.encodeBase64String(ofd));
         request.setTenantCode(tenantCode);
         // 仅解析和验签
         request.setType("1");
         try {
-            defaultHeader.put("serialNo",batchNo);
+            defaultHeader.put("serialNo", batchNo);
             final String responseBody = httpClientFactory.post(ofdAction, defaultHeader, JSONObject.toJSONString(request), "");
             log.info("发送ofd解析结果:{}", responseBody);
             final OfdResponse ofdResponse = JSONObject.parseObject(responseBody, OfdResponse.class);
             if (ofdResponse.isOk()) {
                 final OfdResponse.OfdResponseResult result = ofdResponse.getResult();
                 final InvoiceMain invoiceMain = result.getInvoiceMain();
+
+                TXfElecUploadRecordDetailEntity detailEntity = new TXfElecUploadRecordDetailEntity();
+                detailEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
+                detailEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
+                detailEntity.setPaperDrewDate(invoiceMain.getPaperDrewDate());
+                detailEntity.setAmount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
+                detailEntity.setCheckCode(invoiceMain.getCheckCode());
+                UpdateWrapper<TXfElecUploadRecordDetailEntity> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.set(TXfElecUploadRecordDetailEntity.BATCH_NO, batchNo);
+                electronicUploadRecordDetailDao.update(detailEntity, updateWrapper);
+
                 VerificationRequest verificationRequest = new VerificationRequest();
                 verificationRequest.setAmount(invoiceMain.getAmountWithoutTax());
                 verificationRequest.setCheckCode(invoiceMain.getCheckCode());
@@ -226,14 +253,14 @@ public class BackFillService  {
         }
     }
 
-    public OfdResponse signOfd(byte[] ofd,String businessNo) {
+    public OfdResponse signOfd(byte[] ofd, String businessNo) {
         OfdParseRequest request = new OfdParseRequest();
         request.setOfdEncode(Base64.encodeBase64String(ofd));
         request.setTenantCode(tenantCode);
         // 仅解析和验签
         request.setType("1");
         try {
-            defaultHeader.put("serialNo",businessNo);
+            defaultHeader.put("serialNo", businessNo);
             final String responseBody = httpClientFactory.post(ofdAction, defaultHeader, JSONObject.toJSONString(request), "");
             log.info("发送ofd解析结果:{}", responseBody);
             return JSONObject.parseObject(responseBody, OfdResponse.class);
@@ -275,9 +302,10 @@ public class BackFillService  {
                 detailEntity.setBatchNo(batchNo);
                 detailEntity.setId(idSequence.nextId());
                 detailEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
+                detailEntity.setCreateTime(new Date());
                 detailEntity.setSettlementNo(specialElecUploadDto.getSettlementNo());
                 try {
-                    final VerificationResponse verificationResponse = this.parseOfd(ofd,batchNo);
+                    final VerificationResponse verificationResponse = this.parseOfd(ofd, batchNo);
                     if (verificationResponse.isOK()) {
                         final String verifyTaskId = verificationResponse.getResult();
                         detailEntity.setXfVerifyTaskId(verifyTaskId);
@@ -309,7 +337,8 @@ public class BackFillService  {
                     detailEntity.setStatus(true);
                     detailEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
                     detailEntity.setFileType(true);
-
+                    detailEntity.setSettlementNo(specialElecUploadDto.getSettlementNo());
+                    detailEntity.setCreateTime(new Date());
                     //文件上传
                     uploadFile(m.getValue(), Constants.FILE_TYPE_PDF, detailEntity);
                     this.electronicUploadRecordDetailDao.insert(detailEntity);
@@ -328,42 +357,43 @@ public class BackFillService  {
         return batchNo;
     }
 
-    
+
     /**
      * 上传至文件服务器
+     *
      * @param file
      * @param fileType
      * @param detailEntity
      */
-    private void uploadFile(byte[] file,Integer fileType,TXfElecUploadRecordDetailEntity detailEntity) {
-    	
-    	 try {
-    		 
-    		StringBuffer fileName = new StringBuffer();
-    		fileName.append(UUID.randomUUID().toString());
-    		fileName.append(".");
-    		if(fileType.equals(Constants.FILE_TYPE_OFD)) {
-    			fileName.append(Constants.SUFFIX_OF_OFD);
-    		}else {
-    			fileName.append(Constants.SUFFIX_OF_PDF);
-    		}
-    		 
-			String uploadResult  = fileService.uploadFile(file,fileName.toString());
-			
-			UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
-			
-			UploadFileResultData data = uploadFileResult.getData();
-			
-			 detailEntity.setFileType(fileType.equals(Constants.FILE_TYPE_OFD));
-	         detailEntity.setUploadId(data.getUploadId());
-	         detailEntity.setUploadPath(data.getUploadPath());
-	         
-		} catch (Exception e) {
-			
-			 log.error("调用文件服务器失败:{}",e);
-	         throw new RRException("调用文件服务器失败:"+e.getMessage());
-		}
-       
+    private void uploadFile(byte[] file, Integer fileType, TXfElecUploadRecordDetailEntity detailEntity) {
+
+        try {
+
+            StringBuffer fileName = new StringBuffer();
+            fileName.append(UUID.randomUUID().toString());
+            fileName.append(".");
+            if (fileType.equals(Constants.FILE_TYPE_OFD)) {
+                fileName.append(Constants.SUFFIX_OF_OFD);
+            } else {
+                fileName.append(Constants.SUFFIX_OF_PDF);
+            }
+
+            String uploadResult = fileService.uploadFile(file, fileName.toString());
+
+            UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
+
+            UploadFileResultData data = uploadFileResult.getData();
+
+            detailEntity.setFileType(fileType.equals(Constants.FILE_TYPE_OFD));
+            detailEntity.setUploadId(data.getUploadId());
+            detailEntity.setUploadPath(data.getUploadPath());
+
+        } catch (Exception e) {
+
+            log.error("调用文件服务器失败:{}", e);
+            throw new RRException("调用文件服务器失败:" + e.getMessage());
+        }
+
     }
 
     public UploadResult getUploadResult(String batchNo) {
@@ -379,10 +409,10 @@ public class BackFillService  {
             return uploadResult;
         }
         QueryWrapper<TXfElecUploadRecordDetailEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TXfElecUploadRecordDetailEntity.BATCH_NO,batchNo);
+        wrapper.eq(TXfElecUploadRecordDetailEntity.BATCH_NO, batchNo);
         final List<TXfElecUploadRecordDetailEntity> detailEntities = this.electronicUploadRecordDetailDao.selectList(wrapper);
         if (CollectionUtils.isEmpty(detailEntities) || detailEntities.size() != recordEntity.getTotalNum()) {
-            log.info("selectByBatchNo total:{},size:{}",recordEntity.getTotalNum(),detailEntities==null?0:detailEntities.size());
+            log.info("selectByBatchNo total:{},size:{}", recordEntity.getTotalNum(), detailEntities == null ? 0 : detailEntities.size());
             uploadResult.setStep(0);
             return uploadResult;
         }
@@ -392,34 +422,36 @@ public class BackFillService  {
         uploadResult.setSucceedNum(recordEntity.getSucceedNum());
 
 
-        List<UploadResult.SucceedInvoice> invoiceEntities=new ArrayList<>();
+        List<UploadResult.SucceedInvoice> invoiceEntities = new ArrayList<>();
 
-        List<UploadResult.FailureInvoice> failureInvoices=new ArrayList<>();
+        List<UploadResult.FailureInvoice> failureInvoices = new ArrayList<>();
 
         for (TXfElecUploadRecordDetailEntity detailEntity : detailEntities) {
-            if (detailEntity.getStatus()){
+            if (detailEntity.getStatus()) {
                 final String invoiceNo = detailEntity.getInvoiceNo();
                 final String invoiceCode = detailEntity.getInvoiceCode();
-
                 final List<InvoiceEntity> invoices = matchDao.invoiceQueryList(Collections.singletonMap("uuid", invoiceCode + invoiceNo));
-                if (!CollectionUtils.isEmpty(invoices)){
+                if (!CollectionUtils.isEmpty(invoices)) {
                     final InvoiceEntity invoiceEntity = invoices.get(0);
                     final UploadResult.SucceedInvoice succeedInvoice = succeedInvoiceMapper.toSucceed(invoiceEntity);
-                    if(detailEntity.getFileType() != null ){
-                        if (detailEntity.getFileType()){
+                    if (detailEntity.getFileType() != null) {
+                        if (detailEntity.getFileType()) {
                             succeedInvoice.setFileType(Constants.SUFFIX_OF_OFD);
-                        }else {
+                        } else {
                             succeedInvoice.setFileType(Constants.SUFFIX_OF_PDF);
                         }
                     }
                     invoiceEntities.add(succeedInvoice);
-                } else{
-                    UploadResult.FailureInvoice failureInvoice = new UploadResult.FailureInvoice();
-                    failureInvoice.setInvoiceNo(detailEntity.getInvoiceNo());
-                    failureInvoice.setInvoiceCode(detailEntity.getInvoiceCode());
-                    failureInvoice.setMsg(detailEntity.getReason());
-                    failureInvoices.add(failureInvoice);
                 }
+            } else {
+                UploadResult.FailureInvoice failureInvoice = new UploadResult.FailureInvoice();
+                failureInvoice.setInvoiceNo(detailEntity.getInvoiceNo());
+                failureInvoice.setInvoiceCode(detailEntity.getInvoiceCode());
+                failureInvoice.setInvoiceDate(detailEntity.getPaperDrewDate());
+                failureInvoice.setInvoiceAmount(detailEntity.getAmount());
+                failureInvoice.setCheckCode(detailEntity.getCheckCode());
+                failureInvoice.setMsg(detailEntity.getReason());
+                failureInvoices.add(failureInvoice);
             }
         }
 
@@ -431,138 +463,164 @@ public class BackFillService  {
     }
 
     @Transactional
-    public R matchPreInvoice(BackFillMatchRequest request){
-        if(StringUtils.isEmpty(request.getSettlementNo())){
+    public R matchPreInvoice(BackFillMatchRequest request) {
+        if (StringUtils.isEmpty(request.getSettlementNo())) {
             throw new EnhanceRuntimeException("结算单号不能为空");
         }
-        if(CollectionUtils.isEmpty(request.getVerifyBeanList())){
+        if (CollectionUtils.isEmpty(request.getVerifyBeanList())) {
             throw new EnhanceRuntimeException("上传发票不能为空");
         }
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
+        wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(wrapper);
-        if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
+        if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
             throw new EnhanceRuntimeException("根据结算单号未找到预制发票");
         }
-        if("0".equals(request.getInvoiceColer())){
+        if ("0".equals(request.getInvoiceColer())) {
             int success = 0;
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
-                if(StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())){
+                if (StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())) {
                     throw new EnhanceRuntimeException("预制发票的红字信息编号不能为空");
                 }
-                if(request.getVerifyBeanList().stream().anyMatch(t -> preInvoiceEntity.getRedNotificationNo().equals(t.getRedNoticeNumber()))){
-                    log.info("发票回填后匹配--修改预制发票状态");
-                    preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
-                    preInvoiceDao.updateById(preInvoiceEntity);
-                    log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}",preInvoiceEntity.getRedNotificationNo());
-                    Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
-                    log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}",JSONObject.toJSONString(update));
-                    success++;
+                for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
+                    if (backFillVerifyBean.getRedNoticeNumber().equals(preInvoiceEntity.getRedNotificationNo())) {
+                        log.info("发票回填后匹配--回填预制发票数据");
+                        preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
+                        preInvoiceEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
+                        preInvoiceEntity.setInvoiceNo(backFillVerifyBean.getInvoiceNo());
+                        preInvoiceEntity.setCheckCode(backFillVerifyBean.getCheckCode());
+                        preInvoiceEntity.setMachineCode(backFillVerifyBean.getMachinecode());
+                        preInvoiceEntity.setPaperDrawDate(backFillVerifyBean.getPaperDrewDate());
+                        preInvoiceDao.updateById(preInvoiceEntity);
+                        log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}", preInvoiceEntity.getRedNotificationNo());
+                        Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
+                        log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}", JSONObject.toJSONString(update));
+                        success++;
+                    }
                 }
+
             }
-            if(success == 0){
+            if (success == 0) {
                 throw new EnhanceRuntimeException("预制发票的红字信息编号匹配失败");
             }
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
                 log.info("红票回填后匹配--修改发票状态并加上结算单号");
                 UpdateWrapper<TDxRecordInvoiceEntity> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.eq(TDxRecordInvoiceEntity.UUID,backFillVerifyBean.getInvoiceCode()+backFillVerifyBean.getInvoiceNo());
+                updateWrapper.eq(TDxRecordInvoiceEntity.UUID, backFillVerifyBean.getInvoiceCode() + backFillVerifyBean.getInvoiceNo());
                 TDxRecordInvoiceEntity tDxRecordInvoiceEntity = new TDxRecordInvoiceEntity();
                 tDxRecordInvoiceEntity.setSettlementNo(request.getSettlementNo());
                 //电子发票改为签收状态
-                if(InvoiceTypeEnum.isElectronic(backFillVerifyBean.getInvoiceType())){
+                if (InvoiceTypeEnum.isElectronic(backFillVerifyBean.getInvoiceType())) {
                     tDxRecordInvoiceEntity.setQsStatus("1");
                 }
-                tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity,updateWrapper);
+                tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity, updateWrapper);
             }
             log.info("红票回填后匹配--修改结算单状态");
             QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,request.getSettlementNo());
+            queryWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO, request.getSettlementNo());
             TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(queryWrapper);
             String businessStatus = "";
-            if(tXfSettlementEntity != null){
-                if(tXfPreInvoiceEntities.stream().allMatch(t -> TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus()))){
+            if (tXfSettlementEntity != null) {
+                if (tXfPreInvoiceEntities.stream().allMatch(t -> TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus()))) {
                     tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode());
                     businessStatus = TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getDesc();
-                }else{
+                } else {
                     tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
                     businessStatus = TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getDesc();
                 }
                 tXfSettlementDao.updateById(tXfSettlementEntity);
-                operateLogService.add(tXfSettlementEntity.getId(),OperateLogEnum.UPLOAD_INVOICE,businessStatus, UserUtil.getUserId(),UserUtil.getUserName());
-            }else{
+                operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.UPLOAD_INVOICE, businessStatus, UserUtil.getUserId(), UserUtil.getUserName());
+            } else {
                 throw new EnhanceRuntimeException("未找到结算单");
             }
-        }else{
-            log.info("发票蓝冲:invoiceNo:{},invoiceCode:{}",request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
+        } else {
+            log.info("发票蓝冲:invoiceNo:{},invoiceCode:{}", request.getOriginInvoiceNo(), request.getOriginInvoiceCode());
 
-            if (org.apache.commons.lang3.StringUtils.isBlank(request.getOriginInvoiceNo())){
+            if (org.apache.commons.lang3.StringUtils.isBlank(request.getOriginInvoiceNo())) {
                 throw new EnhanceRuntimeException("原红字发票号码不能为空");
             }
 
-            if (org.apache.commons.lang3.StringUtils.isBlank(request.getOriginInvoiceCode())){
+            if (org.apache.commons.lang3.StringUtils.isBlank(request.getOriginInvoiceCode())) {
                 throw new EnhanceRuntimeException("原红字发票代码不能为空");
             }
-
+            //校验金额
+            if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
+                invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID, request.getOriginInvoiceCode() + request.getOriginInvoiceNo());
+                TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
+                if (invoiceEntity != null) {
+                    BigDecimal amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    if (amount.compareTo(invoiceEntity.getInvoiceAmount()) != 0) {
+                        throw new EnhanceRuntimeException("您上传的发票合计金额与代开金额不一致，请确认后再保存");
+                    }
+                } else {
+                    throw new EnhanceRuntimeException("未找到蓝冲的发票");
+                }
+            }
             // 保存红蓝关系
             blueInvoiceRelationService.saveBatch(request.getOriginInvoiceNo(), request.getOriginInvoiceCode(), request.getVerifyBeanList());
 
             log.info("蓝票回填后匹配--修改发票状态和预制发票状态和结算单状态");
-            recordInvoiceService.blue4RedInvoice(request.getOriginInvoiceNo(),request.getOriginInvoiceCode());
+            recordInvoiceService.blue4RedInvoice(request.getOriginInvoiceNo(), request.getOriginInvoiceCode());
 
             //作废预制发票
             UpdateWrapper<TXfPreInvoiceEntity> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.set(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
+            updateWrapper.set(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
             TXfPreInvoiceEntity preInvoiceEntity = new TXfPreInvoiceEntity();
             preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
-            preInvoiceDao.update(preInvoiceEntity,updateWrapper);
+            preInvoiceDao.update(preInvoiceEntity, updateWrapper);
 
         }
 
         return R.ok("匹配成功");
     }
 
-    public R checkCommitRequest(BackFillCommitVerifyRequest request){
-        if(StringUtils.isEmpty(request.getSettlementNo())){
+    public R checkCommitRequest(BackFillCommitVerifyRequest request,Integer number) {
+        if (StringUtils.isEmpty(request.getSettlementNo())) {
             return R.fail("结算单号不能为空");
         }
-        if(CollectionUtils.isEmpty(request.getVerifyBeanList())){
-            return R.fail("上传发票不能为空");
-        }
-        if("0".equals(request.getInvoiceColer())){
+        if ("0".equals(request.getInvoiceColer())) {
             //红票上传校验
             QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
-            preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,request.getSettlementNo());
+            preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
             List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
-            if(CollectionUtils.isEmpty(tXfPreInvoiceEntities)){
+            if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
                 return R.fail("根据结算单号未找到预制发票");
             }
             long count = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus())).count();
-            if(request.getVerifyBeanList().size() > count){
-                return R.fail("您最多只需要上传"+count+"张发票，请确认后再试");
+            if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                if (request.getVerifyBeanList().size() > count) {
+                    return R.fail("您最多只需要上传" + count + "张发票，请确认后再试");
+                }
+            }else{
+                if (number > count) {
+                    return R.fail("您最多只需要上传" + count + "张发票，请确认后再试");
+                }
             }
-            if(tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))){
+            if (tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))) {
                 return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
                         "完成后，您可以继续添加发票！\r\n" +
                         "请及时关注票据状态！或联系购货方联系");
             }
-        } else{
-            if(StringUtils.isEmpty(request.getOriginInvoiceCode())){
+        } else {
+            if (StringUtils.isEmpty(request.getOriginInvoiceCode())) {
                 return R.fail("被蓝冲发票代码不能为空");
             }
-            if(StringUtils.isEmpty(request.getOriginInvoiceNo())){
+            if (StringUtils.isEmpty(request.getOriginInvoiceNo())) {
                 return R.fail("被蓝冲发票号码不能为空");
             }
-            QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
-            invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());
-            TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
-            if(invoiceEntity != null){
-                BigDecimal  amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO,BigDecimal :: add);
-                if(amount.compareTo(invoiceEntity.getInvoiceAmount()) != 0){
-                    return R.fail("您上传的发票合计金额与代开金额不一致，请确认后再提交");
+            if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                QueryWrapper<TDxRecordInvoiceEntity> invoiceWrapper = new QueryWrapper<>();
+                invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID, request.getOriginInvoiceCode() + request.getOriginInvoiceNo());
+                TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
+                if (invoiceEntity != null) {
+                    BigDecimal amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    if (amount.compareTo(invoiceEntity.getInvoiceAmount()) != 0) {
+                        return R.fail("您上传的发票合计金额与代开金额不一致，请确认后再提交");
+                    }
+                } else {
+                    return R.fail("未找到蓝冲的发票");
                 }
-            }else{
-                return R.fail("未找到蓝冲的发票");
             }
         }
         return R.ok("校验成功");

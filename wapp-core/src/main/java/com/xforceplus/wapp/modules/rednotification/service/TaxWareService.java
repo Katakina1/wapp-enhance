@@ -10,6 +10,7 @@ import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.enums.InvoiceOrigin;
 import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.rednotification.model.QueryModel;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationExportPdfRequest;
@@ -23,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -106,6 +109,7 @@ public class TaxWareService {
         }
     }
 
+    @Retryable(value = Exception.class,maxAttempts = 1,backoff = @Backoff(delay = 500,multiplier = 1.5))
     public TaxWareResponse applyRedInfo(ApplyRequest applyRequest) {
         try {
             String reqJson = gson.toJson(applyRequest);
@@ -116,12 +120,18 @@ public class TaxWareService {
             requestHeaderMap.put("serialNo",applyRequest.getSerialNo());
             final String post = httpClientFactory.post(applyRedAction,requestHeaderMap,reqJson,"");
             log.info("申请结果:{}", post);
-            return gson.fromJson(post, TaxWareResponse.class);
+            TaxWareResponse taxWareResponse = gson.fromJson(post, TaxWareResponse.class);
+            if (taxWareResponse.getCode()==null && taxWareResponse.getTraceId()==null ){
+                throw new RRException("申请发起失败");
+            }
+            return taxWareResponse;
         } catch (IOException e) {
             log.error("申请发起失败:" + e.getMessage(), e);
             throw new RRException("申请发起失败:" + e.getMessage());
         }
     }
+
+
 
     /**
      * 红字信息撤销
