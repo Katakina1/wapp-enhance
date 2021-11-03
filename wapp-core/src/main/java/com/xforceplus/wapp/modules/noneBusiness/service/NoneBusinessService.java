@@ -342,7 +342,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             excelExportlogEntity.setFilepath(ftpPath + "/" + downLoadFileName);
             this.excelExportLogService.save(excelExportlogEntity);
             dto.setLogId(excelExportlogEntity.getId());
-            exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "下载成功", exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商电票源文件下载成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
             log.error("下载文件打包失败:" + e.getMessage(), e);
             throw new RRException("下载文件打包失败，请重试");
@@ -383,7 +383,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             excelExportlogEntity.setFilepath(ftpPath + "/" + excelFileName);
             this.excelExportLogService.save(excelExportlogEntity);
             exportDto.setLogId(excelExportlogEntity.getId());
-            exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商结果导出成功", exportCommonService.getSuccContent());
+            exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "非商电票结果导出成功", exportCommonService.getSuccContent());
         } catch (Exception e) {
             log.error("导出异常:{}", e);
             return R.fail("导出异常");
