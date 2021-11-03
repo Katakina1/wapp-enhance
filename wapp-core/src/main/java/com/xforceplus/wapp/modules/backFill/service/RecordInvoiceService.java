@@ -198,13 +198,14 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             throw  new EnhanceRuntimeException("删除失败,未找到对应预制发票");
         }
         //修改结算单状态
-        QueryWrapper<TDxRecordInvoiceEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,entity.getSettlementNo());
-        queryWrapper.ne(TDxRecordInvoiceEntity.ID,id);
-        queryWrapper.ne(TDxRecordInvoiceEntity.IS_DEL,TXfInvoiceStatusEnum.CANCEL.getCode());
+        QueryWrapper<TXfPreInvoiceEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,settlementNo);
+        queryWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
+        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_CODE,entity.getInvoiceCode());
+        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_NO,entity.getInvoiceNo());
+        List<TXfPreInvoiceEntity> tXfPreInvoices= tXfPreInvoiceDao.selectList(queryWrapper);
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
-        List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(queryWrapper);
-        if(CollectionUtils.isEmpty(tDxRecordInvoiceEntities)){
+        if(CollectionUtils.isEmpty(tXfPreInvoices)){
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         }else{
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());

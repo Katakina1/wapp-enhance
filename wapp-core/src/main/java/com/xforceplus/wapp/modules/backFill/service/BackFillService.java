@@ -618,7 +618,7 @@ public class BackFillService {
                         return R.fail("您上传的发票合计金额与代开金额不一致，请确认后再提交");
                     }
                 if (InvoiceTypeEnum.isElectronic(invoiceEntity.getInvoiceType())) {
-                    if(request.getVerifyBeanList().stream().allMatch(t -> InvoiceTypeEnum.isElectronic(t.getInvoiceType()))){
+                    if(request.getVerifyBeanList().stream().anyMatch(t -> !InvoiceTypeEnum.isElectronic(t.getInvoiceType()))){
                         throw new EnhanceRuntimeException("原发票为电票，蓝冲的必须也为电票");
                     }
                 }
