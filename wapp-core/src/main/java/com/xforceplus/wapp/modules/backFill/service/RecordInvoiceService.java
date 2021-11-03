@@ -198,7 +198,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             throw  new EnhanceRuntimeException("删除失败,未找到对应预制发票");
         }
         //修改结算单状态
-        if(updateSettlement(settlementNo,entity.getInvoiceCode(),entity.getInvoiceNo())){
+        if(!updateSettlement(settlementNo,entity.getInvoiceCode(),entity.getInvoiceNo())){
             throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");
         }
         return R.ok("删除成功");
