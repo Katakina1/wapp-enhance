@@ -1,11 +1,8 @@
 package com.xforceplus.wapp.modules.noneBusiness.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.xforceplus.wapp.modules.noneBusiness.convert.BusinessTypeConver;
-import io.swagger.annotations.ApiModelProperty;
+import com.xforceplus.wapp.modules.noneBusiness.convert.*;
 import lombok.Data;
-import com.xforceplus.wapp.modules.noneBusiness.convert.OfdStatusConver;
-import com.xforceplus.wapp.modules.noneBusiness.convert.VerifyStatusConver;
 
 
 @Data
@@ -48,7 +45,25 @@ public class TXfNoneBusinessUploadExportDto {
     private String taxAmount;
     @ExcelProperty(value = "价税合计", index = 17)
     private String totalAmount;
-    @ExcelProperty(value = "创建人", index = 18)
+    @ExcelProperty(value = "购方税号", index = 18)
+    private String purTaxNo;
+    @ExcelProperty(value = "购方名称", index = 19)
+    private String purTaxName;
+    @ExcelProperty(value = "销方税号", index = 20)
+    private String sellerTaxNo;
+    @ExcelProperty(value = "销方名称", index = 21)
+    private String sellerTaxName;
+    @ExcelProperty(value = "税率", index = 22)
+    private String taxRate;
+    @ExcelProperty(value = "发票状态", index = 23, converter = InvoiceStatusConver.class)
+    private String invoiceStatus;
+    @ExcelProperty(value = "认证状态", index = 24, converter = AuthStatusConver.class)
+    private String authStatus;
+    @ExcelProperty(value = "认证日期", index = 25)
+    private String authDate;
+    @ExcelProperty(value = "sap编号", index = 26)
+    private String sap;
+    @ExcelProperty(value = "创建人", index = 17)
     private String createUser;
 
 
