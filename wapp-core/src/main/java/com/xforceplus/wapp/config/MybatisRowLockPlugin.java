@@ -25,7 +25,7 @@ public class MybatisRowLockPlugin implements Interceptor {
         BoundSql boundSql = statementHandler.getBoundSql();
         String sql = boundSql.getSql().trim();
 
-        if (sql.startsWith("INSERT")){
+        if (sql.startsWith("INSERT") && skipRowlock( sql)){
             //在第一个（ 前面插入
             int index = sql.indexOf("(");
             String mSql = sql.substring(0,index)+" with (rowlock) " + sql.substring(index);
@@ -33,7 +33,7 @@ public class MybatisRowLockPlugin implements Interceptor {
             Field field = boundSql.getClass().getDeclaredField("sql");
             field.setAccessible(true);
             field.set(boundSql, mSql);
-        }else if (sql.startsWith("UPDATE")){
+        }else if (sql.startsWith("UPDATE") && skipRowlock(sql)){
             // 在set 前面添加
             int index = sql.indexOf("SET");
             String mSql = sql.substring(0,index)+" with (rowlock) " + sql.substring(index);
@@ -50,6 +50,16 @@ public class MybatisRowLockPlugin implements Interceptor {
 //        }
         return proceed;
     }
+
+    /**
+     *   跳过rowlock
+     * @param sql
+     * @return
+     */
+    boolean skipRowlock(String sql){
+        return !(sql.contains("rowlock") || sql.contains("ROWLOCK"));
+    }
+
 
     //获取到拦截的对象，底层也是通过代理实现的，实际上是拿到一个目标代理对象
     @Override
