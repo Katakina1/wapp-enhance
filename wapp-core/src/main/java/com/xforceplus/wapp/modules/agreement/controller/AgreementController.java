@@ -65,8 +65,12 @@ public class AgreementController {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
-        final BigDecimal sum = deductService.sumDueAndNegative(request, XFDeductionBusinessTypeEnum.EPD_BILL);
-        page.setExt(NegativeAndOverDueSummary.builder().negativeOverDueAmount(sum.toPlainString()).build());
+
+        if (Objects.nonNull(request.getTaxRate())&& BigDecimal.ZERO.compareTo( request.getTaxRate())<=0) {
+            final BigDecimal sum = deductService.sumDueAndNegative(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+            page.setExt(NegativeAndOverDueSummary.builder().negativeOverDueAmount(sum.toPlainString()).build());
+        }
+
         return R.ok(page);
     }
 
