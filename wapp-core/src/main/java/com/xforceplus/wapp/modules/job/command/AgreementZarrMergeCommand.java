@@ -209,7 +209,6 @@ public class AgreementZarrMergeCommand implements Command {
     }
 
     private String getTaxCode(Integer jobId, String reference) {
-
         QueryWrapper<TXfOriginSapFbl5nEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfOriginSapFbl5nEntity.JOB_ID, jobId);
         queryWrapper.eq(TXfOriginSapFbl5nEntity.REFERENCE, reference);
