@@ -160,7 +160,7 @@ public class AgreementZarrMergeCommand implements Command {
                             }
                         }
                         if (StringUtils.isNotBlank(zarr.getInternalInvoiceNo())) {
-                            String companyCode = zarr.getInternalInvoiceNo().substring(0, zarr.getInternalInvoiceNo().length());
+                            String companyCode = zarr.getInternalInvoiceNo().substring(0, 4);
                             tXfOriginAgreementMergeTmpEntity.setCompanyCode(companyCode);
                         }
                         if (StringUtils.isNotBlank(zarr.getAmountWithTax())) {
