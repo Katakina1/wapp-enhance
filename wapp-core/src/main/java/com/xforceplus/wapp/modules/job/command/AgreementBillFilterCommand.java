@@ -11,6 +11,7 @@ import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.OriginAgreementMergeService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.dao.TXfOriginAgreementMergeDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementMergeEntity;
@@ -49,6 +50,8 @@ public class AgreementBillFilterCommand implements Command {
     private OriginAgreementMergeService originAgreementMergeTmpService;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
 
 
     @Override
@@ -111,6 +114,11 @@ public class AgreementBillFilterCommand implements Command {
             pages = page.getPages();
             filter(page.getRecords(), context, jobId);
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
+            //更新页码
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobEntryProgress(last);
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
     }
 

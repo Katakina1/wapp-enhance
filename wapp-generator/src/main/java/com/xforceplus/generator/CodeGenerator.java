@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 
 
@@ -32,6 +33,8 @@ public class CodeGenerator {
                 );
 //         generateMainCode();
         // generateItemCode();
+//        String url="https://hljgswsbs.gov.cn:9015/web-reader/reader/image?_b=3.2.0&_d=023001900111_04347400_20200514_G1I7G3D5&_i=0&_v=0&_p=192";
+//        System.out.println(Base64.getEncoder().encodeToString(url.getBytes()));
     }
 
 

@@ -19,7 +19,6 @@ import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exceptionreport.dto.ReMatchRequest;
-import com.xforceplus.wapp.modules.exceptionreport.dto.ReportExportDto;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
@@ -266,12 +265,29 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     }
 
     private List<TXfExceptionReportEntity> getExportData(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum, long lastId) {
-        TXfExceptionReportEntity entity = exceptionReportMapper.toEntity(request);
-        entity.setType(typeEnum.getType());
         final String startDeductDate = request.getStartDeductDate();
-        final QueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.query(entity);
+        final QueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.query();
 
         wrapper.gt(TXfExceptionReportEntity.ID, lastId);
+        wrapper.eq(TXfExceptionReportEntity.TYPE,typeEnum.getType());
+
+
+        if (StringUtils.isNotBlank(request.getBillNo())){
+            wrapper.eq(TXfExceptionReportEntity.BILL_NO,request.getBillNo());
+        }
+
+        if (StringUtils.isNotBlank(request.getPurchaserNo())){
+            wrapper.eq(TXfExceptionReportEntity.PURCHASER_NO,request.getPurchaserNo());
+        }
+
+        if (StringUtils.isNotBlank(request.getSellerNo())){
+            wrapper.eq(TXfExceptionReportEntity.SELLER_NO,request.getSellerNo());
+        }
+
+        if (StringUtils.isNotBlank(request.getCode())){
+            wrapper.eq(TXfExceptionReportEntity.CODE,request.getCode());
+        }
+
         if (StringUtils.isNotBlank(startDeductDate)) {
             wrapper.gt(TXfExceptionReportEntity.DEDUCT_DATE, startDeductDate);
         }

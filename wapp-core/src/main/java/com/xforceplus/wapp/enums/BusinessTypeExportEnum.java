@@ -6,9 +6,6 @@ import lombok.Getter;
  * 例外报告代码枚举
  */
 public enum BusinessTypeExportEnum {
-    /**
-     * 未匹配到蓝票
-     */
     BUSINESS_TYPE_WATER("0", "水电费"),
     BUSINESS_TYPE_LEASING("1", "leasing in "),
     BUSINESS_TYPE_TRANFER("2", "固定资产转移");

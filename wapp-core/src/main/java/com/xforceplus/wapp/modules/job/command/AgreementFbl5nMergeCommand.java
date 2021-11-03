@@ -17,6 +17,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementMergeEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
+import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -63,6 +64,8 @@ public class AgreementFbl5nMergeCommand implements Command {
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
     @Autowired
     private OriginAgreementMergeService originAgreementMergeService;
+    @Autowired
+    private IDSequence idSequence;
     /**
      * 过滤fbl5n数据
      */
@@ -149,6 +152,7 @@ public class AgreementFbl5nMergeCommand implements Command {
                 .map(fbl5n -> {
                     try {
                         TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
+                        tXfOriginAgreementMergeTmpEntity.setId(idSequence.nextId());
                         tXfOriginAgreementMergeTmpEntity.setJobId(fbl5n.getJobId());
                         tXfOriginAgreementMergeTmpEntity.setCustomerNo(fbl5n.getAccount());
                         // TODO fbl5n 供应商6D 供应商名称???
