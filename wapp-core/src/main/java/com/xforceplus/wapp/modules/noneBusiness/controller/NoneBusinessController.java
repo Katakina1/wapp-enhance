@@ -5,12 +5,14 @@ import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.noneBusiness.convert.NoneBusinessConverter;
 import com.xforceplus.wapp.modules.noneBusiness.dto.*;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
@@ -68,7 +70,8 @@ public class NoneBusinessController {
         List<byte[]> ofd = new ArrayList<>();
         List<byte[]> pdf = new ArrayList<>();
         try {
-            String batchNo = UUID.randomUUID().toString().replace("-", "");
+            StringBuilder batchNo = new StringBuilder();
+            batchNo.append(UserUtil.getLoginName()).append("_").append(DateUtils.getNo(5));
             for (int i = 0; i < file.length; i++) {
                 Set<String> fileNames = new HashSet<>();
                 final String filename = file[i].getOriginalFilename();
@@ -100,7 +103,7 @@ public class NoneBusinessController {
             entity.setStoreNo(storeNo);
             entity.setStoreStart(storeStart);
             entity.setStoreEnd(storeEnd);
-            entity.setBatchNo(batchNo);
+            entity.setBatchNo(batchNo.toString());
             entity.setBussinessNo(businessNo);
             entity.setInvoiceType(invoiceType);
             entity.setInvoiceStoreNo(invoiceStoreNo);
@@ -268,7 +271,7 @@ public class NoneBusinessController {
                 e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
                 noneBusinessService.deleteSubmitInvoice(e.getInvoiceNo(), e.getInvoiceCode());
                 if (StringUtils.isNotEmpty(e.getInvoiceNo()) && StringUtils.isNotEmpty(e.getInvoiceCode())) {
-                    list.add(e.getInvoiceCode()+e.getInvoiceNo());
+                    list.add(e.getInvoiceCode() + e.getInvoiceNo());
                 }
             });
             response.setInSubmit(submitList.size());
@@ -286,7 +289,7 @@ public class NoneBusinessController {
                 e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
                 noneBusinessService.deleteSubmitInvoice(e.getInvoiceNo(), e.getInvoiceCode());
                 if (StringUtils.isNotEmpty(e.getInvoiceNo()) && StringUtils.isNotEmpty(e.getInvoiceCode())) {
-                    list1.add(e.getInvoiceCode()+e.getInvoiceNo());
+                    list1.add(e.getInvoiceCode() + e.getInvoiceNo());
                 }
             });
             noneBusinessService.updateInvoiceInfo(list1);
