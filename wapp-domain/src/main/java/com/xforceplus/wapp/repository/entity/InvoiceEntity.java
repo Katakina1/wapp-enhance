@@ -357,4 +357,12 @@ public class InvoiceEntity extends BaseEntity implements Serializable {
     public void setRedNoticeNumber(String redNoticeNumber) {
         this.redNoticeNumber = redNoticeNumber;
     }
+
+    public String getMachinecode() {
+        return machinecode;
+    }
+
+    public void setMachinecode(String machinecode) {
+        this.machinecode = machinecode;
+    }
 }

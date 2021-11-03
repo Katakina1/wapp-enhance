@@ -244,13 +244,6 @@ public class DiscernService implements IntegrationResultHandler {
         DiscernResultDetail discernResultDetail = JSON.parseObject(discernResult.getDiscernResult(), typeRef);
         final String taskId = discernResult.getTaskId();
         final TXfElecUploadRecordDetailEntity detailEntity = electronicUploadRecordDetailService.getByDiscernTaskId(taskId);
-        detailEntity.setInvoiceCode(discernResultDetail.getInvoiceCode());
-        detailEntity.setInvoiceNo(discernResultDetail.getInvoiceNo());
-        detailEntity.setPaperDrewDate(discernResultDetail.getInvoiceTime());
-        detailEntity.setAmount(discernResultDetail.getTotalAmount());
-        detailEntity.setCheckCode(discernResultDetail.getCheckCode());
-        electronicUploadRecordDetailDao.updateById(detailEntity);
-
         VerificationRequest invoice = new VerificationRequest();
         invoice.setInvoiceCode(discernResultDetail.getInvoiceCode());
         invoice.setInvoiceNo(discernResultDetail.getInvoiceNo());
@@ -263,6 +256,12 @@ public class DiscernService implements IntegrationResultHandler {
         VerificationResponse verificationResponse = verificationService.verify(invoice);
         log.info("发票验真同步返回结果：{}", JSON.toJSONString(verificationResponse));
         if (null != detailEntity) {
+            detailEntity.setInvoiceCode(discernResultDetail.getInvoiceCode());
+            detailEntity.setInvoiceNo(discernResultDetail.getInvoiceNo());
+            detailEntity.setPaperDrewDate(discernResultDetail.getInvoiceTime());
+            detailEntity.setAmount(discernResultDetail.getTotalAmount());
+            detailEntity.setCheckCode(discernResultDetail.getCheckCode());
+            electronicUploadRecordDetailDao.updateById(detailEntity);
             if (!verificationResponse.isOK()) {
                 log.warn("发票代码:{},发票号码：{}，发票验真请求失败:{}", invoice.getInvoiceCode(), invoice.getInvoiceNo(),
                         verificationResponse.getMessage());
