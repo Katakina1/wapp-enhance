@@ -64,6 +64,7 @@ public class AgreementController {
     public R agreements(DeductListRequest request) {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
+        request.setOverdue(0);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
 
         if (Objects.nonNull(request.getTaxRate())&& BigDecimal.ZERO.compareTo( request.getTaxRate())<=0) {
