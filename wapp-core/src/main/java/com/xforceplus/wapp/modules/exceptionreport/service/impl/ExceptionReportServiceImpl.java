@@ -265,7 +265,6 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
     }
 
     private List<TXfExceptionReportEntity> getExportData(ExceptionReportRequest request, ExceptionReportTypeEnum typeEnum, long lastId) {
-
         final String startDeductDate = request.getStartDeductDate();
         final QueryWrapper<TXfExceptionReportEntity> wrapper = Wrappers.query();
 
