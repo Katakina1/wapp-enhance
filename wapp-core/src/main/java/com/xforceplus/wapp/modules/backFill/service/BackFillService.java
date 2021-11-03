@@ -491,6 +491,13 @@ public class BackFillService {
             return R.fail("根据结算单号未找到预制发票");
         }
         if ("0".equals(request.getInvoiceColor())) {
+            if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                boolean isElec = request.getVerifyBeanList().stream().allMatch(t -> InvoiceTypeEnum.isElectronic(t.getInvoiceType()));
+                boolean isNotElec = request.getVerifyBeanList().stream().noneMatch(t -> InvoiceTypeEnum.isElectronic(t.getInvoiceType()));
+                if(!(isElec || isNotElec)){
+                    return R.fail("红票不允许纸电混合");
+                }
+            }
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
                 if (StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())) {
                     log.info("预制发票的红字信息编号不能为空");
@@ -592,18 +599,8 @@ public class BackFillService {
             return R.fail("发票颜色不能为空");
         }
         if ("0".equals(request.getInvoiceColor())) {
-            //红票上传校验
-            QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
-            preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
-            List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
-            if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
-                return R.fail("根据结算单号未找到预制发票");
-            }
-            if (tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))) {
-                return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
-                        "完成后，您可以继续添加发票！\r\n" +
-                        "请及时关注票据状态！或联系购货方联系");
-            }
+            //红票上传校验暂无
+
         } else {
             if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
                 if (StringUtils.isEmpty(request.getOriginInvoiceCode())) {
