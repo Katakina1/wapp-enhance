@@ -580,10 +580,11 @@ public class BackFillService {
             //作废预制发票
             UpdateWrapper<TXfPreInvoiceEntity> updateWrapper = new UpdateWrapper<>();
             updateWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
+            updateWrapper.eq(TXfPreInvoiceEntity.INVOICE_CODE,request.getOriginInvoiceCode());
+            updateWrapper.eq(TXfPreInvoiceEntity.INVOICE_NO,request.getOriginInvoiceNo());
             TXfPreInvoiceEntity preInvoiceEntity = new TXfPreInvoiceEntity();
             preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             preInvoiceDao.update(preInvoiceEntity, updateWrapper);
-
             //修改结算单状态
             recordInvoiceService.updateSettlement(request.getSettlementNo(),request.getOriginInvoiceCode(),request.getOriginInvoiceNo());
 
