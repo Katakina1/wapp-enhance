@@ -63,7 +63,7 @@ public class TXfNoneBusinessUploadExportDto {
     private String authDate;
     @ExcelProperty(value = "sap编号", index = 26)
     private String sap;
-    @ExcelProperty(value = "创建人", index = 17)
+    @ExcelProperty(value = "创建人", index = 27)
     private String createUser;
 
 
