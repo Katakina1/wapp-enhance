@@ -563,7 +563,7 @@ public class BackFillService {
                 TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
                 if (invoiceEntity != null) {
                     BigDecimal amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    if (amount.compareTo(invoiceEntity.getInvoiceAmount()) != 0) {
+                    if (amount.add(invoiceEntity.getInvoiceAmount()).compareTo(BigDecimal.ZERO) != 0) {
                         throw new EnhanceRuntimeException("您上传的发票合计金额与代开金额不一致，请确认后再保存");
                     }
                 } else {
