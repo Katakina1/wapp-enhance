@@ -9,7 +9,6 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
-import com.xforceplus.wapp.common.utils.InvoiceUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
@@ -118,7 +117,6 @@ public class BackFillService {
 
     @Autowired
     private TXfElecUploadRecordDao tXfElecUploadRecordDao;
-    private List<InvoiceEntity> invoices;
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                                    String tenantId) {
@@ -585,6 +583,10 @@ public class BackFillService {
             TXfPreInvoiceEntity preInvoiceEntity = new TXfPreInvoiceEntity();
             preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             preInvoiceDao.update(preInvoiceEntity, updateWrapper);
+
+            //修改结算单状态
+            recordInvoiceService.updateSettlement(request.getSettlementNo(),request.getOriginInvoiceCode(),request.getOriginInvoiceNo());
+
 
         }
 

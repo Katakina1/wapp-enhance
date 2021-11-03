@@ -198,11 +198,18 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             throw  new EnhanceRuntimeException("删除失败,未找到对应预制发票");
         }
         //修改结算单状态
+        if(updateSettlement(settlementNo,entity.getInvoiceCode(),entity.getInvoiceNo())){
+            throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");
+        }
+        return R.ok("删除成功");
+    }
+
+    public boolean updateSettlement(String settlementNo,String invoiceCode,String invoiceNo){
         QueryWrapper<TXfPreInvoiceEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,settlementNo);
         queryWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
-        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_CODE,entity.getInvoiceCode());
-        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_NO,entity.getInvoiceNo());
+        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_CODE,invoiceCode);
+        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_NO,invoiceNo);
         List<TXfPreInvoiceEntity> tXfPreInvoices= tXfPreInvoiceDao.selectList(queryWrapper);
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
         if(CollectionUtils.isEmpty(tXfPreInvoices)){
@@ -212,11 +219,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         }
         UpdateWrapper<TXfSettlementEntity> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,settlementNo);
-        int count3 = tXfSettlementDao.update(tXfSettlementEntity, updateWrapper);
-        if(count3 < 1){
-            throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");
-        }
-        return R.ok("删除成功");
+        return tXfSettlementDao.update(tXfSettlementEntity, updateWrapper) >0;
     }
 
     /**
