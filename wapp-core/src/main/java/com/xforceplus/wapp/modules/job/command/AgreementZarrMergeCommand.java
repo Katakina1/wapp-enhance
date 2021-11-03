@@ -160,7 +160,7 @@ public class AgreementZarrMergeCommand implements Command {
                             }
                         }
                         if (StringUtils.isNotBlank(zarr.getInternalInvoiceNo())) {
-                            String companyCode = zarr.getInternalInvoiceNo().substring(zarr.getInternalInvoiceNo().length() - 4, zarr.getInternalInvoiceNo().length());
+                            String companyCode = zarr.getInternalInvoiceNo().substring(0, zarr.getInternalInvoiceNo().length());
                             tXfOriginAgreementMergeTmpEntity.setCompanyCode(companyCode);
                         }
                         if (StringUtils.isNotBlank(zarr.getAmountWithTax())) {
@@ -203,7 +203,7 @@ public class AgreementZarrMergeCommand implements Command {
                     return null;
                 })
                 .filter(Objects::nonNull).collect(Collectors.toList());
-        if(CollectionUtils.isNotEmpty(newList)) {
+        if (CollectionUtils.isNotEmpty(newList)) {
             originAgreementMergeService.saveBatch(newList);
         }
     }
