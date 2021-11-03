@@ -56,11 +56,11 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "电票发票上传" )
     @PostMapping("/upload")
-    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvcode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo, @RequestParam("invoiceColor")String invoiceColor) {
+    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("gfName") String gfName, @RequestParam("jvCode") String jvCode, @RequestParam("vendorId") String vendorid,@RequestParam("settlementNo") String settlementNo, @RequestParam("invoiceColor")String invoiceColor) {
         BackFillCommitVerifyRequest request = new BackFillCommitVerifyRequest();
         request.setInvoiceColor(invoiceColor);
         request.setSettlementNo(settlementNo);
-        R r = backFillService.checkCommitRequest(request,files.length);
+        R r = backFillService.checkCommitRequest(request);
         if (R.FAIL.equals(r.getCode())) {
             return r;
         }
@@ -101,7 +101,7 @@ public class BackFillController  extends AbstractController {
 
             SpecialElecUploadDto dto = new SpecialElecUploadDto();
             dto.setOfds(ofd);
-            dto.setJvCode(jvcode);
+            dto.setJvCode(jvCode);
             dto.setUserId(getUserId());
             dto.setGfName(gfName);
             dto.setPdfs(pdf);
@@ -134,7 +134,7 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "excel批量上传")
     @PostMapping("/upload/excel")
-    public R upload(@RequestParam MultipartFile file, @RequestParam String gfName, @RequestParam String jvcode, @RequestParam("vendorId") String vendorid,
+    public R upload(@RequestParam MultipartFile file, @RequestParam String gfName, @RequestParam String jvCode, @RequestParam("vendorId") String vendorid,
                     @RequestParam String settlementNo,@RequestParam String invoiceColor) {
         if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
             return R.fail("文件格式不正确");
@@ -160,7 +160,7 @@ public class BackFillController  extends AbstractController {
                 request.setSettlementNo(settlementNo);
                 request.setInvoiceColor(invoiceColor);
                 request.setGfName(gfName);
-                request.setJvCode(jvcode);
+                request.setJvCode(jvCode);
                 request.setVendorId(vendorid);
                 List<BackFillVerifyBean> bverifyBeanList = new ArrayList<>();
                 BackFillVerifyBean backFillVerifyBean = null;
