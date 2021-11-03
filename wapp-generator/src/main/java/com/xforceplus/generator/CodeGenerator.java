@@ -29,12 +29,12 @@ public class CodeGenerator {
 
 
     public static void main(String[] args) {
-//        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity","t_xf_elec_upload_record_detail"
-//                );
+        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity","t_xf_elec_upload_record_detail"
+                );
 //         generateMainCode();
         // generateItemCode();
-        String url="https://hljgswsbs.gov.cn:9015/web-reader/reader/image?_b=3.2.0&_d=023001900111_04347400_20200514_G1I7G3D5&_i=0&_v=0&_p=192";
-        System.out.println(Base64.getEncoder().encodeToString(url.getBytes()));
+//        String url="https://hljgswsbs.gov.cn:9015/web-reader/reader/image?_b=3.2.0&_d=023001900111_04347400_20200514_G1I7G3D5&_i=0&_v=0&_p=192";
+//        System.out.println(Base64.getEncoder().encodeToString(url.getBytes()));
     }
 
 
