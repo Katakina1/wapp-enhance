@@ -175,11 +175,11 @@ public class EInvoiceMatchService {
         Map<String, Object> map = new HashMap<>();
         if (null != sellerEntity) {
             map.put("venderid", sellerEntity.getOrgCode());
-            map.put("gfName", sellerEntity.getOrgName());
+            map.put("xfName", sellerEntity.getOrgName());
         }
         if (null != purEntity) {
             map.put("jvcode", purEntity.getOrgCode());
-            map.put("companyCode", purEntity.getOrgName());
+            map.put("gfName", purEntity.getOrgName());
         }else {
             successEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
             successEntity.setReason("购方信息未维护");
