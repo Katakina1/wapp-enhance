@@ -1,6 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.schedule;
 
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.service.EPDService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class EPDDeductScheduler {
         redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
         log.info("EPD-MergeSettlement job 开始");
         try {
-            epdService.mergeEPDandAgreementSettlement(TXfDeductionBusinessTypeEnum.EPD_BILL, TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfBillDeductStatusEnum.EPD_MATCH_SETTLEMENT);
+            epdService.mergeEPDandAgreementSettlement(TXfDeductionBusinessTypeEnum.EPD_BILL, TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT, TXfDeductStatusEnum.EPD_MATCH_SETTLEMENT);
         } catch (Exception e) {
             log.info("EPD-MergeSettlement job 异常：{}",e);
         }finally {

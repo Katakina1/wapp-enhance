@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  * 协议单:201待匹配结算单;202已匹配结算单;203已锁定;204已取消
  * EPD单:301待匹配结算单;302已匹配结算单
  */
-public enum TXfBillDeductStatusEnum {
+public enum TXfDeductStatusEnum {
 
     CLAIM_NO_MATCH_ITEM(101, "索赔单:待匹配明细"),
     CLAIM_NO_MATCH_TAX_NO(102, "索赔单:待确认税编"),
@@ -42,13 +42,13 @@ public enum TXfBillDeductStatusEnum {
     @Getter
     private String desc;
 
-    TXfBillDeductStatusEnum(Integer code, String desc) {
+    TXfDeductStatusEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
-    public static TXfBillDeductStatusEnum getEnumByCode(@NonNull Integer code) {
-        return Stream.of(TXfBillDeductStatusEnum.values())
+    public static TXfDeductStatusEnum getEnumByCode(@NonNull Integer code) {
+        return Stream.of(TXfDeductStatusEnum.values())
                 .filter(t -> t.getCode().equals(code)).findFirst().orElseGet( null);
     }
 }

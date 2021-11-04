@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfInvoiceDeductTypeEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
@@ -54,7 +54,7 @@ public class ClaimBillService extends DeductService{
          */
         Long deductId = 1L;
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, limit, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, limit, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
                 String sellerNo = tXfBillDeductEntity.getSellerNo();
@@ -137,7 +137,7 @@ public class ClaimBillService extends DeductService{
             /**
              * 执行下一批匹配
              */
-            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null,  limit, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null,  limit, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         }
         return true;
     }
@@ -214,7 +214,7 @@ public class ClaimBillService extends DeductService{
         /**
          * 如果存在未匹配的税编，状态未待匹配税编，
          */
-        Integer status = matchTaxNoFlag ?  TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()  : TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode() ;
+        Integer status = matchTaxNoFlag ?  TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()  : TXfDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode() ;
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
         tXfBillDeductEntity.setStatus(status);
@@ -226,13 +226,13 @@ public class ClaimBillService extends DeductService{
      * @param deductId
      */
     public void reMatchClaimTaxCode(Long deductId) {
-        List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBillId(deductId, TXfInvoiceDeductTypeEnum.CLAIM.getCode(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
+        List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBillId(deductId, TXfInvoiceDeductTypeEnum.CLAIM.getCode(), TXfDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
         tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).map(x-> fixTaxCode(x)).collect(Collectors.toList());
         tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
             TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
             tXfBillDeductEntity.setId(deductId);
-            tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+            tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
             tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
         }
     }
@@ -245,7 +245,7 @@ public class ClaimBillService extends DeductService{
     public boolean claimMatchBlueInvoice() {
         Long deductId = 1L;
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 2, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 2, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
                  try {
@@ -255,7 +255,7 @@ public class ClaimBillService extends DeductService{
                 }
             }
             deductId = tXfBillDeductEntities.stream().mapToLong(TXfBillDeductEntity::getId).max().getAsLong();
-            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId, null, 2, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+            tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId, null, 2, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
         }
         return false;
     }
@@ -268,7 +268,7 @@ public class ClaimBillService extends DeductService{
     public boolean claimMatchBlueInvoice(TXfBillDeductEntity tXfBillDeductEntity,Map<String, BigDecimal> nosuchInvoiceSeller) {
         List<BlueInvoiceService.MatchRes> matchResList = null;
         try {
-            if (tXfBillDeductEntity.getStatus().compareTo(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) != 0) {
+            if (tXfBillDeductEntity.getStatus().compareTo(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) != 0) {
                 log.info("{} 类型单据{} 状态为{} 跳过匹配蓝票 ", "索赔单", tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getStatus());
                 return false;
             }
@@ -292,7 +292,7 @@ public class ClaimBillService extends DeductService{
             }
             matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getId(), TXfDeductionBusinessTypeEnum.CLAIM_BILL);
             TXfBillDeductEntity tmp = new TXfBillDeductEntity();
-            tmp.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+            tmp.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
             tmp.setId(tXfBillDeductEntity.getId());
             tXfBillDeductExtDao.updateById(tmp);
         }
@@ -323,7 +323,7 @@ public class ClaimBillService extends DeductService{
         /**
          * 查询符合条件的索赔单，购销一致维度，状态为待生成结算单
          */
-        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableClaimBill(TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+        List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.querySuitableClaimBill(TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
         /**
          * 查询索赔单明细，组装结算单明细信息
          */
@@ -332,7 +332,7 @@ public class ClaimBillService extends DeductService{
                 doMergeClaim(tXfBillDeductEntity);
             } catch (Exception e) {
 
-                log.error("索赔单组合结算失败: purchase_no :{} ,seller_no:{} status: {} Exception:{}",tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getSellerNo(),TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getDesc(),e);
+                log.error("索赔单组合结算失败: purchase_no :{} ,seller_no:{} status: {} Exception:{}",tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getSellerNo(), TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getDesc(),e);
             }
         }
         return true;
@@ -341,7 +341,7 @@ public class ClaimBillService extends DeductService{
     @Transactional
     public void doMergeClaim(TXfBillDeductEntity tXfBillDeductEntity) {
         TXfSettlementEntity tXfSettlementEntity =  trans2Settlement(Arrays.asList(tXfBillDeductEntity), TXfDeductionBusinessTypeEnum.CLAIM_BILL);
-        tXfBillDeductExtDao.updateSuitableClaimBill(TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode(), TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode(), tXfSettlementEntity.getSettlementNo(), tXfBillDeductEntity.getPurchaserNo(), tXfBillDeductEntity.getSellerNo());
+        tXfBillDeductExtDao.updateSuitableClaimBill(TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode(), TXfDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode(), tXfSettlementEntity.getSettlementNo(), tXfBillDeductEntity.getPurchaserNo(), tXfBillDeductEntity.getSellerNo());
     }
 
 }

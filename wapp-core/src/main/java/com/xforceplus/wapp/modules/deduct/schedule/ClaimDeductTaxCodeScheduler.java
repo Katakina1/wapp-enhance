@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.schedule;
 
 
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
@@ -46,13 +46,13 @@ public class ClaimDeductTaxCodeScheduler {
         log.info("claim-matchTaxCode job   开始");
         try {
             Long id = 0L;
-            List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
+            List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
             while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
                 for (TXfBillDeductEntity tmp : tXfBillDeductEntities) {
                     claimBillService.reMatchClaimTaxCode(tmp.getId());
                 }
                 id =  tXfBillDeductEntities.stream().mapToLong(TXfBillDeductEntity::getId).max().getAsLong();
-                tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfBillDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
+                tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(id,null, 10, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
             }
         }
         catch (Exception e) {

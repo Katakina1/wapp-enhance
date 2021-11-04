@@ -5,7 +5,7 @@ import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
@@ -49,7 +49,7 @@ public class DeductController {
     public R updateBillStatus(@ApiParam(value = "修改业务单状态请求" ,required=true )@RequestBody UpdateBillStatusRequest request) {
         logger.info("修改业务单状态--请求参数{}", JSONObject.toJSONString(request));
         TXfDeductionBusinessTypeEnum deductionEnum = ValueEnum.getEnumByValue(TXfDeductionBusinessTypeEnum.class, request.getDeductType()).get();
-        TXfBillDeductStatusEnum status = TXfBillDeductStatusEnum.getEnumByCode(request.getDeductStatus());
+        TXfDeductStatusEnum status = TXfDeductStatusEnum.getEnumByCode(request.getDeductStatus());
         for (Long id : request.getIds()) {
             TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
             tXfBillDeductEntity.setId(id);

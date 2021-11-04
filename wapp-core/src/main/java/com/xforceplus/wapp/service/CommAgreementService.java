@@ -2,8 +2,8 @@ package com.xforceplus.wapp.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductInvoiceBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
@@ -16,7 +16,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -101,7 +100,7 @@ public class CommAgreementService {
         billDeductList.parallelStream().forEach(billDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
             updateTXfBillDeductEntity.setRefSettlementNo("");
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
@@ -117,7 +116,7 @@ public class CommAgreementService {
         //释放结算单蓝票
         QueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new QueryWrapper();
         tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_NO, tXfSettlementEntity.getSettlementNo());
-        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, TXfBillDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
+        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, TXfDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
 
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);

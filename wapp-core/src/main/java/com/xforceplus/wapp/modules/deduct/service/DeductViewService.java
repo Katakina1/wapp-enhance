@@ -11,7 +11,7 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.ServiceTypeEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
@@ -130,7 +130,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             final List<DeductListResponse> list = pageResult.getRecords().stream().map(x -> {
                 final DeductListResponse deductListResponse = deductMapper.toResponse(x);
                 deductListResponse.setOverdue(checkOverdue(typeEnum, x.getSellerNo(), x.getDeductDate()) ? 1 : 0);
-                if (Objects.equals(deductListResponse.getLock(),TXfBillDeductStatusEnum.LOCK.getCode())){
+                if (Objects.equals(deductListResponse.getLock(), TXfDeductStatusEnum.LOCK.getCode())){
                     deductListResponse.setRefSettlementNo(null);
                 }
                 return deductListResponse;
@@ -174,17 +174,17 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         sumRequest.setTaxRate(taxRate);
         switch (typeEnum){
             case CLAIM_BILL:
-                sumRequest.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+                sumRequest.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
                 break;
             case EPD_BILL:
-                sumRequest.setStatus(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
+                sumRequest.setStatus(TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
                 break;
             case AGREEMENT_BILL:
-                sumRequest.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+                sumRequest.setStatus(TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
                 break;
         }
 
-        sumRequest.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
+        sumRequest.setLockFlag(TXfDeductStatusEnum.UNLOCK.getCode());
 
         return doWrapper(sumRequest, typeEnum, x->{
             overDueWrapper(sellerNo,typeEnum,1,x);
@@ -354,9 +354,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         } else {
             // 索赔单只展示 生成结算单之后的数据
             wrapper.in(TXfBillDeductEntity.STATUS,
-                    TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode()
-                    ,TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode()
-                    ,TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode()
+                    TXfDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode()
+                    , TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode()
+                    , TXfDeductStatusEnum.CLAIM_DESTROY.getCode()
             );
         }
         if (and!=null) {
@@ -480,20 +480,20 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                     ,TXfBillDeductEntity.SELLER_NO
                     ,TXfBillDeductEntity.PURCHASER_NO
             );
-            TXfBillDeductStatusEnum statusEnum;
+            TXfDeductStatusEnum statusEnum;
             switch (typeEnum){
                 case AGREEMENT_BILL:
-                    statusEnum=TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
+                    statusEnum= TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
                     break;
                 case EPD_BILL:
-                    statusEnum=TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT;
+                    statusEnum= TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT;
                     break;
                 default:throw new EnhanceRuntimeException("手动合并结算单仅支持协议单和EPD");
             }
             wrapper.in(TXfBillDeductEntity.ID, billId)
                     .eq(TXfBillDeductEntity.BUSINESS_TYPE,typeEnum.getValue())
                     .eq(TXfBillDeductEntity.STATUS,statusEnum.getCode())
-                    .eq(TXfBillDeductEntity.LOCK_FLAG,TXfBillDeductStatusEnum.UNLOCK.getCode())
+                    .eq(TXfBillDeductEntity.LOCK_FLAG, TXfDeductStatusEnum.UNLOCK.getCode())
                     .groupBy(TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.TAX_RATE)
             ;
             final List<TXfBillDeductEntity> entities = getBaseMapper().selectList(wrapper);

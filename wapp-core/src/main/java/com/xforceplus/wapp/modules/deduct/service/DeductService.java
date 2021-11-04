@@ -248,15 +248,15 @@ public class DeductService   {
     private void saveCreateDeductLog(TXfBillDeductEntity tXfBillDeductEntity) {
         if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
-                    TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
                     0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_AGREEMENT,
-                    TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
                     0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.EPD_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_EPD,
-                    TXfBillDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
                     0L,"系统");
         }
     }
@@ -312,8 +312,8 @@ public class DeductService   {
                     //  如果返回个数大于1，则取第一条记录
                     TXfBillDeductEntity target = pages.getRecords().get(0);
                     if (sameParties(tXfBillDeductEntity, target)) {
-                        if (Objects.equals(TXfBillDeductStatusEnum.LOCK.getCode(), target.getLockFlag())){
-                            boolean result = updateBillStatus(deductionEnum, target, TXfBillDeductStatusEnum.UNLOCK);
+                        if (Objects.equals(TXfDeductStatusEnum.LOCK.getCode(), target.getLockFlag())){
+                            boolean result = updateBillStatus(deductionEnum, target, TXfDeductStatusEnum.UNLOCK);
                             log.info("解锁source单据id={}的target单据的id={}, result={}", tXfBillDeductEntity.getId(), target.getId(), result);
                         }
                         tXfBillDeductEntity.setStatus(target.getStatus());
@@ -348,10 +348,10 @@ public class DeductService   {
      *
      * @param deductionEnum {@link TXfDeductionBusinessTypeEnum} 单据类型
      * @param tXfBillDeductEntity {@link TXfBillDeductEntity} 单据实体
-     * @param status {@link TXfBillDeductStatusEnum} 业务单状态
+     * @param status {@link TXfDeductStatusEnum} 业务单状态
      * @return {boolean} true-更新成功, false-更新失败
      */
-    public boolean updateBillStatus(TXfDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfBillDeductStatusEnum status) {
+    public boolean updateBillStatus(TXfDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tXfBillDeductEntity, TXfDeductStatusEnum status) {
         if(tXfBillDeductEntity.getId() == null){
             log.error("Id不能为空");
             return false;
@@ -361,38 +361,38 @@ public class DeductService   {
             return false;
         }
         if(TXfDeductionBusinessTypeEnum.CLAIM_BILL.equals(deductionEnum)){
-            if(TXfBillDeductStatusEnum.CLAIM_DESTROY.equals(status)){
+            if(TXfDeductStatusEnum.CLAIM_DESTROY.equals(status)){
                 log.info("索赔单不能撤销");
                 return false;
             }
-            if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+            if(TXfDeductStatusEnum.LOCK.equals(status) || TXfDeductStatusEnum.UNLOCK.equals(status) ){
                 log.info("索赔单不能锁定或解锁");
                 return false;
             }
         }else if(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
-            if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
-                if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
+            if(TXfDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
+                if(!TXfDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
                     log.info("只有待匹配结算单的协议单才能撤销");
                     return false;
                 }
                 deleteBillDeductItemRef(tXfBillDeductEntity.getId());
             }
-            if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
-                if(!TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
+            if(TXfDeductStatusEnum.LOCK.equals(status) || TXfDeductStatusEnum.UNLOCK.equals(status) ){
+                if(!TXfDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
                     log.info("只有待匹配结算单的协议单才能锁定或解锁");
                     return false;
                 }
             }
         }else if(TXfDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
-            if(TXfBillDeductStatusEnum.EPD_DESTROY.equals(status)){
-                if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
+            if(TXfDeductStatusEnum.EPD_DESTROY.equals(status)){
+                if(!TXfDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
                     log.info("只有待匹配结算单的EPD才能撤销");
                     return false;
                 }
                 deleteBillDeductItemRef(tXfBillDeductEntity.getId());
             }
-            if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
-                if(!TXfBillDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
+            if(TXfDeductStatusEnum.LOCK.equals(status) || TXfDeductStatusEnum.UNLOCK.equals(status) ){
+                if(!TXfDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
                     log.info("只有待匹配结算单的EPD才能锁定或解锁");
                     return false;
                 }
@@ -402,7 +402,7 @@ public class DeductService   {
             return false;
         }
 
-        if(TXfBillDeductStatusEnum.LOCK.equals(status) || TXfBillDeductStatusEnum.UNLOCK.equals(status) ){
+        if(TXfDeductStatusEnum.LOCK.equals(status) || TXfDeductStatusEnum.UNLOCK.equals(status) ){
             tXfBillDeductEntity.setLockFlag(status.getCode());
         }else{
            tXfBillDeductEntity.setStatus(status.getCode());
@@ -426,19 +426,19 @@ public class DeductService   {
         tXfBillDeductItemRefDao.update(refEntity,refWrapper);
     }
 
-    void addOperateLog(Long id, TXfDeductionBusinessTypeEnum typeEnum, TXfBillDeductStatusEnum statusEnum){
+    void addOperateLog(Long id, TXfDeductionBusinessTypeEnum typeEnum, TXfDeductStatusEnum statusEnum){
         OperateLogEnum logEnum = null;
-        if(TXfBillDeductStatusEnum.AGREEMENT_DESTROY.equals(statusEnum)){
+        if(TXfDeductStatusEnum.AGREEMENT_DESTROY.equals(statusEnum)){
             logEnum = OperateLogEnum.CANCEL_AGREEMENT;
-        }else if(TXfBillDeductStatusEnum.EPD_DESTROY.equals(statusEnum)){
+        }else if(TXfDeductStatusEnum.EPD_DESTROY.equals(statusEnum)){
             logEnum = OperateLogEnum.CANCEL_EPD;
-        }else if(TXfBillDeductStatusEnum.UNLOCK.equals(statusEnum)){
+        }else if(TXfDeductStatusEnum.UNLOCK.equals(statusEnum)){
             if(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(typeEnum)){
                 logEnum = OperateLogEnum.UNLOCK_AGREEMENT;
             }else{
                 logEnum = OperateLogEnum.UNLOCK_EPD;
             }
-        }else if(TXfBillDeductStatusEnum.LOCK.equals(statusEnum)){
+        }else if(TXfDeductStatusEnum.LOCK.equals(statusEnum)){
             if(TXfDeductionBusinessTypeEnum.EPD_BILL.equals(typeEnum)){
                 logEnum = OperateLogEnum.LOCK_EPD;
             }else{
@@ -466,7 +466,7 @@ public class DeductService   {
         String sellerNo = tXfBillDeductEntities.get(0).getSellerNo();
         BigDecimal taxRate = tXfBillDeductEntities.get(0).getTaxRate();
         Integer type = deductionBusinessTypeEnum.getValue();
-        Integer status = TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode();
+        Integer status = TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode();
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
         TAcOrgEntity purchaserOrgEntity = queryOrgInfo(purchaserNo,false);
         TAcOrgEntity sellerOrgEntity = queryOrgInfo(sellerNo, true);
@@ -602,7 +602,7 @@ public class DeductService   {
         CLAIM_BILL(TXfDeductionBusinessTypeEnum.CLAIM_BILL, x -> {
             ClaimBillData tmp = (ClaimBillData) x;
             TXfBillDeductEntity tXfBillDeductEntity = dataTrans(x);
-            tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
+            tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
 
             tXfBillDeductEntity.setAmountWithoutTax(defaultValue(x.getAmountWithoutTax()));
             tXfBillDeductEntity.setAmountWithTax( defaultValue(x.getAmountWithTax()));
@@ -626,7 +626,7 @@ public class DeductService   {
             tXfBillDeductEntity.setAmountWithTax( defaultValue(x.getAmountWithTax()));
             tXfBillDeductEntity.setTaxAmount(defaultValue(x.getTaxAmount()));
             tXfBillDeductEntity.setAmountWithoutTax(tXfBillDeductEntity.getAmountWithTax().subtract(tXfBillDeductEntity.getTaxAmount()));
-            tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+            tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
             return tXfBillDeductEntity;
         }),
         EPD_BILL(TXfDeductionBusinessTypeEnum.EPD_BILL, x -> {
@@ -643,7 +643,7 @@ public class DeductService   {
             tXfBillDeductEntity.setAmountWithoutTax(tXfBillDeductEntity.getAmountWithTax().divide(BigDecimal.ONE.add(defaultValue(tXfBillDeductEntity.getTaxRate())), 2, RoundingMode.HALF_UP));
             tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithTax().subtract(tXfBillDeductEntity.getAmountWithoutTax()));
             tXfBillDeductEntity.setBusinessNo( defaultValue(tmp.getReference()));
-            tXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
+            tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
             return tXfBillDeductEntity;
         });
 
@@ -677,7 +677,7 @@ public class DeductService   {
         tXfBillDeductEntity.setRefSettlementNo(StringUtils.EMPTY);
         tXfBillDeductEntity.setAgreementTaxCode(StringUtils.EMPTY);
         tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
-        tXfBillDeductEntity.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
+        tXfBillDeductEntity.setLockFlag(TXfDeductStatusEnum.UNLOCK.getCode());
         tXfBillDeductEntity.setSourceId(defaultValue(deductBillBaseData.getId()));
         tXfBillDeductEntity.setSellerName(defaultValue(deductBillBaseData.getSellerName()));
         tXfBillDeductEntity.setPurchaserNo(defaultValue(deductBillBaseData.getPurchaserNo()));

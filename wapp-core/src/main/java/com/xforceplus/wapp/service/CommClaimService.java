@@ -59,13 +59,13 @@ public class CommClaimService {
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper1 = new QueryWrapper<>();
         billDeductEntityWrapper1.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        billDeductEntityWrapper1.eq(TXfBillDeductEntity.STATUS, TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
+        billDeductEntityWrapper1.eq(TXfBillDeductEntity.STATUS, TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
         List<TXfBillDeductEntity> billDeductList1 = tXfBillDeductDao.selectList(billDeductEntityWrapper1);
 
         //索赔单 查询已生成结算单状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper2 = new QueryWrapper<>();
         billDeductEntityWrapper2.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        billDeductEntityWrapper2.eq(TXfBillDeductEntity.STATUS, TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
+        billDeductEntityWrapper2.eq(TXfBillDeductEntity.STATUS, TXfDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
         List<TXfBillDeductEntity> billDeductList2 = tXfBillDeductDao.selectList(billDeductEntityWrapper2);
 
         //预制发票
@@ -92,18 +92,18 @@ public class CommClaimService {
         billDeductList1.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_DESTROY.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
             //日志
             operateLogService.add(tXfBillDeduct.getId(), OperateLogEnum.CANCEL_DEDUCT,
-                    TXfBillDeductStatusEnum.CLAIM_DESTROY.getDesc(),
+                    TXfDeductStatusEnum.CLAIM_DESTROY.getDesc(),
                     0L,"系统");
         });
         //已生成结算单的索赔单修改为：待生成结算单 清空结算单编号
         billDeductList2.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
             updateTXfBillDeductEntity.setRefSettlementNo("");
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
@@ -131,7 +131,7 @@ public class CommClaimService {
         List<String> billDeductBusinessNoList = billDeductList1.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList());
         QueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new QueryWrapper();
         tXfBillDeductInvoiceWrapper.in(TXfBillDeductInvoiceEntity.BUSINESS_NO, billDeductBusinessNoList);
-        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, TXfBillDeductInvoiceBusinessTypeEnum.CLAIM_BILL.getType());
+        tXfBillDeductInvoiceWrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_TYPE, TXfDeductInvoiceBusinessTypeEnum.CLAIM_BILL.getType());
 
         //还原蓝票额度
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
