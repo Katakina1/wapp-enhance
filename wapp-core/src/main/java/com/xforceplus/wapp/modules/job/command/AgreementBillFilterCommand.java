@@ -137,11 +137,11 @@ public class AgreementBillFilterCommand implements Command {
                         QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.REFERENCE, mergeTmpEntity.getReference());
+                        queryWrapper.isNotNull(TXfOriginAgreementMergeEntity.TAX_RATE);
+                        queryWrapper.ne(TXfOriginAgreementMergeEntity.TAX_RATE,"");
                         List<TXfOriginAgreementMergeEntity> originAgreementMergeList = tXfOriginAgreementMergeDao.selectList(queryWrapper);
-                        TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.stream()
-                                .filter(mergeTmp -> mergeTmp.getTaxRate() != null)
-                                .findFirst().orElse(null);
-                        if (originAgreementMergeTmp != null) {
+                        if (CollectionUtils.isNotEmpty(originAgreementMergeList)) {
+                            TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.get(0);
                             originAgreementMergeTmp.setWithAmount(mergeTmpEntity.getWithAmount());
                             BigDecimal taxAmount = originAgreementMergeTmp.getWithAmount()
                                     .divide(originAgreementMergeTmp.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
