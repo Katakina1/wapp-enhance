@@ -88,7 +88,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @return
      */
     @Update("update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where id  in  ${ids} and status = #{status} and  lock_flag = #{flag} and ref_settlement_no = ''")
-    public List<TXfBillDeductEntity> updateBillById(@Param("ids") String ids,@Param("settlementNo") String settlementNo,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag,@Param("targetStatus") Integer targetStatus);
+    int updateBillById(@Param("ids") String ids,@Param("settlementNo") String settlementNo,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag,@Param("targetStatus") Integer targetStatus);
 
 
 
