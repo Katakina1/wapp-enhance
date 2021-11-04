@@ -12,6 +12,7 @@ import com.xforceplus.wapp.modules.deduct.model.EPDBillData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
@@ -50,6 +51,8 @@ public class EpdBillFilterCommand implements Command {
     private SpeacialCompanyService speacialCompanyService;
     @Autowired
     private DeductService deductService;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
 
     @Override
     public boolean execute(Context context) throws Exception {
@@ -114,6 +117,11 @@ public class EpdBillFilterCommand implements Command {
             pages = page.getPages();
             filter(jobId, page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
+            //更新页码
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobEntryProgress(last);
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
     }
 
