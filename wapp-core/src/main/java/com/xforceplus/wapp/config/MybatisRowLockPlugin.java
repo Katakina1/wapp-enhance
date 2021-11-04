@@ -24,6 +24,8 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
 
     private long time;
 
+    public static final String NO_LOCK=" with (nolock) ";
+
 
     //方法拦截
     @Override
@@ -85,16 +87,23 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
                     index = sql.indexOf("where");
                 }
 
-                String tableArea = sql.substring(fromIndex, index);
-                if (tableArea.contains("join") || tableArea.contains("JOIN")){
-//                    tableArea.split("(\\s+)((left|rigit|)join)/i");
-                }else {
-                    sql = sql.substring(0, index) + " with (nolock) " + sql.substring(index);
+                if (index < 0) {
+                    break;
                 }
 
-//                Field field = boundSql.getClass().getDeclaredField("sql");
-//                field.setAccessible(true);
-//                field.set(boundSql, sql);
+                String tableArea = sql.substring(fromIndex, index);
+                if (tableArea.contains("join") || tableArea.contains("JOIN")) {
+                    final String[] split = tableArea.split("(\\s+)((LEFT|RIGIT|INNER|OUTER|left|rigit|inner|outer)?\\s+(join|JOIN))");
+                    if (split.length > 0) {
+                        String finalSql = sql.substring(0, fromIndex);
+                        finalSql = finalSql + split[0] + NO_LOCK;
+                        sql = finalSql + sql.substring(fromIndex+split[0].length());
+                    }
+
+                }else {
+                    sql = sql.substring(0, index) + NO_LOCK + sql.substring(index);
+                }
+
                 break;
             }
         }
@@ -125,11 +134,5 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
         this.time = Long.parseLong(properties.getProperty("time"));
     }
 
-//    public static void main(String[] args) {
-//        final String[] split = "aaa RIGIT join ".split("(\\s+)((left|rigit)?\\s+join)/i");
-//        for (String s : split){
-//            System.out.println("args = " + s);
-//        }
-//    }
 }
 
