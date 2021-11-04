@@ -110,7 +110,8 @@ public class AgreementBillFilterCommand implements Command {
             Page<TXfOriginAgreementMergeEntity> page = new QueryChainWrapper<>(tXfOriginAgreementMergeDao)
                     .select("reference", "sum(with_amount) as with_amount")
                     .eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId)
-                    .groupBy(TXfOriginAgreementMergeEntity.REFERENCE).page(new Page<>(++last, BATCH_COUNT));
+                    .groupBy(TXfOriginAgreementMergeEntity.REFERENCE)
+                    .page(new Page<>(++last, BATCH_COUNT));
             pages = page.getPages();
             filter(page.getRecords(), context, jobId);
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
