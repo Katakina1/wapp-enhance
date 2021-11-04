@@ -198,24 +198,28 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             throw  new EnhanceRuntimeException("删除失败,未找到对应预制发票");
         }
         //修改结算单状态
-        QueryWrapper<TDxRecordInvoiceEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,entity.getSettlementNo());
-        queryWrapper.ne(TDxRecordInvoiceEntity.ID,id);
-        queryWrapper.ne(TDxRecordInvoiceEntity.IS_DEL,TXfInvoiceStatusEnum.CANCEL.getCode());
+        if(!updateSettlement(settlementNo,entity.getInvoiceCode(),entity.getInvoiceNo())){
+            throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");
+        }
+        return R.ok("删除成功");
+    }
+
+    public boolean updateSettlement(String settlementNo,String invoiceCode,String invoiceNo){
+        QueryWrapper<TXfPreInvoiceEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO,settlementNo);
+        queryWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
+        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_CODE,invoiceCode);
+        queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_NO,invoiceNo);
+        List<TXfPreInvoiceEntity> tXfPreInvoices= tXfPreInvoiceDao.selectList(queryWrapper);
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
-        List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(queryWrapper);
-        if(CollectionUtils.isEmpty(tDxRecordInvoiceEntities)){
-            tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_RED_INVOICE.getCode());
+        if(CollectionUtils.isEmpty(tXfPreInvoices)){
+            tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         }else{
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.UPLOAD_HALF_RED_INVOICE.getCode());
         }
         UpdateWrapper<TXfSettlementEntity> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO,settlementNo);
-        int count3 = tXfSettlementDao.update(tXfSettlementEntity, updateWrapper);
-        if(count3 < 1){
-            throw  new EnhanceRuntimeException("删除失败，未找到对应结算单");
-        }
-        return R.ok("删除成功");
+        return tXfSettlementDao.update(tXfSettlementEntity, updateWrapper) >0;
     }
 
     /**

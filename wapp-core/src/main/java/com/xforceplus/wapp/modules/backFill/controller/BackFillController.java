@@ -9,6 +9,7 @@ import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.InvoiceImportListener;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.system.controller.AbstractController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -173,6 +174,7 @@ public class BackFillController  extends AbstractController {
                     bverifyBeanList.add(backFillVerifyBean);
                 }
                 request.setVerifyBeanList(bverifyBeanList);
+                request.setOpUserId(UserUtil.getUserId());
                 return backFillService.commitVerify(request);
             } else {
                 throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[xls/xlsx]");

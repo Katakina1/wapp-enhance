@@ -266,7 +266,7 @@ public class EInvoiceMatchService {
         electronicUploadRecordDetailEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
         electronicUploadRecordDetailEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
         electronicUploadRecordDetailEntity.setStatus(true);
-        validateOrg(invoiceMain, recordEntity, orgEntity);
+        //validateOrg(invoiceMain, recordEntity, orgEntity);
         validateTax(invoiceMain, invoiceDetails);
         //校验购销对
         QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
@@ -316,13 +316,13 @@ public class EInvoiceMatchService {
         map.put("totalAmount", invoiceMain.getAmountWithTax());
         map.put("taxAmount", invoiceMain.getTaxAmount());
         map.put("taxRate", invoiceDetails.get(0).getTaxRate());
-        map.put("gfName", orgEntity.getOrgname());
+        map.put("gfName", invoiceMain.getPurchaserName());
         map.put("invoiceType", invoiceMain.getInvoiceType());
         map.put("gfTaxno", invoiceMain.getPurchaserTaxNo());
         map.put("checkNo", invoiceMain.getCheckCode());
         map.put("xfName", invoiceMain.getSellerName());
         map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
-        map.put("companyCode", orgEntity.getCompany());
+        map.put("companyCode", orgEntity == null ? null : orgEntity.getCompany());
 //        底账来源  0-采集 1-查验 2-录入
         map.put("sourceSystem", "1");
         map.put("goodsListFlag", invoiceMain.getGoodsListFlag());
@@ -537,7 +537,6 @@ matchDao.allUpdate
         wrapper.eq(TDxInvoiceEntity.UUID, uuid);
         TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(wrapper);
         String jvcode = (String) map.get("jvcode");
-        OrgEntity orgEntity = matchDao.getXfMessage((String) map.get("venderid"));
         boolean flag = false;
         int result = 0;
         try {
@@ -545,8 +544,6 @@ matchDao.allUpdate
             if (tDxInvoiceEntity == null) {
                 //不存在
                 //录入
-                map.put("xfTaxNo", orgEntity.getTaxno());
-                map.put("xfName", orgEntity.getOrgname());
                 TDxInvoiceEntity entity = JSONObject.parseObject(JSONObject.toJSONString(map), TDxInvoiceEntity.class);
                 entity.setUuid(uuid);
                 entity.setCreateDate(new Date());
