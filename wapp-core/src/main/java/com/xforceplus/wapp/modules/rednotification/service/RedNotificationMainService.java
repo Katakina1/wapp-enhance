@@ -181,28 +181,42 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
         List<List<TXfRedNotificationEntity>> partition = Lists.partition(filterData, 50);
         if (partition.size()>1){
-            CompletableFuture<Response> cfA = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(0),request));
-            CompletableFuture<Response> cfB = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(1),request));
+//            CompletableFuture<Response> cfA = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(0),request));
+//            CompletableFuture<Response> cfB = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(1),request));
+//            Response response =  new Response();
+//            try {
+//                cfA.join();
+//                cfB.join();
+//                Response resultA = cfA.get();
+//                Response resultB = cfB.get();
+//                if (resultA.getCode() == 1 && resultB.getCode() == 1) {
+//                    response.setCode(Response.OK);
+//                    response.setMessage("请求成功");
+//                } else if (resultA.getCode() == 0 && resultB.getCode() == 0) {
+//                    response.setCode(Response.Fail);
+//                    response.setMessage("申请失败,失败原因："+resultA.getMessage());
+//                } else {
+//                    response.setCode(Response.Fail);
+//                    response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
+//                }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            } catch (ExecutionException e) {
+//                e.printStackTrace();
+//            }
+
+            Response resultA = applyByBatch(partition.get(0), request);
+            Response resultB = applyByBatch(partition.get(1), request);
             Response response =  new Response();
-            try {
-                cfA.join();
-                cfB.join();
-                Response resultA = cfA.get();
-                Response resultB = cfB.get();
-                if (resultA.getCode() == 1 && resultB.getCode() == 1) {
-                    response.setCode(Response.OK);
-                    response.setMessage("请求成功");
-                } else if (resultA.getCode() == 0 && resultB.getCode() == 0) {
-                    response.setCode(Response.Fail);
-                    response.setMessage("申请失败,失败原因："+resultA.getMessage());
-                } else {
-                    response.setCode(Response.Fail);
-                    response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+            if (resultA.getCode() == 1 && resultB.getCode() == 1) {
+                response.setCode(Response.OK);
+                response.setMessage("请求成功");
+            } else if (resultA.getCode() == 0 && resultB.getCode() == 0) {
+                response.setCode(Response.Fail);
+                response.setMessage("申请失败,失败原因："+resultA.getMessage());
+            } else {
+                response.setCode(Response.Fail);
+                response.setMessage("部分成功,失败原因：" + (resultA.getCode() == 0 ? resultA.getMessage() : resultB.getMessage()));
             }
             return response;
         }else {

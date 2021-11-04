@@ -616,15 +616,11 @@ public class BackFillService {
                 invoiceWrapper.eq(TDxRecordInvoiceEntity.UUID, request.getOriginInvoiceCode() + request.getOriginInvoiceNo());
                 TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(invoiceWrapper);
                 if (invoiceEntity != null) {
-                    BigDecimal amount = request.getVerifyBeanList().stream().map(t -> new BigDecimal(t.getAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    if (amount.add(invoiceEntity.getInvoiceAmount()).compareTo(BigDecimal.ZERO) != 0) {
-                        return R.fail("您上传的发票合计金额与代开金额不一致，请确认后再提交");
+                    if (InvoiceTypeEnum.isElectronic(invoiceEntity.getInvoiceType())) {
+                        if(request.getVerifyBeanList().stream().anyMatch(t -> !InvoiceTypeEnum.isElectronic(t.getInvoiceType()))){
+                            throw new EnhanceRuntimeException("原发票为电票，蓝冲的必须也为电票");
+                        }
                     }
-                if (InvoiceTypeEnum.isElectronic(invoiceEntity.getInvoiceType())) {
-                    if(request.getVerifyBeanList().stream().anyMatch(t -> !InvoiceTypeEnum.isElectronic(t.getInvoiceType()))){
-                        throw new EnhanceRuntimeException("原发票为电票，蓝冲的必须也为电票");
-                    }
-                }
                 } else {
                     return R.fail("未找到蓝冲的发票");
                 }
