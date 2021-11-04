@@ -130,14 +130,6 @@ public class AgreementBillFilterCommand implements Command {
     private void filter(List<TXfOriginAgreementMergeEntity> list, Context context, Integer jobId) {
         List<DeductBillBaseData> newList = list.stream()
                 .filter(mergeTmpEntity -> mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) != 0)
-                .filter(mergeTmpEntity -> {
-                    if (Objects.isNull(mergeTmpEntity.getMemo())) {
-                        return true;
-                    } else {
-                        // 非黑名单供应商
-                        return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
-                    }
-                })
                 .map(mergeTmpEntity -> {
                     // 根据reference合并数据 重新计算税额 含税金额
                     try {
@@ -164,6 +156,14 @@ public class AgreementBillFilterCommand implements Command {
                     }
                 })
                 .filter(Objects::nonNull)
+                .filter(mergeTmpEntity -> {
+                    if (Objects.isNull(mergeTmpEntity.getMemo())) {
+                        return true;
+                    } else {
+                        // 非黑名单供应商
+                        return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
+                    }
+                })
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
