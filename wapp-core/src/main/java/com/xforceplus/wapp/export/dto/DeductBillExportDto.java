@@ -1,9 +1,7 @@
 package com.xforceplus.wapp.export.dto;
 
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.dto.DeductExportRequest;
-import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import lombok.Data;
 
 /**
@@ -12,7 +10,7 @@ import lombok.Data;
 @Data
 public class DeductBillExportDto {
 
-    private XFDeductionBusinessTypeEnum type;
+    private TXfDeductionBusinessTypeEnum type;
     private DeductExportRequest request;
     private Long logId;
     private Long userId;

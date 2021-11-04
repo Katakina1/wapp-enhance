@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.converters.TDxRecordInvoiceDetailEntityConvertor;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceExtService;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
@@ -55,7 +55,7 @@ public class BlueInvoiceService {
     @Autowired
     private BlueInvoiceRelationService blueInvoiceRelationService;
 
-    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, XFDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo, String purchserTaxNo, BigDecimal taxRate) {
+    public List<MatchRes> matchInvoiceInfo(BigDecimal amount, TXfDeductionBusinessTypeEnum deductionEnum, String settlementNo, String sellerTaxNo, String purchserTaxNo, BigDecimal taxRate) {
         switch (deductionEnum) {
             case AGREEMENT_BILL:
                 return obtainAvailableInvoices(amount, settlementNo, sellerTaxNo, purchserTaxNo, taxRate, true);

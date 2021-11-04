@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.agreement.controller;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
@@ -55,7 +55,7 @@ public class AgreementController {
         request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        final List<SummaryResponse> summary = deductService.summary(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(summary);
     }
 
@@ -65,10 +65,10 @@ public class AgreementController {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
         request.setOverdue(0);
-        final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        final PageResult<DeductListResponse> page = deductService.deductByPage(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
 
         if (Objects.nonNull(request.getTaxRate())&& BigDecimal.ZERO.compareTo( request.getTaxRate())<=0) {
-            final BigDecimal sum = deductService.sumDueAndNegative(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+            final BigDecimal sum = deductService.sumDueAndNegative(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
             page.setExt(NegativeAndOverDueSummary.builder().negativeOverDueAmount(sum.toPlainString()).build());
         }
 
@@ -81,7 +81,7 @@ public class AgreementController {
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         Map<String, Object> map=new HashMap<>();
         map.put("settlementId",tXfSettlementEntity.getId());
         map.put("settlementNo",tXfSettlementEntity.getSettlementNo());
@@ -94,7 +94,7 @@ public class AgreementController {
     public R preSettlement(@RequestBody PreMakeSettlementRequest request) {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         return R.ok(matchedInvoice);
     }
 

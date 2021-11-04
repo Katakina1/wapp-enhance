@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import com.alibaba.fastjson.JSON;
 import com.xforceplus.wapp.BaseUnitTest;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.MatchedInvoiceListResponse;
 import com.xforceplus.wapp.modules.epd.dto.SummaryResponse;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 public class DeductViewServiceTest extends BaseUnitTest {
 
@@ -27,13 +26,13 @@ public class DeductViewServiceTest extends BaseUnitTest {
     public void testSummary() {
         final DeductListRequest deductListRequest = new DeductListRequest();
 
-        final List<SummaryResponse> summary = deductViewService.summary(deductListRequest, XFDeductionBusinessTypeEnum.EPD_BILL);
+        final List<SummaryResponse> summary = deductViewService.summary(deductListRequest, TXfDeductionBusinessTypeEnum.EPD_BILL);
         System.out.println("summary:"+ JSON.toJSONString(summary));
     }
 
     @Test
     public void testSumDueAndNegative() {
-        final BigDecimal bigDecimal = deductViewService.sumDueAndNegative("PT", "172164", XFDeductionBusinessTypeEnum.EPD_BILL, new BigDecimal("0.09"));
+        final BigDecimal bigDecimal = deductViewService.sumDueAndNegative("PT", "172164", TXfDeductionBusinessTypeEnum.EPD_BILL, new BigDecimal("0.09"));
         System.out.println("sumDueAndNegative---->"+bigDecimal.toPlainString());
     }
 
@@ -41,7 +40,7 @@ public class DeductViewServiceTest extends BaseUnitTest {
     public void testGetMatchedInvoice() {
         PreMakeSettlementRequest request=JSON.parseObject("{\"taxRate\":\"0.09\",\"purchaserNo\":\"D073\",\"billIds\":[\"252992\"]}",PreMakeSettlementRequest.class);
         request.setSellerNo("172164");
-        final List<MatchedInvoiceListResponse> matchedInvoice = deductViewService.getMatchedInvoice(request, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+        final List<MatchedInvoiceListResponse> matchedInvoice = deductViewService.getMatchedInvoice(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         System.out.println("matchedInvoice:-->"+JSON.toJSONString(matchedInvoice));
     }
 

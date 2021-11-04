@@ -3,9 +3,7 @@ package com.xforceplus.wapp.modules.job.command;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
-import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
@@ -167,7 +165,7 @@ public class AgreementBillFilterCommand implements Command {
                 })
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
-            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+            deductService.receiveData(newList, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         }
     }
 
@@ -177,7 +175,7 @@ public class AgreementBillFilterCommand implements Command {
         }
         AgreementBillData deductBillBaseData = new AgreementBillData();
         deductBillBaseData.setBusinessNo(mergeTmpEntity.getReference());
-        deductBillBaseData.setBusinessType(2);
+        deductBillBaseData.setBusinessType(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue());
         deductBillBaseData.setSellerNo(mergeTmpEntity.getCustomerNo());
         deductBillBaseData.setSellerName(mergeTmpEntity.getCustomerName());
         deductBillBaseData.setDeductDate(mergeTmpEntity.getDeductDate());

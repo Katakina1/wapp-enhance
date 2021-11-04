@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.enums.TXfInvoiceDeductTypeEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductInvoiceDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceEntity;
 import org.springframework.stereotype.Service;
@@ -20,8 +20,8 @@ import java.util.List;
 @Service
 public class DeductInvoiceService extends ServiceImpl<TXfBillDeductInvoiceDao, TXfBillDeductInvoiceEntity> {
 
-    public List<TXfBillDeductInvoiceEntity> getBySettlementId(Long settlementId, XFDeductionBusinessTypeEnum typeEnum){
-        Integer relationType = typeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL? TXfInvoiceDeductTypeEnum.SETTLEMENT.getCode():TXfInvoiceDeductTypeEnum.CLAIM.getCode();
+    public List<TXfBillDeductInvoiceEntity> getBySettlementId(Long settlementId, TXfDeductionBusinessTypeEnum typeEnum){
+        Integer relationType = typeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL? TXfInvoiceDeductTypeEnum.SETTLEMENT.getCode():TXfInvoiceDeductTypeEnum.CLAIM.getCode();
         final LambdaQueryWrapper<TXfBillDeductInvoiceEntity> wrapper = Wrappers.lambdaQuery(TXfBillDeductInvoiceEntity.class)
                 .eq(TXfBillDeductInvoiceEntity::getThridId, settlementId).eq(TXfBillDeductInvoiceEntity::getBusinessType, relationType);
         return this.list(wrapper);
