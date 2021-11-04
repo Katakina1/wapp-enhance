@@ -11,6 +11,7 @@ import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.common.utils.InvoiceUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
+import com.xforceplus.wapp.enums.InvoiceStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
 import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
@@ -168,18 +169,25 @@ public class EInvoiceMatchService {
             }
 
         }
-        noneBusinessService.updateById(successEntity);
+
         TAcOrgEntity purEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getPurchaserTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
-        TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
+        TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_SUPPLIER);
         Map<String, Object> map = new HashMap<>();
         if (null != sellerEntity) {
             map.put("venderid", sellerEntity.getOrgCode());
             map.put("gfName", sellerEntity.getOrgName());
         }
-        if (null != sellerEntity) {
+        if (null != purEntity) {
             map.put("jvcode", purEntity.getOrgCode());
             map.put("companyCode", purEntity.getOrgName());
+        }else {
+            successEntity.setVerifyStatus(Constants.VERIFY_NONE_BUSINESS_FAIL);
+            successEntity.setReason("购方信息未维护");
+            successEntity.setOfdStatus(Constants.SIGIN_NONE_BUSINESS_FAIL);
+            noneBusinessService.updateById(successEntity);
+            return;
         }
+        noneBusinessService.updateById(successEntity);
         map.put("invoiceNo", invoiceMain.getInvoiceNo());
         map.put("invoiceCode", invoiceMain.getInvoiceCode());
         map.put("invoiceAmount", invoiceMain.getAmountWithoutTax());
@@ -194,6 +202,7 @@ public class EInvoiceMatchService {
         map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
         map.put("cipherText", invoiceMain.getCipherText());
         map.put("goodsListFlag", invoiceMain.getGoodsListFlag());
+        map.put("invoiceStatus", InvoiceUtil.getInvoiceStatus(invoiceMain.getStatus()));
         //非商发票不进手工认证，提交后才进入手工认证
         map.put("noDeduction", '1');
         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();

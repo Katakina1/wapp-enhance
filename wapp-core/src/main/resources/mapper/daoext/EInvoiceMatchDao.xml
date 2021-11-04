@@ -49,7 +49,7 @@
     </update>
 
     <update id="updateNoDeduction">
-        update t_dx_record_invoice set no_deduction = null where uuid in
+        update t_dx_record_invoice set no_deduction = null, scan_match_status ='1' , source_system=1,host_status ='11' where uuid in
         <foreach collection="uuid" close=")" open="(" separator="," item="id">
         #{id}
      </foreach>

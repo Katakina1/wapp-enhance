@@ -48,4 +48,25 @@ public class InvoiceUtil {
         String dateString = formatter.format(dateDate);
         return dateString;
     }
+
+    /**
+     * 发票类型转换
+     *
+     * @param invoiceType 发票类型
+     * @param invoiceCode 发票代码
+     * @return
+     */
+    public static String getInvoiceStatus(String invoiceStatus) {
+        if (Objects.nonNull(invoiceStatus)) {
+            switch (invoiceStatus) {
+                case "0":
+                    return "2";
+                case "1":
+                    return "0";
+                default:
+                    return invoiceStatus;
+            }
+        }
+        return invoiceStatus;
+    }
 }

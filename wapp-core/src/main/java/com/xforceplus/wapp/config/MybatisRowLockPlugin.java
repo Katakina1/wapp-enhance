@@ -14,6 +14,7 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.Properties;
 
 @Intercepts({
@@ -74,11 +75,22 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
             }
             case SELECT: {
                 // 在set 前面添加
+                int fromIndex = sql.indexOf("from");
+                if (fromIndex<0) {
+                    fromIndex = sql.indexOf("FROM");
+                }
+
                 int index = sql.indexOf("WHERE");
                 if (index < 0) {
                     index = sql.indexOf("where");
                 }
-                sql = sql.substring(0, index) + " with (nolock) " + sql.substring(index);
+
+                String tableArea = sql.substring(fromIndex, index);
+                if (tableArea.contains("join") || tableArea.contains("JOIN")){
+//                    tableArea.split("(\\s+)((left|rigit|)join)/i");
+                }else {
+                    sql = sql.substring(0, index) + " with (nolock) " + sql.substring(index);
+                }
 
 //                Field field = boundSql.getClass().getDeclaredField("sql");
 //                field.setAccessible(true);
@@ -112,5 +124,12 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
     public void setProperties(Properties properties) {
         this.time = Long.parseLong(properties.getProperty("time"));
     }
+
+//    public static void main(String[] args) {
+//        final String[] split = "aaa RIGIT join ".split("(\\s+)((left|rigit)?\\s+join)/i");
+//        for (String s : split){
+//            System.out.println("args = " + s);
+//        }
+//    }
 }
 

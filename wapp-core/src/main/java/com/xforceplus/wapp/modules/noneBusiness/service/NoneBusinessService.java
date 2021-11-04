@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.utils.BeanUtil;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
@@ -127,6 +128,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setSourceUploadId(data.getUploadId());
             addEntity.setCreateUser(UserUtil.getLoginName());
             addEntity.setSourceUploadPath(data.getUploadPath());
+            addEntity.setCreateTime(DateUtils.getNowDate());
             //发送验签
             OfdResponse response = backFillService.signOfd(ofdEntity, entity.getBussinessNo());
             //验签成功
@@ -188,6 +190,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setSourceUploadPath(data.getUploadPath());
             addEntity.setUploadId(data.getUploadId());
             addEntity.setUploadPath(data.getUploadPath());
+            addEntity.setCreateTime(new Date());
             //发送识别
             String taskId = discernService.discern(pdfEntity);
             //发送识别成功
