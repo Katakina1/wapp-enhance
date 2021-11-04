@@ -190,7 +190,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setSourceUploadPath(data.getUploadPath());
             addEntity.setUploadId(data.getUploadId());
             addEntity.setUploadPath(data.getUploadPath());
-            addEntity.setCreateTime(DateUtils.getNowDate());
+            addEntity.setCreateTime(new Date());
             //发送识别
             String taskId = discernService.discern(pdfEntity);
             //发送识别成功
