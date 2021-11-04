@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Created by SunShiyong on 2021/10/16.
  */
@@ -55,6 +57,15 @@ public class RecordInvoiceController extends AbstractController {
     public R delete(@ApiParam(value = "发票id", required = true) @PathVariable Long id){
         logger.info("底账发票列表--入参：{}", id);
         return recordInvoiceService.deleteInvoice(id);
+    }
+
+    @ApiOperation(value = "根据红票查询蓝票")
+    @GetMapping(value = "/queryBlueInvoice")
+    public R<List<InvoiceDetailResponse>> queryBlueInvoice(@ApiParam(value = "红票代码", required = true) @RequestParam String invoiceCode,
+                                                           @ApiParam(value = "红票号码", required = true) @RequestParam String invoiceNo){
+        logger.info("根据红票查询蓝票--红票代码：{}", invoiceCode);
+        logger.info("根据红票查询蓝票--红票号码：{}", invoiceNo);
+        return R.ok(recordInvoiceService.queryBlueInvoice(invoiceCode,invoiceNo));
     }
 
 }

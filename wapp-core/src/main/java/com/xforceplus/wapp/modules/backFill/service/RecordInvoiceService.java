@@ -3,7 +3,6 @@ package com.xforceplus.wapp.modules.backFill.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -24,14 +23,16 @@ import com.xforceplus.wapp.repository.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.binding.MapperMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +57,8 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
     @Autowired
     private TXfSettlementDao tXfSettlementDao;
 
+    @Autowired
+    private TXfBlueRelationDao tXfBlueRelationDao;
     /**
      * 正式发票列表
      * @param
@@ -161,7 +164,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             return R.fail("蓝票不允许删除");
         }
         if(InvoiceTypeEnum.isElectronic(entity.getInvoiceType())) {
-            return R.fail("电票不允许删除");
+            return R.fail("当前发票类型或状态无法作废，重新开票前，请开同税率蓝票进行冲抵");
         }
         if(!DateUtils.isCurrentMonth(entity.getInvoiceDate())){
             return R.fail("当前发票类型或状态无法作废，重新开票前，请开同税率蓝票进行冲抵");
@@ -241,6 +244,35 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             BeanUtil.copyProperties(invoiceEntity,invoice);
             this.convertMain(invoiceEntity,invoice);
             response.add(invoice);
+        }
+        return response;
+    }
+     /**
+      * 根据红票查询蓝票发票列表
+     * @param invoiceCode
+      * @param invoiceNo
+     * @return List
+     */
+    public List<InvoiceDetailResponse> queryBlueInvoice(String  invoiceCode,String invoiceNo){
+        QueryWrapper<TXfBlueRelationEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TXfBlueRelationEntity.RED_INVOICE_CODE,invoiceCode);
+        wrapper.eq(TXfBlueRelationEntity.RED_INVOICE_NO,invoiceNo);
+        List<TXfBlueRelationEntity> tXfBlueRelationEntities = tXfBlueRelationDao.selectList(wrapper);
+        List<InvoiceDetailResponse> response = new ArrayList<>();
+        InvoiceDetailResponse invoice;
+        for (TXfBlueRelationEntity tXfBlueRelationEntity : tXfBlueRelationEntities) {
+            String uuid = tXfBlueRelationEntity.getBlueInvoiceCode()+tXfBlueRelationEntity.getBlueInvoiceNo();
+            QueryWrapper<TDxRecordInvoiceEntity> blueWrapper = new QueryWrapper<>();
+            blueWrapper.eq(TDxRecordInvoiceEntity.UUID,uuid);
+            TDxRecordInvoiceEntity invoiceEntity = tDxRecordInvoiceDao.selectOne(blueWrapper);
+            if(invoiceEntity != null){
+                invoice = new InvoiceDetailResponse();
+                List<InvoiceDetail> list = queryInvoiceDetailByUuid(uuid);
+                invoice.setItems(list);
+                BeanUtil.copyProperties(invoiceEntity,invoice);
+                this.convertMain(invoiceEntity,invoice);
+                response.add(invoice);
+            }
         }
         return response;
     }
