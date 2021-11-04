@@ -159,6 +159,7 @@
         check_code=#{checkNo},
         flow_type='1',
         company_code=#{companyCode},
+        invoice_status=#{invoiceStatus},
         no_deduction =#{noDeduction}
         where id=#{id} and matchno is null
     </update>
@@ -183,6 +184,7 @@
         check_code=#{checkNo},
         flow_type='1',
         company_code=#{companyCode},
+        invoice_status=#{invoiceStatus},
         no_deduction =#{noDeduction}
         where id=#{id} and matchno is null
     </update>

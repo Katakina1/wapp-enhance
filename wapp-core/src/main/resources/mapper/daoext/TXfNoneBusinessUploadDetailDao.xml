@@ -36,12 +36,11 @@
         <result column="update_user" property="updateUser"/>
         <result column="invoice_date" property="invoiceDate"/>
         <result column="submitFlag" property="submit_flag"/>
-        <result column="companyCode" property="jvcode"/>
 
     </resultMap>
 
     <select id="list" resultMap="noneBusMap">
-        select t.*,t1.jvcode,t1.invoice_amount,t1.tax_amount,t1.total_amount
+        select t.*,t1.jvcode as companyCode ,t1.invoice_amount,t1.tax_amount,t1.total_amount
         ,t1.confirm_date as authDate ,t1.confirm_status as authStatus,t1.invoice_status,t1.xf_name as sellerTaxName,t1.xf_tax_no as sellerTaxNo,
         t1.gf_tax_no as purTaxNo ,t1.gf_name as purTaxName
         ,t1.sap,t1.tax_rate
@@ -102,7 +101,7 @@
     </select>
 
     <select id="getByIds" resultMap="noneBusMap">
-        select t.*,t1.jvcode,t1.invoice_amount,t1.tax_amount,t1.total_amount
+        select t.*,t1.jvcode as companyCode,t1.invoice_amount,t1.tax_amount,t1.total_amount
         ,t1.confirm_date as authDate ,t1.confirm_status as authStatus,t1.invoice_status,t1.xf_name as sellerTaxName,t1.xf_tax_no as sellerTaxNo,
         t1.gf_tax_no as purTaxNo ,t1.gf_name as purTaxName
         ,t1.sap,t1.tax_rate
