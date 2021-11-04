@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xforceplus.apollo.client.http.HttpClientFactory;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ApproveStatus;
+import com.xforceplus.wapp.common.enums.IsDealEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.JsonUtil;
@@ -118,6 +119,9 @@ public class BackFillService {
     @Autowired
     private TXfElecUploadRecordDao tXfElecUploadRecordDao;
 
+    @Autowired
+    private TDxInvoiceDao tDxInvoiceDao;
+
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                                    String tenantId) {
         this.tenantId = tenantId;
@@ -147,14 +151,17 @@ public class BackFillService {
                 return R.fail("根据结算单号未找到预制发票");
             }
             if (tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))) {
-                return R.fail("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
+                R r = new R();
+                r.setCode("XFWAPP0002");
+                r.setMessage("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
                         "完成后，您可以继续添加发票！\r\n" +
                         "请及时关注票据状态！或联系购货方联系");
+                return r;
             }
             long countPre = tXfPreInvoiceEntities.stream().filter(t -> TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode().equals(t.getPreInvoiceStatus())).count();
             return R.ok(countPre);
         }
-        return R.ok();
+        return R.ok("校验通过");
     }
 
 
@@ -585,6 +592,13 @@ public class BackFillService {
             TXfPreInvoiceEntity preInvoiceEntity = new TXfPreInvoiceEntity();
             preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
             preInvoiceDao.update(preInvoiceEntity, updateWrapper);
+
+            //作废扫描表发票
+            TDxInvoiceEntity tDxInvoiceEntity = new TDxInvoiceEntity();
+            tDxInvoiceEntity.setIsdel(IsDealEnum.YES.getValue());
+            UpdateWrapper<TDxInvoiceEntity> invoiceWrapper = new UpdateWrapper<>();
+            wrapper.eq(TDxInvoiceEntity.UUID,request.getOriginInvoiceCode()+request.getOriginInvoiceNo());
+            tDxInvoiceDao.update(tDxInvoiceEntity,invoiceWrapper);
             //修改结算单状态
             recordInvoiceService.updateSettlement(request.getSettlementNo(),request.getOriginInvoiceCode(),request.getOriginInvoiceNo());
 

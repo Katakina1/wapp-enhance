@@ -171,13 +171,13 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         entity.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
         entity.setSettlementNo("");
         int count = tDxRecordInvoiceDao.updateById(entity);
+        if(count < 1){
+            throw  new EnhanceRuntimeException("删除失败,未找到发票");
+        }
         TDxInvoiceEntity tDxInvoiceEntity = new TDxInvoiceEntity();
         tDxInvoiceEntity.setIsdel(IsDealEnum.YES.getValue());
         UpdateWrapper<TDxInvoiceEntity> wrapper = new UpdateWrapper<>();
         wrapper.eq(TDxInvoiceEntity.UUID,entity.getUuid());
-        if(count < 1){
-            throw  new EnhanceRuntimeException("删除失败,未找到发票");
-        }
         int count1 = tDxInvoiceDao.update(tDxInvoiceEntity,wrapper);
         if(count1 < 1){
             throw  new EnhanceRuntimeException("删除失败,未找到扫描发票");
