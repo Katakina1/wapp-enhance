@@ -74,11 +74,11 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
             }
             case SELECT: {
                 // 在set 前面添加
-                int index = sql.indexOf("WHERE");
-                if (index < 0) {
-                    index = sql.indexOf("where");
-                }
-                sql = sql.substring(0, index) + " with (nolock) " + sql.substring(index);
+//                int index = sql.indexOf("WHERE");
+//                if (index < 0) {
+//                    index = sql.indexOf("where");
+//                }
+//                sql = sql.substring(0, index) + " with (nolock) " + sql.substring(index);
 
 //                Field field = boundSql.getClass().getDeclaredField("sql");
 //                field.setAccessible(true);
