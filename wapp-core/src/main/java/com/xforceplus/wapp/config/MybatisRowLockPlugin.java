@@ -93,12 +93,12 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
 
                 String tableArea = sql.substring(fromIndex, index);
                 if (tableArea.contains("join") || tableArea.contains("JOIN")) {
-                    final String[] split = tableArea.split("(\\s+)((LEFT|RIGIT|INNER|OUTER|left|rigit|inner|outer)?\\s+(join|JOIN))");
-                    if (split.length > 0) {
-                        String finalSql = sql.substring(0, fromIndex);
-                        finalSql = finalSql + split[0] + NO_LOCK;
-                        sql = finalSql + sql.substring(fromIndex+split[0].length());
-                    }
+//                    final String[] split = tableArea.split("(\\s+)((LEFT|RIGIT|INNER|OUTER|left|rigit|inner|outer)?\\s+(join|JOIN))");
+//                    if (split.length > 0) {
+//                        String finalSql = sql.substring(0, fromIndex);
+//                        finalSql = finalSql + split[0] + NO_LOCK;
+//                        sql = finalSql + sql.substring(fromIndex+split[0].length());
+//                    }
 
                 }else {
                     sql = sql.substring(0, index) + NO_LOCK + sql.substring(index);
