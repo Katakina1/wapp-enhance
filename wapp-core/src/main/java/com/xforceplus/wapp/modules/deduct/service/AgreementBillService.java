@@ -207,7 +207,10 @@ public class AgreementBillService extends DeductService{
             throw new EnhanceRuntimeException("选择单据的总金额不能小于0");
         }
         TXfSettlementEntity tXfSettlementEntity = trans2Settlement(Collections.singletonList(deductBill), xfDeductionBusinessTypeEnum);
-        tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), targetStatus.getCode());
+        final int byIdResult = tXfBillDeductExtDao.updateBillById(idsStr, tXfSettlementEntity.getSettlementNo(), xfDeductionBusinessTypeEnum.getValue(), statusEnum.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode(), targetStatus.getCode());
+        if (byIdResult != ids.size()){
+            throw new EnhanceRuntimeException("您选择的单据状态发生了变更，请返回重新选择");
+        }
         TXfBillDeductEntity  tmp = tXfBillDeductExtDao.queryBillBySettlementNo(tXfSettlementEntity.getSettlementNo(),targetStatus.getCode(), TXfBillDeductStatusEnum.UNLOCK.getCode());
         checkDeduct(tmp, tXfSettlementEntity, xfDeductionBusinessTypeEnum);
         executeMatch(xfDeductionBusinessTypeEnum, tXfSettlementEntity,targetStatus.getCode(),matchResList);
