@@ -171,7 +171,7 @@ public class AgreementFbl5nMergeCommand implements Command {
                         if (StringUtils.isNotBlank(amountInDocCurr)) {
                             tXfOriginAgreementMergeTmpEntity.setWithAmount(new BigDecimal(amountInDocCurr));
                         }
-                        tXfOriginAgreementMergeTmpEntity.setReasonCode(fbl5n.getReasonCode().replace(" ", ""));
+                        tXfOriginAgreementMergeTmpEntity.setReasonCode(fbl5n.getReasonCode());
                         if (StringUtils.isBlank(tXfOriginAgreementMergeTmpEntity.getReasonCode())) {
                             tXfOriginAgreementMergeTmpEntity.setReasonCode(getReasonCode(fbl5n.getJobId(), fbl5n.getReference()));
                         }

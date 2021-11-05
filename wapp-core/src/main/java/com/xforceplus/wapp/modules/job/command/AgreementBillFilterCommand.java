@@ -136,7 +136,6 @@ public class AgreementBillFilterCommand implements Command {
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.REFERENCE, mergeTmpEntity.getReference());
                         queryWrapper.isNotNull(TXfOriginAgreementMergeEntity.TAX_RATE);
-                        queryWrapper.ne(TXfOriginAgreementMergeEntity.TAX_RATE,"");
                         List<TXfOriginAgreementMergeEntity> originAgreementMergeList = tXfOriginAgreementMergeDao.selectList(queryWrapper);
                         if (CollectionUtils.isNotEmpty(originAgreementMergeList)) {
                             TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.get(0);
