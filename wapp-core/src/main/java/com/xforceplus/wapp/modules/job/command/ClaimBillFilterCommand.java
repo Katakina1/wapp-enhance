@@ -148,16 +148,14 @@ public class ClaimBillFilterCommand implements Command {
             // 总页数
             pages = page.getPages();
             filterBill(page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
-            //context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
             //更新页码
             TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
             updateTXfBillJobEntity.setId(jobId);
             updateTXfBillJobEntity.setJobEntryClaimBillProgress(last);
             tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
-        // 全部处理完成后清空处理进度
+        // 下一步
         context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.ITEM.getCode());
-       // context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, 0);
     }
 
     /**
@@ -189,16 +187,14 @@ public class ClaimBillFilterCommand implements Command {
             // 总页数
             pages = page.getPages();
             filterItemHyper(page.getRecords(), String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
-            //context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
             //更新页码
             TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
             updateTXfBillJobEntity.setId(jobId);
             updateTXfBillJobEntity.setJobEntryClaimItemHyperProgress(last);
             tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
-        // 全部处理完成后清空处理进度
+        // 下一步
         context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.ITEM_SAMS.getCode());
-        //context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, 0);
     }
 
     /**
