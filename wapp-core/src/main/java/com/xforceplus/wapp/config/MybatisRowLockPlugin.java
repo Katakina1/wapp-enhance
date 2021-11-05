@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.config;
 
 
+import com.aisinopdf.text.P;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.handlers.AbstractSqlParserHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -16,6 +17,8 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Intercepts({
         @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
@@ -93,7 +96,13 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
 
                 String tableArea = sql.substring(fromIndex, index);
                 if (tableArea.contains("join") || tableArea.contains("JOIN")) {
-//                    final String[] split = tableArea.split("(\\s+)((LEFT|RIGIT|INNER|OUTER|left|rigit|inner|outer)?\\s+(join|JOIN))");
+//                    final String[] split = tableArea.split("(\\s+)((LEFT?|RIGIT?|INNER?|OUTER?|left?|rigit?|inner?|outer?)\\s+(join|JOIN))");
+//                    Pattern pattern=Pattern.compile("(\\s+)((LEFT|RIGHT)\\s+)?((INNER|OUTER)\\s+)?JOIN",Pattern.CASE_INSENSITIVE);
+//                    final Matcher matcher = pattern.matcher(sql);
+//                    if (matcher.find()) {
+//                        final String group = matcher.group();
+//                        System.out.println("group = " + group);
+//                    }
 //                    if (split.length > 0) {
 //                        String finalSql = sql.substring(0, fromIndex);
 //                        finalSql = finalSql + split[0] + NO_LOCK;
@@ -110,6 +119,8 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
         metaObject.setValue("delegate.boundSql.sql", sql);
         return invocation.proceed();
     }
+
+
 
     /**
      * 跳过rowlock
@@ -134,5 +145,21 @@ public class MybatisRowLockPlugin extends AbstractSqlParserHandler implements In
         this.time = Long.parseLong(properties.getProperty("time"));
     }
 
+//    public static void main(String[] args) {
+//        match("from aaa  inner  join bbb b  a.a=b.b inner join B");
+//
+//    }
+
+//    private static boolean match(String sql){
+//        Pattern pattern=Pattern.compile("(\\s+)((LEFT|RIGHT)\\s+)?((INNER|OUTER)\\s+)?JOIN",Pattern.CASE_INSENSITIVE);
+////        Pattern pattern=Pattern.compile("/(\\s+)(((LEFT\\s)?|(RIGIT\\s)?|(INNER\\s)?|(OUTER\\s)?|(left\\s)?|(rigit\\s)?|(inner\\s)?|(outer\\s)?)\\s+(join|JOIN))/i");
+//        final Matcher matcher = pattern.matcher(sql);
+//        if (matcher.find()) {
+//            final String group = matcher.group();
+//            System.out.println("group = " + group);
+//        }
+//        return true;
+//
+//    }
 }
 

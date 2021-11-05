@@ -16,6 +16,7 @@ spring:
     driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: testuser01
     password: aGSsdsJFWd_w_1
+
   devtools:
       restart:
           #热部署生效
