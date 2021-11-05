@@ -57,7 +57,7 @@ public class PreInvoice {
     @ApiModelProperty("发票代码")
     private String invoiceCode;
     @ApiModelProperty("开票日期")
-    private String paperDrawDate;
+    private String paperDrewDate;
     @ApiModelProperty("机器码")
     private String machineCode;
     @ApiModelProperty("校验码")
@@ -90,7 +90,7 @@ public class PreInvoice {
     @ApiModelProperty("原始发票类型:01.专纸、03.机动车、04.普纸、08.专电、10.普电、11.卷票、14.通行费电票")
     private String originInvoiceType;
     @ApiModelProperty("原始发票开票日期")
-    private String originPaperDrawDate;
+    private String originPaperDrewDate;
     @ApiModelProperty("红字信息编码")
     private String redNotificationNo;
     @ApiModelProperty("红字信息编号申请状态:0.未申请、1.发起申请、2.已申请")

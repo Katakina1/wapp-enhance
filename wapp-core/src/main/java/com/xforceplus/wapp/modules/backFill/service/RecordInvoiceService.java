@@ -193,7 +193,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         tXfPreInvoiceEntity.setInvoiceCode("");
         tXfPreInvoiceEntity.setInvoiceNo("");
         tXfPreInvoiceEntity.setMachineCode("");
-        tXfPreInvoiceEntity.setPaperDrawDate("");
+        tXfPreInvoiceEntity.setPaperDrewDate("");
         tXfPreInvoiceEntity.setCheckCode("");
         tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         int count2 = tXfPreInvoiceDao.update(tXfPreInvoiceEntity,preWrapper);
@@ -295,9 +295,9 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         }
         if(StringUtils.isNotEmpty(invoiceColor)){
             if(invoiceColor.equals("0")){
-                wrapper.lt(TDxRecordInvoiceEntity.INVOICE_AMOUNT,0);
+                wrapper.le(TDxRecordInvoiceEntity.INVOICE_AMOUNT,0);
             }else{
-                wrapper.gt(TDxRecordInvoiceEntity.INVOICE_AMOUNT,0);
+                wrapper.ge(TDxRecordInvoiceEntity.INVOICE_AMOUNT,0);
             }
         }
         return wrapper;
