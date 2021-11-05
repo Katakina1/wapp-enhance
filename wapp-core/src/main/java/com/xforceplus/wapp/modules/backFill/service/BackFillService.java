@@ -516,7 +516,7 @@ public class BackFillService {
                         preInvoiceEntity.setInvoiceNo(backFillVerifyBean.getInvoiceNo());
                         preInvoiceEntity.setCheckCode(backFillVerifyBean.getCheckCode());
                         preInvoiceEntity.setMachineCode(backFillVerifyBean.getMachinecode());
-                        preInvoiceEntity.setPaperDrawDate(backFillVerifyBean.getPaperDrewDate());
+                        preInvoiceEntity.setPaperDrewDate(backFillVerifyBean.getPaperDrewDate());
                         preInvoiceDao.updateById(preInvoiceEntity);
                         log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}", preInvoiceEntity.getRedNotificationNo());
                         Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
