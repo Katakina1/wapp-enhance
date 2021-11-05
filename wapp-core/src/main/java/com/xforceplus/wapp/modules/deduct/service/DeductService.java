@@ -208,6 +208,9 @@ public class DeductService   {
             return entity;
         }
         try {
+            if (StringUtils.isNotEmpty(entity.getGoodsTaxNo())) {
+                return entity;
+            }
             Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
             if (taxCodeOptional.isPresent()) {
                 TaxCode taxCode = taxCodeOptional.get();
@@ -937,7 +940,7 @@ public class DeductService   {
                         tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount());
                         tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
-                        tXfSettlementItemEntity.setTaxRate(invoiceItem.getTaxRate());
+                        tXfSettlementItemEntity.setTaxRate(TaxRateTransferEnum.transferTaxRate(invoiceItem.getTaxRate()));
                         tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()));
                         tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());

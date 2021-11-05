@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
@@ -8,6 +9,8 @@ import com.xforceplus.wapp.modules.job.dto.OriginClaimItemHyperDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
@@ -59,6 +62,9 @@ public class ClaimItemHyperSaveCommand implements Command {
                 downloadFile(remotePath, fileName, localPath);
             }
             try {
+                //处理某个job的excel前先删除这个job的原始数据（以前可能处理一半需要重新处理excel）
+                int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
+                deleteOriginClaimItemHyper(jobId);
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -68,6 +74,12 @@ public class ClaimItemHyperSaveCommand implements Command {
             log.info("跳过原始索赔单Hyper明细数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
+    }
+
+    private void deleteOriginClaimItemHyper(Integer jobId){
+        QueryWrapper<TXfOriginClaimItemHyperEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginClaimItemHyperEntity.JOB_ID,jobId);
+        service.remove(queryWrapper);
     }
 
     /**

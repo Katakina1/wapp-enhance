@@ -106,14 +106,32 @@ public class TXfBillJobEntity extends BaseEntity {
     /**
      * 协议单FBL5N合并时已处理完成的分页数，起始是0
      */
-    @TableField("job_entry_fbl5n_progress ")
-    private Long jobEntryFbl5nProgress ;
+    @TableField("job_entry_agreement_fbl5n_progress ")
+    private Long jobEntryAgreementFbl5nProgress ;
 
     /**
      * 协议单ZARR0355合并时已处理完成的分页数，起始是0
      */
-    @TableField("job_entry_zarr0355_progress")
-    private Long jobEntryZarr0355Progress;
+    @TableField("job_entry_agreement_zarr_progress")
+    private Long jobEntryAgreementZarrProgress;
+
+    /**
+     * 索赔单主信息同步到业务单页码，起始是0
+     */
+    @TableField("job_entry_claim_bill_progress")
+    private Long jobEntryClaimBillProgress;
+
+    /**
+     * 索赔单明细hyper同步业务单页码，起始是0
+     */
+    @TableField("job_entry_claim_item_hyper_progress ")
+    private Long jobEntryClaimItemHyperProgress;
+
+    /**
+     * 索赔单明细sams同步到业务单页码，起始是0
+     */
+    @TableField("job_entry_claim_item_sams_progress")
+    private Long jobEntryClaimItemSamsProgress;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
@@ -145,9 +163,15 @@ public class TXfBillJobEntity extends BaseEntity {
 
     public static final String UPDATE_TIME = "update_time";
 
-    public static final String JOB_ENTRY_FBL5N_PROGRESS  = "job_entry_fbl5n_progress ";
+    public static final String JOB_ENTRY_AGREEMENT_FBL5N_PROGRESS  = "job_entry_agreement_fbl5n_progress ";
 
-    public static final String JOB_ENTRY_ZARR0355_PROGRESS = "job_entry_zarr0355_progress";
+    public static final String JOB_ENTRY_AGREEMENT_ZARR_PROGRESS = "job_entry_agreement_zarr_progress";
+
+    public static final String JOB_ENTRY_CLAIM_BILL_PROGRESS = "job_entry_claim_bill_progress";
+
+    public static final String JOB_ENTRY_CLAIM_ITEM_HYPER_PROGRESS = "job_entry_claim_item_hyper_progress ";
+
+    public static final String JOB_ENTRY_CLAIM_ITEM_SAMS_PROGRESS = "job_entry_claim_item_sams_progress";
 
     public static final String ID = "id";
 
