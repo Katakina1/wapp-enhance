@@ -1,17 +1,13 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xforceplus.apollo.msg.SealedMessage;
 import com.xforceplus.wapp.common.enums.IsDealEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.Base64;
-import com.xforceplus.wapp.common.utils.CommonUtil;
-import com.xforceplus.wapp.common.utils.InvoiceUtil;
-import com.xforceplus.wapp.common.utils.JsonUtil;
+import com.xforceplus.wapp.common.utils.*;
 import com.xforceplus.wapp.constants.Constants;
-import com.xforceplus.wapp.enums.InvoiceStatusEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
 import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
@@ -294,42 +290,54 @@ public class EInvoiceMatchService {
             throw new EnhanceRuntimeException("销方税号不一致");
         }*/
         //从备注里截取红字信息编号
-        Map<String, Object> map = new HashMap<>();
+        TDxRecordInvoiceEntity recordInvoice = new TDxRecordInvoiceEntity();
         if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
             String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号") + 5, invoiceMain.getRemark().indexOf("信息表编号") + 21);
             if (StringUtils.isNotEmpty(redNo)) {
                 String trim = redNo.trim();
                 if (trim.matches("[0-9]+")) {
-                    map.put("redNoticeNumber", trim);
+                    recordInvoice.setRedNoticeNumber(trim);
                 } else {
                     log.error("发票回填--解析红字信息编号失败！");
                     throw new EnhanceRuntimeException("解析红字信息编号失败");
                 }
             }
         }
-        map.put("venderid", recordEntity.getVendorId());
-        map.put("jvcode", recordEntity.getJvCode());
-        map.put("invoiceNo", invoiceMain.getInvoiceNo());
-        map.put("invoiceCode", invoiceMain.getInvoiceCode());
-        map.put("invoiceAmount", invoiceMain.getAmountWithoutTax());
-        map.put("invoiceDate", invoiceMain.getPaperDrewDate());
-        map.put("totalAmount", invoiceMain.getAmountWithTax());
-        map.put("taxAmount", invoiceMain.getTaxAmount());
-        map.put("taxRate", invoiceDetails.get(0).getTaxRate());
-        map.put("gfName", invoiceMain.getPurchaserName());
-        map.put("invoiceType", invoiceMain.getInvoiceType());
-        map.put("gfTaxno", invoiceMain.getPurchaserTaxNo());
-        map.put("checkNo", invoiceMain.getCheckCode());
-        map.put("xfName", invoiceMain.getSellerName());
-        map.put("xfTaxNo", invoiceMain.getSellerTaxNo());
-        map.put("companyCode", orgEntity == null ? null : orgEntity.getCompany());
+        recordInvoice.setVenderid(recordEntity.getVendorId());
+        recordInvoice.setJvcode(recordEntity.getJvCode());
+        recordInvoice.setInvoiceCode(invoiceMain.getInvoiceNo());
+        recordInvoice.setInvoiceNo(invoiceMain.getInvoiceNo());
+        recordInvoice.setInvoiceAmount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
+        recordInvoice.setDkInvoiceamount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
+        recordInvoice.setInvoiceDate(DateUtils.strToDate(invoiceMain.getPaperDrewDate()));
+        recordInvoice.setTotalAmount(new BigDecimal(invoiceMain.getTaxAmount()));
+        recordInvoice.setTaxAmount(new BigDecimal( invoiceMain.getTaxAmount()));
+        recordInvoice.setTaxRate(new BigDecimal(invoiceDetails.get(0).getTaxRate()));
+        recordInvoice.setInvoiceType(invoiceMain.getInvoiceType());
+        recordInvoice.setGfName(invoiceMain.getPurchaserName());
+        recordInvoice.setGfTaxNo(invoiceMain.getPurchaserTaxNo());
+        recordInvoice.setGfAddressAndPhone(invoiceMain.getPurchaserAddrTel());
+        recordInvoice.setGfBankAndNo(invoiceMain.getPurchaserBankInfo());
+        recordInvoice.setCheckCode(invoiceMain.getCheckCode());
+        recordInvoice.setXfName( invoiceMain.getSellerName());
+        recordInvoice.setXfTaxNo(invoiceMain.getSellerTaxNo());
+        recordInvoice.setXfAddressAndPhone(invoiceMain.getSellerAddrTel());
+        recordInvoice.setXfBankAndNo(invoiceMain.getSellerBankInfo());
+        recordInvoice.setCompanyCode(orgEntity == null ? null : orgEntity.getCompany());
 //        底账来源  0-采集 1-查验 2-录入
-        map.put("sourceSystem", "1");
-        map.put("goodsListFlag", invoiceMain.getGoodsListFlag());
-        map.put("machinecode", invoiceMain.getMachineCode());
+        recordInvoice.setSourceSystem("1");
+        recordInvoice.setGoodsListFlag(invoiceMain.getGoodsListFlag());
+        recordInvoice.setMachinecode(invoiceMain.getMachineCode());
 //        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
-        map.put("invoiceStatus", convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
-        map.put("remark", invoiceMain.getRemark());
+        recordInvoice.setInvoiceStatus(convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
+        recordInvoice.setRemark(invoiceMain.getRemark());
+        recordInvoice.setDxhyMatchStatus("0");
+        recordInvoice.setDetailYesorno("1");
+        recordInvoice.setFlowType("1");
+        recordInvoice.setTpStatus("0");
+        recordInvoice.setIsDel(IsDealEnum.NO.getValue());
+        recordInvoice.setUuid(invoiceMain.getInvoiceCode()+invoiceMain.getInvoiceNo());
+        recordInvoice.setCreateDate(new Date());
         successSuppliers.add(() -> {
                     //结果存储-记录表
                     //成功计数
@@ -342,10 +350,10 @@ public class EInvoiceMatchService {
                     return true;
                 }
         );
-        int result = this.saveOrUpdateRecordInvoice(map);
+        int result = this.saveOrUpdateRecordInvoice(recordInvoice);
         //只有红票才入库
         if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0) {
-            this.saveOrUpdateInvoice(map);
+            this.saveOrUpdateInvoice(recordInvoice);
         }
         if (result == 0) {
             // 新增发票情况下才会将明细入库
@@ -391,104 +399,33 @@ public class EInvoiceMatchService {
     }
 
     /**
-     * @param map
+     * @param recordInvoice
      * @return 0 插入，1更新
      */
-    public int saveOrUpdateRecordInvoice(Map<String, Object> map) {
-        final Object invoiceCode = map.get("invoiceCode");
-        String code = invoiceCode.toString();
-        String no = map.get("invoiceNo").toString();
-        String uuid = code + "" + no;
+    public int saveOrUpdateRecordInvoice(TDxRecordInvoiceEntity recordInvoice) {
         boolean flag = false;
-        map.put("uuid", uuid);
-        List<InvoiceEntity> list1 = matchDao.ifExist(map);
-        String jvcode = (String) map.get("jvcode");
-//        String companyCode = matchDao.getCompanyCode(jvcode);
-//        map.put("companyCode", companyCode);
-        OrgEntity orgEntity = matchDao.getXfMessage((String) map.get("venderid"));
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TDxRecordInvoiceEntity.UUID,recordInvoice.getUuid());
+        TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectOne(wrapper);
         int result = 0;
         try {
             //判断uuid是否存在
-            if (CollectionUtils.isEmpty(list1)) {
-                //不存在
-                //录入
-                map.put("xfTaxNo", orgEntity.getTaxno());
-                map.put("xfName", orgEntity.getOrgname());
-                if ("04".equals(CommonUtil.getFplx((String) invoiceCode))) {
-                    flag = electronicInvoiceDao.saveInvoicePP(map) > 0;
-                } else {
-                    flag = this.electronicInvoiceDao.saveInvoice(map) > 0;
-                }
+            if (entity == null) {
+                //不存在录入
+                flag = tDxRecordInvoiceDao.insert(recordInvoice) >0;
             } else {
                 result = 1;
                 //存在数据
-                TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
-                entity.setId(list1.get(0).getId());
-                entity.setIsDel(IsDealEnum.NO.getValue());
+                TDxRecordInvoiceEntity newEntity = new TDxRecordInvoiceEntity();
+                newEntity.setId(entity.getId());
+                newEntity.setIsDel(IsDealEnum.NO.getValue());
                 tDxRecordInvoiceDao.updateById(entity);
-                /*if (invoiceAmount.compareTo(BigDecimal.ZERO) < 0) {
-                    throw new EnhanceRuntimeException("该发票金额小于0，不能匹配！");
-                }
-                if ("0".equals(hostStatus) || "10".equals(hostStatus) || "1".equals(hostStatus) || "13".equals(hostStatus) || StringUtils.isEmpty(hostStatus)) {
-
-
-                    if (StringUtils.isEmpty(flowType) || "1".equals(flowType)) {
-
-                        if (list1.get(0).getXfTaxNo().equals(orgEntity.getTaxno())) {
-                            if (("0".equals(matchstatus) || "6".equals(matchstatus)) && (!"1".equals(tpStatus))) {
-                                //判断来源
-                                if ("0".equals(source)) {
-                                    //采集
-                                    if (list1.get(0).getGfTaxNo() == null || !list1.get(0).getGfTaxNo().equals(map.get("gfTaxno"))) {
-                                        throw new EnhanceRuntimeException("该发票的购方税号与所选购方名称不一致！");
-                                    }
-                                    //判断是否有明细
-                                    if ("0".equals(list1.get(0).getDetailYesorno()) && list1.get(0).getTaxRate() == null) {
-                                        //无税率插入税率
-                                        flag = matchDao.update(list1.get(0).getId(), new BigDecimal((String) map.get("taxRate"))) > 0;
-
-                                    } else if ("1".equals(list1.get(0).getDetailYesorno()) && list1.get(0).getTaxRate() == null) {
-                                        //有明细无税率
-                                        throw new EnhanceRuntimeException("该发票不是单一税率发票！");
-                                    }
-                                } else if ("2".equals(source)) {
-                                    // 录入
-                                    //覆盖
-                                    map.put("id", list1.get(0).getId());
-                                    if ("04".equals(CommonUtil.getFplx((String) invoiceCode))) {
-                                        flag = PP(map) > 0;
-                                    } else {
-                                        flag = matchDao.allUpdate(map) > 0;
-                                    }
-
-
-                                } else {
-                                    if (list1.get(0).getGfTaxNo() == null || !list1.get(0).getGfTaxNo().equals(map.get("gfTaxno"))) {
-                                        throw new EnhanceRuntimeException("该发票的购方税号与所选购方名称不一致！");
-                                    }
-                                    //更新抵扣金额
-                                    Object invoiceAmounts = map.get("invoiceAmount");
-                                    matchDao.updateDkAmount(new BigDecimal(String.valueOf(invoiceAmounts)), (String) map.get("uuid"));
-                                }
-                            } else {
-                                throw new EnhanceRuntimeException("该发票已匹配或者待退票！");
-                            }
-                        } else {
-                            throw new EnhanceRuntimeException("该发票销方税号不符！");
-                        }
-                    } else {
-                        throw new EnhanceRuntimeException("该发票不是商品发票！");
-matchDao.allUpdate
-                    }
-                } else {
-                    throw new EnhanceRuntimeException("该发票已在沃尔玛匹配！");
-                }*/
             }
         } catch (Exception e) {
             log.error("录入发票:" + e.getMessage(), e);
             throw new EnhanceRuntimeException("录入发票失败:" + e.getMessage());
         } finally {
-            log.info("更新/插入结果:{},{}-{}", flag, invoiceCode, map.get("invoiceNo"));
+            log.info("更新/插入结果:{},{}-{}", flag, recordInvoice.getInvoiceCode(), recordInvoice.getInvoiceNo());
         }
         return result;
     }
@@ -525,18 +462,15 @@ matchDao.allUpdate
     }
 
     /**
-     * @param map
+     * @param recordInvoiceEntity
      * @return 扫描表 0 插入，1更新
      */
-    public int saveOrUpdateInvoice(Map<String, Object> map) {
-        final Object invoiceCode = map.get("invoiceCode");
-        String code = invoiceCode.toString();
-        String no = map.get("invoiceNo").toString();
-        String uuid = code + "" + no;
+    public int saveOrUpdateInvoice(TDxRecordInvoiceEntity recordInvoiceEntity) {
+        TDxInvoiceEntity entity = new TDxInvoiceEntity();
+        BeanUtil.copyProperties(recordInvoiceEntity,entity);
         QueryWrapper<TDxInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TDxInvoiceEntity.UUID, uuid);
+        wrapper.eq(TDxInvoiceEntity.UUID, entity.getUuid());
         TDxInvoiceEntity tDxInvoiceEntity = tDxInvoiceDao.selectOne(wrapper);
-        String jvcode = (String) map.get("jvcode");
         boolean flag = false;
         int result = 0;
         try {
@@ -544,9 +478,6 @@ matchDao.allUpdate
             if (tDxInvoiceEntity == null) {
                 //不存在
                 //录入
-                TDxInvoiceEntity entity = JSONObject.parseObject(JSONObject.toJSONString(map), TDxInvoiceEntity.class);
-                entity.setUuid(uuid);
-                entity.setCreateDate(new Date());
                 entity.setBindyesorno("0");
                 entity.setPackyesorno("0");
                 flag = tDxInvoiceDao.insert(entity) > 0;
@@ -560,7 +491,7 @@ matchDao.allUpdate
             log.error("录入发票:" + e.getMessage(), e);
             throw new EnhanceRuntimeException("录入发票失败:" + e.getMessage());
         } finally {
-            log.info("更新/插入结果:{},{}-{}", flag, invoiceCode, map.get("invoiceNo"));
+            log.info("更新/插入结果:{},{}-{}", flag, recordInvoiceEntity.getInvoiceCode(), recordInvoiceEntity.getInvoiceNo());
         }
         return result;
     }
