@@ -62,5 +62,7 @@ public class TaxRateConfig {
 //        taxRateConfig.init();
 //        Map<BigDecimal, BigDecimal> tmp = taxRateConfig.bulidTaxRateMap(BigDecimal.valueOf(0.06));
 //        System.out.println(tmp);
+//        System.out.println(tmp.get(new BigDecimal("0.06")));
+//        System.out.println(tmp.get(  BigDecimal.valueOf(0.13)));
 //    }
 }
