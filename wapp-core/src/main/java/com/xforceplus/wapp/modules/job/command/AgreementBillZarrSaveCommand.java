@@ -74,9 +74,9 @@ public class AgreementBillZarrSaveCommand implements Command {
         return false;
     }
 
-    private void deleteOriginZarr(Integer jobId){
+    private void deleteOriginZarr(Integer jobId) {
         QueryWrapper<TXfOriginSapZarrEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(TXfOriginSapZarrEntity.JOB_ID,jobId);
+        queryWrapper.eq(TXfOriginSapZarrEntity.JOB_ID, jobId);
         service.remove(queryWrapper);
     }
 
