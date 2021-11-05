@@ -5,15 +5,13 @@ import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.deduct.dto.*;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author malong@xforceplus.com
@@ -51,8 +48,8 @@ public class DeductController {
     @PostMapping(value = "/updateBillStatus")
     public R updateBillStatus(@ApiParam(value = "修改业务单状态请求" ,required=true )@RequestBody UpdateBillStatusRequest request) {
         logger.info("修改业务单状态--请求参数{}", JSONObject.toJSONString(request));
-        XFDeductionBusinessTypeEnum deductionEnum = ValueEnum.getEnumByValue(XFDeductionBusinessTypeEnum.class, request.getDeductType()).get();
-        TXfBillDeductStatusEnum status = TXfBillDeductStatusEnum.getEnumByCode(request.getDeductStatus());
+        TXfDeductionBusinessTypeEnum deductionEnum = ValueEnum.getEnumByValue(TXfDeductionBusinessTypeEnum.class, request.getDeductType()).get();
+        TXfDeductStatusEnum status = TXfDeductStatusEnum.getEnumByCode(request.getDeductStatus());
         for (Long id : request.getIds()) {
             TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
             tXfBillDeductEntity.setId(id);

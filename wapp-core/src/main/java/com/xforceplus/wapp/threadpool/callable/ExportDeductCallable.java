@@ -1,12 +1,8 @@
 package com.xforceplus.wapp.threadpool.callable;
 
 import com.alibaba.fastjson.JSONObject;
-import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.export.dto.DeductBillExportDto;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
-import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

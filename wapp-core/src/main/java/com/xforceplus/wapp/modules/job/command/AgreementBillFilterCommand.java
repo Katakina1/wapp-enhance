@@ -3,9 +3,7 @@ package com.xforceplus.wapp.modules.job.command;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
-import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
@@ -110,7 +108,8 @@ public class AgreementBillFilterCommand implements Command {
             Page<TXfOriginAgreementMergeEntity> page = new QueryChainWrapper<>(tXfOriginAgreementMergeDao)
                     .select("reference", "sum(with_amount) as with_amount")
                     .eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId)
-                    .groupBy(TXfOriginAgreementMergeEntity.REFERENCE).page(new Page<>(++last, BATCH_COUNT));
+                    .groupBy(TXfOriginAgreementMergeEntity.REFERENCE)
+                    .page(new Page<>(++last, BATCH_COUNT));
             pages = page.getPages();
             filter(page.getRecords(), context, jobId);
             context.put(TXfBillJobEntity.JOB_ENTRY_PROGRESS, last);
@@ -130,25 +129,16 @@ public class AgreementBillFilterCommand implements Command {
     private void filter(List<TXfOriginAgreementMergeEntity> list, Context context, Integer jobId) {
         List<DeductBillBaseData> newList = list.stream()
                 .filter(mergeTmpEntity -> mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) != 0)
-                .filter(mergeTmpEntity -> {
-                    if (Objects.isNull(mergeTmpEntity.getMemo())) {
-                        return true;
-                    } else {
-                        // 非黑名单供应商
-                        return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
-                    }
-                })
                 .map(mergeTmpEntity -> {
                     // 根据reference合并数据 重新计算税额 含税金额
                     try {
                         QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
                         queryWrapper.eq(TXfOriginAgreementMergeEntity.REFERENCE, mergeTmpEntity.getReference());
+                        queryWrapper.isNotNull(TXfOriginAgreementMergeEntity.TAX_RATE);
                         List<TXfOriginAgreementMergeEntity> originAgreementMergeList = tXfOriginAgreementMergeDao.selectList(queryWrapper);
-                        TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.stream()
-                                .filter(mergeTmp -> mergeTmp.getTaxRate() != null)
-                                .findFirst().orElse(null);
-                        if (originAgreementMergeTmp != null) {
+                        if (CollectionUtils.isNotEmpty(originAgreementMergeList)) {
+                            TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.get(0);
                             originAgreementMergeTmp.setWithAmount(mergeTmpEntity.getWithAmount());
                             BigDecimal taxAmount = originAgreementMergeTmp.getWithAmount()
                                     .divide(originAgreementMergeTmp.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
@@ -164,9 +154,17 @@ public class AgreementBillFilterCommand implements Command {
                     }
                 })
                 .filter(Objects::nonNull)
+                .filter(mergeTmpEntity -> {
+                    if (Objects.isNull(mergeTmpEntity.getMemo())) {
+                        return true;
+                    } else {
+                        // 非黑名单供应商
+                        return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
+                    }
+                })
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
-            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.AGREEMENT_BILL);
+            deductService.receiveData(newList, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         }
     }
 
@@ -176,7 +174,7 @@ public class AgreementBillFilterCommand implements Command {
         }
         AgreementBillData deductBillBaseData = new AgreementBillData();
         deductBillBaseData.setBusinessNo(mergeTmpEntity.getReference());
-        deductBillBaseData.setBusinessType(2);
+        deductBillBaseData.setBusinessType(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue());
         deductBillBaseData.setSellerNo(mergeTmpEntity.getCustomerNo());
         deductBillBaseData.setSellerName(mergeTmpEntity.getCustomerName());
         deductBillBaseData.setDeductDate(mergeTmpEntity.getDeductDate());

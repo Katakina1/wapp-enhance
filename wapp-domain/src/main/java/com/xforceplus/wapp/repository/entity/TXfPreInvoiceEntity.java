@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-21
+ * @since 2021-11-05
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -143,8 +143,8 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     /**
      * 开票日期，回填时补充
      */
-    @TableField("paper_draw_date")
-    private String paperDrawDate;
+    @TableField("paper_drew_date")
+    private String paperDrewDate;
 
     /**
      * 机器码 回填时补充
@@ -192,7 +192,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     private String remark;
 
     /**
-     * 预制发票状态;待申请红字信息表:1;待上传:2;已上传:3;待审核:4;已作废:5
+     * 预制发票状态;1:待申请红字信息表;2:待上传;3:已上传;4:待审核;5:已作废;6:正在申请红字信息中;7:已重新拆票-视同逻辑删除
      */
     @TableField("pre_invoice_status")
     private Integer preInvoiceStatus;
@@ -236,8 +236,8 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     /**
      * 原始发票开票日期
      */
-    @TableField("origin_paper_draw_date")
-    private String originPaperDrawDate;
+    @TableField("origin_paper_drew_date")
+    private String originPaperDrewDate;
 
     /**
      * 红字信息编码，红票使用，回填补充
@@ -305,7 +305,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
     public static final String INVOICE_CODE = "invoice_code";
 
-    public static final String PAPER_DRAW_DATE = "paper_draw_date";
+    public static final String PAPER_DREW_DATE = "paper_drew_date";
 
     public static final String MACHINE_CODE = "machine_code";
 
@@ -333,7 +333,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
     public static final String ORIGIN_INVOICE_TYPE = "origin_invoice_type";
 
-    public static final String ORIGIN_PAPER_DRAW_DATE = "origin_paper_draw_date";
+    public static final String ORIGIN_PAPER_DREW_DATE = "origin_paper_drew_date";
 
     public static final String RED_NOTIFICATION_NO = "red_notification_no";
 

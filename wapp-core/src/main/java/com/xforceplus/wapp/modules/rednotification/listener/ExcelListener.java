@@ -80,6 +80,16 @@ public class ExcelListener extends AnalysisEventListener<ImportInfo> {
 
     // 数据转换
     private List<RedNotificationInfo> convertToRedNotificationInfo(List<ImportInfo> dataList) {
+        //流水号为空情况
+        List<ImportInfo> filter = dataList.stream().filter(importInfo -> !StringUtils.isEmpty(importInfo.getSellerNumber())).collect(Collectors.toList());
+        if (filter.size() != dataList.size()){
+            ImportErrorInfo importErrorInfo = new ImportErrorInfo();
+            importErrorInfo.setSerialNo("");
+            importErrorInfo.setErrorMsg("流水号不能为空");
+            importErrorNoList.add(importErrorInfo);
+            return Lists.newArrayList();
+        }
+
         Map<String, List<ImportInfo>> listMap = dataList.stream().collect(Collectors.groupingBy(ImportInfo::getSellerNumber));
 
         ArrayList<RedNotificationInfo> resultList = Lists.newArrayList();

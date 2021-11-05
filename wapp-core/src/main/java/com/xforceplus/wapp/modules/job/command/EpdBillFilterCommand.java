@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.converters.TXfOriginEpdBillEntityConvertor;
 import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.model.EPDBillData;
@@ -173,7 +173,7 @@ public class EpdBillFilterCommand implements Command {
                 .filter(v -> Objects.nonNull(v.getTaxRate()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
-            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.EPD_BILL);
+            deductService.receiveData(newList, TXfDeductionBusinessTypeEnum.EPD_BILL);
         }
     }
 

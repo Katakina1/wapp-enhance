@@ -7,7 +7,7 @@ import com.xforceplus.wapp.converters.TXfOriginClaimItemHyperEntityConvertor;
 import com.xforceplus.wapp.converters.TXfOriginClaimItemSamsEntityConvertor;
 import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.deduct.model.ClaimBillItemData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
@@ -251,7 +251,7 @@ public class ClaimBillFilterCommand implements Command {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
-            deductService.receiveData(newList, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+            deductService.receiveData(newList, TXfDeductionBusinessTypeEnum.CLAIM_BILL);
         }
     }
 

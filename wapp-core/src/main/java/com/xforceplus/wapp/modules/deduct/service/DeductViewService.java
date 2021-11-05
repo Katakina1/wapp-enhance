@@ -3,8 +3,6 @@ package com.xforceplus.wapp.modules.deduct.service;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -13,8 +11,8 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.enums.ServiceTypeEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
@@ -110,7 +108,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
 
 
-    public List<SummaryResponse> summary(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
+    public List<SummaryResponse> summary(DeductListRequest request, TXfDeductionBusinessTypeEnum typeEnum) {
 
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(request, typeEnum);
 
@@ -121,7 +119,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         return toSummary(map);
     }
 
-    public PageResult<DeductListResponse> deductByPage(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
+    public PageResult<DeductListResponse> deductByPage(DeductListRequest request, TXfDeductionBusinessTypeEnum typeEnum) {
 
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapper(request, typeEnum);
 
@@ -132,7 +130,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             final List<DeductListResponse> list = pageResult.getRecords().stream().map(x -> {
                 final DeductListResponse deductListResponse = deductMapper.toResponse(x);
                 deductListResponse.setOverdue(checkOverdue(typeEnum, x.getSellerNo(), x.getDeductDate()) ? 1 : 0);
-                if (Objects.equals(deductListResponse.getLock(),TXfBillDeductStatusEnum.LOCK.getCode())){
+                if (Objects.equals(deductListResponse.getLock(), TXfDeductStatusEnum.LOCK.getCode())){
                     deductListResponse.setRefSettlementNo(null);
                 }
                 return deductListResponse;
@@ -142,16 +140,16 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         return PageResult.of(responses, pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
     }
 
-    public BigDecimal sumDueAndNegative(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum){
+    public BigDecimal sumDueAndNegative(DeductListRequest request, TXfDeductionBusinessTypeEnum typeEnum){
         return sumDueAndNegative(request.getPurchaserNo(),request.getSellerNo(),typeEnum,request.getTaxRate());
     }
 
-    public BigDecimal sumDueAndNegative(String purchaserNo,String sellerNo, XFDeductionBusinessTypeEnum typeEnum,BigDecimal taxRate){
+    public BigDecimal sumDueAndNegative(String purchaserNo, String sellerNo, TXfDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
         final TXfBillDeductEntity deductEntity = getSumDueAndNegativeBill(purchaserNo, sellerNo, typeEnum, taxRate);
         return Optional.ofNullable(deductEntity).map(TXfBillDeductEntity::getAmountWithoutTax).orElse(BigDecimal.ZERO);
     }
 
-    public TXfBillDeductEntity getSumDueAndNegativeBill(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
+    public TXfBillDeductEntity getSumDueAndNegativeBill(String purchaserNo, String sellerNo, TXfDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapperOverDueNegativeBills(purchaserNo, sellerNo, typeEnum, taxRate);
 
         wrapper.groupBy(TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.TAX_RATE);
@@ -162,13 +160,13 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
 
-    public List<TXfBillDeductEntity> getOverDueNegativeBills(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
+    public List<TXfBillDeductEntity> getOverDueNegativeBills(String purchaserNo, String sellerNo, TXfDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
         final QueryWrapper<TXfBillDeductEntity> wrapper = wrapperOverDueNegativeBills(purchaserNo, sellerNo, typeEnum, taxRate);
         wrapper.select(TXfBillDeductEntity.ID);
         return this.getBaseMapper().selectList(wrapper);
     }
 
-    private QueryWrapper<TXfBillDeductEntity> wrapperOverDueNegativeBills(String purchaserNo, String sellerNo, XFDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
+    private QueryWrapper<TXfBillDeductEntity> wrapperOverDueNegativeBills(String purchaserNo, String sellerNo, TXfDeductionBusinessTypeEnum typeEnum, BigDecimal taxRate){
         DeductListRequest sumRequest=new DeductListRequest();
         sumRequest.setOverdue(null);
         sumRequest.setSellerNo(sellerNo);
@@ -176,17 +174,17 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         sumRequest.setTaxRate(taxRate);
         switch (typeEnum){
             case CLAIM_BILL:
-                sumRequest.setStatus(TXfBillDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+                sumRequest.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
                 break;
             case EPD_BILL:
-                sumRequest.setStatus(TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
+                sumRequest.setStatus(TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
                 break;
             case AGREEMENT_BILL:
-                sumRequest.setStatus(TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
+                sumRequest.setStatus(TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
                 break;
         }
 
-        sumRequest.setLockFlag(TXfBillDeductStatusEnum.UNLOCK.getCode());
+        sumRequest.setLockFlag(TXfDeductStatusEnum.UNLOCK.getCode());
 
         return doWrapper(sumRequest, typeEnum, x->{
             overDueWrapper(sellerNo,typeEnum,1,x);
@@ -202,8 +200,8 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
      * @param deductDate 扣款日期
      * @return
      */
-    public boolean checkOverdue(XFDeductionBusinessTypeEnum typeEnum, String sellerNo, Date deductDate) {
-        if (typeEnum == XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+    public boolean checkOverdue(TXfDeductionBusinessTypeEnum typeEnum, String sellerNo, Date deductDate) {
+        if (typeEnum == TXfDeductionBusinessTypeEnum.CLAIM_BILL) {
             return false;
         }
         final Date date = getOverdueDate(typeEnum,sellerNo);
@@ -218,7 +216,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
      * @param sellerNo 销方编号
      * @return Date
      */
-    public Date getOverdueDate(XFDeductionBusinessTypeEnum typeEnum, String sellerNo){
+    public Date getOverdueDate(TXfDeductionBusinessTypeEnum typeEnum, String sellerNo){
         final int overdue = getOverdue(typeEnum, sellerNo);
         final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
         return dateTime.setField(DateField.HOUR, 0)
@@ -229,7 +227,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
 
-    private int getOverdue(XFDeductionBusinessTypeEnum typeEnum, String sellerNo) {
+    private int getOverdue(TXfDeductionBusinessTypeEnum typeEnum, String sellerNo) {
         ServiceTypeEnum serviceTypeEnum = null;
         switch (typeEnum) {
             case CLAIM_BILL:
@@ -282,9 +280,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
     }
 
 
-    private QueryWrapper<TXfBillDeductEntity> wrapper(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum) {
+    private QueryWrapper<TXfBillDeductEntity> wrapper(DeductListRequest request, TXfDeductionBusinessTypeEnum typeEnum) {
         return doWrapper(request,typeEnum,x->{
-            if (typeEnum !=XFDeductionBusinessTypeEnum.CLAIM_BILL){
+            if (typeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL){
                 // 小于0的不展示
                 x.gt(TXfBillDeductEntity.AMOUNT_WITHOUT_TAX,BigDecimal.ZERO);
             }else {
@@ -300,7 +298,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
      * @param and 额外的and拼接
      * @return
      */
-    private QueryWrapper<TXfBillDeductEntity> doWrapper(DeductListRequest request, XFDeductionBusinessTypeEnum typeEnum, Consumer<QueryWrapper<TXfBillDeductEntity>> and) {
+    private QueryWrapper<TXfBillDeductEntity> doWrapper(DeductListRequest request, TXfDeductionBusinessTypeEnum typeEnum, Consumer<QueryWrapper<TXfBillDeductEntity>> and) {
         TXfBillDeductEntity deductEntity = new TXfBillDeductEntity();
         deductEntity.setBusinessNo(request.getBillNo());
         deductEntity.setPurchaserNo(request.getPurchaserNo());
@@ -346,7 +344,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
         wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE, typeEnum.getValue());
 
-        if (typeEnum != XFDeductionBusinessTypeEnum.CLAIM_BILL) {
+        if (typeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL) {
             //协议单和EPD才有超期配置
 
             //超期判断
@@ -356,9 +354,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         } else {
             // 索赔单只展示 生成结算单之后的数据
             wrapper.in(TXfBillDeductEntity.STATUS,
-                    TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode()
-                    ,TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode()
-                    ,TXfBillDeductStatusEnum.CLAIM_DESTROY.getCode()
+                    TXfDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode()
+                    , TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode()
+                    , TXfDeductStatusEnum.CLAIM_DESTROY.getCode()
             );
         }
         if (and!=null) {
@@ -367,7 +365,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         return wrapper;
     }
 
-    private void overDueWrapper(String sellerNo, XFDeductionBusinessTypeEnum typeEnum, Integer overDue, QueryWrapper<TXfBillDeductEntity> wrapper){
+    private void overDueWrapper(String sellerNo, TXfDeductionBusinessTypeEnum typeEnum, Integer overDue, QueryWrapper<TXfBillDeductEntity> wrapper){
         final int overdue = getOverdue(typeEnum, sellerNo);
 
         final DateTime dateTime = DateUtil.offsetDay(new Date(), -overdue + 1);
@@ -392,7 +390,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
      * @return
      */
     public PageResult<DeductListResponse> deductClaimByPage(DeductListRequest request) {
-        final PageResult<DeductListResponse> result = deductByPage(request, XFDeductionBusinessTypeEnum.CLAIM_BILL);
+        final PageResult<DeductListResponse> result = deductByPage(request, TXfDeductionBusinessTypeEnum.CLAIM_BILL);
         final List<DeductListResponse> responses = result.getRows();
 
         if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(responses)) {
@@ -431,7 +429,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
 
     @Transactional
-    public TXfSettlementEntity makeSettlement(MakeSettlementRequest request, XFDeductionBusinessTypeEnum type) {
+    public TXfSettlementEntity makeSettlement(MakeSettlementRequest request, TXfDeductionBusinessTypeEnum type) {
         if (CollectionUtils.isEmpty(request.getInvoiceIds())) {
             throw new EnhanceRuntimeException("请至少选择一张业务单据");
         }
@@ -450,7 +448,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         return agreementBillService.mergeSettlementByManual(ids,type,matchRes);
     }
 
-    public List<MatchedInvoiceListResponse> getMatchedInvoice(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
+    public List<MatchedInvoiceListResponse> getMatchedInvoice(PreMakeSettlementRequest request, TXfDeductionBusinessTypeEnum typeEnum){
 
 
         final BigDecimal amount = checkAndGetTotalAmount(request, typeEnum);
@@ -471,7 +469,7 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         return this.matchedInvoiceMapper.toMatchInvoice(matchRes);
     }
 
-    private BigDecimal checkAndGetTotalAmount(PreMakeSettlementRequest request, XFDeductionBusinessTypeEnum typeEnum){
+    private BigDecimal checkAndGetTotalAmount(PreMakeSettlementRequest request, TXfDeductionBusinessTypeEnum typeEnum){
         final List<Long> billId = request.getBillIds();
         BigDecimal amount=BigDecimal.ZERO;
         if (CollectionUtils.isNotEmpty(billId)) {
@@ -482,20 +480,20 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                     ,TXfBillDeductEntity.SELLER_NO
                     ,TXfBillDeductEntity.PURCHASER_NO
             );
-            TXfBillDeductStatusEnum statusEnum;
+            TXfDeductStatusEnum statusEnum;
             switch (typeEnum){
                 case AGREEMENT_BILL:
-                    statusEnum=TXfBillDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
+                    statusEnum= TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT;
                     break;
                 case EPD_BILL:
-                    statusEnum=TXfBillDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT;
+                    statusEnum= TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT;
                     break;
                 default:throw new EnhanceRuntimeException("手动合并结算单仅支持协议单和EPD");
             }
             wrapper.in(TXfBillDeductEntity.ID, billId)
                     .eq(TXfBillDeductEntity.BUSINESS_TYPE,typeEnum.getValue())
                     .eq(TXfBillDeductEntity.STATUS,statusEnum.getCode())
-                    .eq(TXfBillDeductEntity.LOCK_FLAG,TXfBillDeductStatusEnum.UNLOCK.getCode())
+                    .eq(TXfBillDeductEntity.LOCK_FLAG, TXfDeductStatusEnum.UNLOCK.getCode())
                     .groupBy(TXfBillDeductEntity.SELLER_NO,TXfBillDeductEntity.PURCHASER_NO,TXfBillDeductEntity.TAX_RATE)
             ;
             final List<TXfBillDeductEntity> entities = getBaseMapper().selectList(wrapper);

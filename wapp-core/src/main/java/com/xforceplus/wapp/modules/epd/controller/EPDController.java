@@ -3,7 +3,7 @@ package com.xforceplus.wapp.modules.epd.controller;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.enums.XFDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.agreement.dto.MakeSettlementRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListRequest;
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
@@ -54,7 +54,7 @@ public class EPDController {
         request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final List<SummaryResponse> summary = deductService.summary(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        final List<SummaryResponse> summary = deductService.summary(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
         return R.ok(summary);
     }
 
@@ -65,10 +65,10 @@ public class EPDController {
         request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final PageResult<DeductListResponse> page = deductService.deductByPage(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        final PageResult<DeductListResponse> page = deductService.deductByPage(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
 
         if (Objects.nonNull(request.getTaxRate())&& BigDecimal.ZERO.compareTo( request.getTaxRate())<=0) {
-            final BigDecimal sum = deductService.sumDueAndNegative(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+            final BigDecimal sum = deductService.sumDueAndNegative(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
             page.setExt(NegativeAndOverDueSummary.builder().negativeOverDueAmount(sum.toPlainString()).build());
         }
         return R.ok(page);
@@ -79,7 +79,7 @@ public class EPDController {
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
         Map<String, Object> map=new HashMap<>();
         map.put("settlementId",tXfSettlementEntity.getId());
         map.put("settlementNo",tXfSettlementEntity.getSettlementNo());
@@ -91,7 +91,7 @@ public class EPDController {
     public R preSettlement(@RequestBody PreMakeSettlementRequest request) {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, XFDeductionBusinessTypeEnum.EPD_BILL);
+        final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
         return R.ok(matchedInvoice);
     }
 

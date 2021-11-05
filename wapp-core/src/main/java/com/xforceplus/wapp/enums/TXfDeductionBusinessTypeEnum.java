@@ -11,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum XFDeductionBusinessTypeEnum implements ValueEnum<Integer> {
+public enum TXfDeductionBusinessTypeEnum implements ValueEnum<Integer> {
     /**
      *
      */

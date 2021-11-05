@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.OperateLogEnum;
-import com.xforceplus.wapp.enums.TXfBillDeductStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.claim.mapstruct.DeductMapper;
@@ -85,7 +85,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         //索赔单
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectBatchIds(billDeductIdList);
         billDeductList.parallelStream().forEach(x -> {
-            final boolean bool = Objects.equals(x.getStatus(), TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
+            final boolean bool = Objects.equals(x.getStatus(), TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
             if (bool){
                 throw new EnhanceRuntimeException("索赔单:["+x.getBusinessNo()+"]已经是提交不定案待审核，不需要重新提交");
             }
@@ -114,7 +114,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         billDeductList.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
         // 需要将数据放入到问题列表清单(关联一期)
@@ -143,7 +143,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         //索赔单 查询待审核状态
         QueryWrapper<TXfBillDeductEntity> billDeductEntityWrapper = new QueryWrapper<>();
         billDeductEntityWrapper.eq(TXfBillDeductEntity.REF_SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
-        billDeductEntityWrapper.eq(TXfBillDeductEntity.STATUS, TXfBillDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
+        billDeductEntityWrapper.eq(TXfBillDeductEntity.STATUS, TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
@@ -168,7 +168,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         billDeductList.parallelStream().forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
-            updateTXfBillDeductEntity.setStatus(TXfBillDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 

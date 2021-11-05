@@ -94,7 +94,7 @@ public class CommRedNotificationService {
         redNotificationMain.setOriginInvoiceType(preInvoice.getOriginInvoiceType());
         redNotificationMain.setOriginalInvoiceNo(preInvoice.getOriginInvoiceNo());
         redNotificationMain.setOriginalInvoiceCode(preInvoice.getOriginInvoiceCode());
-        redNotificationMain.setOriginalInvoiceDate(preInvoice.getOriginPaperDrawDate());
+        redNotificationMain.setOriginalInvoiceDate(preInvoice.getOriginPaperDrewDate());
         redNotificationMain.setPurchaserTaxNo(preInvoice.getPurchaserTaxNo());
         redNotificationMain.setPurchaserName(preInvoice.getPurchaserName());
         redNotificationMain.setSellerTaxNo(preInvoice.getSellerTaxNo());

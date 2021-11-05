@@ -235,7 +235,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setInvoiceCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCheckCode(StringUtils.EMPTY);
-            tXfPreInvoiceEntity.setPaperDrawDate(StringUtils.EMPTY);
+            tXfPreInvoiceEntity.setPaperDrewDate(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCreateTime(date);
             tXfPreInvoiceEntity.setUpdateTime(date);
             tXfPreInvoiceEntity.setCreateUserId(0L);
@@ -245,7 +245,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setOriginInvoiceCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setOriginInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setOriginInvoiceType(StringUtils.EMPTY);
-            tXfPreInvoiceEntity.setOriginPaperDrawDate(StringUtils.EMPTY);
+            tXfPreInvoiceEntity.setOriginPaperDrewDate(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setRedNotificationNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setId(idSequence.nextId());
             tXfPreInvoiceEntity.setSettlementNo(tXfSettlementEntity.getSettlementNo());

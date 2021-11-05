@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
-import com.xforceplus.wapp.enums.TXfBillDeductInvoiceBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfDeductInvoiceBusinessTypeEnum;
 import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
 import com.xforceplus.wapp.modules.deduct.service.BlueInvoiceService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
@@ -141,7 +141,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         LambdaQueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new LambdaQueryWrapper<>();
         tXfBillDeductInvoiceWrapper
                 .eq(TXfBillDeductInvoiceEntity::getBusinessNo, tXfSettlementEntity.getSettlementNo())
-                .eq(TXfBillDeductInvoiceEntity::getBusinessType, TXfBillDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
+                .eq(TXfBillDeductInvoiceEntity::getBusinessType, TXfDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
         List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceEntityList = tXfBillDeductInvoiceDao.selectList(tXfBillDeductInvoiceWrapper);
         tXfBillDeductInvoiceEntityList.parallelStream().forEach(tXfBillDeductInvoiceEntity -> {
             //释放匹配蓝票
@@ -176,7 +176,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         newTXfBillDeductInvoiceEntity.setInvoiceCode(tDxInvoice.getInvoiceCode());
         newTXfBillDeductInvoiceEntity.setThridId(tXfSettlementEntity.getId());
         newTXfBillDeductInvoiceEntity.setBusinessNo(tXfSettlementEntity.getSettlementNo());
-        newTXfBillDeductInvoiceEntity.setBusinessType(TXfBillDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
+        newTXfBillDeductInvoiceEntity.setBusinessType(TXfDeductInvoiceBusinessTypeEnum.SETTLEMENT.getType());
         newTXfBillDeductInvoiceEntity.setStatus(0);
         newTXfBillDeductInvoiceEntity.setUseAmount(useAmount);
         newTXfBillDeductInvoiceEntity.setCreateTime(new Date());
