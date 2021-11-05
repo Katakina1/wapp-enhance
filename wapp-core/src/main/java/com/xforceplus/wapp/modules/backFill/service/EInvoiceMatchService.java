@@ -309,7 +309,7 @@ public class EInvoiceMatchService {
         recordInvoice.setInvoiceNo(invoiceMain.getInvoiceNo());
         recordInvoice.setInvoiceAmount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
         recordInvoice.setDkInvoiceamount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
-        recordInvoice.setInvoiceDate(DateUtils.strToDate(invoiceMain.getPaperDrewDate()));
+        recordInvoice.setInvoiceDate(DateUtils.convertStringToDate(invoiceMain.getPaperDrewDate()));
         recordInvoice.setTotalAmount(new BigDecimal(invoiceMain.getTaxAmount()));
         recordInvoice.setTaxAmount(new BigDecimal( invoiceMain.getTaxAmount()));
         recordInvoice.setTaxRate(new BigDecimal(invoiceDetails.get(0).getTaxRate()));
@@ -508,6 +508,5 @@ public class EInvoiceMatchService {
         }
         return "4";
     }
-
 
 }
