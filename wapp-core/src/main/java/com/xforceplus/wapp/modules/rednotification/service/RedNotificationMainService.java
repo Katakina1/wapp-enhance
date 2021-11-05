@@ -119,8 +119,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             listItem.addAll(tXfRedNotificationDetailEntities);
         });
 
-        saveBatch(listMain);
-        redNotificationItemService.saveBatch(listItem);
+        if (!CollectionUtils.isEmpty(listMain)){
+            saveBatch(listMain);
+            redNotificationItemService.saveBatch(listItem);
+        }
+
         //判断是否自动申请
         if(request.getAutoApplyFlag() ==1){
             // 申请请求
