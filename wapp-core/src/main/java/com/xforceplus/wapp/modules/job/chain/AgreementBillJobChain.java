@@ -14,7 +14,6 @@ public class AgreementBillJobChain extends ChainBase {
 
     public AgreementBillJobChain(ApplicationContext applicationContext) {
         super();
-
         addCommand(applicationContext.getBean(AgreementBillDownloadCommand.class));
         addCommand(applicationContext.getBean(AgreementBillFbl5nSaveCommand.class));
         addCommand(applicationContext.getBean(AgreementBillZarrSaveCommand.class));

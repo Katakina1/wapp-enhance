@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.job.executor;
 
+import com.xforceplus.wapp.client.LockClient;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.chain.AgreementBillJobChain;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
@@ -36,6 +37,8 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     private BillJobService billJobService;
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private LockClient lockClient;
 
     @Async
     @Scheduled(cron = "0 0 0 * * ?")
@@ -48,19 +51,19 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
                 availableJob -> {
                     Integer jobId = Integer.parseInt(String.valueOf(availableJob.get(TXfBillJobEntity.ID)));
                     Context context = new ContextBase(availableJob);
-                    try {
-                        if (billJobService.lockJob(jobId)) {
+                    boolean isLock = lockClient.tryLock("agreementBillJobExecutor:" + jobId, () -> {
+                        try {
                             if (chain.execute(context)) {
                                 context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DONE.getJobStatus());
                             }
-                        } else {
-                            log.warn("协议单job任务锁定失败，放弃执行，jobId={}", jobId);
+                        } catch (Exception e) {
+                            log.error(e.getMessage(), e);
+                        } finally {
+                            billJobService.saveContext(context);
                         }
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    } finally {
-                        billJobService.saveContext(context);
-                        billJobService.unlockJob(jobId);
+                    }, -1, 1);
+                    if (!isLock) {
+                        log.warn("协议单job任务锁定失败，放弃执行，jobId={}", jobId);
                     }
                 }
         );

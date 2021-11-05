@@ -208,6 +208,9 @@ public class DeductService   {
             return entity;
         }
         try {
+            if (StringUtils.isNotEmpty(entity.getGoodsTaxNo())) {
+                return entity;
+            }
             Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
             if (taxCodeOptional.isPresent()) {
                 TaxCode taxCode = taxCodeOptional.get();

@@ -2,7 +2,6 @@ package com.xforceplus.wapp.repository.dao;
 
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 
 
 /**
@@ -11,9 +10,8 @@ import org.apache.ibatis.annotations.Mapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-10-12
- */
-@Mapper
+* @since 2021-11-05
+*/
 public interface TXfPreInvoiceDao extends BaseMapper<TXfPreInvoiceEntity> {
 
 }

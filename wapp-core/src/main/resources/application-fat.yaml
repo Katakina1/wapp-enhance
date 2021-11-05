@@ -52,6 +52,7 @@ spring:
   redis:
     host: wapp-redis
     port: 6379
+    password:
 server:
   port: 6060
 
