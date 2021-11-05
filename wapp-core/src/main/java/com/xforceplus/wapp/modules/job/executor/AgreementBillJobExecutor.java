@@ -53,7 +53,6 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
                     Context context = new ContextBase(availableJob);
                     boolean isLock = lockClient.tryLock("agreementBillJobExecutor:" + jobId, () -> {
                         try {
-                            Thread.sleep(100000L);
                             if (chain.execute(context)) {
                                 context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.DONE.getJobStatus());
                             }
