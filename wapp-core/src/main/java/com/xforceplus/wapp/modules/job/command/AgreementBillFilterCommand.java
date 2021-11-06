@@ -147,11 +147,10 @@ public class AgreementBillFilterCommand implements Command {
                             return convertDeductBillBaseData(originAgreementMergeTmp, context);
                         }
                         log.warn("协议单号[%s]税率为空", mergeTmpEntity.getReference());
-                        return null;
                     } catch (Exception e) {
                         log.warn(e.getMessage(), e);
-                        return null;
                     }
+                    return null;
                 })
                 .filter(Objects::nonNull)
                 .filter(mergeTmpEntity -> {
