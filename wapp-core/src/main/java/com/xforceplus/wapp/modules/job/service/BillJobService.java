@@ -16,28 +16,17 @@ import java.util.Map;
 public interface BillJobService extends IService<TXfBillJobEntity> {
 
     /**
-     * 根据job id锁定任务
-     *
-     * @param jobId
-     * @return
-     */
-    boolean lockJob(Integer jobId);
-
-    /**
-     * 根据job id解锁任务
-     *
-     * @param jobId
-     * @return
-     */
-    boolean unlockJob(Integer jobId);
-
-    /**
      * 获取待执行的任务
      *
      * @return
      */
     List<Map<String, Object>> obtainAvailableJobs(int JobType);
 
+    /**
+     *
+     * @param context
+     * @return
+     */
     boolean saveContext(Context context);
 
 }

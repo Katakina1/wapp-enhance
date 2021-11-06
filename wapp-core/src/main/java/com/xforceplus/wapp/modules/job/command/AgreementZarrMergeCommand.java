@@ -136,7 +136,6 @@ public class AgreementZarrMergeCommand implements Command {
             // 总页数
             pages = page.getPages();
             filter(page.getRecords());
-           // context.put(TXfBillJobEntity.JOB_ENTRY_AGREEMENT_ZARR_PROGRESS, last);
             //更新页码
             TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
             updateTXfBillJobEntity.setId(jobId);
