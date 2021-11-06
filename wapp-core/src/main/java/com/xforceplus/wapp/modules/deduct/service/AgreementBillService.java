@@ -117,7 +117,7 @@ public class AgreementBillService extends DeductService{
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
         if (CollectionUtils.isEmpty(matchResList)) {
-            matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),tXfSettlementEntity.getTaxRate().multiply(BigDecimal.valueOf(100)));
+            matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),TaxRateTransferEnum.transferTaxRate(tXfSettlementEntity.getTaxRate() )  );
         }
         if (CollectionUtils.isEmpty(matchResList)) {
             log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
