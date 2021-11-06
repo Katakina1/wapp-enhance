@@ -7,10 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -27,24 +24,23 @@ public class TaxRateConfig {
     private String taxRateStr;
     private Map<BigDecimal, BigDecimal> taxRateMap = Maps.newHashMap();
     private List<BigDecimal > res  ;
-    public BigDecimal getNextTaxRate(BigDecimal taxRate) {
-        return taxRateMap.get(BigDecimal.valueOf(taxRate.doubleValue()));
-    }
 
     public Map<BigDecimal,BigDecimal> bulidTaxRateMap(BigDecimal taxRate) {
         Map<BigDecimal, BigDecimal> tmp = new HashMap<>();
+        List<BigDecimal> tmpRes = new ArrayList<>(res.size());
+        tmpRes.add(taxRate);
         for (int i = 0; i < res.size(); i++) {
-            if (i == 0) {
-                tmp.put(taxRate, res.get(i));
-            }
-            if (i == res.size() - 1) {
-                tmp.put(res.get(i), null);
-                break;
-            }
             if (taxRate.compareTo(res.get(i)) == 0) {
                 continue;
             }
-            tmp.put(res.get(i), res.get(i + 1));
+            tmpRes.add(  res.get(i));
+        }
+        for (int i = 0; i < tmpRes.size(); i++) {
+            if (i == tmpRes.size() - 1) {
+                tmp.put(tmpRes.get(i), null);
+                break;
+            }
+            tmp.put(tmpRes.get(i), tmpRes.get(i + 1));
         }
         return tmp;
     }
@@ -56,12 +52,16 @@ public class TaxRateConfig {
         }
         res = Arrays.asList(taxRateStr.split(",")).stream().map(x -> new BigDecimal(x)).unordered().collect(Collectors.toList());
     }
-//
+
 //    public static void main(String[] ags) {
 //        TaxRateConfig taxRateConfig = new TaxRateConfig();
 //        taxRateConfig.init();
 //        Map<BigDecimal, BigDecimal> tmp = taxRateConfig.bulidTaxRateMap(BigDecimal.valueOf(0.06));
 //        System.out.println(tmp);
+//        System.out.println(tmp.get(new BigDecimal("0.06")));
+//        System.out.println(tmp.get(  BigDecimal.valueOf(0.13)));
+//
+//        tmp = taxRateConfig.bulidTaxRateMap(BigDecimal.valueOf(0.13));
 //        System.out.println(tmp.get(new BigDecimal("0.06")));
 //        System.out.println(tmp.get(  BigDecimal.valueOf(0.13)));
 //    }
