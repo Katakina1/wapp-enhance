@@ -17,14 +17,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface MatchedInvoiceMapper {
 
-//    @Mapping(target = "invoiceDate", source = "paperDrewDate")
-    @Mapping(target = "matchedAmount", source = "useAmount")
-    MatchedInvoiceListResponse toMatchedInvoice(TXfBillDeductInvoiceEntity invoiceEntity);
     @Mapping(target = "matchedAmount",source = "deductedAmount")
     @Mapping(target = "id",source = "invoiceId")
-    MatchedInvoiceListResponse toMatchInvoice(BlueInvoiceService.MatchRes invoiceEntity);
+    @Mapping(target = "invoiceDate",expression = "java(com.xforceplus.wapp.common.utils.DateUtils.format(entity.getInvoiceDate()))")
+    MatchedInvoiceListResponse toMatchInvoice(BlueInvoiceService.MatchRes entity);
 
-    List<MatchedInvoiceListResponse> toMatchedInvoice(List<TXfBillDeductInvoiceEntity> matchedInvoices);
 
     List<MatchedInvoiceListResponse> toMatchInvoice(List<BlueInvoiceService.MatchRes> matchedInvoices);
 }
