@@ -133,10 +133,7 @@ public class EpdBillSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginEpdBillDataListener readListener = new OriginEpdBillDataListener(jobId, cursor, service, validator);
@@ -146,12 +143,9 @@ public class EpdBillSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

@@ -137,12 +137,8 @@ public class ClaimItemHyperSaveCommand implements Command {
     private void process(String localPath, String fileName, Context context) {
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginClaimItemHyperDataListener readListener = new OriginClaimItemHyperDataListener(jobId, cursor, service, validator);
@@ -152,12 +148,9 @@ public class ClaimItemHyperSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM_SAMS.getCode());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

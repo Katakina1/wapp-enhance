@@ -44,22 +44,10 @@ public class TXfBillJobEntity extends BaseEntity {
     private Integer jobStatus;
 
     /**
-     * 任务锁定状态，锁定代表当前任务正在被执行，不允许其他节点或线程重复执行 0-未锁定 1-已锁定
-     */
-    @TableField("job_lock_status")
-    private Boolean jobLockStatus;
-
-    /**
      * 原始数据采集对象 依次为 1-单据 2-单据明细（EPD单log明细或索赔单Hyper明细） 3-单据明细（索赔单Sams明细）
      */
     @TableField("job_acquisition_object")
     private Integer jobAcquisitionObject;
-
-    /**
-     * 原始数据采集进度 当前处理完成的数据行数，起始值是1（表头行）
-     */
-    @TableField("job_acquisition_progress")
-    private Long jobAcquisitionProgress;
 
     /**
      * 原始数据处理对象 依次为 1-单据（job_type为协议单时代表SAP-FBL5N） 2-单据明细（job_type为EPD时代表EPD单log明细，job_type为索赔单时代表Hyper明细，job_type为协议单时代表SAP-ZARR0355原稿） 3-单据明细（索赔单Sams明细）
@@ -143,11 +131,7 @@ public class TXfBillJobEntity extends BaseEntity {
 
     public static final String JOB_STATUS = "job_status";
 
-    public static final String JOB_LOCK_STATUS = "job_lock_status";
-
     public static final String JOB_ACQUISITION_OBJECT = "job_acquisition_object";
-
-    public static final String JOB_ACQUISITION_PROGRESS = "job_acquisition_progress";
 
     public static final String JOB_ENTRY_OBJECT = "job_entry_object";
 
