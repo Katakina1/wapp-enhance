@@ -303,14 +303,15 @@ public class EInvoiceMatchService {
                 }
             }
         }
+        recordInvoice.setSettlementNo(electronicUploadRecordDetailEntity.getSettlementNo());
         recordInvoice.setVenderid(recordEntity.getVendorId());
         recordInvoice.setJvcode(recordEntity.getJvCode());
-        recordInvoice.setInvoiceCode(invoiceMain.getInvoiceNo());
+        recordInvoice.setInvoiceCode(invoiceMain.getInvoiceCode());
         recordInvoice.setInvoiceNo(invoiceMain.getInvoiceNo());
         recordInvoice.setInvoiceAmount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
         recordInvoice.setDkInvoiceamount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
         recordInvoice.setInvoiceDate(DateUtils.convertStringToDate(invoiceMain.getPaperDrewDate()));
-        recordInvoice.setTotalAmount(new BigDecimal(invoiceMain.getTaxAmount()));
+        recordInvoice.setTotalAmount(new BigDecimal(invoiceMain.getAmountWithTax()));
         recordInvoice.setTaxAmount(new BigDecimal( invoiceMain.getTaxAmount()));
         recordInvoice.setTaxRate(new BigDecimal(invoiceDetails.get(0).getTaxRate()));
         recordInvoice.setInvoiceType(invoiceMain.getInvoiceType());
