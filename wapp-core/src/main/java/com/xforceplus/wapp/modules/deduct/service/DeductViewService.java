@@ -25,10 +25,8 @@ import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
 import com.xforceplus.wapp.modules.settlement.service.SettlementService;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductExtDao;
-import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
-import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
-import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
-import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import com.xforceplus.wapp.repository.daoExt.RecordInvoiceDetailExtDao;
+import com.xforceplus.wapp.repository.entity.*;
 import lombok.Builder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,6 +75,9 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
 
     @Autowired
     private SettlementService settlementService;
+
+    @Autowired
+    private RecordInvoiceDetailExtDao recordInvoiceDetailExtDao;
 
     private List<BigDecimal> taxRates;
 
@@ -466,7 +467,15 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainAvailableInvoicesWithoutItems(amount, null,
                 sellerOrg.getTaxNo(), purchaserOrg.getTaxNo(), request.getTaxRate().movePointRight(2), false);
 
-        return this.matchedInvoiceMapper.toMatchInvoice(matchRes);
+        final List<MatchedInvoiceListResponse> responses = this.matchedInvoiceMapper.toMatchInvoice(matchRes);
+        if (CollectionUtils.isNotEmpty(responses)){
+            for (MatchedInvoiceListResponse respons : responses) {
+                final List<TDxRecordInvoiceDetailEntity> details = recordInvoiceDetailExtDao.selectTopGoodsName(5, respons.getInvoiceCode() + respons.getInvoiceNo());
+                final String goodsName = details.stream().map(TDxRecordInvoiceDetailEntity::getGoodsName).collect(Collectors.joining(","));
+                respons.setGoodsName(goodsName);
+            }
+        }
+        return responses;
     }
 
     private BigDecimal checkAndGetTotalAmount(PreMakeSettlementRequest request, TXfDeductionBusinessTypeEnum typeEnum){
