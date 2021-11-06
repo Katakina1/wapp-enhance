@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginClaimItemHyperDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimBillEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
@@ -42,6 +43,8 @@ public class ClaimItemHyperSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginClaimItemHyperService service;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
     @Autowired
     private Validator validator;
     @Value("${claimBill.remote.path}")
@@ -148,6 +151,11 @@ public class ClaimItemHyperSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM_SAMS.getCode());
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(ITEM_SAMS.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常

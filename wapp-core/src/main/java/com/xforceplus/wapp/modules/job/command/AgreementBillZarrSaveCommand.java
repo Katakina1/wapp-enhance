@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillZarrDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillZarrDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
@@ -41,6 +42,8 @@ public class AgreementBillZarrSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginSapZarrService service;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
     @Autowired
     private Validator validator;
     @Value("${agreementBill.remote.path}")
@@ -144,6 +147,11 @@ public class AgreementBillZarrSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobStatus(BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常

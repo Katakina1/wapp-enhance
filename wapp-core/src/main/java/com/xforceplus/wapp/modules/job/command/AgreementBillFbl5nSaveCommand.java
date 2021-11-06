@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillFbl5nDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillFbl5nDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
@@ -41,6 +42,8 @@ public class AgreementBillFbl5nSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginSapFbl5nService service;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
     @Autowired
     private Validator validator;
     @Value("${agreementBill.remote.path}")
@@ -148,6 +151,11 @@ public class AgreementBillFbl5nSaveCommand implements Command {
                     .doRead();
             //下一步
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(ITEM.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             // 处理出现异常
