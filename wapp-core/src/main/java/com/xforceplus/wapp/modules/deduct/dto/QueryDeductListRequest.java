@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by SunShiyong on 2021/10/20.
@@ -70,4 +71,6 @@ public class QueryDeductListRequest {
     @ApiModelProperty("tab页标签 待匹配蓝票：0,已匹配待开票：1，已申请红字信息：2，已开票：3，已撤销：4")
     private String key;
 
+    @ApiModelProperty("id数组")
+    private String ids;
 }

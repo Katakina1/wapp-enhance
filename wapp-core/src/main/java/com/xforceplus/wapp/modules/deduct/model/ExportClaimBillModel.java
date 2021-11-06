@@ -20,16 +20,6 @@ public class ExportClaimBillModel {
     @ExcelProperty("索赔单号")
     private String businessNo;
     /**
-     * 供应商编号
-     */
-    @ExcelProperty("供应商编号")
-    private String sellerNo;
-    /**
-     * 供应商名称
-     */
-    @ExcelProperty("供应商名称")
-    private String sellerName;
-    /**
      * 扣款日期
      */
     @ExcelProperty("扣款日期")
@@ -39,16 +29,16 @@ public class ExportClaimBillModel {
      */
     @ExcelProperty("扣款公司")
     private String purchaserNo;
-
-    @ExcelProperty("协议供应商6D")
-    private String agreementMemo;
-
-    @ExcelProperty("协议类型")
-    private String agreementDocumentType;
-
-    @ExcelProperty("协议类型编码")
-    private String agreementReasonCode;
-
+    /**
+     * 供应商编号
+     */
+    @ExcelProperty("供应商编号")
+    private String sellerNo;
+    /**
+     * 供应商名称
+     */
+    @ExcelProperty("供应商名称")
+    private String sellerName;
     /**
      * 含税金额
      */
@@ -72,20 +62,17 @@ public class ExportClaimBillModel {
     @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
+    @ExcelProperty("发票类型")
+    private String invoiceType;
+
     @ExcelProperty("定案日期")
     private Date verdictDate;
 
     @ExcelProperty("批次号")
     private String batchNo;
 
-    @ExcelProperty("发票类型")
-    private String invoiceType;
-
     @ExcelProperty("备注")
     private String remark;
-
-    @ExcelProperty("红字信息表编号")
-    private String redNotificationNo;
 
     @ExcelProperty("所扣发票")
     private String deductInvoice;
@@ -104,5 +91,8 @@ public class ExportClaimBillModel {
      */
     @ExcelProperty("明细总税额")
     private BigDecimal itemTaxAmount;
+
+    @ExcelProperty("红字信息表编号")
+    private String redNotificationNo;
 
 }
