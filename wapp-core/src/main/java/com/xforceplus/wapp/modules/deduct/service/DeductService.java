@@ -503,7 +503,6 @@ public class DeductService   {
         tXfSettlementEntity.setTaxRate(taxRate);
         tXfSettlementEntity.setId(idSequence.nextId());
         tXfSettlementEntity.setBatchNo(StringUtils.EMPTY);
-        tXfSettlementEntity.setInvoiceType(StringUtils.EMPTY);
         tXfSettlementEntity.setSettlementNo("settlementNo"+idSequence.nextId());
         tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_BLUE_INVOICE.getCode());
         tXfSettlementEntity.setCreateTime(DateUtils.getNow());
@@ -552,6 +551,7 @@ public class DeductService   {
             }
         }else{
             tXfSettlementEntity.setTaxRate(tXfBillDeductEntities.get(0).getTaxRate());
+            taxRateTotal = tXfSettlementEntity.getTaxRate();
         }
          /**
           * 部分匹配 索赔单明细 需要确认数据单据，如果不需要确认，进入拆票流程，状态是 待拆票
