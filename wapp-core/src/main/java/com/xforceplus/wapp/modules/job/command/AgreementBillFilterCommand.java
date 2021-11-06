@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -154,12 +155,11 @@ public class AgreementBillFilterCommand implements Command {
                 })
                 .filter(Objects::nonNull)
                 .filter(mergeTmpEntity -> {
-                    if (Objects.isNull(mergeTmpEntity.getMemo())) {
+                    if (StringUtils.isBlank(mergeTmpEntity.getMemo())) {
                         return true;
-                    } else {
-                        // 非黑名单供应商
-                        return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
                     }
+                    // 非黑名单供应商
+                    return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
                 })
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
