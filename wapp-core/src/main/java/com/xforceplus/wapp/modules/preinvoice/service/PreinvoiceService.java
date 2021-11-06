@@ -12,6 +12,7 @@ import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.dto.SplitRuleInfoDTO;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
+import com.xforceplus.wapp.enums.TXfSettlementItemFlagEnum;
 import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
@@ -149,7 +150,22 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     public void reFixTaxCode(String settlementNo) {
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         for (TXfSettlementItemEntity tmp : tXfSettlementItemEntities) {
-
+            Integer tmpStatus = tmp.getItemFlag();
+            if (StringUtils.isNotEmpty(tmp.getGoodsTaxNo()) ) {
+                if (tmp.getUnitPrice().multiply(tmp.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(tmp.getAmountWithoutTax()) == 0  ) {
+                    tmp.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
+                }else{
+                    tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
+                }
+            }else{
+                tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
+            }
+            if (tmpStatus != tmp.getItemFlag()) {
+                TXfSettlementItemEntity update = new TXfSettlementItemEntity();
+                update.setId(tmp.getId());
+                update.setItemFlag(tmp.getItemFlag());
+                tXfSettlementItemDao.updateById(update);
+            }
         }
         List<TXfSettlementItemEntity> fixTaxList = tXfSettlementItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
