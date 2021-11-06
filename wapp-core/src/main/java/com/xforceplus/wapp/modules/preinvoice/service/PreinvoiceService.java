@@ -212,7 +212,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         String post = "";
         JSONObject res = null;
         try {
-            post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),null);
+              post = httpClientFactory.post(splitInvoice,defaultHeader, JSON.toJSONString(createPreInvoiceParam),null);
               res = JSONObject.parseObject(post);
             if (!res.get("code").equals("BSCTZZ0001") || res.get("result").equals("[]")) {
                 log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
@@ -220,18 +220,37 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             }
         } catch (IOException e) {
             log.error("结算单：{} 拆票失败，结果：{}", tXfSettlementEntity.getSettlementNo(), post);
-            e.printStackTrace();
             throw new RuntimeException("拆票失败");
         }
+       List<SplitPreInvoiceInfo> splitPreInvoiceInfos = JSON.parseArray(res.getString("result"), SplitPreInvoiceInfo.class);
+        // check 拆票失败
+        List<PreInvoiceDTO> preInvoiceDTOS = savePreInvoiceInfo(splitPreInvoiceInfos, tXfSettlementEntity);
+        for (PreInvoiceDTO preInvoiceDTO : preInvoiceDTOS) {
+            try {
+                commRedNotificationService.applyAddRedNotification(preInvoiceDTO);
+            } catch (Exception e) {
+                log.error("发起红字信息申请 失败{} 预制发票id：{}",e,preInvoiceDTO.getTXfPreInvoiceEntity().getId());
+            }
+        }
+        return splitPreInvoiceInfos;
+     }
+
+    /**
+     * 保存预制发票
+     * @param splitPreInvoiceInfos
+     * @param tXfSettlementEntity
+     */
+    @Transactional
+    public List<PreInvoiceDTO>   savePreInvoiceInfo(List<SplitPreInvoiceInfo> splitPreInvoiceInfos,TXfSettlementEntity tXfSettlementEntity) {
         // check 拆票失败
         Date date = new Date();
-        List<SplitPreInvoiceInfo> splitPreInvoiceInfos = JSON.parseArray(res.getString("result"), SplitPreInvoiceInfo.class);
+        List<PreInvoiceDTO> preInvoiceDTOS = new ArrayList<>();
         for (SplitPreInvoiceInfo splitPreInvoiceInfo : splitPreInvoiceInfos) {
             TXfPreInvoiceEntity tXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             List<TXfPreInvoiceItemEntity> tXfPreInvoiceItemEntities = new ArrayList<>();
             BeanUtil.copyProperties(splitPreInvoiceInfo.getPreInvoiceMain(), tXfPreInvoiceEntity);
             tXfPreInvoiceEntity.setSettlementType(tXfSettlementEntity.getSettlementType());
-            tXfPreInvoiceEntity.setSettlementId(tXfSettlementEntity.getId() );
+            tXfPreInvoiceEntity.setSettlementId(tXfSettlementEntity.getId());
             tXfPreInvoiceEntity.setInvoiceCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCheckCode(StringUtils.EMPTY);
@@ -252,7 +271,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setInvoiceType(tXfSettlementEntity.getInvoiceType());
             tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
-                TXfPreInvoiceItemEntity   tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
+                TXfPreInvoiceItemEntity tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
                 BeanUtil.copyProperties(preInvoiceItem, tXfPreInvoiceItemEntity);
 
                 tXfPreInvoiceItemEntity.setId(idSequence.nextId());
@@ -260,22 +279,17 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                 tXfPreInvoiceItemDao.insert(tXfPreInvoiceItemEntity);
                 tXfPreInvoiceItemEntities.add(tXfPreInvoiceItemEntity);
             }
-            try {
-                PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
-                applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
-                applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);
-                commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
-            } catch (Exception e) {
-                log.error("发起红字信息申请 失败{} 预制发票id：{}",e,tXfPreInvoiceEntity.getId());
-            }
+            PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
+            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
+            applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);
+            preInvoiceDTOS.add(applyProInvoiceRedNotificationDTO);
         }
         TXfSettlementEntity tmp = new TXfSettlementEntity();
         tmp.setId(tXfSettlementEntity.getId());
         tmp.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         tXfSettlementDao.updateById(tmp);
-        return splitPreInvoiceInfos;
+        return preInvoiceDTOS;
     }
-
     /**
      * 拼接拆票请求
      * @param tXfSettlementEntity
