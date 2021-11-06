@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginEpdLogItemDto;
 import com.xforceplus.wapp.modules.job.listener.OriginEpdLogItemDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
@@ -43,6 +44,8 @@ public class EpdLogItemSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginEpdLogItemService service;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
     @Autowired
     private Validator validator;
     @Value("${epdBill.remote.path}")
@@ -139,12 +142,8 @@ public class EpdLogItemSaveCommand implements Command {
         // 获取当前进度
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service, validator);
@@ -155,11 +154,14 @@ public class EpdLogItemSaveCommand implements Command {
                     .doRead();
             // 正常处理结束，清空游标
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(BILL.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

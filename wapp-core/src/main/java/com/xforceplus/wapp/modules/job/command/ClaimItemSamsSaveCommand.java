@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginClaimItemSamsDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemSamsDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
@@ -42,6 +43,8 @@ public class ClaimItemSamsSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginClaimItemSamsService service;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
     @Autowired
     private Validator validator;
     @Value("${claimBill.remote.path}")
@@ -134,10 +137,7 @@ public class ClaimItemSamsSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginClaimItemSamsDataListener readListener = new OriginClaimItemSamsDataListener(jobId, cursor, service, validator);
@@ -147,12 +147,14 @@ public class ClaimItemSamsSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(BILL.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }
