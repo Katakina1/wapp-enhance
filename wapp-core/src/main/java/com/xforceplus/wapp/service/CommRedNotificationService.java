@@ -79,9 +79,6 @@ public class CommRedNotificationService {
         }else {
              throw new RuntimeException("不支持的发票票种申请红字信息");
         }
-
-
-
         redNotificationMain.setOriginInvoiceType(preInvoice.getOriginInvoiceType());
         redNotificationMain.setOriginalInvoiceNo(preInvoice.getOriginInvoiceNo());
         redNotificationMain.setOriginalInvoiceCode(preInvoice.getOriginInvoiceCode());

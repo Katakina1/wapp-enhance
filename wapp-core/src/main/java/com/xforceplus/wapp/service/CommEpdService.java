@@ -95,7 +95,7 @@ public class CommEpdService {
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改EPD单状态
-        billDeductList.parallelStream().forEach(billDeduct -> {
+        billDeductList.forEach(billDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode());
@@ -104,7 +104,7 @@ public class CommEpdService {
         });
 
         //作废预制发票
-        Optional.ofNullable(pPreInvoiceList).ifPresent(x->x.parallelStream().forEach(tXfPreInvoiceEntity -> {
+        Optional.ofNullable(pPreInvoiceList).ifPresent(x->x.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
