@@ -137,6 +137,9 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "left outer join t_xf_bill_deduct_item_ref di on di.deduct_id  = d.id\n"+
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
+            "<if test='ids!=null'>"+
+            "and d.id in ${ids}\n"+
+            "</if>"+
             "<if test='businessNo!=null'>"+
             "and d.business_no = #{businessNo}\n"+
              "</if>"+
@@ -195,12 +198,15 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "order by d.id desc offset #{offset} rows fetch next #{next} rows only\n"+
             "</if>"+
             "</script>")
-    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")Integer offset, @Param("next")Integer next, @Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
+    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")Integer offset, @Param("next")Integer next, @Param("ids")String ids,@Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
 
     @Select("<script>"+
             "select count(d.id) from t_xf_bill_deduct d\n" +
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
+            "<if test='ids!=null'>"+
+            "and d.id in ${ids}\n"+
+            "</if>"+
             "<if test='businessNo!=null'>"+
             "and d.business_no = #{businessNo}\n"+
             "</if>"+
@@ -255,5 +261,5 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 304\n"+
             "</if>"+
             "</script>")
-    int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductStartDate") String deductStartDate,@Param("deductEndDate") String deductEndDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
+    int countBillPage(@Param("ids")String ids,@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductStartDate") String deductStartDate,@Param("deductEndDate") String deductEndDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 }

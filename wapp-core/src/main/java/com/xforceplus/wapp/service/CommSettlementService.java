@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
  * 结算单公共逻辑
  * 1、作废预制发票
  * 2、重新申请预制发票 拆票
+ * @author Xforce
  */
 @Service
 public class CommSettlementService {
@@ -58,7 +59,7 @@ public class CommSettlementService {
      * @param settlementId
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void applyDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -72,7 +73,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList)) {
-            tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
+            tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
@@ -88,7 +89,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper2.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList2 = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper2);
         if (!CollectionUtils.isEmpty(tXfPreInvoiceEntityList2)) {
-            tXfPreInvoiceEntityList2.parallelStream().forEach(tXfPreInvoiceEntity -> {
+            tXfPreInvoiceEntityList2.forEach(tXfPreInvoiceEntity -> {
                 TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
@@ -116,7 +117,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void rejectDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -129,7 +130,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
-        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
@@ -151,7 +152,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void agreeDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -164,7 +165,7 @@ public class CommSettlementService {
         preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
         //修改预制发票状态
-        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             destroyPreInvoice(tXfPreInvoiceEntity.getId());
         });
 
@@ -180,7 +181,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyPreInvoice(Long preInvoiceId) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -197,7 +198,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -237,7 +238,7 @@ public class CommSettlementService {
         applyingRedPreInvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         applyingRedPreInvoiceWrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS, TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode());
         List<TXfPreInvoiceEntity> applyingRedPreInvoiceList = tXfPreInvoiceDao.selectList(applyingRedPreInvoiceWrapper);
-        List<Long> applyingRedPreInvoiceIdList = applyingRedPreInvoiceList.parallelStream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
+        List<Long> applyingRedPreInvoiceIdList = applyingRedPreInvoiceList.stream().map(TXfPreInvoiceEntity::getId).collect(Collectors.toList());
         //是否正在申请红字
         //需要判断结算单是否在沃尔玛有待申请状态(如果没有待申请状态的红字信息说明税件神申请败了，这个时候可以重新申请预制发票的红字信息)
         //是否有申请中的红字信息 或者 是否有审核通过
@@ -256,7 +257,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceIdList 预制发票id
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void agreeDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
@@ -275,7 +276,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //作废待审核的预制发票
-        tXfSettlementEntityList.parallelStream().forEach(tXfSettlementEntity -> {
+        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
             agreeDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }
@@ -287,7 +288,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceIdList 预制发票id
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void rejectDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
@@ -306,7 +307,7 @@ public class CommSettlementService {
             throw new EnhanceRuntimeException("预制发票没有对应的结算单数据");
         }
         //作废结算单
-        tXfSettlementEntityList.parallelStream().forEach(tXfSettlementEntity -> {
+        tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
             rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId());
         });
     }

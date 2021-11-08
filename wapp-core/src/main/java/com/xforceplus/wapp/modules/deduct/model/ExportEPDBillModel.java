@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,8 +15,13 @@ public class ExportEPDBillModel {
     /**
      * 业务单据编号
      */
-    @ExcelProperty("EPD单号")
+    @ExcelProperty("协议号")
     private String businessNo;
+    /**
+     * 扣款公司jv_code
+     */
+    @ExcelProperty("扣款公司")
+    private String purchaserNo;
     /**
      * 供应商编号
      */
@@ -31,23 +37,15 @@ public class ExportEPDBillModel {
      */
     @ExcelProperty("扣款日期")
     private Date deductDate;
-    /**
-     * 扣款公司jv_code
-     */
-    @ExcelProperty("扣款公司")
-    private String purchaserNo;
 
-    @ExcelProperty("协议供应商6D")
+    @ExcelProperty("供应商6D")
     private String agreementMemo;
 
-    @ExcelProperty("文档类型")
+    @ExcelProperty("协议类型")
     private String agreementDocumentType;
 
-    @ExcelProperty("文档编号")
+    @ExcelProperty("协议类型编码")
     private String agreementDocumentNumber;
-
-    @ExcelProperty("税码")
-    private String agreementTaxCode;
 
     /**
      * 含税金额
@@ -60,14 +58,32 @@ public class ExportEPDBillModel {
     @ExcelProperty("税率")
     private BigDecimal taxRate;
 
-    @ExcelProperty("定案日期")
+    /**
+     * 含税金额
+     */
+    @ExcelProperty("不含税金额")
+    private BigDecimal amountWithoutTax;
+
+    /**
+     * 税额
+     */
+    @ApiModelProperty("税额")
+    private BigDecimal taxAmount;
+
+    @ExcelProperty("税码")
+    private String agreementTaxCode;
+
+    @ExcelProperty("发票类型")
+    private String invoiceType;
+
+    @ExcelProperty("入账日期")
     private Date verdictDate;
+
 
     @ExcelProperty("批次号")
     private String batchNo;
 
-    @ExcelProperty("发票类型")
-    private String invoiceType;
+
 
     @ExcelProperty("备注")
     private String remark;

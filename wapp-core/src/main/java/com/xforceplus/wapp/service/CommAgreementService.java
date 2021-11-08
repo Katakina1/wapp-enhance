@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * 协议单相关公共逻辑操作
+ * @author Xforce
  */
 @Service
 public class CommAgreementService {
@@ -62,7 +63,7 @@ public class CommAgreementService {
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyAgreementSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -97,7 +98,7 @@ public class CommAgreementService {
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改协议单状态
-        billDeductList.parallelStream().forEach(billDeduct -> {
+        billDeductList.forEach(billDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(billDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode());
@@ -106,7 +107,7 @@ public class CommAgreementService {
         });
 
         //作废预制发票
-        Optional.ofNullable(pPreInvoiceList).ifPresent(x->x.parallelStream().forEach(tXfPreInvoiceEntity -> {
+        Optional.ofNullable(pPreInvoiceList).ifPresent(x->x.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
@@ -174,7 +175,7 @@ public class CommAgreementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void splitPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);

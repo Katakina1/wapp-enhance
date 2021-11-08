@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 /**
  * 索赔单相关公共逻辑操作
+ * @author Xforce
  */
 @Service
 public class CommClaimService {
@@ -49,7 +50,7 @@ public class CommClaimService {
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyClaimSettlement(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -74,7 +75,7 @@ public class CommClaimService {
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改预制发票状态
-        tXfPreInvoiceEntityList.parallelStream().forEach(tXfPreInvoiceEntity -> {
+        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
@@ -89,7 +90,7 @@ public class CommClaimService {
 
         //修改索赔单状态
         //申请中的索赔单修改为：作废
-        billDeductList1.parallelStream().forEach(tXfBillDeduct -> {
+        billDeductList1.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_DESTROY.getCode());
@@ -100,7 +101,7 @@ public class CommClaimService {
                     0L,"系统");
         });
         //已生成结算单的索赔单修改为：待生成结算单 清空结算单编号
-        billDeductList2.parallelStream().forEach(tXfBillDeduct -> {
+        billDeductList2.forEach(tXfBillDeduct -> {
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_SETTLEMENT.getCode());
