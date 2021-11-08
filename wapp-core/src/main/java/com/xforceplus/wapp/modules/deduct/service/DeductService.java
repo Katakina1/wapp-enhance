@@ -239,6 +239,13 @@ public class DeductService   {
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
                 unlockAndCancel(deductionEnum, tXfBillDeductEntity);
+                /**
+                 * TODO 可以把购销对完整信息 提前保存，后续就也需要了
+                 */
+                TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(tXfBillDeductEntity.getSellerNo(), true);
+                TAcOrgEntity tAcPurcharserOrgEntity = queryOrgInfo(tXfBillDeductEntity.getPurchaserNo(), false);
+                tXfBillDeductEntity.setPurchaserName(tAcPurcharserOrgEntity.getCompany());
+                tXfBillDeductEntity.setSellerName(tAcSellerOrgEntity.getCompany());
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
