@@ -128,6 +128,7 @@ public class ClaimBillService extends DeductService{
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
                         tXfBillDeductEntity =  doItemMatch(tXfBillDeductEntity, matchItem);
+                        saveCreateDeductLog(tXfBillDeductEntity);
                         claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
                     } catch (Exception e) {
                         log.error("索赔单 明细匹配 蓝票匹配异常：{}", e);

@@ -257,12 +257,8 @@ public class DeductService   {
         return true;
     }
 
-    private void saveCreateDeductLog(TXfBillDeductEntity tXfBillDeductEntity) {
-        if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
-            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
-                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                    0L,"系统");
-        } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue())) {
+    protected void saveCreateDeductLog(TXfBillDeductEntity tXfBillDeductEntity) {
+        if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_AGREEMENT,
                     TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
                     0L,"系统");
