@@ -41,7 +41,7 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     private LockClient lockClient;
 
     @Async
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "${agreementBill.cron}")
     @Override
     public void execute() {
         log.info("启动原始协议单任务执行器");

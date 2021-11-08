@@ -39,7 +39,7 @@ public class EpdBillJobExecutor extends AbstractBillJobExecutor {
     private LockClient lockClient;
 
     @Async
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "${epdBill.cron}")
     @Override
     public void execute() {
         log.info("启动原始EPD单任务执行器");
