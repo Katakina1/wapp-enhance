@@ -146,6 +146,8 @@ public class BackFillService {
         if(org.apache.commons.lang3.StringUtils.isNotEmpty(settlementNo)){
             QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
             preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, settlementNo);
+            preinvoiceWrapper.ne(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.DESTROY.getCode());
+            preinvoiceWrapper.ne(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
             List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(preinvoiceWrapper);
             if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
                 return R.fail("根据结算单号未找到预制发票");

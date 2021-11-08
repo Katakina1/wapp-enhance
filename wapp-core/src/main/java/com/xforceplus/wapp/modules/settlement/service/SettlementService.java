@@ -14,7 +14,9 @@ import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
+import com.xforceplus.wapp.repository.daoExt.RecordInvoiceDetailExtDao;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class SettlementService {
+    @Autowired
+    private RecordInvoiceDetailExtDao recordInvoiceDetailExtDao;
     @Autowired
     private TXfSettlementExtDao settlementDao;
 
@@ -102,8 +106,12 @@ public class SettlementService {
                 .eq(TDxRecordInvoiceEntity::getTaxRate,taxRateStr)
                 .ge(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateStart())
                 .le(TDxRecordInvoiceEntity::getInvoiceDate,request.getInvoiceDateEnd())
-                .eq(TDxRecordInvoiceEntity::getRzhYesorno,1);
-        ;
+                .eq(TDxRecordInvoiceEntity::getRzhYesorno,1).
+        and(x->{
+            x.gt(TDxRecordInvoiceEntity::getRemainingAmount,0).or(
+                    s->s.isNull(TDxRecordInvoiceEntity::getRemainingAmount
+            ));
+        });
         wrapper.orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate);
 
         Page<TDxRecordInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
@@ -112,7 +120,14 @@ public class SettlementService {
 
         List<InvoiceRecommendResponse> dtos=new ArrayList<>();
         if (CollectionUtils.isNotEmpty(entityPage.getRecords())){
-            final List<InvoiceRecommendResponse> collect = entityPage.getRecords().stream().map(this.invoiceRecommendMapper::toDto).collect(Collectors.toList());
+            final List<InvoiceRecommendResponse> collect = new ArrayList<>();
+            for (TDxRecordInvoiceEntity entity : entityPage.getRecords()) {
+                InvoiceRecommendResponse x = invoiceRecommendMapper.toDto(entity);
+                final List<TDxRecordInvoiceDetailEntity> details = this.recordInvoiceDetailExtDao.selectTopGoodsName(5, x.getInvoiceCode() + x.getInvoiceNo());
+                final String goodsName = details.stream().map(TDxRecordInvoiceDetailEntity::getGoodsName).collect(Collectors.joining(","));
+                x.setGoodsName(goodsName);
+                collect.add(x);
+            }
             dtos.addAll(collect);
         }
         return PageResult.of(dtos,entityPage.getTotal(),entityPage.getPages(),entityPage.getSize());

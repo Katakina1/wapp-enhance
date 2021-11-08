@@ -8,6 +8,7 @@ import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillFbl5nDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillFbl5nDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
@@ -41,6 +42,8 @@ public class AgreementBillFbl5nSaveCommand implements Command {
     private SFTPRemoteManager sftpRemoteManager;
     @Autowired
     private OriginSapFbl5nService service;
+    @Autowired
+    private TXfBillJobDao tXfBillJobDao;
     @Autowired
     private Validator validator;
     @Value("${agreementBill.remote.path}")
@@ -136,12 +139,8 @@ public class AgreementBillFbl5nSaveCommand implements Command {
         // 获取当前进度
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginAgreementBillFbl5nDataListener readListener = new OriginAgreementBillFbl5nDataListener(jobId, cursor, service, validator);
@@ -152,12 +151,14 @@ public class AgreementBillFbl5nSaveCommand implements Command {
                     .doRead();
             //下一步
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(ITEM.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

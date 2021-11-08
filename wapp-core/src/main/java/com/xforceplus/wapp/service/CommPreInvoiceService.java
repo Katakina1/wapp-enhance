@@ -25,7 +25,7 @@ public class CommPreInvoiceService {
      * @param redNotification
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void fillPreInvoiceRedNotification(Long preInvoiceId, String redNotification) {
         if (preInvoiceId == null || StringUtils.isBlank(redNotification)) {
             throw new EnhanceRuntimeException("参数异常");
@@ -42,7 +42,7 @@ public class CommPreInvoiceService {
      * 沃尔玛申请红字信息失败
      * @param preInvoiceId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void applyPreInvoiceRedNotificationFail(Long preInvoiceId) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");

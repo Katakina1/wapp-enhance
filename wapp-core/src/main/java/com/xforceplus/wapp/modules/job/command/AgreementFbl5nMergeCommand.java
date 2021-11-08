@@ -139,7 +139,6 @@ public class AgreementFbl5nMergeCommand implements Command {
             // 总页数
             pages = page.getPages();
             filter(page.getRecords());
-            //context.put(TXfBillJobEntity.JOB_ENTRY_AGREEMENT_FBL5N_PROGRESS, last);
             //更新页码
             TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
             updateTXfBillJobEntity.setId(jobId);
