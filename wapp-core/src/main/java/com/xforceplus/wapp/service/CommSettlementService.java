@@ -9,7 +9,10 @@ import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceItemDao;
+import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
+import com.xforceplus.wapp.repository.dao.TXfSettlementItemDao;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
@@ -314,7 +317,6 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
-    @Transactional
     public void againSplitSettlementPreInvoice(Long settlementId) {
         //检查结算单是否能重新拆票
         checkAgainSplitSettlementPreInvoice(settlementId);
