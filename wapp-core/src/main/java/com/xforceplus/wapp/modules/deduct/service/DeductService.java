@@ -1054,9 +1054,12 @@ public class DeductService   {
             StringBuilder sb =new StringBuilder();
             if(CollectionUtils.isNotEmpty(tXfPreInvoiceEntities)){
                 for (int i = 0; i < tXfPreInvoiceEntities.size(); i++) {
-                    sb.append(tXfPreInvoiceEntities.get(i).getRedNotificationNo());
-                    if(i != tXfPreInvoiceEntities.size()-1){
-                        sb.append(",");
+                    String redNotificationNo = tXfPreInvoiceEntities.get(i).getRedNotificationNo();
+                    if(StringUtils.isNotEmpty(redNotificationNo)){
+                        sb.append(redNotificationNo);
+                        if(i != tXfPreInvoiceEntities.size()-1){
+                            sb.append(",");
+                        }
                     }
                 }
             }
