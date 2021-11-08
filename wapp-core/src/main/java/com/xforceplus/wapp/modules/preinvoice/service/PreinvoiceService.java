@@ -266,7 +266,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                 applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);
                 commRedNotificationService.applyAddRedNotification(applyProInvoiceRedNotificationDTO);
             } catch (Exception e) {
-                log.error("发起红字信息申请 失败{} 预制发票id：{}",e,tXfPreInvoiceEntity.getId());
+                log.error("发起红字信息申请 失败 预制发票id：{}",tXfPreInvoiceEntity.getId(),e);
             }
         }
         TXfSettlementEntity tmp = new TXfSettlementEntity();
