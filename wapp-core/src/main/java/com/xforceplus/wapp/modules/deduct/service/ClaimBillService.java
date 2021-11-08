@@ -231,12 +231,17 @@ public class ClaimBillService extends DeductService{
         tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).map(x-> fixTaxCode(x)).collect(Collectors.toList());
         tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
-            TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
-            tXfBillDeductEntity.setId(deductId);
-            tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
-            tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
+            TXfBillDeductEntity tXfBillDeductEntityTmp = new TXfBillDeductEntity();
+            tXfBillDeductEntityTmp.setId(deductId);
+            tXfBillDeductEntityTmp.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
+            tXfBillDeductExtDao.updateById(tXfBillDeductEntityTmp);
         }else{
-
+            TXfBillDeductEntity tXfBillDeductEntity = tXfBillDeductExtDao.selectById(deductId);
+            NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+            newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_GOODS_TAX );
+            newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
+            applicationContext.publishEvent(newExceptionReportEvent);
         }
     }
 

@@ -9,6 +9,7 @@ import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -107,7 +108,7 @@ public class CommRedNotificationService {
             redNotificationItem.setGoodsTaxNo(preInvoiceItem.getGoodsTaxNo());
             redNotificationItem.setTaxPre(Integer.valueOf(preInvoiceItem.getTaxPre()));
             redNotificationItem.setTaxPreCon(preInvoiceItem.getTaxPreCon());
-            redNotificationItem.setZeroTax(Integer.valueOf(preInvoiceItem.getZeroTax()));
+            redNotificationItem.setZeroTax(StringUtils.isEmpty(preInvoiceItem.getZeroTax())?null:Integer.valueOf(preInvoiceItem.getZeroTax()));
             redNotificationItem.setModel(preInvoiceItem.getItemSpec());
             redNotificationItem.setUnit(preInvoiceItem.getQuantityUnit());
             redNotificationItem.setNum(preInvoiceItem.getQuantity());
