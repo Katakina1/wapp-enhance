@@ -509,14 +509,14 @@ public class BackFillService {
             //非零税率根据红字编号匹配，零税率根据金额匹配
             boolean flag = BigDecimal.ZERO.compareTo(tXfPreInvoiceEntities.get(0).getTaxRate()) == 0;
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
-                if (StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())) {
-                    log.info("预制发票的红字信息编号不能为空");
-                    continue;
-                }
                 for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
                     boolean equalsRedNo = preInvoiceEntity.getRedNotificationNo().equals(backFillVerifyBean.getRedNoticeNumber());
                     boolean equalsAmount = preInvoiceEntity.getAmountWithoutTax().compareTo(new BigDecimal(backFillVerifyBean.getAmount())) == 0;
                     if ((!flag && equalsRedNo) || (flag && equalsAmount)) {
+                        if (!flag && StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())) {
+                            log.info("预制发票的红字信息编号不能为空");
+                            continue;
+                        }
                         log.info("发票回填后匹配--回填预制发票数据");
                         preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
                         preInvoiceEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
