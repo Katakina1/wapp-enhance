@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * 协议单相关公共逻辑操作
+ * @author Xforce
  */
 @Service
 public class CommAgreementService {
@@ -62,7 +63,7 @@ public class CommAgreementService {
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyAgreementSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -146,7 +147,7 @@ public class CommAgreementService {
      * @param settlementId
      * @param preInvoiceItemList
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void againSplitPreInvoice(Long settlementId, List<TXfPreInvoiceItemEntity> preInvoiceItemList) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -175,7 +176,7 @@ public class CommAgreementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void splitPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);

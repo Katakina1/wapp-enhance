@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * epd 通用逻辑操作
+ * @author Xforce
  */
 @Service
 public class CommEpdService {
@@ -62,7 +63,7 @@ public class CommEpdService {
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyEpdSettlement(Long settlementId) {
         if (settlementId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -143,7 +144,7 @@ public class CommEpdService {
      * @param settlementId
      * @param preInvoiceItemList
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void againSplitPreInvoice(Long settlementId, List<TXfPreInvoiceItemEntity> preInvoiceItemList) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -171,7 +172,7 @@ public class CommEpdService {
      * 底层逻辑调用产品服务(拆票、申请红字信息)
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void splitPreInvoice(Long settlementId) throws IOException {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);

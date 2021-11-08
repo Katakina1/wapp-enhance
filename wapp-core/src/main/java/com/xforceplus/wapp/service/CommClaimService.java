@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 /**
  * 索赔单相关公共逻辑操作
+ * @author Xforce
  */
 @Service
 public class CommClaimService {
@@ -49,7 +50,7 @@ public class CommClaimService {
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyClaimSettlement(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -161,7 +162,7 @@ public class CommClaimService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void splitPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);

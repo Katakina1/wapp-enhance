@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  * 结算单公共逻辑
  * 1、作废预制发票
  * 2、重新申请预制发票 拆票
+ * @author Xforce
  */
 @Service
 public class CommSettlementService {
@@ -55,7 +56,7 @@ public class CommSettlementService {
      * @param settlementId
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void applyDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -113,7 +114,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void rejectDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -148,7 +149,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void agreeDestroySettlementPreInvoice(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -177,7 +178,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void destroyPreInvoice(Long preInvoiceId) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -194,7 +195,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
@@ -253,7 +254,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceIdList 预制发票id
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void agreeDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
@@ -284,7 +285,7 @@ public class CommSettlementService {
      *
      * @param preInvoiceIdList 预制发票id
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void rejectDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
@@ -314,7 +315,7 @@ public class CommSettlementService {
      *
      * @param settlementId
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void againSplitSettlementPreInvoice(Long settlementId) {
         //检查结算单是否能重新拆票
         checkAgainSplitSettlementPreInvoice(settlementId);
