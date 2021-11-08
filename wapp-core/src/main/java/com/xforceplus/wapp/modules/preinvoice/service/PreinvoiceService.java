@@ -288,11 +288,9 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setId(idSequence.nextId());
             tXfPreInvoiceEntity.setSettlementNo(tXfSettlementEntity.getSettlementNo());
             tXfPreInvoiceEntity.setInvoiceType(tXfSettlementEntity.getInvoiceType());
-            tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
                 BeanUtil.copyProperties(preInvoiceItem, tXfPreInvoiceItemEntity);
-
                 tXfPreInvoiceItemEntity.setId(idSequence.nextId());
                 tXfPreInvoiceItemEntity.setPreInvoiceId(tXfPreInvoiceEntity.getId());
                 tXfPreInvoiceItemDao.insert(tXfPreInvoiceItemEntity);
@@ -302,12 +300,17 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
              * 0税率 不申请红字信息单
              */
             if (tXfPreInvoiceEntity.getTaxRate().compareTo(BigDecimal.ZERO) == 0) {
+                tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+                tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
                 continue;
+            }else{
+                tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             }
             PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);
             preInvoiceDTOS.add(applyProInvoiceRedNotificationDTO);
+
         }
         TXfSettlementEntity tmp = new TXfSettlementEntity();
         tmp.setId(tXfSettlementEntity.getId());

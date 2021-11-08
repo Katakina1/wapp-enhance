@@ -235,6 +235,8 @@ public class ClaimBillService extends DeductService{
             tXfBillDeductEntity.setId(deductId);
             tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
             tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
+        }else{
+
         }
     }
 
