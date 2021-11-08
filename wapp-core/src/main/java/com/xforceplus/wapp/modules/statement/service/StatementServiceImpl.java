@@ -121,7 +121,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         log.info("结算单tab统计,入参,type:{},settlementNo:{},purchaserNo:{},invoiceType:{},businessNo:{},taxRate:{}",
                 type, settlementNo, purchaserNo, invoiceType, businessNo, taxRate);
         Map<String, SettlementCount> tabMap = Arrays.stream(TXfSettlementStatusEnum.values())
-                .filter(it -> it.getValue() < 8)
+                .filter(it -> it.getValue() < 8 || it.getValue() == 10)
                 .map(it -> SettlementCount.builder().status(it.getCode().toString()).total(0).build())
                 .collect(Collectors.toMap(SettlementCount::getStatus, Function.identity()));
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
