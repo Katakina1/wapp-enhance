@@ -189,6 +189,7 @@ public class CommSettlementService {
         TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         updateTXfPreInvoiceEntity.setId(preInvoiceId);
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
+        updateTXfPreInvoiceEntity.setRedNotificationNo("");
         tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
     }
 
