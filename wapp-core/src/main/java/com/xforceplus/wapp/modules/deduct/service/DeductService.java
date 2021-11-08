@@ -244,8 +244,12 @@ public class DeductService   {
                  */
                 TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(tXfBillDeductEntity.getSellerNo(), true);
                 TAcOrgEntity tAcPurcharserOrgEntity = queryOrgInfo(tXfBillDeductEntity.getPurchaserNo(), false);
-                tXfBillDeductEntity.setPurchaserName(tAcPurcharserOrgEntity.getCompany());
-                tXfBillDeductEntity.setSellerName(tAcSellerOrgEntity.getCompany());
+                if (Objects.nonNull(tAcPurcharserOrgEntity)) {
+                    tXfBillDeductEntity.setPurchaserName(tAcPurcharserOrgEntity.getCompany());
+                }
+                if (Objects.nonNull(tAcSellerOrgEntity)) {
+                    tXfBillDeductEntity.setPurchaserName(tAcSellerOrgEntity.getCompany());
+                }
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
