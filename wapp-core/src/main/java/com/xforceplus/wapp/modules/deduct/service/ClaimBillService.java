@@ -324,6 +324,11 @@ public class ClaimBillService extends DeductService{
                 log.error(" 索赔单 匹配蓝票 回撤匹配信息 单据id {} 回撤匹配信息:{}", e,tXfBillDeductEntity.getId(),invoiceList );
                 blueInvoiceService.withdrawInvoices(matchResList);
             }
+            NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+            newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
+            newExceptionReportEvent.setType( ExceptionReportTypeEnum.CLAIM );
+            applicationContext.publishEvent(newExceptionReportEvent);
             log.error(" 索赔单 匹配蓝票 异常：{}  单据id {}", e,tXfBillDeductEntity.getId());
             throw e;
         }
