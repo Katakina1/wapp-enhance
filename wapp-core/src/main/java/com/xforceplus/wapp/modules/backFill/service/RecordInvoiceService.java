@@ -11,10 +11,7 @@ import com.xforceplus.wapp.common.enums.IsDealEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
-import com.xforceplus.wapp.enums.InvoiceTypeEnum;
-import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
-import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
-import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
+import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
 import com.xforceplus.wapp.modules.backFill.model.RecordInvoiceResponse;
@@ -29,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -169,16 +163,19 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         if(!DateUtils.isCurrentMonth(entity.getInvoiceDate())){
             return R.fail("当前发票类型或状态无法作废，重新开票前，请开同税率蓝票进行冲抵");
         }
+        Date updateDate = new Date();
         String settlementNo = entity.getSettlementNo();
         entity.setIsDel(IsDealEnum.YES.getValue());
         entity.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
         entity.setSettlementNo("");
+        entity.setStatusUpdateDate(updateDate);
         int count = tDxRecordInvoiceDao.updateById(entity);
         if(count < 1){
             throw  new EnhanceRuntimeException("删除失败,未找到发票");
         }
         TDxInvoiceEntity tDxInvoiceEntity = new TDxInvoiceEntity();
         tDxInvoiceEntity.setIsdel(IsDealEnum.YES.getValue());
+        tDxInvoiceEntity.setUpdateDate(updateDate);
         UpdateWrapper<TDxInvoiceEntity> wrapper = new UpdateWrapper<>();
         wrapper.eq(TDxInvoiceEntity.UUID,entity.getUuid());
         int count1 = tDxInvoiceDao.update(tDxInvoiceEntity,wrapper);
@@ -196,6 +193,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         tXfPreInvoiceEntity.setPaperDrewDate("");
         tXfPreInvoiceEntity.setCheckCode("");
         tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+        tXfPreInvoiceEntity.setUpdateTime(updateDate);
         int count2 = tXfPreInvoiceDao.update(tXfPreInvoiceEntity,preWrapper);
         if(count2 < 1){
             throw  new EnhanceRuntimeException("删除失败,未找到对应预制发票");
@@ -215,6 +213,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         queryWrapper.ne(TXfPreInvoiceEntity.INVOICE_NO,invoiceNo);
         List<TXfPreInvoiceEntity> tXfPreInvoices= tXfPreInvoiceDao.selectList(queryWrapper);
         TXfSettlementEntity tXfSettlementEntity = new TXfSettlementEntity();
+        tXfSettlementEntity.setUpdateTime(new Date());
         if(CollectionUtils.isEmpty(tXfPreInvoices)){
             tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
         }else{
@@ -307,7 +306,8 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
     public boolean blue4RedInvoice(String redInvoiceNo,String redInvoiceCode){
         TDxRecordInvoiceEntity entity=new TDxRecordInvoiceEntity();
-        entity.setInvoiceStatus("5");
+        entity.setInvoiceStatus(InvoiceStatusEnum.INVOICE_STATUS_SEND_BLUE.getCode());
+        entity.setStatusUpdateDate(new Date());
         LambdaUpdateWrapper<TDxRecordInvoiceEntity> wrapper=new LambdaUpdateWrapper<>();
         wrapper.eq(TDxRecordInvoiceEntity::getUuid,redInvoiceCode+redInvoiceNo);
         tDxRecordInvoiceDao.update(entity,wrapper);
