@@ -298,6 +298,12 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                 tXfPreInvoiceItemDao.insert(tXfPreInvoiceItemEntity);
                 tXfPreInvoiceItemEntities.add(tXfPreInvoiceItemEntity);
             }
+            /**
+             * 0税率 不申请红字信息单
+             */
+            if (tXfPreInvoiceEntity.getTaxRate().compareTo(BigDecimal.ZERO) == 0) {
+                continue;
+            }
             PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);

@@ -331,6 +331,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         invoice.setAmountWithoutTax(entity.getInvoiceAmount());
         invoice.setAmountWithTax(entity.getTotalAmount());
         invoice.setRedNotificationNo(entity.getRedNoticeNumber());
+        invoice.setMachineCode(entity.getMachinecode());
         if(entity.getTaxRate() != null){
             BigDecimal taxRate = entity.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
             invoice.setTaxRate(taxRate.toPlainString());

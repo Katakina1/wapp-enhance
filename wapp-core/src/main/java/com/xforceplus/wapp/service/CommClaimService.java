@@ -162,13 +162,5 @@ public class CommClaimService {
      *
      * @param settlementId
      */
-    @Transactional(rollbackFor = Exception.class)
-    public void splitPreInvoice(Long settlementId) {
-        //结算单
-        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
-        if (tXfSettlementEntity == null) {
-            throw new EnhanceRuntimeException("结算单不存在");
-        }
-        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
-    }
+
 }

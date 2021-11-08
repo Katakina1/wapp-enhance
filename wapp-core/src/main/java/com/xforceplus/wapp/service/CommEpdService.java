@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -144,7 +143,6 @@ public class CommEpdService {
      * @param settlementId
      * @param preInvoiceItemList
      */
-    @Transactional(rollbackFor = Exception.class)
     public void againSplitPreInvoice(Long settlementId, List<TXfPreInvoiceItemEntity> preInvoiceItemList) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -166,19 +164,5 @@ public class CommEpdService {
         tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity,deletePreInvoiceWrapper);
     }
 
-    /**
-     * EPD[确认]按钮相关逻辑，这个主要是针对结算单明细拆票
-     * 结算单明细拆成预制发票（红字信息）
-     * 底层逻辑调用产品服务(拆票、申请红字信息)
-     * @param settlementId
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void splitPreInvoice(Long settlementId) throws IOException {
-        //结算单
-        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
-        if (tXfSettlementEntity == null) {
-            throw new EnhanceRuntimeException("结算单不存在");
-        }
-        preinvoiceService.splitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo());
-    }
+
 }

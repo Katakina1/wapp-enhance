@@ -147,7 +147,6 @@ public class CommAgreementService {
      * @param settlementId
      * @param preInvoiceItemList
      */
-    @Transactional(rollbackFor = Exception.class)
     public void againSplitPreInvoice(Long settlementId, List<TXfPreInvoiceItemEntity> preInvoiceItemList) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
