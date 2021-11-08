@@ -1,13 +1,17 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginEpdBillDto;
 import com.xforceplus.wapp.modules.job.listener.OriginEpdBillDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
@@ -39,6 +43,8 @@ public class EpdBillSaveCommand implements Command {
     @Autowired
     private OriginEpdBillService service;
     @Autowired
+    private TXfBillJobDao tXfBillJobDao;
+    @Autowired
     private Validator validator;
     @Value("${epdBill.remote.path}")
     private String remotePath;
@@ -58,6 +64,9 @@ public class EpdBillSaveCommand implements Command {
                 downloadFile(remotePath, fileName, localPath);
             }
             try {
+                //处理某个job的excel前先删除这个job的原始数据（以前可能处理一半需要重新处理excel）
+                int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
+                deleteOriginEpd(jobId);
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -66,6 +75,12 @@ public class EpdBillSaveCommand implements Command {
             log.info("跳过原始EPD文件数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
+    }
+
+    private void deleteOriginEpd(Integer jobId){
+        QueryWrapper<TXfOriginEpdBillEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginEpdBillEntity.JOB_ID,jobId);
+        service.remove(queryWrapper);
     }
 
     /**
@@ -121,10 +136,7 @@ public class EpdBillSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginEpdBillDataListener readListener = new OriginEpdBillDataListener(jobId, cursor, service, validator);
@@ -134,12 +146,14 @@ public class EpdBillSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_STATUS, BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobStatus(BillJobStatusEnum.SAVE_COMPLETE.getJobStatus());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

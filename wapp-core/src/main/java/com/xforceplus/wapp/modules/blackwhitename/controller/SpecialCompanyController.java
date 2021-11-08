@@ -72,7 +72,7 @@ public class SpecialCompanyController {
         long start = System.currentTimeMillis();
         Either<String, Integer> result = speacialCompanyService.importData(file,type);
         log.info("黑白名单信息导入,耗时:{}ms", System.currentTimeMillis() - start);
-        return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据", result.get())) : R.fail(result.getLeft());
+        return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据 导入失败数据请前往消息中心查看", result.get())) : R.fail(result.getLeft());
     }
 
     @ApiOperation(value = "获取黑白名单模板")

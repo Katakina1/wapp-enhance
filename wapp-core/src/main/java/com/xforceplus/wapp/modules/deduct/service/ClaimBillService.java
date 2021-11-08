@@ -4,8 +4,8 @@ import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
 import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfInvoiceDeductTypeEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfInvoiceDeductTypeEnum;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
 import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportTypeEnum;
 import com.xforceplus.wapp.modules.exceptionreport.event.NewExceptionReportEvent;
@@ -64,6 +64,7 @@ public class ClaimBillService extends DeductService{
                     continue;
                 }
                 BigDecimal taxRate = tXfBillDeductEntity.getTaxRate();
+                Map<BigDecimal, BigDecimal> taxRateMap = taxRateConfig.bulidTaxRateMap(taxRate);
                 if (StringUtils.isEmpty(sellerNo) || StringUtils.isEmpty(purcharseNo) || Objects.isNull(taxRate)) {
                     log.warn("索赔单{} 主信息 不符合要求，sellerNo:{},purcharseNo:{},taxRate:{}",sellerNo,purcharseNo,taxRate);
                     continue;
@@ -87,7 +88,7 @@ public class ClaimBillService extends DeductService{
                 List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate,  itemId,limit, tXfBillDeductEntity.getBusinessNo());
                 while (billAmount.compareTo(BigDecimal.ZERO) > 0) {
                     if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
-                        taxRate = taxRateConfig.getNextTaxRate(taxRate);
+                        taxRate = taxRateMap.get(taxRate);
                         if (Objects.isNull(taxRate)) {
                             log.warn("{} 索赔的，未找到足够的索赔单明细，结束匹配",tXfBillDeductEntity.getId());
                             break;
@@ -161,6 +162,7 @@ public class ClaimBillService extends DeductService{
          */
         Boolean matchTaxNoFlag = true;
         Boolean taxAmountDiff = true;
+        BigDecimal deductTax = tXfBillDeductEntity.getTaxRate();
         BigDecimal taxAmountOther = BigDecimal.ZERO;
         for (TXfBillDeductItemEntity tXfBillDeductItemEntity : tXfBillDeductItemEntitys) {
             if (billAmount.compareTo(BigDecimal.ZERO) == 0) {
@@ -188,13 +190,12 @@ public class ClaimBillService extends DeductService{
             tXfBillDeductItemRefEntity.setPrice(tXfBillDeductItemEntity.getPrice());
             tXfBillDeductItemRefEntity.setQuantity(tXfBillDeductItemEntity.getQuantity());
             tXfBillDeductItemRefEntity.setTaxAmount(amount.multiply(tXfBillDeductItemEntity.getTaxRate()).setScale(2, RoundingMode.HALF_UP));
-            taxAmountOther = taxAmountOther.add(tXfBillDeductItemRefEntity.getTaxAmount());
             tXfBillDeductItemRefEntity.setAmountWithTax(tXfBillDeductItemRefEntity.getTaxAmount().add(tXfBillDeductItemRefEntity.getUseAmount()));
+            taxAmountDiff = !taxAmountDiff ? taxAmountDiff:(deductTax.compareTo(tXfBillDeductItemEntity.getTaxRate()) == 0);
             tXfBillDeductItemRefDao.insert(tXfBillDeductItemRefEntity);
         }
         TXfBillDeductEntity tmp = new TXfBillDeductEntity();
         tmp.setId(billId);
-        taxAmountDiff = taxAmountOther.compareTo(taxAmount) == 0;
         if (!matchTaxNoFlag  ) {
             NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
             newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
@@ -234,6 +235,8 @@ public class ClaimBillService extends DeductService{
             tXfBillDeductEntity.setId(deductId);
             tXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
             tXfBillDeductExtDao.updateById(tXfBillDeductEntity);
+        }else{
+
         }
     }
 
@@ -288,6 +291,11 @@ public class ClaimBillService extends DeductService{
             if (CollectionUtils.isEmpty(matchResList)) {
                 log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 单号 {}", "索赔单", tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getBusinessNo());
                 nosuchInvoiceSeller.put(tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getAmountWithoutTax());
+                NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+                newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+                newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
+                newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
+                applicationContext.publishEvent(newExceptionReportEvent);
                 return false;
             }
             matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getId(), TXfDeductionBusinessTypeEnum.CLAIM_BILL);

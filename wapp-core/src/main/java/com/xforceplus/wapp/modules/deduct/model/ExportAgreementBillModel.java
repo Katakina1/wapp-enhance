@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -63,7 +64,13 @@ public class ExportAgreementBillModel {
     @ExcelProperty("税率")
     private BigDecimal taxRate;
 
-    @ExcelProperty("定案日期")
+    @ExcelProperty("不含税金额")
+    private BigDecimal amountWithoutTax;
+
+    @ApiModelProperty("税额")
+    private BigDecimal taxAmount;
+
+    @ExcelProperty("扣款日期")
     private Date verdictDate;
 
     @ExcelProperty("批次号")

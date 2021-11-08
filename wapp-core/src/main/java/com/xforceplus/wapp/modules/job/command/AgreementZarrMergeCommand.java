@@ -113,20 +113,16 @@ public class AgreementZarrMergeCommand implements Command {
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT))) {
             context.put(TXfBillJobEntity.JOB_ENTRY_OBJECT, BillJobEntryObjectEnum.BILL.getCode());
         }
-        Object jobEntryProgress = context.get(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS);
+        Object jobEntryProgress = context.get(TXfBillJobEntity.JOB_ENTRY_AGREEMENT_ZARR_PROGRESS);
         // 上次完成页
         long last = 0;
         // 获取当前进度
         if (Objects.isNull(jobEntryProgress)) {
-            context.put(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS, 0);
+            context.put(TXfBillJobEntity.JOB_ENTRY_AGREEMENT_ZARR_PROGRESS, 0);
         } else {
             // 记录上次完成的页数，这次从last+1开始
             last = Long.parseLong(String.valueOf(jobEntryProgress));
         }
-//        if (last == 0) {
-//            //如果第一页需要特殊处理把数据此次job数据清理一下（可能之前执行到一半重启，数据已经完成一半但是last没有更新）
-//            deleteOriginAgreementMerge(jobId);
-//        }
         // 先获取分页总数
         long pages;
         do {
@@ -140,11 +136,10 @@ public class AgreementZarrMergeCommand implements Command {
             // 总页数
             pages = page.getPages();
             filter(page.getRecords());
-            context.put(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS, last);
             //更新页码
             TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
             updateTXfBillJobEntity.setId(jobId);
-            updateTXfBillJobEntity.setJobEntryZarr0355Progress(last);
+            updateTXfBillJobEntity.setJobEntryAgreementZarrProgress(last);
             tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
     }
@@ -256,13 +251,6 @@ public class AgreementZarrMergeCommand implements Command {
             return tXfOriginSapFbl5nEntity.getDocumentType();
         }
         return null;
-    }
-
-    private void deleteOriginAgreementMerge(Integer jobId) {
-        QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
-        queryWrapper.eq(TXfOriginAgreementMergeEntity.SOURCE, 2);
-        tXfOriginAgreementMergeDao.delete(queryWrapper);
     }
 
 }

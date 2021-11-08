@@ -1,13 +1,17 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginClaimItemHyperDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemHyperDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimBillEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
@@ -40,6 +44,8 @@ public class ClaimItemHyperSaveCommand implements Command {
     @Autowired
     private OriginClaimItemHyperService service;
     @Autowired
+    private TXfBillJobDao tXfBillJobDao;
+    @Autowired
     private Validator validator;
     @Value("${claimBill.remote.path}")
     private String remotePath;
@@ -59,6 +65,9 @@ public class ClaimItemHyperSaveCommand implements Command {
                 downloadFile(remotePath, fileName, localPath);
             }
             try {
+                //处理某个job的excel前先删除这个job的原始数据（以前可能处理一半需要重新处理excel）
+                int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
+                deleteOriginClaimItemHyper(jobId);
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -68,6 +77,12 @@ public class ClaimItemHyperSaveCommand implements Command {
             log.info("跳过原始索赔单Hyper明细数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
+    }
+
+    private void deleteOriginClaimItemHyper(Integer jobId){
+        QueryWrapper<TXfOriginClaimItemHyperEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginClaimItemHyperEntity.JOB_ID,jobId);
+        service.remove(queryWrapper);
     }
 
     /**
@@ -125,12 +140,8 @@ public class ClaimItemHyperSaveCommand implements Command {
     private void process(String localPath, String fileName, Context context) {
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginClaimItemHyperDataListener readListener = new OriginClaimItemHyperDataListener(jobId, cursor, service, validator);
@@ -140,12 +151,14 @@ public class ClaimItemHyperSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM_SAMS.getCode());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(ITEM_SAMS.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

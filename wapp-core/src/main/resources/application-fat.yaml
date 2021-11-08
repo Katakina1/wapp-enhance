@@ -42,7 +42,6 @@ wapp:
     tmp: /tmp/excel
   rednotification:
     maxApply: 100
-  tax-rate: 0.00,0.01,0.03,0.06,0.09,0.10,0.11,0.13
 activemq:
   queue-name:
     export-request: fat-cn.wm.host.enhance.export-request.queue # 导出申请
@@ -53,6 +52,7 @@ spring:
   redis:
     host: wapp-redis
     port: 6379
+    password:
 server:
   port: 6060
 

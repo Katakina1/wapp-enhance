@@ -62,10 +62,10 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      * @return
      */
     @Select("select sum(deduct.amount_without_tax) as amount_without_tax,sum(deduct.amount_with_tax) as amount_with_tax,sum(deduct.tax_amount) as tax_amount , deduct.seller_no,deduct.purchaser_no, deduct.tax_rate\n" +
-            "from t_xf_bill_deduct deduct left join t_xf_overdue overdue on overdue.seller_no = deduct.seller_no\n" +
-            "where  deduct.deduct_date >  IIF(  overdue.overdue_day is null, convert(varchar(10),DATEADD(d, 0 - #{referenceDate}, GETDATE()),120), convert(  varchar(10),DATEADD(d, 0 - (overdue.overdue_day), GETDATE()),120)) \n" +
+            "from t_xf_bill_deduct deduct left join t_xf_overdue overdue on overdue.seller_no = deduct.seller_no AND overdue.type = #{type}\n" +
+            "where  deduct.deduct_date <=  IIF(  overdue.overdue_day is null, convert(varchar(10),DATEADD(d, 0 - #{referenceDate}, GETDATE()),120), convert(  varchar(10),DATEADD(d, 0 - (overdue.overdue_day), GETDATE()),120)) \n" +
             "  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag}\n" +
-            "group by deduct.purchaser_no, deduct.seller_no,deduct.tax_rate\n")
+            "group by deduct.purchaser_no, deduct.seller_no,deduct.tax_rate")
     public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Integer referenceDate,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
 
     /**
@@ -109,7 +109,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     @Update("update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where purchaser_no  = #{purchaserNo} and seller_no = #{sellerNo} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax < 0 and ref_settlement_no = '' and  lock_flag = #{flag} ")
     public int updateMergeNegativeBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus,@Param("flag") Integer flag );
 
-    @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and create_time >= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0 and ref_settlement_no = '' and  lock_flag = #{flag}")
+    @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and deduct_date <= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0 and ref_settlement_no = '' and  lock_flag = #{flag}")
     public int updateMergePositiveBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate,@Param("referenceDate") Date referenceDate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus,@Param("flag") Integer flag );
 
     /**
@@ -137,6 +137,9 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "left outer join t_xf_bill_deduct_item_ref di on di.deduct_id  = d.id\n"+
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
+            "<if test='ids!=null'>"+
+            "and d.id in ${ids}\n"+
+            "</if>"+
             "<if test='businessNo!=null'>"+
             "and d.business_no = #{businessNo}\n"+
              "</if>"+
@@ -172,11 +175,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "</if>"+
             "<if test='key == 1'>"+
             "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 2'>"+
             "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+
@@ -195,12 +198,15 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "order by d.id desc offset #{offset} rows fetch next #{next} rows only\n"+
             "</if>"+
             "</script>")
-    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")Integer offset, @Param("next")Integer next, @Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
+    List<TXfBillDeductExtEntity> queryBillPage(@Param("offset")Integer offset, @Param("next")Integer next, @Param("ids")String ids,@Param("businessNo")String businessNo, @Param("businessType")Integer businessType, @Param("sellerNo")String sellerNo, @Param("sellerName")String sellerName, @Param("deductStartDate") String deductStartDate, @Param("deductEndDate") String deductEndDate, @Param("purchaserNo")String purchaserNo, @Param("key")String key);
 
     @Select("<script>"+
             "select count(d.id) from t_xf_bill_deduct d\n" +
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
             "where 1=1\n" +
+            "<if test='ids!=null'>"+
+            "and d.id in ${ids}\n"+
+            "</if>"+
             "<if test='businessNo!=null'>"+
             "and d.business_no = #{businessNo}\n"+
             "</if>"+
@@ -236,11 +242,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "</if>"+
             "<if test='key == 1'>"+
             "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 2'>"+
             "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+
@@ -255,5 +261,5 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 304\n"+
             "</if>"+
             "</script>")
-    int countBillPage(@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductStartDate") String deductStartDate,@Param("deductEndDate") String deductEndDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
+    int countBillPage(@Param("ids")String ids,@Param("businessNo")String businessNo,@Param("businessType")Integer businessType,@Param("sellerNo")String sellerNo,@Param("sellerName")String sellerName,@Param("deductStartDate") String deductStartDate,@Param("deductEndDate") String deductEndDate,@Param("purchaserNo")String purchaserNo,@Param("key")String key);
 }

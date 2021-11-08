@@ -1,13 +1,16 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillFbl5nDto;
 import com.xforceplus.wapp.modules.job.listener.OriginAgreementBillFbl5nDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginSapFbl5nService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginSapFbl5nEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
@@ -40,6 +43,8 @@ public class AgreementBillFbl5nSaveCommand implements Command {
     @Autowired
     private OriginSapFbl5nService service;
     @Autowired
+    private TXfBillJobDao tXfBillJobDao;
+    @Autowired
     private Validator validator;
     @Value("${agreementBill.remote.path}")
     private String remotePath;
@@ -59,6 +64,9 @@ public class AgreementBillFbl5nSaveCommand implements Command {
                 downloadFile(remotePath, fileName, localPath);
             }
             try {
+                //处理某个job的excel前先删除这个job的原始数据（以前可能处理一半需要重新处理excel）
+                int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
+                deleteOriginFbl5n(jobId);
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -67,6 +75,12 @@ public class AgreementBillFbl5nSaveCommand implements Command {
             log.info("跳过原始协议单SAP-FBL5N数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
+    }
+
+    private void deleteOriginFbl5n(Integer jobId){
+        QueryWrapper<TXfOriginSapFbl5nEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginSapFbl5nEntity.JOB_ID,jobId);
+        service.remove(queryWrapper);
     }
 
     /**
@@ -125,12 +139,8 @@ public class AgreementBillFbl5nSaveCommand implements Command {
         // 获取当前进度
         if (Objects.isNull(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, 1);
         }
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginAgreementBillFbl5nDataListener readListener = new OriginAgreementBillFbl5nDataListener(jobId, cursor, service, validator);
@@ -139,13 +149,16 @@ public class AgreementBillFbl5nSaveCommand implements Command {
                     .sheet(sheetName)
                     .headRowNumber(cursor)
                     .doRead();
+            //下一步
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, ITEM.getCode());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(ITEM.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

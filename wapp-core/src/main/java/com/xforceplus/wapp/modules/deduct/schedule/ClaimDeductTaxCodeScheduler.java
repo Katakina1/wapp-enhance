@@ -36,7 +36,7 @@ public class ClaimDeductTaxCodeScheduler {
     /**
      * 索赔单匹配税编
      */
-    @Scheduled(cron=" 0 0 12 * * ?")
+    @Scheduled(cron="${task.ClaimDeductTaxCodeScheduler-cron}")
     public void matchTaxCode(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("claim-matchTaxCode job 已经在执行，结束此次执行");

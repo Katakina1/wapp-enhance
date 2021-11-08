@@ -1,13 +1,17 @@
 package com.xforceplus.wapp.modules.job.command;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.SftpException;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.dto.OriginClaimItemSamsDto;
 import com.xforceplus.wapp.modules.job.listener.OriginClaimItemSamsDataListener;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemSamsService;
+import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemSamsEntity;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
@@ -40,6 +44,8 @@ public class ClaimItemSamsSaveCommand implements Command {
     @Autowired
     private OriginClaimItemSamsService service;
     @Autowired
+    private TXfBillJobDao tXfBillJobDao;
+    @Autowired
     private Validator validator;
     @Value("${claimBill.remote.path}")
     private String remotePath;
@@ -59,6 +65,9 @@ public class ClaimItemSamsSaveCommand implements Command {
                 downloadFile(remotePath, fileName, localPath);
             }
             try {
+                //处理某个job的excel前先删除这个job的原始数据（以前可能处理一半需要重新处理excel）
+                int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
+                deleteOriginClaimItemSams(jobId);
                 process(localPath, fileName, context);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -67,6 +76,12 @@ public class ClaimItemSamsSaveCommand implements Command {
             log.info("跳过原始索赔单文件Sams明细数据入库步骤, 当前任务={}, 状态={}", fileName, jobStatus);
         }
         return false;
+    }
+
+    private void deleteOriginClaimItemSams(Integer jobId){
+        QueryWrapper<TXfOriginClaimItemSamsEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(TXfOriginClaimItemSamsEntity.JOB_ID,jobId);
+        service.remove(queryWrapper);
     }
 
     /**
@@ -122,10 +137,7 @@ public class ClaimItemSamsSaveCommand implements Command {
      * @param context
      */
     private void process(String localPath, String fileName, Context context) {
-        int cursor = Optional
-                .ofNullable(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))
-                .map(v -> Integer.parseInt(String.valueOf(v)))
-                .orElse(1);
+        int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
         File file = new File(localPath, fileName);
         OriginClaimItemSamsDataListener readListener = new OriginClaimItemSamsDataListener(jobId, cursor, service, validator);
@@ -135,12 +147,14 @@ public class ClaimItemSamsSaveCommand implements Command {
                     .headRowNumber(cursor)
                     .doRead();
             context.put(TXfBillJobEntity.JOB_ACQUISITION_OBJECT, BILL.getCode());
-            // 正常处理结束，清空游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, null);
+            //更新
+            TXfBillJobEntity updateTXfBillJobEntity = new TXfBillJobEntity();
+            updateTXfBillJobEntity.setId(jobId);
+            updateTXfBillJobEntity.setJobAcquisitionObject(BILL.getCode());
+            tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 处理出现异常，记录游标
-            context.put(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS, readListener.getCursor());
+            // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
     }

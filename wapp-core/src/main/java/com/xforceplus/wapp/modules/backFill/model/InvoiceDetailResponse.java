@@ -225,7 +225,7 @@ import java.util.List;
     private String cipherText;
 
     @ApiModelProperty("机器码")
-    private String machinecode;
+    private String machineCode;
 
     @ApiModelProperty("销货清单标志  1-有销货清单")
     private String goodsListFlag;

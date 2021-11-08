@@ -33,38 +33,8 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
                         .lambda()
                         .eq(TXfBillJobEntity::getJobType, jobType)
                         .ne(TXfBillJobEntity::getJobStatus, BillJobStatusEnum.DONE.getJobStatus())
-                        .eq(TXfBillJobEntity::getJobLockStatus, UNLOCKED.getLockStatus())
                         .orderByAsc(TXfBillJobEntity::getCreateTime)
         );
-    }
-
-    @Override
-    public boolean lockJob(Integer jobId) {
-        return lockJob(jobId, true);
-    }
-
-    @Override
-    public boolean unlockJob(Integer jobId) {
-        return lockJob(jobId, false);
-    }
-
-    /**
-     * 根据job id锁定/解锁任务
-     *
-     * @param id
-     * @param lockStatus false-unlocked, true-locked
-     * @return
-     */
-    private boolean lockJob(Integer id, boolean lockStatus) {
-        TXfBillJobEntity tXfBillJobEntity = new TXfBillJobEntity();
-        tXfBillJobEntity.setId(id);
-        tXfBillJobEntity.setJobLockStatus(lockStatus);
-        tXfBillJobEntity.setUpdateTime(new Date());
-        return update(tXfBillJobEntity,
-                new UpdateWrapper<TXfBillJobEntity>()
-                        .lambda()
-                        .eq(TXfBillJobEntity::getId, id)
-                        .eq(TXfBillJobEntity::getJobLockStatus, !lockStatus));
     }
 
     /**
@@ -82,20 +52,11 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
         if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT)))) {
             tXfBillJobEntity.setJobAcquisitionObject(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))));
         }
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS)))) {
-            tXfBillJobEntity.setJobAcquisitionProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ACQUISITION_PROGRESS))));
-        }
         if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT)))) {
             tXfBillJobEntity.setJobEntryObject(Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_OBJECT))));
         }
         if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS)))) {
             tXfBillJobEntity.setJobEntryProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_PROGRESS))));
-        }
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_FBL5N_PROGRESS)))) {
-            tXfBillJobEntity.setJobEntryFbl5nProgress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_FBL5N_PROGRESS))));
-        }
-        if (NumberUtils.isNumber(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS)))) {
-            tXfBillJobEntity.setJobEntryZarr0355Progress(Long.parseLong(String.valueOf(context.get(TXfBillJobEntity.JOB_ENTRY_ZARR0355_PROGRESS))));
         }
         return updateById(tXfBillJobEntity);
     }

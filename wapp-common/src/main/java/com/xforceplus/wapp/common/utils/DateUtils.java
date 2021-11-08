@@ -154,6 +154,26 @@ public class DateUtils {
         return strtodate;
     }
 
+
+    /**
+     * 将长时间格式字符串转换为时间 yyyyMMdd
+     *
+     * @param strDate
+     * @return
+     */
+    public static Date convertStringToDate(String strDate) {
+        Date date = null;
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        try {
+            date = df.parse(strDate);
+            return date;
+        } catch (ParseException var5) {
+            log.error(var5.getMessage());
+        }
+        return date;
+    }
+
+
     /**
      * 将长时间格式时间转换为字符串 yyyy-MM-dd HH:mm:ss
      *
@@ -170,7 +190,7 @@ public class DateUtils {
      * 将短时间格式时间转换为字符串 yyyy-MM-dd
      *
      * @param dateDate
-     * @param k
+     * @param
      * @return
      */
     public static String dateToStr(Date dateDate) {
@@ -648,7 +668,7 @@ public class DateUtils {
     }
 
     /**
-     * @param args
+     * @param date
      */
     public static boolean RightDate(String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -824,8 +844,8 @@ public class DateUtils {
     /**
      * 将短时间格式时间转换为字符串 yyyy-MM-dd
      *
-     * @param dateDate
-     * @param k
+     * @param
+     * @param
      * @return
      */
     public static String getNowYyyyMmDd() {

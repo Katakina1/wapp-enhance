@@ -10,7 +10,9 @@ public enum InvoiceStatusEnum {
     INVOICE_STATUS_LOSE("1", "失控"),
     INVOICE_STATUS_DELETE("2", "作废"),
     INVOICE_STATUS_SEND_RED("3", "红冲"),
-    ANTU_STATUS_EXCEPTION("4", "异常");
+    ANTU_STATUS_EXCEPTION("4", "异常"),
+    INVOICE_STATUS_SEND_BLUE("5","蓝冲");
+
     @Getter
     private final String code;
     @Getter
