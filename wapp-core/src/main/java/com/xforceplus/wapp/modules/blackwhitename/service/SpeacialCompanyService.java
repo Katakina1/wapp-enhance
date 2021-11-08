@@ -136,8 +136,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             return save ? Either.right(listener.getValidInvoices().size()) : Either.right(0);
         }
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
-            EasyExcel.write(tmp + "/"+file.getOriginalFilename(), SpecialCompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
             File tmpFile =new File(tmp+"/"+file.getOriginalFilename());
+            EasyExcel.write(tmp + "/"+file.getOriginalFilename(), SpecialCompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
+
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
             String ftpFilePath = ftpPath + "/" + file.getOriginalFilename();
             FileInputStream inputStream = FileUtils.openInputStream(tmpFile);
