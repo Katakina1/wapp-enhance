@@ -168,10 +168,10 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 104\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==2'>"+
-            "and d.status = 205\n"+
+            "and d.status = 201\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==3'>"+
-            "and d.status = 303\n"+
+            "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
             "and s.settlement_status = 2\n"+
@@ -235,10 +235,10 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 104\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==2'>"+
-            "and d.status = 205\n"+
+            "and d.status = 201\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==3'>"+
-            "and d.status = 303\n"+
+            "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
             "and s.settlement_status = 2\n"+
