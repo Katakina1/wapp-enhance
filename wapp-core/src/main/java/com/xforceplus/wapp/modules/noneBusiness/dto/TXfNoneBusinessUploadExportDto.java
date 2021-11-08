@@ -10,7 +10,7 @@ public class TXfNoneBusinessUploadExportDto {
 
     @ExcelProperty(value = "业务单号", index = 0)
     private String bussinessNo;
-    @ExcelProperty(value = "公司代码", index = 1)
+    @ExcelProperty(value = "JV", index = 1)
     private String companyCode;
     @ExcelProperty(value = "门店号", index = 2)
     private String storeNo;
@@ -25,7 +25,7 @@ public class TXfNoneBusinessUploadExportDto {
     private String bussinessType;
     @ExcelProperty(value = "发票类型", index = 7)
     private String invoiceType;
-    @ExcelProperty(value = "上传ofd/pdf批次号", index = 8)
+    @ExcelProperty(value = "电票流水号", index = 8)
     private String batchNo;
     @ExcelProperty(value = "发票代码", index = 9)
     private String invoiceCode;
@@ -33,7 +33,7 @@ public class TXfNoneBusinessUploadExportDto {
     private String invoiceNo;
     @ExcelProperty(value = "验真状态", index = 11, converter = VerifyStatusConver.class)
     private String verifyStatus;
-    @ExcelProperty(value = "ofd验签状态", index = 12, converter = OfdStatusConver.class)
+    @ExcelProperty(value = "验签状态", index = 12, converter = OfdStatusConver.class)
     private String ofdStatus;
     @ExcelProperty(value = "失败原因", index = 13)
     private String reason;
