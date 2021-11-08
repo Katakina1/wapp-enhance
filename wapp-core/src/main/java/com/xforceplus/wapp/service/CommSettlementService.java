@@ -181,14 +181,14 @@ public class CommSettlementService {
      *
      * @param preInvoiceId
      */
-    @Transactional(rollbackFor = Exception.class)
-    public void destroyPreInvoice(Long preInvoiceId) {
+    private void destroyPreInvoice(Long preInvoiceId) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
         TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
         updateTXfPreInvoiceEntity.setId(preInvoiceId);
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
+        updateTXfPreInvoiceEntity.setRedNotificationNo("");
         tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
     }
 

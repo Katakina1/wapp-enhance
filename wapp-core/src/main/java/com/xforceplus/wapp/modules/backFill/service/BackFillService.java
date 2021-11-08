@@ -149,7 +149,8 @@ public class BackFillService {
             if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
                 return R.fail("根据结算单号未找到预制发票");
             }
-            if (tXfPreInvoiceEntities.stream().anyMatch(t -> StringUtils.isEmpty(t.getRedNotificationNo()))) {
+            if (tXfPreInvoiceEntities.stream().anyMatch(  t -> TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode().equals(t.getPreInvoiceStatus()) || TXfPreInvoiceStatusEnum.APPLY_RED_NOTIFICATION_ING.getCode().equals(t.getPreInvoiceStatus()) ||
+                    (BigDecimal.ZERO.compareTo(t.getTaxRate()) != 0&& StringUtils.isEmpty(t.getRedNotificationNo())))) {
                 R r = new R();
                 r.setCode("XFWAPP0002");
                 r.setMessage("当前红字信息表由购方发起申请或审核，暂未完成；\r\n" +
@@ -490,6 +491,8 @@ public class BackFillService {
         }
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, request.getSettlementNo());
+        wrapper.ne(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
+        wrapper.ne(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.DESTROY.getCode());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntities = preInvoiceDao.selectList(wrapper);
         if (CollectionUtils.isEmpty(tXfPreInvoiceEntities)) {
             return R.fail("根据结算单号未找到预制发票");
@@ -503,13 +506,17 @@ public class BackFillService {
                     return R.fail("红票不允许纸电混合");
                 }
             }
+            //非零税率根据红字编号匹配，零税率根据金额匹配
+            boolean flag = BigDecimal.ZERO.compareTo(tXfPreInvoiceEntities.get(0).getTaxRate()) == 0;
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
                 if (StringUtils.isEmpty(preInvoiceEntity.getRedNotificationNo())) {
                     log.info("预制发票的红字信息编号不能为空");
                     continue;
                 }
                 for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
-                    if (preInvoiceEntity.getRedNotificationNo().equals(backFillVerifyBean.getRedNoticeNumber())) {
+                    boolean equalsRedNo = preInvoiceEntity.getRedNotificationNo().equals(backFillVerifyBean.getRedNoticeNumber());
+                    boolean equalsAmount = preInvoiceEntity.getAmountWithoutTax().compareTo(new BigDecimal(backFillVerifyBean.getAmount())) == 0;
+                    if ((!flag && equalsRedNo) || (flag && equalsAmount)) {
                         log.info("发票回填后匹配--回填预制发票数据");
                         preInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
                         preInvoiceEntity.setInvoiceCode(backFillVerifyBean.getInvoiceCode());
@@ -519,9 +526,11 @@ public class BackFillService {
                         preInvoiceEntity.setPaperDrewDate(backFillVerifyBean.getPaperDrewDate());
                         preInvoiceEntity.setUpdateTime(updateDate);
                         preInvoiceDao.updateById(preInvoiceEntity);
-                        log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}", preInvoiceEntity.getRedNotificationNo());
-                        Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
-                        log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}", JSONObject.toJSONString(update));
+                        if(!flag){
+                            log.info("发票回填后匹配--核销已申请的红字信息表编号入参：{}", preInvoiceEntity.getRedNotificationNo());
+                            Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
+                            log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}", JSONObject.toJSONString(update));
+                        }
 
                         log.info("红票回填后匹配--修改发票状态并加上结算单号");
                         UpdateWrapper<TDxRecordInvoiceEntity> updateWrapper = new UpdateWrapper<>();
@@ -538,7 +547,6 @@ public class BackFillService {
                         tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity, updateWrapper);
                     }
                 }
-
             }
             log.info("红票回填后匹配--修改结算单状态");
             QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
