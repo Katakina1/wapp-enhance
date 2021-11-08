@@ -22,7 +22,7 @@ public class ClaimSettlementScheduler {
     /**
      * 索赔单生成结算单
      */
-    @Scheduled(cron=" 0 0 3 * * ?")
+    @Scheduled(cron="${task.ClaimSettlementScheduler-cron}")
     public void claimMergeSettlementDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("claim-MergeSettlement job 已经在执行，结束此次执行");

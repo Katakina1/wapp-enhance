@@ -34,7 +34,7 @@ public class SettlementOverDueScheduler {
     /**
      * 自动确认逾期金额 结算单下 所属的单据 全部预期，自动确认
      */
-    @Scheduled(cron=" 0 0 1 * * ?")
+    @Scheduled(cron="${task.SettlementOverDueScheduler-cron}")
     public void settlementAutoConfirm(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("Settlement-overdraft  job 已经在执行，结束此次执行");

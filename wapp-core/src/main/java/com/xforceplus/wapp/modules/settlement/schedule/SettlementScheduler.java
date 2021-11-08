@@ -29,7 +29,7 @@ public class SettlementScheduler {
     /**
      * 调用拆票
      */
-    @Scheduled(cron=" 0 0 6 * * ?")
+    @Scheduled(cron="${task.SettlementScheduler-cron}")
     public void settlementSplit(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("Settlement-split  job 已经在执行，结束此次执行");

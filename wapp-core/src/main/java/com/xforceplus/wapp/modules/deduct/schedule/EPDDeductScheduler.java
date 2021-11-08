@@ -22,7 +22,7 @@ public class EPDDeductScheduler {
     /**
      * EPD 合并结算单
      */
-    @Scheduled(cron=" 0 0 5 * * ?")
+    @Scheduled(cron="${task.EPDDeductScheduler-cron}")
     public void EPDDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("EPD-MergeSettlement job 已经在执行，结束此次执行");

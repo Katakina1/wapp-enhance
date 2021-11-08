@@ -21,7 +21,7 @@ public class ClaimDeductScheduler {
     /**
      * 索赔单匹配
      */
-    @Scheduled(cron=" 0 0 1 * * ?")
+    @Scheduled(cron="${task.ClaimDeductScheduler-cron}")
     public void claimDeductDeal(){
         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
             log.info("Claim-match job 已经在执行，结束此次执行");
