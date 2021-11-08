@@ -38,6 +38,7 @@ import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommonMessageService;
 import com.xforceplus.wapp.threadpool.ThreadPoolManager;
 import com.xforceplus.wapp.threadpool.callable.ExportDeductCallable;
+import com.xforceplus.wapp.util.CodeGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -117,6 +118,7 @@ public class DeductService   {
     protected DefaultSettingServiceImpl defaultSettingService;
     @Autowired
     protected OverdueServiceImpl overdueService;
+
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -503,7 +505,7 @@ public class DeductService   {
         tXfSettlementEntity.setTaxRate(taxRate);
         tXfSettlementEntity.setId(idSequence.nextId());
         tXfSettlementEntity.setBatchNo(StringUtils.EMPTY);
-        tXfSettlementEntity.setSettlementNo("settlementNo"+idSequence.nextId());
+        tXfSettlementEntity.setSettlementNo(CodeGenerator.generateCode(deductionBusinessTypeEnum));
         tXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_MATCH_BLUE_INVOICE.getCode());
         tXfSettlementEntity.setCreateTime(DateUtils.getNow());
         tXfSettlementEntity.setUpdateTime(tXfSettlementEntity.getCreateTime());

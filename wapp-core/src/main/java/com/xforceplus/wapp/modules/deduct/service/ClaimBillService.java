@@ -291,6 +291,11 @@ public class ClaimBillService extends DeductService{
             if (CollectionUtils.isEmpty(matchResList)) {
                 log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 单号 {}", "索赔单", tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getBusinessNo());
                 nosuchInvoiceSeller.put(tXfBillDeductEntity.getSellerNo(), tXfBillDeductEntity.getAmountWithoutTax());
+                NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+                newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+                newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
+                newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
+                applicationContext.publishEvent(newExceptionReportEvent);
                 return false;
             }
             matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getId(), TXfDeductionBusinessTypeEnum.CLAIM_BILL);
