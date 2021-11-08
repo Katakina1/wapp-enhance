@@ -65,7 +65,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
      * @param billDeductIdList 索赔单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void applyClaimVerdict(Long settlementId, List<Long> billDeductIdList) {
         if (settlementId == null || CollectionUtils.isEmpty(billDeductIdList)) {
             throw new EnhanceRuntimeException("参数异常");
@@ -133,7 +133,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void rejectClaimVerdict(Long settlementId) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
@@ -185,7 +185,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
      * @param settlementId 结算单id
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void agreeClaimVerdict(Long settlementId) {
         commClaimService.destroyClaimSettlement(settlementId);
 
@@ -252,11 +252,13 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tDxQuestionPaperEntity.setJvcode(tXfSettlementEntity.getPurchaserNo());
         tDxQuestionPaperEntity.setUsercode(tXfSettlementEntity.getSellerNo());
         tDxQuestionPaperEntity.setUsername(tXfSettlementEntity.getSellerName());
-        tDxQuestionPaperEntity.setInvoiceNo(String.valueOf(tXfSettlementEntity.getId()));//用来存储结算单id
+        //用来存储结算单id
+        tDxQuestionPaperEntity.setInvoiceNo(String.valueOf(tXfSettlementEntity.getId()));
         tDxQuestionPaperEntity.setProblemCause("索赔单申请不定单");
         tDxQuestionPaperEntity.setDescription("索赔单号：" + Joiner.on(",").join(billDeductList.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList())));
         tDxQuestionPaperEntity.setCheckstatus("0");
-        tDxQuestionPaperEntity.setProblemStream(generateProblemStream(tXfSettlementEntity.getSellerNo()));//流水号
+        //流水号
+        tDxQuestionPaperEntity.setProblemStream(generateProblemStream(tXfSettlementEntity.getSellerNo()));
         tDxQuestionPaperEntity.setCreatedDate(new Date());
         tDxQuestionPaperDao.insert(tDxQuestionPaperEntity);
     }
