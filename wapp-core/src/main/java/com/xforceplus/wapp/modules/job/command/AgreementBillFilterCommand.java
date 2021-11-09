@@ -189,8 +189,10 @@ public class AgreementBillFilterCommand implements Command {
         deductBillBaseData.setMemo(mergeTmpEntity.getMemo());
         deductBillBaseData.setTaxCode(mergeTmpEntity.getTaxCode());
         deductBillBaseData.setReference(mergeTmpEntity.getReference());
-        String desc = TXfOriginAgreementBillEntityConvertor.REASON_CODE_MAP.get(mergeTmpEntity.getReasonCode());
-        deductBillBaseData.setReferenceType(desc);
+        if(StringUtils.isNotBlank(mergeTmpEntity.getReasonCode())) {
+            String desc = TXfOriginAgreementBillEntityConvertor.REASON_CODE_MAP.get(mergeTmpEntity.getReasonCode());
+            deductBillBaseData.setReferenceType(desc);
+        }
         deductBillBaseData.setReasonCode(mergeTmpEntity.getReasonCode());
         if (mergeTmpEntity.getPostDate() != null) {
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
