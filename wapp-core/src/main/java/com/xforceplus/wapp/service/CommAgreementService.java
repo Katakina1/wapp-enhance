@@ -9,6 +9,7 @@ import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,6 +112,11 @@ public class CommAgreementService {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
+            if(StringUtils.isNotBlank(tXfPreInvoiceEntity.getRedNotificationNo())) {
+                updateTXfPreInvoiceEntity.setRedNotificationNo("");
+                // 撤销红字信息
+                commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
+            }
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         }));
 

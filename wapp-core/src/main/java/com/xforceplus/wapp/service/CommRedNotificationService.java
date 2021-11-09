@@ -1,16 +1,15 @@
 package com.xforceplus.wapp.service;
 
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
-import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
-import com.xforceplus.wapp.modules.rednotification.model.RedNotificationInfo;
-import com.xforceplus.wapp.modules.rednotification.model.RedNotificationItem;
-import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
+import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -54,10 +53,23 @@ public class CommRedNotificationService {
     }
 
     /**
-     * 直接删除申请红字信息记录
+     * 直接调用沃尔玛接口撤销（调用税件）
+     *
      * @param preInvoiceId
      */
-    public void deleteRedNotification(Long preInvoiceId){
+    public void confirmDestroyRedNotification(Long preInvoiceId) {
+        Response response = redNotificationOuterService.rollback(preInvoiceId);
+        if(response.getCode() == 0){
+            throw new EnhanceRuntimeException(response.getMessage());
+        }
+    }
+
+    /**
+     * 直接删除申请红字信息记录
+     *
+     * @param preInvoiceId
+     */
+    public void deleteRedNotification(Long preInvoiceId) {
         redNotificationOuterService.deleteRednotification(Collections.singletonList(preInvoiceId));
     }
 
@@ -73,12 +85,12 @@ public class CommRedNotificationService {
         redNotificationMain.setRemark(preInvoice.getRemark());
         redNotificationMain.setUserRole(2);
         /// 发票类型转换
-        if (InvoiceTypeEnum.SPECIAL_INVOICE.getValue().equals(preInvoice.getInvoiceType())){
+        if (InvoiceTypeEnum.SPECIAL_INVOICE.getValue().equals(preInvoice.getInvoiceType())) {
             redNotificationMain.setInvoiceType(InvoiceTypeEnum.SPECIAL_INVOICE.getXfValue());
-        }else if (InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue().equals(preInvoice.getInvoiceType())) {
+        } else if (InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue().equals(preInvoice.getInvoiceType())) {
             redNotificationMain.setInvoiceType(InvoiceTypeEnum.E_SPECIAL_INVOICE.getXfValue());
-        }else {
-             throw new RuntimeException("不支持的发票票种申请红字信息");
+        } else {
+            throw new RuntimeException("不支持的发票票种申请红字信息");
         }
         redNotificationMain.setOriginInvoiceType(preInvoice.getOriginInvoiceType());
         redNotificationMain.setOriginalInvoiceNo(preInvoice.getOriginInvoiceNo());
@@ -108,7 +120,7 @@ public class CommRedNotificationService {
             redNotificationItem.setGoodsTaxNo(preInvoiceItem.getGoodsTaxNo());
             redNotificationItem.setTaxPre(Integer.valueOf(preInvoiceItem.getTaxPre()));
             redNotificationItem.setTaxPreCon(preInvoiceItem.getTaxPreCon());
-            redNotificationItem.setZeroTax(StringUtils.isEmpty(preInvoiceItem.getZeroTax())?null:Integer.valueOf(preInvoiceItem.getZeroTax()));
+            redNotificationItem.setZeroTax(StringUtils.isEmpty(preInvoiceItem.getZeroTax()) ? null : Integer.valueOf(preInvoiceItem.getZeroTax()));
             redNotificationItem.setModel(preInvoiceItem.getItemSpec());
             redNotificationItem.setUnit(preInvoiceItem.getQuantityUnit());
             redNotificationItem.setNum(preInvoiceItem.getQuantity());

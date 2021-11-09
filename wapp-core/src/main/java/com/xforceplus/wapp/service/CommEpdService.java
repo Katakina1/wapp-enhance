@@ -9,6 +9,7 @@ import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * epd 通用逻辑操作
+ *
  * @author Xforce
  */
 @Service
@@ -47,11 +49,11 @@ public class CommEpdService {
     private final List<Integer> canDestroyStatus;
 
     public CommEpdService() {
-        canDestroyStatus= Arrays.asList(
+        canDestroyStatus = Arrays.asList(
                 TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode()
-                ,TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode()
-                ,TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode()
-                ,TXfSettlementStatusEnum.WAIT_MATCH_BLUE_INVOICE.getCode()
+                , TXfSettlementStatusEnum.WAIT_SPLIT_INVOICE.getCode()
+                , TXfSettlementStatusEnum.WAIT_MATCH_TAX_CODE.getCode()
+                , TXfSettlementStatusEnum.WAIT_MATCH_BLUE_INVOICE.getCode()
         );
     }
 
@@ -72,7 +74,7 @@ public class CommEpdService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if(!canDestroyStatus.contains(tXfSettlementEntity.getSettlementStatus())){
+        if (!canDestroyStatus.contains(tXfSettlementEntity.getSettlementStatus())) {
             throw new EnhanceRuntimeException("结算单已上传红票不能操作");
         }
 
@@ -103,10 +105,15 @@ public class CommEpdService {
         });
 
         //作废预制发票
-        Optional.ofNullable(pPreInvoiceList).ifPresent(x->x.forEach(tXfPreInvoiceEntity -> {
+        Optional.ofNullable(pPreInvoiceList).ifPresent(x -> x.forEach(tXfPreInvoiceEntity -> {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
+            if (StringUtils.isNotBlank(tXfPreInvoiceEntity.getRedNotificationNo())) {
+                updateTXfPreInvoiceEntity.setRedNotificationNo("");
+                // 撤销红字信息
+                commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
+            }
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         }));
 
@@ -122,7 +129,7 @@ public class CommEpdService {
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_CODE, tXfBillDeductInvoiceEntity.getInvoiceCode());
             tDxInvoiceEntityQueryWrapper.eq(TDxRecordInvoiceEntity.INVOICE_NO, tXfBillDeductInvoiceEntity.getInvoiceNo());
             TDxRecordInvoiceEntity tDxInvoiceEntity = tDxRecordInvoiceDao.selectOne(tDxInvoiceEntityQueryWrapper);
-            if(tDxInvoiceEntity != null) {
+            if (tDxInvoiceEntity != null) {
                 TDxRecordInvoiceEntity updateTDxInvoiceEntity = new TDxRecordInvoiceEntity();
                 updateTDxInvoiceEntity.setId(tDxInvoiceEntity.getId());
                 updateTDxInvoiceEntity.setRemainingAmount(tDxInvoiceEntity.getRemainingAmount().add(tXfBillDeductInvoiceEntity.getUseAmount()));
@@ -149,7 +156,7 @@ public class CommEpdService {
         if (tXfSettlementEntity == null) {
             throw new EnhanceRuntimeException("结算单不存在");
         }
-        if(CollectionUtils.isEmpty(preInvoiceItemList)){
+        if (CollectionUtils.isEmpty(preInvoiceItemList)) {
             throw new EnhanceRuntimeException("结算单无数据可拆分预制发票");
         }
         preinvoiceService.reSplitPreInvoice(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getSellerNo(), preInvoiceItemList);
@@ -160,8 +167,8 @@ public class CommEpdService {
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode());
 
         QueryWrapper<TXfPreInvoiceEntity> deletePreInvoiceWrapper = new QueryWrapper<>();
-        deletePreInvoiceWrapper.in(TXfPreInvoiceEntity.ID,preInvoiceIdList);
-        tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity,deletePreInvoiceWrapper);
+        deletePreInvoiceWrapper.in(TXfPreInvoiceEntity.ID, preInvoiceIdList);
+        tXfPreInvoiceDao.update(updateTXfPreInvoiceEntity, deletePreInvoiceWrapper);
     }
 
 
