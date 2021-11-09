@@ -227,16 +227,34 @@ public class ClaimBillService extends DeductService{
      * 重新补充税编
      * @param deductId
      */
+    @Transactional
     public void reMatchClaimTaxCode(Long deductId) {
         List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryItemsByBillId(deductId, TXfInvoiceDeductTypeEnum.CLAIM.getCode(), TXfDeductStatusEnum.CLAIM_NO_MATCH_TAX_NO.getCode());
-        tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).map(x-> fixTaxCode(x)).collect(Collectors.toList());
         tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
+        if(CollectionUtils.isEmpty(tXfBillDeductItemEntities)){
+            return;
+        }
+        int errorNum = tXfBillDeductItemEntities.size();
+        tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream() .map(x-> fixTaxCode(x)).collect(Collectors.toList());
+        tXfBillDeductItemEntities =   tXfBillDeductItemEntities.stream().filter(x -> StringUtils.isNotEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
+        int currentNum = tXfBillDeductItemEntities.size();
+        if (CollectionUtils.isNotEmpty(tXfBillDeductItemEntities)) {
+            for(TXfBillDeductItemEntity tmp:tXfBillDeductItemEntities){
+                tXfBillDeductItemExtDao.updateById(tmp);
+            }
+        }
+        /**
+         * 表示税编补充完整，更新索赔单状态信息
+         */
+        if (currentNum == errorNum) {
             TXfBillDeductEntity tXfBillDeductEntityTmp = new TXfBillDeductEntity();
             tXfBillDeductEntityTmp.setId(deductId);
             tXfBillDeductEntityTmp.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
             tXfBillDeductExtDao.updateById(tXfBillDeductEntityTmp);
         }else{
+            /**
+             * 依然存在未匹配的税编
+             */
             TXfBillDeductEntity tXfBillDeductEntity = tXfBillDeductExtDao.selectById(deductId);
             NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
             newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
@@ -316,7 +334,7 @@ public class ClaimBillService extends DeductService{
             newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_FOUND_BLUE_TAX_RATE );
             newExceptionReportEvent.setType( ExceptionReportTypeEnum.CLAIM );
             applicationContext.publishEvent(newExceptionReportEvent);
-            log.info(" 索赔单 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} businessNo",tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getBusinessNo());
+            log.info(" 索赔单 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} businessNo {}",tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getBusinessNo());
         }
         catch (Exception e) {
             if (CollectionUtils.isNotEmpty(matchResList)) {

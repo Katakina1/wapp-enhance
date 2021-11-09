@@ -148,8 +148,10 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
 
     @Transactional
     public void reFixTaxCode(String settlementNo) {
-        List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
-        for (TXfSettlementItemEntity tmp : tXfSettlementItemEntities) {
+        boolean success = true;
+         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
+         for(TXfSettlementItemEntity tmp:tXfSettlementItemEntities){
+            tmp = deductService.fixTaxCode(tmp);
             Integer tmpStatus = tmp.getItemFlag();
             if (StringUtils.isNotEmpty(tmp.getGoodsTaxNo()) ) {
                 if (tmp.getUnitPrice().multiply(tmp.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(tmp.getAmountWithoutTax()) == 0  ) {
@@ -158,30 +160,17 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                     tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
                 }
             }else{
+                success = false;
                 tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
             }
             if (tmpStatus != tmp.getItemFlag()) {
-                TXfSettlementItemEntity update = new TXfSettlementItemEntity();
-                update.setId(tmp.getId());
-                update.setItemFlag(tmp.getItemFlag());
-                tXfSettlementItemDao.updateById(update);
+                tXfSettlementItemDao.updateById(tmp);
             }
         }
-        List<TXfSettlementItemEntity> fixTaxList = tXfSettlementItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
-        boolean success = true;
-        if (CollectionUtils.isNotEmpty(fixTaxList)) {
-            for(TXfSettlementItemEntity tXfSettlementItemEntity:fixTaxList){
-                deductService.fixTaxCode(tXfSettlementItemEntity);
-                if (StringUtils.isEmpty(tXfSettlementItemEntity.getGoodsTaxNo())) {
-                    success = false;
-                    continue;
-                }else{
-                    tXfSettlementItemDao.updateById(tXfSettlementItemEntity);
-                }
-            }
-        }
-
+        /**
+         * 如果税编补充完成，判断结算单下一步专题
+         */
         if (success) {
             TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.querySettlementByNo(0L, settlementNo, null);
             if (CollectionUtils.isEmpty(fixAmountList)) {
