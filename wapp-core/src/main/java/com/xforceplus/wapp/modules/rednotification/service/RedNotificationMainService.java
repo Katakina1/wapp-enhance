@@ -1129,7 +1129,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if(!isMixedRate){
             combineEntity.setTaxRate(taxRate.toPlainString());
         }
-        treatedRedNoDetails.clear();
+//        treatedRedNoDetails.clear();
         return  combineEntity;
     }
 
