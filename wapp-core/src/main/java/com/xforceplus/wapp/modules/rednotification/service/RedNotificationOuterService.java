@@ -48,7 +48,14 @@ public class RedNotificationOuterService {
         ArrayList<Long> pidList = Lists.newArrayList(pid);
         queryModel.setPidList(pidList);
         redNotificationApplyReverseRequest.setQueryModel(queryModel);
-        Response rollback = redNotificationService.rollback(redNotificationApplyReverseRequest);
+
+        Response rollback = null;
+        try {
+            rollback = redNotificationService.rollback(redNotificationApplyReverseRequest);
+        } catch (Exception e) {
+            log.error("撤销失败",e);
+            return Response.failed(e.getMessage());
+        }
         log.info("对外接口红字信息撤销返回:{}", rollback);
         return rollback ;
     }
