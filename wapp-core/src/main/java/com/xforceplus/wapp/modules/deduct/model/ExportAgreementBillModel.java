@@ -42,10 +42,13 @@ public class ExportAgreementBillModel {
     private String agreementMemo;
 
     @ExcelProperty("协议类型")
-    private String agreementDocumentType;
+    private String agreementReference;
 
     @ExcelProperty("协议类型编码")
     private String agreementReasonCode;
+
+    @ExcelProperty("文档类型")
+    private String agreementDocumentType;
 
     @ExcelProperty("文档编号")
     private String agreementDocumentNumber;
@@ -67,7 +70,7 @@ public class ExportAgreementBillModel {
     @ExcelProperty("不含税金额")
     private BigDecimal amountWithoutTax;
 
-    @ApiModelProperty("税额")
+    @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
     @ExcelProperty("扣款日期")
