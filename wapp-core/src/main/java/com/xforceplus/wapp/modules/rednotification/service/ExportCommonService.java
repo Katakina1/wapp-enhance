@@ -211,19 +211,20 @@ public class ExportCommonService {
                 fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
             }
             res.setHeader("Content-Disposition", "attachment;fileName=" + fileName);
-            InputStream inputStream = this.getClass().getResourceAsStream(filePath);
-            ServletOutputStream   out = res.getOutputStream();
-            int b = 0;
-            byte[] buffer = new byte[1024];
-            while ((b = inputStream.read(buffer)) != -1) {
-                // 4.写到输出流(out)中
-                out.write(buffer, 0, b);
-            }
-            inputStream.close();
+            try (InputStream inputStream = this.getClass().getResourceAsStream(filePath);) {
 
-            if (out != null) {
-                out.flush();
-                out.close();
+                ServletOutputStream out = res.getOutputStream();
+                int b = 0;
+                byte[] buffer = new byte[1024];
+                while ((b = inputStream.read(buffer)) != -1) {
+                    // 4.写到输出流(out)中
+                    out.write(buffer, 0, b);
+                }
+
+                if (out != null) {
+                    out.flush();
+                    out.close();
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

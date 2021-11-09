@@ -3,8 +3,10 @@ package com.xforceplus.wapp;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +16,9 @@ import java.io.InputStreamReader;
 @SpringBootTest(classes = {WappApplication.class,ClientFactoryMockConfig.class})
 @Slf4j
 @ActiveProfiles({"local","unit"})
+@Rollback
+@Transactional
+//@TestExecutionListeners({TransactionalTestExecutionListener.class})
 public class BaseUnitTest {
 
 //    @Test
