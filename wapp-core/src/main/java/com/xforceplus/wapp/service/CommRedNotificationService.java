@@ -1,12 +1,12 @@
 package com.xforceplus.wapp.service;
 
-import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
  * 预制发票与红字信息申请作废 相关操作
  */
 @Service
+@Slf4j
 public class CommRedNotificationService {
 
     @Autowired
@@ -57,10 +58,15 @@ public class CommRedNotificationService {
      *
      * @param preInvoiceId
      */
+    @Async
     public void confirmDestroyRedNotification(Long preInvoiceId) {
-        Response response = redNotificationOuterService.rollback(preInvoiceId);
-        if(response.getCode() == 0){
-            throw new EnhanceRuntimeException(response.getMessage());
+        try {
+            Response response = redNotificationOuterService.rollback(preInvoiceId);
+            if (response.getCode() == 0) {
+                log.error("撤销红字信息失败：" + response.getMessage());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
     }
 
