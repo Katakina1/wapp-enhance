@@ -56,7 +56,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             "\t\t\"cargoNameLength\": 92,\n" +
             "\t\t\"customRemarkSize\": 200,\n" +
             "\t\t\"ignoreAllowableError\": false,\n" +
-            "\t\t\"invoiceItemMaxRow\": 7,\n" +
+            "\t\t\"invoiceItemMaxRow\": 8,\n" +
             "\t\t\"invoiceLimit\": 999999.99,\n" +
             "\t\t\"itemSort\": \"1\",\n" +
             "\t\t\"itemSpecNameLength\": 36,\n" +
@@ -77,7 +77,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             "\t\t\"splitByItemPriceQuantityNon\": false,\n" +
             "\t\t\"splitFiledList\": [\"taxRate\"],\n" +
             "\t\t\"unitPriceAmountOps\": \"0\",\n" +
-            "\t\t\"unitPriceScale\": 4,\n" +
+            "\t\t\"unitPriceScale\": 15,\n" +
             "\t\t\"zeroTaxOption\": \"NOT_PROCESS\"\n" +
             "\t}";
      @Autowired

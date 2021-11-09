@@ -239,17 +239,7 @@ public class DeductService   {
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
                 unlockAndCancel(deductionEnum, tXfBillDeductEntity);
-                /**
-                 * TODO 可以把购销对完整信息 提前保存，后续就也需要了
-                 */
-                TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(tXfBillDeductEntity.getSellerNo(), true);
-                TAcOrgEntity tAcPurcharserOrgEntity = queryOrgInfo(tXfBillDeductEntity.getPurchaserNo(), false);
-                if (Objects.nonNull(tAcPurcharserOrgEntity)) {
-                    tXfBillDeductEntity.setPurchaserName(tAcPurcharserOrgEntity.getCompany());
-                }
-                if (Objects.nonNull(tAcSellerOrgEntity)) {
-                    tXfBillDeductEntity.setPurchaserName(tAcSellerOrgEntity.getCompany());
-                }
+
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
@@ -290,6 +280,10 @@ public class DeductService   {
             TAcOrgEntity purchaserOrgEntity = queryOrgInfo(deductBillBaseData.getPurchaserNo(),false);
             if (Objects.nonNull( purchaserOrgEntity)) {
                 deductBillBaseData.setPurchaserName(defaultValue(purchaserOrgEntity.getOrgName()));
+            }
+            TAcOrgEntity tAcSellerOrgEntity = queryOrgInfo(deductBillBaseData.getSellerNo(), true);
+            if (Objects.nonNull(tAcSellerOrgEntity)) {
+                deductBillBaseData.setSellerName(tAcSellerOrgEntity.getOrgName());
             }
             TXfBillDeductEntity tmp = dedcutionHandleEnum.function.apply(deductBillBaseData);
             tmp.setCreateTime(date);
