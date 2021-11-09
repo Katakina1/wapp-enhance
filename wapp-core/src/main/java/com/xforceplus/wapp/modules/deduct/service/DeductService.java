@@ -947,15 +947,15 @@ public class DeductService   {
                       for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
                         TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
                         tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
-                        tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount());
+                        tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount().negate());
                         tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
                         tXfSettlementItemEntity.setTaxRate(TaxRateTransferEnum.transferTaxRate(invoiceItem.getTaxRate()));
-                        tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()));
+                        tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()).negate());
                         tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
-                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum());
+                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum().negate());
                         tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
-                        tXfSettlementItemEntity.setAmountWithTax(invoiceItem.getDetailAmount().add(invoiceItem.getTaxAmount()));
+                        tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getAmountWithoutTax().add(tXfSettlementItemEntity.getTaxAmount()));
 
                         tXfSettlementItemEntity.setCreateUser(0l);
                         tXfSettlementItemEntity.setUpdateUser(0l);
