@@ -624,7 +624,7 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()) );
             tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getMemo()));
             tXfBillDeductEntity.setAgreementReasonCode(defaultValue(tmp.getReasonCode()));
-            tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReference()));
+            tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReferenceType()));
             tXfBillDeductEntity.setAgreementTaxCode(defaultValue(tmp.getTaxCode()));
             tXfBillDeductEntity.setDeductInvoice(StringUtils.EMPTY);
             tXfBillDeductEntity.setVerdictDate(tmp.getDeductDate());
