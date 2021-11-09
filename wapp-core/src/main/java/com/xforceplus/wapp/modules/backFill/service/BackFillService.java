@@ -509,6 +509,7 @@ public class BackFillService {
                     return R.fail("红票不允许纸电混合");
                 }
             }
+            int successCount = 0;
             //非零税率根据红字编号匹配，零税率根据金额匹配
             boolean flag = BigDecimal.ZERO.compareTo(tXfPreInvoiceEntities.get(0).getTaxRate()) == 0;
             for (TXfPreInvoiceEntity preInvoiceEntity : tXfPreInvoiceEntities) {
@@ -534,7 +535,6 @@ public class BackFillService {
                             Response<String> update = redNotificationOuterService.update(preInvoiceEntity.getRedNotificationNo(), ApproveStatus.ALREADY_USE);
                             log.info("发票回填后匹配--核销已申请的红字信息表编号响应：{}", JSONObject.toJSONString(update));
                         }
-
                         log.info("红票回填后匹配--修改发票状态并加上结算单号");
                         UpdateWrapper<TDxRecordInvoiceEntity> updateWrapper = new UpdateWrapper<>();
                         updateWrapper.eq(TDxRecordInvoiceEntity.UUID, backFillVerifyBean.getInvoiceCode() + backFillVerifyBean.getInvoiceNo());
@@ -548,8 +548,12 @@ public class BackFillService {
                             tDxRecordInvoiceEntity.setQsStatus("1");
                         }
                         tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity, updateWrapper);
+                        successCount++;
                     }
                 }
+            }
+            if(successCount == 0){
+                return R.fail("未匹配到对应的预制发票");
             }
             log.info("红票回填后匹配--修改结算单状态");
             QueryWrapper<TXfSettlementEntity> queryWrapper = new QueryWrapper<>();
