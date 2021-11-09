@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.job.command;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xforceplus.wapp.converters.TXfOriginAgreementBillEntityConvertor;
 import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
@@ -185,11 +186,12 @@ public class AgreementBillFilterCommand implements Command {
         deductBillBaseData.setBatchNo(String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
         deductBillBaseData.setDocumentType(mergeTmpEntity.getDocumentType());
         deductBillBaseData.setDocumentNo(mergeTmpEntity.getDocumentNumber());
-        deductBillBaseData.setReasonCode(mergeTmpEntity.getReasonCode());
         deductBillBaseData.setMemo(mergeTmpEntity.getMemo());
         deductBillBaseData.setTaxCode(mergeTmpEntity.getTaxCode());
         deductBillBaseData.setReference(mergeTmpEntity.getReference());
-        deductBillBaseData.setReferenceType(mergeTmpEntity.getReasonCode());
+        String desc = TXfOriginAgreementBillEntityConvertor.REASON_CODE_MAP.get(mergeTmpEntity.getReasonCode());
+        deductBillBaseData.setReferenceType(desc);
+        deductBillBaseData.setReasonCode(mergeTmpEntity.getReasonCode());
         if (mergeTmpEntity.getPostDate() != null) {
             SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
             deductBillBaseData.setPostingDate(fmt.format(mergeTmpEntity.getPostDate()));
