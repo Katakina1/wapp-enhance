@@ -499,6 +499,9 @@ public class BackFillService {
         }
         Date updateDate = new Date();
         if ("0".equals(request.getInvoiceColor())) {
+            if(request.getVerifyBeanList().stream().anyMatch(t -> new BigDecimal(t.getAmount()).compareTo(BigDecimal.ZERO) > 0)){
+                return R.fail("上传的发票金额必须小于零");
+            }
             if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
                 boolean isElec = request.getVerifyBeanList().stream().allMatch(t -> InvoiceTypeEnum.isElectronic(t.getInvoiceType()));
                 boolean isNotElec = request.getVerifyBeanList().stream().noneMatch(t -> InvoiceTypeEnum.isElectronic(t.getInvoiceType()));
@@ -631,10 +634,14 @@ public class BackFillService {
             return R.fail("发票颜色不能为空");
         }
         if ("0".equals(request.getInvoiceColor())) {
-            //红票上传校验暂无
-
+            if(request.getVerifyBeanList().stream().anyMatch(t -> new BigDecimal(t.getAmount()).compareTo(BigDecimal.ZERO) > 0)){
+                return R.fail("上传的发票金额必须小于零");
+            }
         } else {
             if (!CollectionUtils.isEmpty(request.getVerifyBeanList())) {
+                if(request.getVerifyBeanList().stream().anyMatch(t -> new BigDecimal(t.getAmount()).compareTo(BigDecimal.ZERO) < 0)){
+                    return R.fail("上传的发票金额必须大于零");
+                }
                 if (StringUtils.isEmpty(request.getOriginInvoiceCode())) {
                     return R.fail("被蓝冲发票代码不能为空");
                 }

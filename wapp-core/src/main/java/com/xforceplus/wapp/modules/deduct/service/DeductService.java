@@ -383,28 +383,28 @@ public class DeductService   {
             }
         }else if(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.equals(deductionEnum)){
             if(TXfDeductStatusEnum.AGREEMENT_DESTROY.equals(status)){
-                if(!TXfDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
+                if(!TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
                     log.info("只有待匹配结算单的协议单才能撤销");
                     return false;
                 }
                 deleteBillDeductItemRef(tXfBillDeductEntity.getId());
             }
             if(TXfDeductStatusEnum.LOCK.equals(status) || TXfDeductStatusEnum.UNLOCK.equals(status) ){
-                if(!TXfDeductStatusEnum.AGREEMENT_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())){
+                if(!TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())){
                     log.info("只有待匹配结算单的协议单才能锁定或解锁");
                     return false;
                 }
             }
         }else if(TXfDeductionBusinessTypeEnum.EPD_BILL.equals(deductionEnum)){
             if(TXfDeductStatusEnum.EPD_DESTROY.equals(status)){
-                if(!TXfDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
+                if(!TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())) {
                     log.info("只有待匹配结算单的EPD才能撤销");
                     return false;
                 }
                 deleteBillDeductItemRef(tXfBillDeductEntity.getId());
             }
             if(TXfDeductStatusEnum.LOCK.equals(status) || TXfDeductStatusEnum.UNLOCK.equals(status) ){
-                if(!TXfDeductStatusEnum.EPD_NO_MATCH_BLUE_INVOICE.getCode().equals(tXfBillDeductEntity.getStatus())) {
+                if(!TXfDeductStatusEnum.EPD_NO_MATCH_SETTLEMENT.getCode().equals(tXfBillDeductEntity.getStatus())) {
                     log.info("只有待匹配结算单的EPD才能锁定或解锁");
                     return false;
                 }
