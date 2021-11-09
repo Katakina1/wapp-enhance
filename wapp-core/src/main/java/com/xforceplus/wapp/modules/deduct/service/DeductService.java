@@ -118,7 +118,6 @@ public class DeductService   {
     protected DefaultSettingServiceImpl defaultSettingService;
     @Autowired
     protected OverdueServiceImpl overdueService;
-
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -258,6 +257,11 @@ public class DeductService   {
                     0L,"系统");
         } else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.EPD_BILL.getValue())) {
             operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_EPD,
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    0L,"系统");
+        }
+        else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
+            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
                     TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
                     0L,"系统");
         }
@@ -966,20 +970,6 @@ public class DeductService   {
                         tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
                         tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
-
-                        if (StringUtils.isBlank(tXfSettlementItemEntity.getItemShortName())){
-                            final String itemName = tXfSettlementItemEntity.getItemName();
-                            final int first = itemName.indexOf("*");
-                            final int length = itemName.length();
-                            if (first > -1 && length > first+1) {
-                                int end = itemName.indexOf("*", first + 1);
-                                if (end > -1 && length > end) {
-                                    final String shortName = itemName.substring(first + 1, end);
-                                    tXfSettlementItemEntity.setItemShortName(shortName);
-                                }
-                            }
-                        }
-
                         if (status < tXfSettlementItemEntity.getItemFlag() ) {
                             status = tXfSettlementItemEntity.getItemFlag();
                         }
@@ -1001,7 +991,6 @@ public class DeductService   {
         }
         return status;
     }
-
     /**
      * 结算单明细校验
      * @param tXfSettlementItemEntity
