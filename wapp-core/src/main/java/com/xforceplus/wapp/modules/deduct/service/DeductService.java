@@ -260,6 +260,11 @@ public class DeductService   {
                     TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
                     0L,"系统");
         }
+        else if (Objects.equals(tXfBillDeductEntity.getBusinessType(), TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue())) {
+            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    0L,"系统");
+        }
     }
 
     public List<TXfBillDeductEntity> transferBillData(List<DeductBillBaseData> deductBillDataList ,  TXfDeductionBusinessTypeEnum deductionEnum) {
