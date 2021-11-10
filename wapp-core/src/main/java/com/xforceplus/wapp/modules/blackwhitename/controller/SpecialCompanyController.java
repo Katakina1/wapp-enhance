@@ -75,49 +75,6 @@ public class SpecialCompanyController {
         return result.isRight() ? R.ok(result.get(), String.format("导入成功[%d]条数据 导入失败数据请前往消息中心查看", result.get())) : R.fail(result.getLeft());
     }
 
-    @ApiOperation(value = "获取黑白名单模板")
-    @GetMapping(value = "/template")
-    public void template(HttpServletResponse res, HttpServletRequest req){
-        try {
-            String fileName = "1companyTemplate.xlsx";
-            //获取
-
-
-            res.setHeader("content-type","application/octet-stream");
-            res.setCharacterEncoding("UTF-8");
-            res.setContentType("application/vnd.ms-excel;charset=utf-8");
-            String filePath = "/excl/" + fileName;
-            String userAgent = req.getHeader("User-Agent");
-            if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
-                fileName = java.net.URLEncoder.encode(fileName, "UTF-8");
-            } else {
-                // 非IE浏览器的处理：
-                fileName = new String((fileName).getBytes("UTF-8"), "ISO-8859-1");
-            }
-            res.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", fileName));
-            InputStream inputStream = this.getClass().getResourceAsStream(filePath);
-            ServletOutputStream   out = res.getOutputStream();
-            int b = 0;
-            byte[] buffer = new byte[1024];
-            while ((b = inputStream.read(buffer)) != -1) {
-                // 4.写到输出流(out)中
-                out.write(buffer, 0, b);
-            }
-            inputStream.close();
-
-            if (out != null) {
-                out.flush();
-                out.close();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @ApiOperation("黑白名单批量删除")
     @DeleteMapping("/tax/code")
     public R<Boolean> delOverdue(@RequestBody @ApiParam("id集合")  Long[] ids) {
