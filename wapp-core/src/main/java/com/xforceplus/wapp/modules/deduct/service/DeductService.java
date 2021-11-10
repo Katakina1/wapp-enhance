@@ -17,6 +17,9 @@ import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.export.dto.DeductBillExportDto;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
+import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
 import com.xforceplus.wapp.modules.deduct.dto.DeductExportRequest;
@@ -119,6 +122,8 @@ public class DeductService   {
     @Autowired
     protected OverdueServiceImpl overdueService;
 
+    @Autowired
+    private RecordInvoiceService recordInvoiceService;
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -907,27 +912,17 @@ public class DeductService   {
 
 
 
-    private QueryWrapper<TXfBillDeductEntity>  getQueryWrapper(QueryDeductListRequest   request){
-        QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
-        if(StringUtils.isNotEmpty(request.getBusinessNo())){
-            wrapper.eq(TXfBillDeductEntity.BUSINESS_NO,request.getBusinessNo());
+    public List<InvoiceDetailResponse>  queryDeductInvoiceList(String businessNo){
+        QueryWrapper<TXfBillDeductInvoiceEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_NO,businessNo);
+        List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceEntities = tXfBillDeductInvoiceDao.selectList(wrapper);
+        InvoiceDetailResponse response;
+        List<InvoiceDetailResponse> list = new ArrayList<>();
+        for (TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity : tXfBillDeductInvoiceEntities) {
+            response = recordInvoiceService.queryInvoiceByUuid(tXfBillDeductInvoiceEntity.getInvoiceCode() + tXfBillDeductInvoiceEntity.getInvoiceNo());
+            list.add(response);
         }
-        if(StringUtils.isNotEmpty(request.getPurchaserNo())){
-            wrapper.eq(TXfBillDeductEntity.PURCHASER_NO,request.getPurchaserNo());
-        }
-        if(StringUtils.isNotEmpty(request.getSellerName())){
-            wrapper.eq(TXfBillDeductEntity.SELLER_NAME,request.getSellerName());
-        }
-        if(StringUtils.isNotEmpty(request.getSellerNo())){
-            wrapper.eq(TXfBillDeductEntity.SELLER_NO,request.getSellerNo());
-        }
-        if(request.getBusinessType() != null){
-            wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE,request.getBusinessType());
-        }
-//        if(request.getDeductDate() != null){
-//            wrapper.apply("format(deduct_date,'yyyy-MM-dd') = {0}",request.getDeductDate());
-//        }
-        return wrapper;
+        return list;
     }
 
     /**
