@@ -48,9 +48,15 @@ public class DeductListRequest {
     @ApiModelProperty("是否超期，1超期，0未超期")
     private Integer overdue;
 
-    @ApiModelProperty(hidden = true,value = "销方编号,vendorId,userCode")
+    @ApiModelProperty(hidden = true, value = "销方编号,vendorId,userCode")
     private String sellerNo;
 
     @ApiModelProperty(hidden = true)
     private Integer lockFlag;
+
+    @ApiModelProperty(value = "税码")
+    private String agreementTaxCode;
+
+    @ApiModelProperty(value = "协议类型")
+    private String agreementReasonCode;
 }

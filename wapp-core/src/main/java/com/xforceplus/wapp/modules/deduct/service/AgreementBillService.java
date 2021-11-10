@@ -161,7 +161,6 @@ public class AgreementBillService extends DeductService{
                 blueInvoiceService.withdrawInvoices(matchResList);
             }
             log.error("结算单匹配蓝票失败："+e.getMessage(), e);
-            e.printStackTrace();
             throw e;
         }
 

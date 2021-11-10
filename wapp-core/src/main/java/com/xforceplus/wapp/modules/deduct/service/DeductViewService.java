@@ -134,6 +134,12 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                 if (Objects.equals(deductListResponse.getLock(), TXfDeductStatusEnum.LOCK.getCode())){
                     deductListResponse.setRefSettlementNo(null);
                 }
+
+                if (Objects.equals(deductListResponse.getStatus(),TXfDeductStatusEnum.AGREEMENT_DESTROY.getCode())
+                || Objects.equals(deductListResponse.getStatus(),TXfDeductStatusEnum.EPD_DESTROY.getCode())
+                ){
+                    deductListResponse.setRefSettlementNo(null);
+                }
                 return deductListResponse;
             }).collect(Collectors.toList());
             responses.addAll(list);
@@ -316,6 +322,10 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         deductEntity.setSellerNo(request.getSellerNo());
 
         deductEntity.setLockFlag(request.getLockFlag());
+
+        deductEntity.setAgreementTaxCode(request.getAgreementTaxCode());
+
+        deductEntity.setAgreementReasonCode(request.getAgreementReasonCode());
 
         QueryWrapper<TXfBillDeductEntity> wrapper = Wrappers.query(deductEntity);
         //扣款日期>>Begin
