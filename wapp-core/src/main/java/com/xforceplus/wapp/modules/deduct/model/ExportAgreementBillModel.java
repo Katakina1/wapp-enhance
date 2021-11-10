@@ -74,7 +74,7 @@ public class ExportAgreementBillModel {
     @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
-    @ExcelProperty("扣款日期")
+    @ExcelProperty("入账日期")
     private Date verdictDate;
 
     @ExcelProperty("批次号")
