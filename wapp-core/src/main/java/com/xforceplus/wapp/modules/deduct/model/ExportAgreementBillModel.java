@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.xforceplus.wapp.modules.deduct.service.InvoiceTypeConverter;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -33,10 +34,10 @@ public class ExportAgreementBillModel {
     @ExcelProperty("扣款日期")
     private Date deductDate;
     /**
-     * 扣款公司jv_code
+     * 扣款公司
      */
     @ExcelProperty("扣款公司")
-    private String purchaserNo;
+    private String purchaserName;
 
     @ExcelProperty("协议供应商6D")
     private String agreementMemo;
@@ -73,13 +74,13 @@ public class ExportAgreementBillModel {
     @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
-    @ExcelProperty("扣款日期")
+    @ExcelProperty("入账日期")
     private Date verdictDate;
 
     @ExcelProperty("批次号")
     private String batchNo;
 
-    @ExcelProperty("发票类型")
+    @ExcelProperty(value = "发票类型",converter = InvoiceTypeConverter.class)
     private String invoiceType;
 
     @ExcelProperty("备注")
