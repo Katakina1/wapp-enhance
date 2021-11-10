@@ -16,7 +16,10 @@ public class WeekDaysImportDto {
     @ExcelProperty(value = "工作日信息", index = 0)
     private Date weekdays;
 
-    @ExcelProperty( index = 1)
+    @ExcelProperty(value = "备注", index = 1)
+    private String weekdaysRemark;
+
+    @ExcelProperty( index = 2)
     private String errorMessage;
 
 

@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-11-09
+* @since 2021-11-10
 */
 public interface TXfMatchWeekdaysDao extends BaseMapper<TXfMatchWeekdaysEntity> {
 
