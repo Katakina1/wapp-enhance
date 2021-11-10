@@ -1,8 +1,10 @@
 package com.xforceplus.wapp.modules.rednotification.util;
 
 import com.xforceplus.wapp.modules.rednotification.model.ZipContentInfo;
+import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -63,13 +65,15 @@ public class DownloadUrlUtils {
             }
         } else {
             out.putNextEntry(new ZipEntry(base));
-            FileInputStream in = new FileInputStream(srcFile);
-            byte[] buffer = new byte[1024];
-            int len = 0;
-            while ((len = in.read(buffer)) != -1) {
-                out.write(buffer, 0, len);
-            }
-            in.close();
+            @Cleanup FileInputStream in = new FileInputStream(srcFile);
+            IOUtils.copy(in, out);
+//            byte[] buffer = new byte[1024];
+//            int len = 0;
+//            while ((len = in.read(buffer)) != -1) {
+//
+//                out.write(buffer, 0, len);
+//            }
+//            in.close();
         }
     }
 
