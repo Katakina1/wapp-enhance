@@ -109,7 +109,7 @@ public class CommRedNotificationService {
         redNotificationMain.setAmountWithTax(preInvoice.getAmountWithTax());
         redNotificationMain.setAmountWithoutTax(preInvoice.getAmountWithoutTax());
         redNotificationMain.setTaxAmount(preInvoice.getTaxAmount());
-        redNotificationMain.setCompanyCode(preInvoice.getPurchaserNo());
+        redNotificationMain.setCompanyCode(preInvoice.getSellerNo());
         redNotificationMain.setSpecialInvoiceFlag(0);
         redNotificationMain.setBillNo(preInvoice.getSettlementNo());
         redNotificationMain.setInvoiceOrigin(preInvoice.getSettlementType());
