@@ -226,24 +226,18 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
     /**
      * 发票列表
-     * @param settlementNo,invoiceStatus,venderid
-     * @param invoiceStatus
-     * @param venderid
+     * @param uuid
      * @return R
      */
-    public List<InvoiceDetailResponse> queryInvoiceList(String settlementNo,String invoiceStatus,String invoiceColor,String venderid){
-        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus,venderid,invoiceColor,true);
-        List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(wrapper);
-        List<InvoiceDetailResponse> response = new ArrayList<>();
-        InvoiceDetailResponse invoice;
-        for (TDxRecordInvoiceEntity invoiceEntity : tDxRecordInvoiceEntities) {
-            invoice = new InvoiceDetailResponse();
-            List<InvoiceDetail> list = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
-            invoice.setItems(list);
-            BeanUtil.copyProperties(invoiceEntity,invoice);
-            this.convertMain(invoiceEntity,invoice);
-            response.add(invoice);
-        }
+    public InvoiceDetailResponse queryInvoiceByUuid(String uuid){
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TDxRecordInvoiceEntity.UUID,uuid);
+        TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectOne(wrapper);
+        InvoiceDetailResponse response = new InvoiceDetailResponse();
+        List<InvoiceDetail> list = queryInvoiceDetailByUuid(uuid);
+        response.setItems(list);
+        BeanUtil.copyProperties(entity,response);
+        this.convertMain(entity,response);
         return response;
     }
      /**

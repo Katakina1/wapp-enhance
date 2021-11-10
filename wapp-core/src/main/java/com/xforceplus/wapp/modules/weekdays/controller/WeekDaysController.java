@@ -51,8 +51,8 @@ public class WeekDaysController {
     @GetMapping("/list/paged")
     public R<PageResult<TXfMatchWeekdaysDto>> paged(@ApiParam("页数") @RequestParam(required = false, defaultValue = "1") Long current,
                                                     @ApiParam("条数") @RequestParam(required = false, defaultValue = "10") Long size,
-                                                    @ApiParam("开始时间") @RequestParam(required = false, defaultValue = "10") String weekDayStart,
-                                                    @ApiParam("结束时间") @RequestParam(required = false, defaultValue = "10") String weekDayEnd) {
+                                                    @ApiParam("开始时间") @RequestParam(required = false) String weekDayStart,
+                                                    @ApiParam("结束时间") @RequestParam(required = false) String weekDayEnd) {
         long start = System.currentTimeMillis();
         val page = weekDaysService.page(current, size, weekDayStart, weekDayEnd);
         log.info("工作日管理分页查询,耗时:{}ms", System.currentTimeMillis() - start);

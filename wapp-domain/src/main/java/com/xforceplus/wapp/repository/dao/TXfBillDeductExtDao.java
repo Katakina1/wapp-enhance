@@ -132,7 +132,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
 
     @Select("<script>"+
             "select d.id, d.business_no, d.business_type, d.ref_settlement_no, d.verdict_date, d.deduct_date, d.deduct_invoice, d.tax_rate, d.agreement_reason_code, d.agreement_reference, d.agreement_tax_code, d.agreement_memo, d.agreement_document_number, d.agreement_document_type, d.tax_amount, d.remark, d.status, d.create_time, d.update_time, d.purchaser_no, d.seller_no, d.seller_name, d.amount_without_tax, d.amount_with_tax, d.lock_flag, d.batch_no, d.source_id, d.purchaser_name,s.invoice_type," +
-            "sum(di.tax_amount)item_tax_amount,sum(di.amount_with_tax)item_without_amount,sum(di.tax_amount)+sum(di.amount_with_tax)item_with_amount\n"+
+            "sum(di.tax_amount)item_tax_amount,sum(di.amount_with_tax)item_with_amount,sum(di.amount_with_tax)-sum(di.tax_amount)item_without_amount\n"+
             "from t_xf_bill_deduct d\n" +
             "left outer join t_xf_bill_deduct_item_ref di on di.deduct_id  = d.id\n"+
             "left outer join t_xf_settlement s on d.ref_settlement_no = s.settlement_no\n" +
