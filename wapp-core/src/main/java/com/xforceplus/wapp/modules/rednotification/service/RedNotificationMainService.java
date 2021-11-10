@@ -95,6 +95,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     @Value("${wapp.rednotification.maxApply}")
     private Integer maxApply;
 
+    public static final int MAX_DETAIL_SIZE = 8;
+
 
 
     public Response add(AddRedNotificationRequest request) {
@@ -879,7 +881,13 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             return detailInfo;
         }).collect(Collectors.toList());
 
-        redInfo.setDetails(detailInfos);
+        if(applyDetails.size() > MAX_DETAIL_SIZE){
+            RedGeneratePdfDetailInfo merge = merge(applyDetails);
+            redInfo.setDetails(Lists.newArrayList(merge));
+        }else {
+            redInfo.setDetails(detailInfos);
+        }
+
 
         redInfo.setOriginInvoiceCode(apply.getOriginInvoiceCode());
         redInfo.setOriginInvoiceNo(apply.getOriginInvoiceNo());
@@ -1093,6 +1101,39 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
 
+
+    private RedGeneratePdfDetailInfo merge(List<TXfRedNotificationDetailEntity>  treatedRedNoDetails){
+        BigDecimal sumAmountWithoutTax = BigDecimal.ZERO;
+        BigDecimal sumTaxAmount = BigDecimal.ZERO;
+
+        boolean isMixedRate = false;
+        BigDecimal taxRate = null;
+
+        for(TXfRedNotificationDetailEntity redNoDetailInfo : treatedRedNoDetails){
+            sumAmountWithoutTax = sumAmountWithoutTax.add(redNoDetailInfo.getAmountWithoutTax());
+            sumTaxAmount = sumTaxAmount.add(redNoDetailInfo.getTaxAmount());
+            if(Objects.isNull(taxRate)){
+                taxRate = redNoDetailInfo.getTaxRate();
+            }else{
+                if(!isMixedRate){
+                    if(!taxRate.equals(redNoDetailInfo.getTaxRate())){
+                        isMixedRate = true;
+                    }
+                }
+            }
+        }
+
+        RedGeneratePdfDetailInfo combineEntity = new RedGeneratePdfDetailInfo();
+        combineEntity.setAmountWithoutTax(sumAmountWithoutTax.toPlainString());
+        combineEntity.setTaxAmount(sumTaxAmount.toPlainString());
+        combineEntity.setCargoName("详见对应正数发票及清单");
+//        combineEntity.setZeroTax("");
+        if(!isMixedRate){
+            combineEntity.setTaxRate(taxRate.toPlainString());
+        }
+//        treatedRedNoDetails.clear();
+        return  combineEntity;
+    }
 
 
 
