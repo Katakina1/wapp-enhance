@@ -49,7 +49,7 @@ public class FilterConfig {
         registration.setFilter(new SSRFFilter());
         registration.addUrlPatterns("/*");
         registration.setName("ssrfFilter");
-        registration.setOrder(Integer.MAX_VALUE);
+        registration.setOrder(Integer.MAX_VALUE-2);
         return registration;
     }
 }
