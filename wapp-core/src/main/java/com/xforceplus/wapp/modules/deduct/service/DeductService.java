@@ -1058,11 +1058,12 @@ public class DeductService   {
                     String redNotificationNo = tXfPreInvoiceEntities.get(i).getRedNotificationNo();
                     if(StringUtils.isNotEmpty(redNotificationNo)){
                         sb.append(redNotificationNo);
-                        if(i != tXfPreInvoiceEntities.size()-1){
-                            sb.append(",");
-                        }
+                        sb.append(",");
                     }
                 }
+            }
+            if(sb.lastIndexOf(",") != -1){
+                sb.deleteCharAt(sb.lastIndexOf(","));
             }
             entity.setRedNotificationNo(sb.toString());
         }
