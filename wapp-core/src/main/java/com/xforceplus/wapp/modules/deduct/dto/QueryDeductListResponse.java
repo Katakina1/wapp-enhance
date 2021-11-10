@@ -59,11 +59,17 @@ public class QueryDeductListResponse {
     @ApiModelProperty("协议供应商6D")
     private String agreementMemo;
 
-    @ApiModelProperty("协议类型")
+    @ApiModelProperty("文档类型")
     private String agreementDocumentType;
+
+    @ApiModelProperty("文档编码")
+    private String agreementDocumentNumber;
 
     @ApiModelProperty("协议类型编码")
     private String agreementReasonCode;
+
+    @ApiModelProperty("协议类型")
+    private String agreementReference;
 
     @ApiModelProperty("税码")
     private String agreementTaxCode;
