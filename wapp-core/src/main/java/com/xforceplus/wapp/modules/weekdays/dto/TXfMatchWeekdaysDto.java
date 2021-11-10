@@ -63,6 +63,12 @@ public class TXfMatchWeekdaysDto extends BaseEntity {
     @ApiModelProperty("最后修改人")
     private String updateUser;
 
+    /**
+     * 备注
+     */
+    @ApiModelProperty("备注")
+    private String weekdaysRemark;
+
 
     public static final String ID = "id";
 
