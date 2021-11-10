@@ -159,7 +159,6 @@ public class TaxWareService {
             throw new RRException(String.format("未获取到在线终端%s",revokeRequest.getApplyTaxCode()));
         }
 
-
         try {
             String reqJson = gson.toJson(revokeRequest);
 //            final String post = httpClientFactory.post(rollbackAction,defaultHeader,reqJson,"");

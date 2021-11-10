@@ -286,29 +286,47 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
 
-
-
-
-
+    /**
+     * 只支持单个撤销
+     * @param request
+     * @return
+     */
     public Response rollback(RedNotificationApplyReverseRequest request) {
         QueryModel queryModel = request.getQueryModel();
 //        queryModel.setLockFlag(1);
 //        queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
 //        queryModel.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
         List<TXfRedNotificationEntity> filterData = getFilterData(queryModel);
+        // && item.getApproveStatus() == ApproveStatus.APPROVE_PASS.getValue()
         List<TXfRedNotificationEntity> entityList = filterData.stream().filter(item ->
                 item.getLockFlag() == 1
-                        && item.getApproveStatus() == ApproveStatus.APPROVE_PASS.getValue()
         ).collect(Collectors.toList());
         if (filterData.size()>0 && entityList.size() != filterData.size()){
             return Response.failed("锁定中或未审核通过 不允许撤销");
         }
         RevokeRequest revokeRequest = buildRevokeRequestAndLogs(entityList,request);
-        TaxWareResponse rollbackResponse = taxWareService.rollback(revokeRequest);
+
+        TaxWareResponse rollbackResponse = null ;
+        try {
+            rollbackResponse = taxWareService.rollback(revokeRequest);
+        } catch (Exception e) {
+            log.error("撤销失败",e);
+            rollbackResponse = new TaxWareResponse();
+            rollbackResponse.setCode("-1");
+            rollbackResponse.setMessage(e.getMessage());
+        }
 
         if (Objects.equals(TaxWareCode.SUCCESS,rollbackResponse.getCode())){
             return  Response.ok("请求成功" , revokeRequest.getSerialNo());
         }else {
+            // 更新失败 到撤销待审核
+            TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+            record.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPROVE.getValue());
+            LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
+            List<Long> collect = entityList.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
+            updateWrapper.in(TXfRedNotificationEntity::getId,collect);
+            getBaseMapper().update(record,updateWrapper);
+
             //更新流水.全部失败
             updateRequestFail(revokeRequest.getSerialNo(), rollbackResponse.getMessage());
             return  Response.failed(rollbackResponse.getMessage());
