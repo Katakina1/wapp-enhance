@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.config.shiro;
 
+import com.xforceplus.wapp.config.xss.SSRFFilter;
 import com.xforceplus.wapp.config.xss.XssFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,17 @@ public class FilterConfig {
         registration.setFilter(new XssFilter());
         registration.addUrlPatterns("/*");
         registration.setName("xssFilter");
+        registration.setOrder(Integer.MAX_VALUE);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean ssrfFilterRegistration() {
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        registration.setDispatcherTypes(DispatcherType.REQUEST);
+        registration.setFilter(new SSRFFilter());
+        registration.addUrlPatterns("/*");
+        registration.setName("ssrfFilter");
         registration.setOrder(Integer.MAX_VALUE);
         return registration;
     }

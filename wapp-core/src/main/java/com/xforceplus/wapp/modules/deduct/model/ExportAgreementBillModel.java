@@ -48,15 +48,6 @@ public class ExportAgreementBillModel {
     @ExcelProperty("协议类型编码")
     private String agreementReasonCode;
 
-    @ExcelProperty("文档类型")
-    private String agreementDocumentType;
-
-    @ExcelProperty("文档编号")
-    private String agreementDocumentNumber;
-
-    @ExcelProperty("税码")
-    private String agreementTaxCode;
-
     /**
      * 含税金额
      */
@@ -74,11 +65,20 @@ public class ExportAgreementBillModel {
     @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
+    @ExcelProperty("税码")
+    private String agreementTaxCode;
+
     @ExcelProperty("入账日期")
     private Date verdictDate;
 
     @ExcelProperty("批次号")
     private String batchNo;
+
+    @ExcelProperty("文档类型")
+    private String agreementDocumentType;
+
+    @ExcelProperty("文档编号")
+    private String agreementDocumentNumber;
 
     @ExcelProperty(value = "发票类型",converter = InvoiceTypeConverter.class)
     private String invoiceType;
