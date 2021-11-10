@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,7 +24,10 @@ public class BlueInvoiceServiceTest extends BaseUnitTest {
                 "914403006189074000",
                 "91310114MA1GTUH95J"
                 , BigDecimal.valueOf(6));
-        final BigDecimal reduce = matchRes.stream().map(BlueInvoiceService.MatchRes::getInvoiceItems).flatMap(Collection::stream).map(BlueInvoiceService.InvoiceItem::getDetailAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        final BigDecimal reduce = matchRes.stream().map(BlueInvoiceService.MatchRes::getInvoiceItems)
+                .flatMap(Collection::stream).peek(x->{
+                    assertEquals(x.getTaxAmount(),x.getDetailAmount().multiply(x.getTaxRate().movePointLeft(2)).setScale(2, RoundingMode.HALF_UP));
+                }).map(BlueInvoiceService.InvoiceItem::getDetailAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         assertEquals(0, reduce.compareTo(bigDecimal));
     }
 }

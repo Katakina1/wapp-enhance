@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -272,6 +273,8 @@ public class BlueInvoiceService {
 
             //剩余抵扣金额小于等于明细金额，说明到这一条已经够了
             if(lastDeductAmount.compareTo(amountWithoutTax)<=0){
+                final BigDecimal bigDecimal = new BigDecimal(item.getTaxRate()).movePointLeft(2);
+                item.setTaxAmount(lastDeductAmount.multiply(bigDecimal).setScale(2, RoundingMode.HALF_UP).toPlainString());
                 item.setDetailAmount(lastDeductAmount.toPlainString());
                 return list;
             }
