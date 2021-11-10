@@ -43,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -72,6 +73,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     @Autowired
     IDSequence iDSequence;
     @Autowired
+    @Lazy
     CommSettlementService commSettlementService;
     @Autowired
     ExportCommonService exportCommonService;
@@ -92,6 +94,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
     @Value("${wapp.rednotification.maxApply}")
     private Integer maxApply;
+
+    public static final int MAX_DETAIL_SIZE = 8;
 
 
 
@@ -412,9 +416,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (!StringUtils.isEmpty(queryModel.getBillNo())){
             queryWrapper.eq(TXfRedNotificationEntity.BILL_NO, queryModel.getBillNo());
         }
-        if (queryModel.getPaymentTime()!=null){
+        if (!CollectionUtils.isEmpty(queryModel.getPaymentTime())){
             // 1634860800000
-            queryWrapper.eq(TXfRedNotificationEntity.PAYMENT_TIME,  new Date(queryModel.getPaymentTime()));
+            Date start =  new Date(queryModel.getPaymentTime().get(0));
+            Date end =  new Date(queryModel.getPaymentTime().get(1));
+            queryWrapper.between(TXfRedNotificationEntity.PAYMENT_TIME, start,end);
         }
         if (!CollectionUtils.isEmpty(queryModel.getPidList())){
             queryWrapper.in(TXfRedNotificationEntity.PID,queryModel.getPidList());
@@ -875,7 +881,13 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             return detailInfo;
         }).collect(Collectors.toList());
 
-        redInfo.setDetails(detailInfos);
+        if(applyDetails.size() > MAX_DETAIL_SIZE){
+            RedGeneratePdfDetailInfo merge = merge(applyDetails);
+            redInfo.setDetails(Lists.newArrayList(merge));
+        }else {
+            redInfo.setDetails(detailInfos);
+        }
+
 
         redInfo.setOriginInvoiceCode(apply.getOriginInvoiceCode());
         redInfo.setOriginInvoiceNo(apply.getOriginInvoiceNo());
@@ -1089,6 +1101,39 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     }
 
 
+
+    private RedGeneratePdfDetailInfo merge(List<TXfRedNotificationDetailEntity>  treatedRedNoDetails){
+        BigDecimal sumAmountWithoutTax = BigDecimal.ZERO;
+        BigDecimal sumTaxAmount = BigDecimal.ZERO;
+
+        boolean isMixedRate = false;
+        BigDecimal taxRate = null;
+
+        for(TXfRedNotificationDetailEntity redNoDetailInfo : treatedRedNoDetails){
+            sumAmountWithoutTax = sumAmountWithoutTax.add(redNoDetailInfo.getAmountWithoutTax());
+            sumTaxAmount = sumTaxAmount.add(redNoDetailInfo.getTaxAmount());
+            if(Objects.isNull(taxRate)){
+                taxRate = redNoDetailInfo.getTaxRate();
+            }else{
+                if(!isMixedRate){
+                    if(!taxRate.equals(redNoDetailInfo.getTaxRate())){
+                        isMixedRate = true;
+                    }
+                }
+            }
+        }
+
+        RedGeneratePdfDetailInfo combineEntity = new RedGeneratePdfDetailInfo();
+        combineEntity.setAmountWithoutTax(sumAmountWithoutTax.toPlainString());
+        combineEntity.setTaxAmount(sumTaxAmount.toPlainString());
+        combineEntity.setCargoName("详见对应正数发票及清单");
+//        combineEntity.setZeroTax("");
+        if(!isMixedRate){
+            combineEntity.setTaxRate(taxRate.toPlainString());
+        }
+//        treatedRedNoDetails.clear();
+        return  combineEntity;
+    }
 
 
 

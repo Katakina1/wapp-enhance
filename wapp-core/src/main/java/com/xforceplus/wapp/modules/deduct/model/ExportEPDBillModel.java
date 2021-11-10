@@ -42,9 +42,15 @@ public class ExportEPDBillModel {
     private String agreementMemo;
 
     @ExcelProperty("协议类型")
-    private String agreementDocumentType;
+    private String agreementReference;
 
     @ExcelProperty("协议类型编码")
+    private String agreementReasonCode;
+
+    @ExcelProperty("文档类型")
+    private String agreementDocumentType;
+
+    @ExcelProperty("文档编号")
     private String agreementDocumentNumber;
 
     /**
@@ -67,7 +73,7 @@ public class ExportEPDBillModel {
     /**
      * 税额
      */
-    @ApiModelProperty("税额")
+    @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
     @ExcelProperty("税码")

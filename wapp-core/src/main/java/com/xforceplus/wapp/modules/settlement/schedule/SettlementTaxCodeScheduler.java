@@ -27,7 +27,7 @@ public class SettlementTaxCodeScheduler {
     /**
      *  补齐税编
      */
-    @Scheduled(cron=" 0 0 20 * * ?")
+    @Scheduled(cron="${task.SettlementTaxCodeScheduler-cron}")
     public void settlementFixTaxCode(){
         log.info("settlementFixTaxCode job 开始");
         Long id = 0L;

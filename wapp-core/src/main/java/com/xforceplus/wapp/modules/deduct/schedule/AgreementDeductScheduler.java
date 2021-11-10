@@ -23,7 +23,7 @@ public class AgreementDeductScheduler {
      /**
      * 协议单合并结算单
      */
-    @Scheduled(cron=" 0 0 4 * * ?")
+    @Scheduled(cron="${task.AgreementDeductScheduler-cron}")
     public void AgreementDeductDeal(){
          if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
                 log.info("Agreement-MergeSettlement job 已经在执行，结束此次执行");

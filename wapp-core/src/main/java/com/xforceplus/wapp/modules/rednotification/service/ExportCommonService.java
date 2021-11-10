@@ -3,8 +3,6 @@ package com.xforceplus.wapp.modules.rednotification.service;
 
 import com.alibaba.fastjson.JSON;
 import com.xforceplus.wapp.common.utils.DateUtils;
-import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
-import com.xforceplus.wapp.modules.exceptionreport.dto.ExceptionReportRequest;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
@@ -12,17 +10,14 @@ import com.xforceplus.wapp.repository.entity.TDxExcelExportlogEntity;
 import com.xforceplus.wapp.repository.entity.TDxMessagecontrolEntity;
 import com.xforceplus.wapp.service.CommonMessageService;
 import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Date;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
@@ -189,7 +184,7 @@ public class ExportCommonService {
     public String getUrl(long id) {
         return downLoadurl + "?serviceType=2&downloadId=" + id;
     }
-}       
-        
-        
-        
+}
+
+
+

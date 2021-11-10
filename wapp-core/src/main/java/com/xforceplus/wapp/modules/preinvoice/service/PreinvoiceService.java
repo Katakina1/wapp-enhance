@@ -56,7 +56,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             "\t\t\"cargoNameLength\": 92,\n" +
             "\t\t\"customRemarkSize\": 200,\n" +
             "\t\t\"ignoreAllowableError\": false,\n" +
-            "\t\t\"invoiceItemMaxRow\": 7,\n" +
+            "\t\t\"invoiceItemMaxRow\": 8,\n" +
             "\t\t\"invoiceLimit\": 999999.99,\n" +
             "\t\t\"itemSort\": \"1\",\n" +
             "\t\t\"itemSpecNameLength\": 36,\n" +
@@ -77,7 +77,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             "\t\t\"splitByItemPriceQuantityNon\": false,\n" +
             "\t\t\"splitFiledList\": [\"taxRate\"],\n" +
             "\t\t\"unitPriceAmountOps\": \"0\",\n" +
-            "\t\t\"unitPriceScale\": 4,\n" +
+            "\t\t\"unitPriceScale\": 15,\n" +
             "\t\t\"zeroTaxOption\": \"NOT_PROCESS\"\n" +
             "\t}";
      @Autowired
@@ -148,8 +148,10 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
 
     @Transactional
     public void reFixTaxCode(String settlementNo) {
-        List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
-        for (TXfSettlementItemEntity tmp : tXfSettlementItemEntities) {
+        boolean success = true;
+         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
+         for(TXfSettlementItemEntity tmp:tXfSettlementItemEntities){
+            tmp = deductService.fixTaxCode(tmp);
             Integer tmpStatus = tmp.getItemFlag();
             if (StringUtils.isNotEmpty(tmp.getGoodsTaxNo()) ) {
                 if (tmp.getUnitPrice().multiply(tmp.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(tmp.getAmountWithoutTax()) == 0  ) {
@@ -158,30 +160,17 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                     tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_CONFIRM_AMOUNT.getCode());
                 }
             }else{
+                success = false;
                 tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
             }
             if (tmpStatus != tmp.getItemFlag()) {
-                TXfSettlementItemEntity update = new TXfSettlementItemEntity();
-                update.setId(tmp.getId());
-                update.setItemFlag(tmp.getItemFlag());
-                tXfSettlementItemDao.updateById(update);
+                tXfSettlementItemDao.updateById(tmp);
             }
         }
-        List<TXfSettlementItemEntity> fixTaxList = tXfSettlementItemEntities.stream().filter(x -> StringUtils.isEmpty(x.getGoodsTaxNo())).collect(Collectors.toList());
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
-        boolean success = true;
-        if (CollectionUtils.isNotEmpty(fixTaxList)) {
-            for(TXfSettlementItemEntity tXfSettlementItemEntity:fixTaxList){
-                deductService.fixTaxCode(tXfSettlementItemEntity);
-                if (StringUtils.isEmpty(tXfSettlementItemEntity.getGoodsTaxNo())) {
-                    success = false;
-                    continue;
-                }else{
-                    tXfSettlementItemDao.updateById(tXfSettlementItemEntity);
-                }
-            }
-        }
-
+        /**
+         * 如果税编补充完成，判断结算单下一步专题
+         */
         if (success) {
             TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.querySettlementByNo(0L, settlementNo, null);
             if (CollectionUtils.isEmpty(fixAmountList)) {
@@ -288,11 +277,9 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setId(idSequence.nextId());
             tXfPreInvoiceEntity.setSettlementNo(tXfSettlementEntity.getSettlementNo());
             tXfPreInvoiceEntity.setInvoiceType(tXfSettlementEntity.getInvoiceType());
-            tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             for (PreInvoiceItem preInvoiceItem : splitPreInvoiceInfo.getPreInvoiceItems()) {
                 TXfPreInvoiceItemEntity tXfPreInvoiceItemEntity = new TXfPreInvoiceItemEntity();
                 BeanUtil.copyProperties(preInvoiceItem, tXfPreInvoiceItemEntity);
-
                 tXfPreInvoiceItemEntity.setId(idSequence.nextId());
                 tXfPreInvoiceItemEntity.setPreInvoiceId(tXfPreInvoiceEntity.getId());
                 tXfPreInvoiceItemDao.insert(tXfPreInvoiceItemEntity);
@@ -302,12 +289,17 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
              * 0税率 不申请红字信息单
              */
             if (tXfPreInvoiceEntity.getTaxRate().compareTo(BigDecimal.ZERO) == 0) {
+                tXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+                tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
                 continue;
+            }else{
+                tXfPreInvoiceDao.insert(tXfPreInvoiceEntity);
             }
             PreInvoiceDTO applyProInvoiceRedNotificationDTO = new PreInvoiceDTO();
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceEntity(tXfPreInvoiceEntity);
             applyProInvoiceRedNotificationDTO.setTXfPreInvoiceItemEntityList(tXfPreInvoiceItemEntities);
             preInvoiceDTOS.add(applyProInvoiceRedNotificationDTO);
+
         }
         TXfSettlementEntity tmp = new TXfSettlementEntity();
         tmp.setId(tXfSettlementEntity.getId());

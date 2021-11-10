@@ -18,71 +18,7 @@ public class BackFillServiceTest extends BaseUnitTest {
     EInvoiceMatchService eInvoiceMatchService;
     @Test
     public void testAfterVerify() {
-        String back = "{\n" +
-                "\t\"result\": {\n" +
-                "\t\t\"invoiceType\": \"s\",\n" +
-                "\t\t\"invoiceDetails\": [{\n" +
-                "\t\t\t\"cargoName\": \"*油料*花生碎\",\n" +
-                "\t\t\t\"itemSpec\": \"\",\n" +
-                "\t\t\t\"quantityUnit\": \"件\",\n" +
-                "\t\t\t\"quantity\": \"-1\",\n" +
-                "\t\t\t\"taxRate\": \"13\",\n" +
-                "\t\t\t\"zeroTax\": \" \",\n" +
-                "\t\t\t\"unitPrice\": \"74.00\",\n" +
-                "\t\t\t\"amountWithoutTax\": \"-74\",\n" +
-                "\t\t\t\"taxAmount\": \"-9.62\",\n" +
-                "\t\t\t\"amountWithTax\": \"-83.62\"\n" +
-                "\t\t}, {\n" +
-                "\t\t\t\"cargoName\": \"*植物油*V金味高级夹心油\",\n" +
-                "\t\t\t\"itemSpec\": \"\",\n" +
-                "\t\t\t\"quantityUnit\": \"件\",\n" +
-                "\t\t\t\"quantity\": \"-2\",\n" +
-                "\t\t\t\"taxRate\": \"13\",\n" +
-                "\t\t\t\"zeroTax\": \" \",\n" +
-                "\t\t\t\"unitPrice\": \"168.00\",\n" +
-                "\t\t\t\"amountWithoutTax\": \"-336\",\n" +
-                "\t\t\t\"taxAmount\": \"-43.68\",\n" +
-                "\t\t\t\"amountWithTax\": \"-379.68\"\n" +
-                "\t\t}],\n" +
-                "\t\t\"invoiceMain\": {\n" +
-                "\t\t\t\"taskId\": \"d63a7b2b-f15d-4bef-8940-d41179c4e2cb\",\n" +
-                "\t\t\t\"invoiceCode\": \"5300194130\",\n" +
-                "\t\t\t\"invoiceNo\": \"00957689\",\n" +
-                "\t\t\t\"invoiceType\": \"s\",\n" +
-                "\t\t\t\"purchaserTaxNo\": \"915300005501314867\",\n" +
-                "\t\t\t\"purchaserName\": \"沃尔玛（云南）商业零售有限公司\",\n" +
-                "\t\t\t\"purchaserAddrTel\": \"云南省昆明市五华区红云街道北市区银河片区尚家营村旁银河星辰花园2幢1层商铺2号 0871-64626580\",\n" +
-                "\t\t\t\"purchaserBankInfo\": \"中国工商银行股份有限公司昆明银通支行 2502010509200118958\",\n" +
-                "\t\t\t\"sellerTaxNo\": \"91530300323114440U\",\n" +
-                "\t\t\t\"sellerName\": \"沃尔玛（云南）商业零售有限公司曲靖子午路分店\",\n" +
-                "\t\t\t\"sellerAddrTel\": \"云南省曲靖市麒麟区南片区子午路与文笔路交叉口东北角 0874-3192618\",\n" +
-                "\t\t\t\"sellerBankInfo\": \"中国工商银行股份有限公司曲靖南市支行 2505001009000018549\",\n" +
-                "\t\t\t\"paperDrewDate\": \"20201231\",\n" +
-                "\t\t\t\"amountWithoutTax\": \"-410\",\n" +
-                "\t\t\t\"taxAmount\": \"-53.3\",\n" +
-                "\t\t\t\"amountWithTax\": \"-463.3\",\n" +
-                "\t\t\t\"checkCode\": \"56924369321133034746\",\n" +
-                "\t\t\t\"machineCode\": \"661506428408\",\n" +
-                "\t\t\t\"remark\": \"开具红字增值税专用发票信息表编号5303022012013293&lt;br/&gt; MTR#272464006190001/发出方：2464；ZW/购入方：2393；ZW 订单号[]\",\n" +
-                "\t\t\t\"status\": \"1\",\n" +
-                "\t\t\t\"redFlag\": \"0\",\n" +
-                "\t\t\t\"ctStatus\": \"\",\n" +
-                "\t\t\t\"cpyStatus\": \"0\",\n" +
-                "\t\t\t\"checkNumber\": \"4\",\n" +
-                "\t\t\t\"checkTime\": \"2021-10-26 10:59:37\",\n" +
-                "\t\t\t\"goodsListFlag\": \"0\",\n" +
-                "\t\t\t\"dqCode\": \"5300\",\n" +
-                "\t\t\t\"dqName\": \"云南\",\n" +
-                "\t\t\t\"ofdDownloadUrl\": \"\",\n" +
-                "\t\t\t\"pdfDownloadUrl\": \"\",\n" +
-                "\t\t\t\"ofdPreviewUrl\": \"\",\n" +
-                "\t\t\t\"ofdImageUrl\": \"\"\n" +
-                "\t\t}\n" +
-                "\t},\n" +
-                "\t\"code\": \"TXWRVC0001\",\n" +
-                "\t\"message\": \"查验成功\",\n" +
-                "\t\"taskId\": \"d63a7b2b-f15d-4bef-8940-d41179c4e2cb\"\n" +
-                "}";
+        String back = "{\"result\":{\"invoiceType\":\"s\",\"invoiceDetails\":[{\"cargoName\":\"*口腔清洁护理品*舒适达多效护理牙膏\",\"itemSpec\":\"\",\"quantityUnit\":\"件\",\"quantity\":\"4\",\"taxRate\":\"13\",\"zeroTax\":\" \",\"unitPrice\":\"26.36\",\"amountWithoutTax\":\"105.44\",\"taxAmount\":\"13.71\",\"amountWithTax\":\"119.15\"}],\"invoiceMain\":{\"taskId\":\"fb447478-a74e-433b-a370-2f5e672d7d8b\",\"invoiceCode\":\"3600203130\",\"invoiceNo\":\"01918001\",\"invoiceType\":\"s\",\"purchaserTaxNo\":\"91420000695306507H\",\"purchaserName\":\"沃尔玛（湖北）商业零售有限公司\",\"purchaserAddrTel\":\"武汉市汉阳区龙阳大道特6号摩尔城负一层 027-84459806\",\"purchaserBankInfo\":\"中国工商银行武汉市中山大道支行 3202002809200173865\",\"sellerTaxNo\":\"913610000564256577\",\"sellerName\":\"沃尔玛（江西）商业零售有限公司抚州赣东大道分店\",\"sellerAddrTel\":\"江西省抚州市临川区赣东大道345号 0794-8336638\",\"sellerBankInfo\":\"中国农业银行股份有限公司抚州分行14351101040019326\",\"paperDrewDate\":\"20210713\",\"amountWithoutTax\":\"105.44\",\"taxAmount\":\"13.71\",\"amountWithTax\":\"119.15\",\"checkCode\":\"77629346400987993606\",\"machineCode\":\"661521630225\",\"remark\":\"MTR#12097005240468/发出方:2097;FH/购入方:2461;PN 订单号[2097-2461-202105-12097005240468-13]\",\"status\":\"1\",\"redFlag\":\"0\",\"ctStatus\":\"\",\"cpyStatus\":\"0\",\"checkNumber\":\"5\",\"checkTime\":\"2021-11-08 18:18:45\",\"goodsListFlag\":\"0\",\"dqCode\":\"3600\",\"dqName\":\"江西\",\"ofdDownloadUrl\":\"\",\"pdfDownloadUrl\":\"\",\"ofdPreviewUrl\":\"\",\"ofdImageUrl\":\"\"}},\"code\":\"TXWRVC0001\",\"message\":\"查验成功\",\"taskId\":\"fb447478-a74e-433b-a370-2f5e672d7d8b\"}";
         VerificationBack verificationBack = JSONObject.parseObject(back, VerificationBack.class);
         eInvoiceMatchService.matchResultAfterVerify(verificationBack,null);
     }

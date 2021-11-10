@@ -1,4 +1,5 @@
 wapp:
+  tax-rate: 0.00,0.01,0.03,0.06,0.09,0.10,0.11,0.13,0.16,0.17
   integration:
     authentication: Walmart-wapp-enhance-dev2021101114111213460599
     client-id: T395054492021101114111213460567
@@ -28,6 +29,7 @@ wapp:
       discern-callbackUrl: inte-janus.melete
       # 税编查询
       tax-code: 978FDBCF06496528939EB352B3711394
+
     host:
       tcp: janus-tcp-inte-tx.xforceplus.com
       http: https://janus-inte-tx.xforceplus.com

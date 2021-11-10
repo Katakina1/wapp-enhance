@@ -23,6 +23,5 @@ public class ClaimReportExportDto {
     private String billNo;
     private String verdictDate;
     private String deductDate;
-    private String documentType;
 
 }

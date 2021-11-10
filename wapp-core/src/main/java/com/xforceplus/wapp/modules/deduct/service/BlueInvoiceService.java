@@ -249,11 +249,14 @@ public class BlueInvoiceService {
         log.info("收到匹配蓝票明细任务 发票uuid={} totalAmountWithoutTax={} lastRemainingAmount={} deductedAmount={}", uuid, totalAmountWithoutTax, lastRemainingAmount, deductedAmount);
         List<TDxRecordInvoiceDetailEntity> list = new ArrayList<>();
         // 之前抵扣的金额
-        BigDecimal lastDeductedAmount = totalAmountWithoutTax.subtract(lastRemainingAmount);
+//        BigDecimal lastDeductedAmount = totalAmountWithoutTax.subtract(lastRemainingAmount);
         // 总共抵扣金额
-        BigDecimal totalDeductedAmount = lastDeductedAmount.add(deductedAmount);
+//        BigDecimal totalDeductedAmount = lastDeductedAmount.add(deductedAmount);
         List<TDxRecordInvoiceDetailEntity> items = invoiceService.getInvoiceDetailByUuid(uuid);
-        BigDecimal accumulatedAmount = BigDecimal.ZERO;
+//        BigDecimal accumulatedAmount = BigDecimal.ZERO;
+
+        // 明细剩余可抵扣金额
+        BigDecimal lastDeductAmount = BigDecimal.ZERO.add(deductedAmount);
         for (TDxRecordInvoiceDetailEntity item : items) {
             // 获取明细不含税金额
             BigDecimal amountWithoutTax;
@@ -263,22 +266,35 @@ public class BlueInvoiceService {
                 log.warn("明细不含税金额转换成数字失败，跳过此明细，uuid={} detailAmount={}", uuid, item.getDetailAmount());
                 continue;
             }
-            // 顺序不能颠倒
-            if (accumulatedAmount.compareTo(lastDeductedAmount) < 0
-                    && accumulatedAmount.add(amountWithoutTax).compareTo(lastDeductedAmount) > 0) {
-                item.setDetailAmount(lastDeductedAmount.subtract(accumulatedAmount).toPlainString());
-            }
-            if (accumulatedAmount.compareTo(totalDeductedAmount) < 0
-                    && accumulatedAmount.add(amountWithoutTax).compareTo(totalDeductedAmount) > 0) {
-                item.setDetailAmount(totalAmountWithoutTax.subtract(accumulatedAmount).toPlainString());
-            }
-            accumulatedAmount = accumulatedAmount.add(amountWithoutTax);
-            if (accumulatedAmount.compareTo(lastDeductedAmount) > 0) {
-                list.add(item);
-            }
-            if (accumulatedAmount.compareTo(totalDeductedAmount) >= 0) {
+
+            //先把明细加进返回列表去
+            list.add(item);
+
+            //剩余抵扣金额小于等于明细金额，说明到这一条已经够了
+            if(lastDeductAmount.compareTo(amountWithoutTax)<=0){
+                item.setDetailAmount(lastDeductAmount.toPlainString());
                 return list;
             }
+            //剩余抵扣金额 = 剩余抵扣金额减去本条明细金额
+            lastDeductAmount=lastDeductAmount.subtract(amountWithoutTax);
+
+
+            // 顺序不能颠倒
+//            if (accumulatedAmount.compareTo(lastDeductedAmount) < 0
+//                    && accumulatedAmount.add(amountWithoutTax).compareTo(lastDeductedAmount) > 0) {
+//                item.setDetailAmount(lastDeductedAmount.subtract(accumulatedAmount).toPlainString());
+//            }
+//            if (accumulatedAmount.compareTo(totalDeductedAmount) < 0
+//                    && accumulatedAmount.add(amountWithoutTax).compareTo(totalDeductedAmount) > 0) {
+//                item.setDetailAmount(totalDeductedAmount.subtract(accumulatedAmount).toPlainString());
+//            }
+//            accumulatedAmount = accumulatedAmount.add(amountWithoutTax);
+//            if (accumulatedAmount.compareTo(lastDeductedAmount) > 0) {
+//                list.add(item);
+//            }
+//            if (accumulatedAmount.compareTo(totalDeductedAmount) >= 0) {
+//                return list;
+//            }
             // 顺序不能颠倒
         }
         log.info("已匹配的发票明细列表={}", JSON.toJSONString(list));

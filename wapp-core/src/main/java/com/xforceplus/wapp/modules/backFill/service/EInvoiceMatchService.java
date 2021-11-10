@@ -291,7 +291,7 @@ public class EInvoiceMatchService {
         }*/
         //从备注里截取红字信息编号
         TDxRecordInvoiceEntity recordInvoice = new TDxRecordInvoiceEntity();
-        if (Float.valueOf(invoiceMain.getAmountWithoutTax()) < 0) {
+        if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0  && new BigDecimal(invoiceDetails.get(0).getTaxRate()).compareTo(BigDecimal.ZERO) !=0){
             String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号") + 5, invoiceMain.getRemark().indexOf("信息表编号") + 21);
             if (StringUtils.isNotEmpty(redNo)) {
                 String trim = redNo.trim();

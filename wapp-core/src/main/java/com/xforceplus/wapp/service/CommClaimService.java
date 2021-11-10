@@ -7,6 +7,7 @@ import com.xforceplus.wapp.modules.log.controller.OperateLogService;
 import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +80,11 @@ public class CommClaimService {
             TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
             updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
             updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.DESTROY.getCode());
+            if(StringUtils.isNotBlank(tXfPreInvoiceEntity.getRedNotificationNo())) {
+                updateTXfPreInvoiceEntity.setRedNotificationNo("");
+                // 撤销红字信息
+                commRedNotificationService.confirmDestroyRedNotification(tXfPreInvoiceEntity.getId());
+            }
             tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         });
 
@@ -154,13 +160,5 @@ public class CommClaimService {
             tXfBillDeductInvoiceDao.updateById(updateTXfBillDeductInvoiceEntity);
         });
     }
-
-    /**
-     * 索赔单[确认]按钮相关逻辑，这个主要是针对结算单明细拆票
-     * 结算单明细拆成预制发票（红字信息）
-     * 底层逻辑调用产品服务(拆票、申请红字信息)
-     *
-     * @param settlementId
-     */
 
 }

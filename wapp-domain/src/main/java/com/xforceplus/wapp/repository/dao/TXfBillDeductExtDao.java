@@ -168,18 +168,18 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 104\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==2'>"+
-            "and d.status = 205\n"+
+            "and d.status = 201\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==3'>"+
-            "and d.status = 303\n"+
+            "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 2'>"+
             "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+
@@ -235,18 +235,18 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 104\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==2'>"+
-            "and d.status = 205\n"+
+            "and d.status = 201\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==3'>"+
-            "and d.status = 303\n"+
+            "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 2'>"+
             "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status = 3) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no)\n"+
             "</if>"+
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+

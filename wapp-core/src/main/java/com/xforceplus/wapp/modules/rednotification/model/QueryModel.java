@@ -37,7 +37,7 @@ public class QueryModel {
     private String companyCode;
 
     @ApiModelProperty("扣款时间毫秒值")
-    private Long paymentTime;
+    private List<Long> paymentTime;
 
     @ApiModelProperty("单号")
     private String billNo;
