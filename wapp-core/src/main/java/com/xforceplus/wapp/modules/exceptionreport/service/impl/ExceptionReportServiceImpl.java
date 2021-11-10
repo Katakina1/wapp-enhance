@@ -378,7 +378,6 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         head.put("purchaserName", "扣款公司");
         head.put("sellerNo", "供应商编号");
         head.put("sellerName", "供应商名称");
-        head.put("documentType", "类型");
         head.put("billNo", "索赔号/换货号");
         head.put("verdictDate", "定案日期");
         head.put("amountWithoutTax", "成本金额(不含税)");

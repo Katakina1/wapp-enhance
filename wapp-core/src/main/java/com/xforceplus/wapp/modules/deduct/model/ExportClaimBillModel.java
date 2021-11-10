@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.deduct.model;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.xforceplus.wapp.modules.deduct.service.InvoiceTypeConverter;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -23,10 +24,10 @@ public class ExportClaimBillModel {
     @ExcelProperty("扣款日期")
     private Date deductDate;
     /**
-     * 扣款公司jv_code
+     * 扣款公司
      */
     @ExcelProperty("扣款公司")
-    private String purchaserNo;
+    private String purchaserName;
     /**
      * 供应商编号
      */
@@ -60,7 +61,7 @@ public class ExportClaimBillModel {
     @ExcelProperty("税额")
     private BigDecimal taxAmount;
 
-    @ExcelProperty("发票类型")
+    @ExcelProperty(value = "发票类型",converter = InvoiceTypeConverter.class)
     private String invoiceType;
 
     @ExcelProperty("定案日期")

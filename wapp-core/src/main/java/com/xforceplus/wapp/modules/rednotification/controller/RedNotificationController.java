@@ -115,15 +115,6 @@ public class RedNotificationController {
         return rednotificationService.operation(request);
     }
 
-    @ApiOperation(value = "获取红字信息表模板", notes = "", response = Response.class, tags = {"red-notification",})
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "response", response = Response.class)})
-    @GetMapping(value = "/template")
-    public void template(HttpServletResponse res, HttpServletRequest req){
-        String fileName = "红字信息表导入模板.xlsx";
-        exportCommonService.template(res,req,fileName);
-    }
-
     @ApiOperation(value = "红字信息表导入", notes = "", response = Response.class, tags = {"red-notification",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})

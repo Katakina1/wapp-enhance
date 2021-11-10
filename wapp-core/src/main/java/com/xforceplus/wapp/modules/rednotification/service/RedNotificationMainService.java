@@ -43,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -72,6 +73,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     @Autowired
     IDSequence iDSequence;
     @Autowired
+    @Lazy
     CommSettlementService commSettlementService;
     @Autowired
     ExportCommonService exportCommonService;

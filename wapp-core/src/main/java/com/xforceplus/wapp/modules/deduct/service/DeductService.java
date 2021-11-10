@@ -17,6 +17,9 @@ import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.enums.*;
 import com.xforceplus.wapp.export.dto.DeductBillExportDto;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
+import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
+import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.DeductDetailResponse;
 import com.xforceplus.wapp.modules.deduct.dto.DeductExportRequest;
@@ -118,6 +121,9 @@ public class DeductService   {
     protected DefaultSettingServiceImpl defaultSettingService;
     @Autowired
     protected OverdueServiceImpl overdueService;
+
+    @Autowired
+    private RecordInvoiceService recordInvoiceService;
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -906,27 +912,17 @@ public class DeductService   {
 
 
 
-    private QueryWrapper<TXfBillDeductEntity>  getQueryWrapper(QueryDeductListRequest   request){
-        QueryWrapper<TXfBillDeductEntity> wrapper = new QueryWrapper<>();
-        if(StringUtils.isNotEmpty(request.getBusinessNo())){
-            wrapper.eq(TXfBillDeductEntity.BUSINESS_NO,request.getBusinessNo());
+    public List<InvoiceDetailResponse>  queryDeductInvoiceList(String businessNo){
+        QueryWrapper<TXfBillDeductInvoiceEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_NO,businessNo);
+        List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceEntities = tXfBillDeductInvoiceDao.selectList(wrapper);
+        InvoiceDetailResponse response;
+        List<InvoiceDetailResponse> list = new ArrayList<>();
+        for (TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity : tXfBillDeductInvoiceEntities) {
+            response = recordInvoiceService.queryInvoiceByUuid(tXfBillDeductInvoiceEntity.getInvoiceCode() + tXfBillDeductInvoiceEntity.getInvoiceNo());
+            list.add(response);
         }
-        if(StringUtils.isNotEmpty(request.getPurchaserNo())){
-            wrapper.eq(TXfBillDeductEntity.PURCHASER_NO,request.getPurchaserNo());
-        }
-        if(StringUtils.isNotEmpty(request.getSellerName())){
-            wrapper.eq(TXfBillDeductEntity.SELLER_NAME,request.getSellerName());
-        }
-        if(StringUtils.isNotEmpty(request.getSellerNo())){
-            wrapper.eq(TXfBillDeductEntity.SELLER_NO,request.getSellerNo());
-        }
-        if(request.getBusinessType() != null){
-            wrapper.eq(TXfBillDeductEntity.BUSINESS_TYPE,request.getBusinessType());
-        }
-//        if(request.getDeductDate() != null){
-//            wrapper.apply("format(deduct_date,'yyyy-MM-dd') = {0}",request.getDeductDate());
-//        }
-        return wrapper;
+        return list;
     }
 
     /**
@@ -970,6 +966,20 @@ public class DeductService   {
                         tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
                         tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
+
+                        if (StringUtils.isBlank(tXfSettlementItemEntity.getItemShortName())){
+                            final String itemName = tXfSettlementItemEntity.getItemName();
+                            final int first = itemName.indexOf("*");
+                            final int length = itemName.length();
+                            if (first > -1 && length > first+1) {
+                                int end = itemName.indexOf("*", first + 1);
+                                if (end > -1 && length > end) {
+                                    final String shortName = itemName.substring(first + 1, end);
+                                    tXfSettlementItemEntity.setItemShortName(shortName);
+                                }
+                            }
+                        }
+
                         if (status < tXfSettlementItemEntity.getItemFlag() ) {
                             status = tXfSettlementItemEntity.getItemFlag();
                         }
@@ -991,6 +1001,7 @@ public class DeductService   {
         }
         return status;
     }
+
     /**
      * 结算单明细校验
      * @param tXfSettlementItemEntity
@@ -1047,11 +1058,12 @@ public class DeductService   {
                     String redNotificationNo = tXfPreInvoiceEntities.get(i).getRedNotificationNo();
                     if(StringUtils.isNotEmpty(redNotificationNo)){
                         sb.append(redNotificationNo);
-                        if(i != tXfPreInvoiceEntities.size()-1){
-                            sb.append(",");
-                        }
+                        sb.append(",");
                     }
                 }
+            }
+            if(sb.lastIndexOf(",") != -1){
+                sb.deleteCharAt(sb.lastIndexOf(","));
             }
             entity.setRedNotificationNo(sb.toString());
         }
