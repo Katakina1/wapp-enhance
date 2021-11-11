@@ -40,7 +40,7 @@ public class EpdBillJobGenerator extends AbstractBillJobGenerator {
     private String remotePath;
 
     @Async
-    @Scheduled(cron = "0 0 23 * * ?")
+    @Scheduled(cron = "${epdBill.scan-cron}")
     @Override
     public void generate() {
         try {
