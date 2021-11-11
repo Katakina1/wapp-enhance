@@ -270,6 +270,29 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
         return response;
     }
 
+    /**
+     * 发票列表
+     * @param settlementNo,
+     * @param invoiceStatus
+     * @param venderid
+     * @param invoiceColor
+     * @return List
+     */
+    public List<InvoiceDetailResponse> queryInvoicesBySettlementNo(String settlementNo,String invoiceStatus,String invoiceColor,String venderid) {
+        QueryWrapper<TDxRecordInvoiceEntity> wrapper = this.getQueryWrapper(settlementNo, invoiceStatus, venderid, invoiceColor, true);
+        List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(wrapper);
+        List<InvoiceDetailResponse> response = new ArrayList<>();
+        InvoiceDetailResponse invoice;
+        for (TDxRecordInvoiceEntity invoiceEntity : tDxRecordInvoiceEntities) {
+            invoice = new InvoiceDetailResponse();
+            List<InvoiceDetail> list = queryInvoiceDetailByUuid(invoiceEntity.getUuid());
+            invoice.setItems(list);
+            BeanUtil.copyProperties(invoiceEntity, invoice);
+            this.convertMain(invoiceEntity, invoice);
+            response.add(invoice);
+        }
+        return response;
+    }
 
     private QueryWrapper<TDxRecordInvoiceEntity> getQueryWrapper(String settlementNo,String invoiceStatus,String venderid,String invoiceColor,boolean isOrder){
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
