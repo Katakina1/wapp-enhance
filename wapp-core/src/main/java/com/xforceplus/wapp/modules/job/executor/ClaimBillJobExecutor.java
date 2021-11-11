@@ -38,7 +38,7 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
     private LockClient lockClient;
 
     @Async
-    @Scheduled(cron = "${claimBill.cron}")
+    @Scheduled(cron = "${claimBill.parse-cron}")
     @Override
     public void execute() {
         log.info("启动原始索赔单任务执行器");

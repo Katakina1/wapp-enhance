@@ -90,7 +90,8 @@ Esb:
 # 4、同一批单据和明细请按照模板格式统一存储到同一个excel的不同sheet中
 # 5、SFTP路径定义如下
 agreementBill:
-  cron: 0 0 0 * * ?
+  scan-cron: 0 0 23 * * ?
+  parse-cron: 0 0 0 * * ?
   remote:
 # 协议单SFTP远程目录
     path: /home/wappftp/wapp/vendor/agreement
@@ -100,7 +101,8 @@ agreementBill:
   item:
     sheetName: SAP-ZARR0355原稿
 claimBill:
-  cron: 0 0 0 * * ?
+  scan-cron: 0 0 23 * * ?
+  parse-cron: 0 0 0 * * ?
   remote:
 # 索赔单及明细SFTP远程目录
     path: /home/wappftp/wapp/vendor/claim
@@ -111,7 +113,8 @@ claimBill:
     hyperSheetName: 原始索赔单Hyper明细
     samsSheetName: 原始索赔单Sams明细
 epdBill:
-  cron: 0 0 0 * * ?
+  scan-cron: 0 0 23 * * ?
+  parse-cron: 0 0 0 * * ?
   remote:
 # EPD单及LOG明细SFTP远程目录
     path: /home/wappftp/wapp/vendor/epd
