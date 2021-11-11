@@ -152,53 +152,7 @@ public class AgreementFbl5nMergeCommand implements Command {
         List<String> docTypeList = Stream.of("1D", "RV", "DA").collect(Collectors.toList());
         List<String> reasonCodeList = Stream.of("511", "527", "206", "317").collect(Collectors.toList());
         List<TXfOriginAgreementMergeEntity> newList = list.parallelStream()
-                .map(fbl5n -> {
-                    try {
-                        TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
-                        tXfOriginAgreementMergeTmpEntity.setId(idSequence.nextId());
-                        tXfOriginAgreementMergeTmpEntity.setJobId(fbl5n.getJobId());
-                        tXfOriginAgreementMergeTmpEntity.setCustomerNo(fbl5n.getAccount());
-                        // TODO fbl5n 供应商6D 供应商名称???
-                        tXfOriginAgreementMergeTmpEntity.setCustomerName(getCustomer(fbl5n.getJobId(), fbl5n.getReference()));
-                        tXfOriginAgreementMergeTmpEntity.setMemo(getMemo6D(fbl5n.getJobId(), fbl5n.getReference()));
-                        tXfOriginAgreementMergeTmpEntity.setCompanyCode(fbl5n.getCompanyCode());
-                        String amountInDocCurr = fbl5n.getAmountInDocCurr().replace(",", "");
-                        if (StringUtils.isNotBlank(amountInDocCurr)) {
-                            tXfOriginAgreementMergeTmpEntity.setWithAmount(new BigDecimal(amountInDocCurr));
-                        }
-                        tXfOriginAgreementMergeTmpEntity.setReasonCode(fbl5n.getReasonCode());
-                        if (StringUtils.isBlank(tXfOriginAgreementMergeTmpEntity.getReasonCode())) {
-                            tXfOriginAgreementMergeTmpEntity.setReasonCode(getReasonCode(fbl5n.getJobId(), fbl5n.getReference()));
-                        }
-                        tXfOriginAgreementMergeTmpEntity.setReference(fbl5n.getReference());
-                        tXfOriginAgreementMergeTmpEntity.setTaxCode(fbl5n.getTaxCode());
-                        BigDecimal taxRate = TXfOriginAgreementBillEntityConvertor.TAX_CODE_TRANSLATOR.get(fbl5n.getTaxCode());
-                        tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
-                        SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
-                        if (fbl5n.getClearingDate() != null) {
-                            tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(fbl5n.getClearingDate()));
-                        }
-                        tXfOriginAgreementMergeTmpEntity.setDocumentType(fbl5n.getDocumentType());
-                        tXfOriginAgreementMergeTmpEntity.setDocumentNumber(fbl5n.getDocumentNumber());
-                        if (fbl5n.getPostingDate() != null) {
-                            tXfOriginAgreementMergeTmpEntity.setPostDate(fmt.parse(fbl5n.getPostingDate()));
-                        }
-                        if (tXfOriginAgreementMergeTmpEntity.getWithAmount() != null &&
-                                tXfOriginAgreementMergeTmpEntity.getTaxRate() != null) {
-                            BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
-                                    .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
-                                    .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
-                            tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
-                        }
-                        tXfOriginAgreementMergeTmpEntity.setSource(1);
-                        tXfOriginAgreementMergeTmpEntity.setCreateTime(new Date());
-                        tXfOriginAgreementMergeTmpEntity.setUpdateTime(new Date());
-                        return tXfOriginAgreementMergeTmpEntity;
-                    } catch (Exception e) {
-                        log.warn(e.getMessage(), e);
-                    }
-                    return null;
-                })
+                .map(fbl5n -> convertTXfOriginAgreementMergeEntity(fbl5n))
                 .filter(mergeTmpEntity -> {
                     try {
                         if (mergeTmpEntity == null) {
@@ -229,6 +183,54 @@ public class AgreementFbl5nMergeCommand implements Command {
         if (CollectionUtils.isNotEmpty(newList)) {
             originAgreementMergeService.saveBatch(newList);
         }
+    }
+
+    private TXfOriginAgreementMergeEntity convertTXfOriginAgreementMergeEntity(TXfOriginSapFbl5nEntity fbl5n) {
+        try {
+            TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
+            tXfOriginAgreementMergeTmpEntity.setId(idSequence.nextId());
+            tXfOriginAgreementMergeTmpEntity.setJobId(fbl5n.getJobId());
+            tXfOriginAgreementMergeTmpEntity.setCustomerNo(fbl5n.getAccount());
+            // TODO fbl5n 供应商6D 供应商名称???
+            tXfOriginAgreementMergeTmpEntity.setCustomerName(getCustomer(fbl5n.getJobId(), fbl5n.getReference()));
+            tXfOriginAgreementMergeTmpEntity.setMemo(getMemo6D(fbl5n.getJobId(), fbl5n.getReference()));
+            tXfOriginAgreementMergeTmpEntity.setCompanyCode(fbl5n.getCompanyCode());
+            String amountInDocCurr = fbl5n.getAmountInDocCurr().replace(",", "");
+            if (StringUtils.isNotBlank(amountInDocCurr)) {
+                tXfOriginAgreementMergeTmpEntity.setWithAmount(new BigDecimal(amountInDocCurr));
+            }
+            tXfOriginAgreementMergeTmpEntity.setReasonCode(fbl5n.getReasonCode());
+            if (StringUtils.isBlank(tXfOriginAgreementMergeTmpEntity.getReasonCode())) {
+                tXfOriginAgreementMergeTmpEntity.setReasonCode(getReasonCode(fbl5n.getJobId(), fbl5n.getReference()));
+            }
+            tXfOriginAgreementMergeTmpEntity.setReference(fbl5n.getReference());
+            tXfOriginAgreementMergeTmpEntity.setTaxCode(fbl5n.getTaxCode());
+            BigDecimal taxRate = TXfOriginAgreementBillEntityConvertor.TAX_CODE_TRANSLATOR.get(fbl5n.getTaxCode());
+            tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
+            if (fbl5n.getClearingDate() != null) {
+                tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(fbl5n.getClearingDate()));
+            }
+            tXfOriginAgreementMergeTmpEntity.setDocumentType(fbl5n.getDocumentType());
+            tXfOriginAgreementMergeTmpEntity.setDocumentNumber(fbl5n.getDocumentNumber());
+            if (fbl5n.getPostingDate() != null) {
+                tXfOriginAgreementMergeTmpEntity.setPostDate(fmt.parse(fbl5n.getPostingDate()));
+            }
+            if (tXfOriginAgreementMergeTmpEntity.getWithAmount() != null &&
+                    tXfOriginAgreementMergeTmpEntity.getTaxRate() != null) {
+                BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
+                        .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
+                        .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
+            }
+            tXfOriginAgreementMergeTmpEntity.setSource(1);
+            tXfOriginAgreementMergeTmpEntity.setCreateTime(new Date());
+            tXfOriginAgreementMergeTmpEntity.setUpdateTime(new Date());
+            return tXfOriginAgreementMergeTmpEntity;
+        } catch (Exception e) {
+            log.warn(e.getMessage(), e);
+        }
+        return null;
     }
 
     private String getReasonCode(Integer jobId, String reference) {

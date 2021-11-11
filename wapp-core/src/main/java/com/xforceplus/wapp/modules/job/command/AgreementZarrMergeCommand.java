@@ -146,69 +146,72 @@ public class AgreementZarrMergeCommand implements Command {
 
     private void filter(List<TXfOriginSapZarrEntity> list) {
         List<TXfOriginAgreementMergeEntity> newList = list.parallelStream()
-                .map(zarr -> {
-                    try {
-                        TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
-                        tXfOriginAgreementMergeTmpEntity.setId(idSequence.nextId());
-                        tXfOriginAgreementMergeTmpEntity.setJobId(zarr.getJobId());
-                        tXfOriginAgreementMergeTmpEntity.setCustomerNo(zarr.getCustomerNumber());
-                        tXfOriginAgreementMergeTmpEntity.setCustomerName(zarr.getCustomer());
-                        if (StringUtils.isNotBlank(zarr.getMemo())) {
-                            String memo = zarr.getMemo().replace("V#", "").substring(0, 6);
-                            tXfOriginAgreementMergeTmpEntity.setMemo(memo);
-                            SimpleDateFormat fmt2 = new SimpleDateFormat("yyyy-MM-dd");
-                            String postDate = zarr.getMemo().substring(zarr.getMemo().length() - 10, zarr.getMemo().length());
-                            if (StringUtils.isNotBlank(postDate)) {
-                                tXfOriginAgreementMergeTmpEntity.setPostDate(fmt2.parse(postDate));
-                            }
-                        }
-                        if (StringUtils.isNotBlank(zarr.getInternalInvoiceNo())) {
-                            String companyCode = zarr.getInternalInvoiceNo().substring(0, 4);
-                            tXfOriginAgreementMergeTmpEntity.setCompanyCode(companyCode);
-                        }
-                        if (StringUtils.isNotBlank(zarr.getAmountWithTax())) {
-                            String amountWithTax = zarr.getAmountWithTax().replace(",", "");
-                            tXfOriginAgreementMergeTmpEntity.setWithAmount(new BigDecimal(amountWithTax));
-                        }
-                        if (StringUtils.isNotBlank(zarr.getReasonCode())) {
-                            tXfOriginAgreementMergeTmpEntity.setReasonCode(zarr.getReasonCode().replace(" ", ""));
-                        }
-                        if (StringUtils.isNotBlank(zarr.getContents())) {
-                            String reference = zarr.getContents().substring(zarr.getContents().length() - 10, zarr.getContents().length());
-                            tXfOriginAgreementMergeTmpEntity.setReference(reference);
-                            tXfOriginAgreementMergeTmpEntity.setTaxCode(getTaxCode(zarr.getJobId(), reference));
-                            SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
-                            String deductDate = getDeductDate(zarr.getJobId(), reference);
-                            if (StringUtils.isNotBlank(deductDate)) {
-                                tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(deductDate));
-                            }
-                            tXfOriginAgreementMergeTmpEntity.setDocumentType(getDocumentType(zarr.getJobId(), reference));
-                        }
-                        BigDecimal taxRate = TXfOriginAgreementBillEntityConvertor.TAX_CODE_TRANSLATOR.get(tXfOriginAgreementMergeTmpEntity.getTaxCode());
-                        if (taxRate != null) {
-                            tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
-                        }
-                        tXfOriginAgreementMergeTmpEntity.setDocumentNumber(zarr.getSapAccountingDocument());
-                        if (tXfOriginAgreementMergeTmpEntity.getWithAmount() != null &&
-                                tXfOriginAgreementMergeTmpEntity.getTaxRate() != null) {
-                            BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
-                                    .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
-                                    .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
-                            tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
-                        }
-                        tXfOriginAgreementMergeTmpEntity.setSource(2);
-                        tXfOriginAgreementMergeTmpEntity.setCreateTime(new Date());
-                        tXfOriginAgreementMergeTmpEntity.setUpdateTime(new Date());
-                        return tXfOriginAgreementMergeTmpEntity;
-                    } catch (Exception e) {
-                        log.warn(e.getMessage(), e);
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull).collect(Collectors.toList());
+                .map(zarr -> convertTXfOriginAgreementMergeEntity(zarr))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
             originAgreementMergeService.saveBatch(newList);
         }
+    }
+
+    private TXfOriginAgreementMergeEntity convertTXfOriginAgreementMergeEntity(TXfOriginSapZarrEntity zarr) {
+        try {
+            TXfOriginAgreementMergeEntity tXfOriginAgreementMergeTmpEntity = new TXfOriginAgreementMergeEntity();
+            tXfOriginAgreementMergeTmpEntity.setId(idSequence.nextId());
+            tXfOriginAgreementMergeTmpEntity.setJobId(zarr.getJobId());
+            tXfOriginAgreementMergeTmpEntity.setCustomerNo(zarr.getCustomerNumber());
+            tXfOriginAgreementMergeTmpEntity.setCustomerName(zarr.getCustomer());
+            if (StringUtils.isNotBlank(zarr.getMemo())) {
+                String memo = zarr.getMemo().replace("V#", "").substring(0, 6);
+                tXfOriginAgreementMergeTmpEntity.setMemo(memo);
+                SimpleDateFormat fmt2 = new SimpleDateFormat("yyyy-MM-dd");
+                String postDate = zarr.getMemo().substring(zarr.getMemo().length() - 10, zarr.getMemo().length());
+                if (StringUtils.isNotBlank(postDate)) {
+                    tXfOriginAgreementMergeTmpEntity.setPostDate(fmt2.parse(postDate));
+                }
+            }
+            if (StringUtils.isNotBlank(zarr.getInternalInvoiceNo())) {
+                String companyCode = zarr.getInternalInvoiceNo().substring(0, 4);
+                tXfOriginAgreementMergeTmpEntity.setCompanyCode(companyCode);
+            }
+            if (StringUtils.isNotBlank(zarr.getAmountWithTax())) {
+                String amountWithTax = zarr.getAmountWithTax().replace(",", "");
+                tXfOriginAgreementMergeTmpEntity.setWithAmount(new BigDecimal(amountWithTax));
+            }
+            if (StringUtils.isNotBlank(zarr.getReasonCode())) {
+                tXfOriginAgreementMergeTmpEntity.setReasonCode(zarr.getReasonCode().replace(" ", ""));
+            }
+            if (StringUtils.isNotBlank(zarr.getContents())) {
+                String reference = zarr.getContents().substring(zarr.getContents().length() - 10, zarr.getContents().length());
+                tXfOriginAgreementMergeTmpEntity.setReference(reference);
+                tXfOriginAgreementMergeTmpEntity.setTaxCode(getTaxCode(zarr.getJobId(), reference));
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
+                String deductDate = getDeductDate(zarr.getJobId(), reference);
+                if (StringUtils.isNotBlank(deductDate)) {
+                    tXfOriginAgreementMergeTmpEntity.setDeductDate(fmt.parse(deductDate));
+                }
+                tXfOriginAgreementMergeTmpEntity.setDocumentType(getDocumentType(zarr.getJobId(), reference));
+            }
+            BigDecimal taxRate = TXfOriginAgreementBillEntityConvertor.TAX_CODE_TRANSLATOR.get(tXfOriginAgreementMergeTmpEntity.getTaxCode());
+            if (taxRate != null) {
+                tXfOriginAgreementMergeTmpEntity.setTaxRate(taxRate);
+            }
+            tXfOriginAgreementMergeTmpEntity.setDocumentNumber(zarr.getSapAccountingDocument());
+            if (tXfOriginAgreementMergeTmpEntity.getWithAmount() != null &&
+                    tXfOriginAgreementMergeTmpEntity.getTaxRate() != null) {
+                BigDecimal taxAmount = tXfOriginAgreementMergeTmpEntity.getWithAmount()
+                        .divide(tXfOriginAgreementMergeTmpEntity.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
+                        .multiply(tXfOriginAgreementMergeTmpEntity.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
+                tXfOriginAgreementMergeTmpEntity.setTaxAmount(taxAmount);
+            }
+            tXfOriginAgreementMergeTmpEntity.setSource(2);
+            tXfOriginAgreementMergeTmpEntity.setCreateTime(new Date());
+            tXfOriginAgreementMergeTmpEntity.setUpdateTime(new Date());
+            return tXfOriginAgreementMergeTmpEntity;
+        } catch (Exception e) {
+            log.warn(e.getMessage(), e);
+        }
+        return null;
     }
 
     private String getTaxCode(Integer jobId, String reference) {
