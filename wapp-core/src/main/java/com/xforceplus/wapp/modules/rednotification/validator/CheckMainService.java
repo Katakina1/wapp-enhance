@@ -49,6 +49,8 @@ public class CheckMainService {
             if (!applyTypeOptional.isPresent()) {
                 errorBuilder.append("申请类型为空或者不正确，必须为0—购方申请已抵扣, 1—购方申请未抵扣, 2—销方申请;");
             }
+        }else {
+            errorBuilder.append(" 申请类型 不能为空");
         }
 
         // 校验申请流水号
