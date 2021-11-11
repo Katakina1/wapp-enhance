@@ -116,23 +116,23 @@ public class AgreementBillService extends DeductService{
     public void executeMatch(TXfDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity, Integer targetStatus, List<BlueInvoiceService.MatchRes> matchResList) {
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
-        if (CollectionUtils.isEmpty(matchResList)) {
-            matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),TaxRateTransferEnum.transferTaxRate(tXfSettlementEntity.getTaxRate() )  );
-        }
-        if (CollectionUtils.isEmpty(matchResList)) {
-            NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
-            TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
-            tXfBillDeductEntity.setSellerNo(tXfSettlementEntity.getSellerNo());
-            tXfBillDeductEntity.setPurchaserNo(tXfSettlementEntity.getPurchaserNo());
-            tXfBillDeductEntity.setTaxRate(tXfSettlementEntity.getTaxRate());
-            newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
-            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
-            newExceptionReportEvent.setType(deductionEnum == TXfDeductionBusinessTypeEnum.AGREEMENT_BILL? ExceptionReportTypeEnum.AGREEMENT:ExceptionReportTypeEnum.EPD);
-            applicationContext.publishEvent(newExceptionReportEvent);
-            log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
-            throw new NoSuchInvoiceException();
-        }
         try {
+            if (CollectionUtils.isEmpty(matchResList)) {
+                matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),TaxRateTransferEnum.transferTaxRate(tXfSettlementEntity.getTaxRate() )  );
+            }
+            if (CollectionUtils.isEmpty(matchResList)) {
+                NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+                TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
+                tXfBillDeductEntity.setSellerNo(tXfSettlementEntity.getSellerNo());
+                tXfBillDeductEntity.setPurchaserNo(tXfSettlementEntity.getPurchaserNo());
+                tXfBillDeductEntity.setTaxRate(tXfSettlementEntity.getTaxRate());
+                newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+                newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
+                newExceptionReportEvent.setType(deductionEnum == TXfDeductionBusinessTypeEnum.AGREEMENT_BILL? ExceptionReportTypeEnum.AGREEMENT:ExceptionReportTypeEnum.EPD);
+                applicationContext.publishEvent(newExceptionReportEvent);
+                log.error("{} 类型单据 销方:{}  蓝票不足，匹配失败 ", deductionEnum.getDes(), sellerTaxNo);
+                throw new NoSuchInvoiceException();
+            }
             //匹配税编
             Integer status = matchInfoTransfer(matchResList, tXfSettlementEntity.getSettlementNo(),tXfSettlementEntity.getId(),deductionEnum);
             if(status == TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode()){
@@ -154,7 +154,17 @@ public class AgreementBillService extends DeductService{
             updadte.setId(tXfSettlementEntity.getId());
             updadte.setSettlementStatus(tXfSettlementEntity.getSettlementStatus());
             tXfSettlementDao.updateById(updadte);
-        } catch (Exception e) {
+        }
+        catch (NoSuchInvoiceException n ) {
+            NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
+            TXfBillDeductEntity tXfBillDeductEntity =  tXfBillDeductExtDao.queryOneBillBySettlementNo(tXfSettlementEntity.getSettlementNo());
+            newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
+            newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
+            newExceptionReportEvent.setType( deductionEnum==TXfDeductionBusinessTypeEnum.AGREEMENT_BILL? ExceptionReportTypeEnum.AGREEMENT: ExceptionReportTypeEnum.EPD );
+            applicationContext.publishEvent(newExceptionReportEvent);
+            log.info(" {}单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} 金额 {} 税率 {}",deductionEnum.getDes(),tXfSettlementEntity.getSellerNo(),tXfSettlementEntity.getPurchaserNo(),tXfSettlementEntity.getAmountWithoutTax(),tXfSettlementEntity.getTaxRate());
+        }
+        catch (Exception e) {
             if (CollectionUtils.isNotEmpty(matchResList)) {
                 List<String> invoiceList = matchResList.stream().map(x -> x.getInvoiceCode() + "=---" + x.getInvoiceNo()).collect(Collectors.toList());
                 log.error(" 结算匹配蓝票 回撤匹配信息 单  回撤匹配信息:{},{}", e,invoiceList );
