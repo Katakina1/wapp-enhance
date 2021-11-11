@@ -86,14 +86,21 @@ public class OverdueServiceImpl extends ServiceImpl<OverdueDao, OverdueEntity> {
         }
         log.info("导入数据解析条数:{}", listener.getRows());
         Set<String> taxNos = listener.getValidInvoices().stream().map(OverdueDto::getSellerTaxNo).collect(Collectors.toSet());
+        Set<String> nos = listener.getValidInvoices().stream().map(OverdueDto::getSellerNo).collect(Collectors.toSet());
         Set<String> exist = new LambdaQueryChainWrapper<>(getBaseMapper()).select(OverdueEntity::getSellerTaxNo)
                 .in(OverdueEntity::getSellerTaxNo, taxNos)
+                .isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getType, typeEnum.getValue())
+                .list().stream().map(OverdueEntity::getSellerTaxNo).collect(Collectors.toSet());
+        Set<String> existNos = new LambdaQueryChainWrapper<>(getBaseMapper()).select(OverdueEntity::getSellerTaxNo)
+                .in(OverdueEntity::getSellerTaxNo, nos)
                 .isNull(OverdueEntity::getDeleteFlag)
                 .eq(OverdueEntity::getType, typeEnum.getValue())
                 .list().stream().map(OverdueEntity::getSellerTaxNo).collect(Collectors.toSet());
         List<OverdueDto> list = listener.getValidInvoices().stream()
                 .peek(it -> it.setType(typeEnum.getValue()))
                 .filter(it -> !exist.contains(it.getSellerTaxNo()))
+                .filter(it -> !existNos.contains(it.getSellerNo()))
                 .collect(Collectors.collectingAndThen(Collectors.toCollection(
                         () -> new TreeSet<>(comparing(OverdueDto::getSellerTaxNo))), ArrayList::new));
         log.debug("导入数据新增数据:{}", list);

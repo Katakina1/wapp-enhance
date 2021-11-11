@@ -92,6 +92,7 @@ public class OverdueController {
         val hasExist = new LambdaQueryChainWrapper<>(overdueService.getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag)
                 .eq(OverdueEntity::getSellerTaxNo, overdue.getSellerTaxNo())
+                .eq(OverdueEntity::getSellerNo, overdue.getSellerNo())
                 .eq(OverdueEntity::getType, overdue.getType())
                 .oneOpt();
         if (hasExist.isPresent()) {

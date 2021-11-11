@@ -100,10 +100,8 @@ public class Settlement {
     private Integer settlementStatus;
 
     @ApiModelProperty("税率")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal taxRate;
 
     @ApiModelProperty("更新时间")
-
     private Long updateTime;
 }

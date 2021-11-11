@@ -40,7 +40,7 @@ public class AgreementBillJobGenerator extends AbstractBillJobGenerator {
     private String remotePath;
 
     @Async
-    @Scheduled(cron = "0 0 23 * * ?")
+    @Scheduled(cron = "${agreementBill.scan-cron}")
     @Override
     public void generate() {
         try {

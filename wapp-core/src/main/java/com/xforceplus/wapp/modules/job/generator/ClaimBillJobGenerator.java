@@ -40,7 +40,7 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     private String remotePath;
 
     @Async
-    @Scheduled(cron = "0 0 23 * * ?")
+    @Scheduled(cron = "${claimBill.scan-cron}")
     @Override
     public void generate() {
         try {

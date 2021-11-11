@@ -49,6 +49,8 @@ public class CheckMainService {
             if (!applyTypeOptional.isPresent()) {
                 errorBuilder.append("申请类型为空或者不正确，必须为0—购方申请已抵扣, 1—购方申请未抵扣, 2—销方申请;");
             }
+        }else {
+            errorBuilder.append(" 申请类型 不能为空");
         }
 
         // 校验申请流水号
@@ -94,9 +96,13 @@ public class CheckMainService {
 
     private String checkCompany(ImportInfo importInfo) {
         String taxNo = importInfo.getPurchaserTaxNo();
+        String purchaserName = importInfo.getPurchaserName();
         if (StringUtils.isEmpty(taxNo)){
             return "购方税号必须填写";
+        }else if (StringUtils.isEmpty(purchaserName)){
+            return "购方名称必须填写";
         }
+
 
         String key = "purcherseTaxNo:"+taxNo;
         Object result = redisTemplate.opsForValue().get(key);
@@ -104,13 +110,21 @@ public class CheckMainService {
             if ("false".equals(result)){
                 return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
             }else {
+                // 判断公司名称税号
+                if (!Objects.equals(result,purchaserName)){
+                    return String.format("沃尔玛旗下该购方税号:[%s]对应的名称【%s】实际传入【%s】 ",taxNo,result,purchaserName);
+                }
                 return "" ;
             }
         }
 
         TAcOrgEntity company = companyService.getByTaxNo(taxNo);
         if (company != null){
-            redisTemplate.opsForValue().set(key,"true",60, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(key,company.getTaxName(),60, TimeUnit.SECONDS);
+            // 判断公司名称税号
+            if (!Objects.equals(company.getTaxName(),purchaserName)){
+                return String.format("沃尔玛旗下该购方税号:[%s]对应的名称【%s】实际传入【%s】 ",taxNo,company.getTaxName(),purchaserName);
+            }
             return "" ;
         }else {
             redisTemplate.opsForValue().set(key,"false",60, TimeUnit.SECONDS);
