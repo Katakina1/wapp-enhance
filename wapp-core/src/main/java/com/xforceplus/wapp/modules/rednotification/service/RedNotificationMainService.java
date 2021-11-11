@@ -329,7 +329,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             //更新流水.全部失败
             updateRequestFail(revokeRequest.getSerialNo(), rollbackResponse.getMessage());
-            return  Response.failed(rollbackResponse.getMessage());
+            return  Response.failed("请求失败");
         }
 
     }
