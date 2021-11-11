@@ -129,10 +129,7 @@ public class ClaimBillService extends DeductService{
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
                         tXfBillDeductEntity =  doItemMatch(tXfBillDeductEntity, matchItem);
-                        //新增系统日志
-                        operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
-                                TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
-                                0L,"系统");
+
                         claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
                     } catch (Exception e) {
                         log.error("索赔单 明细匹配 蓝票匹配异常：{}", e);
@@ -224,6 +221,12 @@ public class ClaimBillService extends DeductService{
         tmp.setStatus(status);
         tXfBillDeductExtDao.updateById(tmp);
         tXfBillDeductEntity.setStatus(status);
+        if(status.compareTo(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode()) == 0){
+            //新增系统日志
+            operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                    0L,"系统");
+        }
         return tXfBillDeductEntity;
     }
 
@@ -255,6 +258,10 @@ public class ClaimBillService extends DeductService{
             tXfBillDeductEntityTmp.setId(deductId);
             tXfBillDeductEntityTmp.setStatus(TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
             tXfBillDeductExtDao.updateById(tXfBillDeductEntityTmp);
+            operateLogService.add(deductId, OperateLogEnum.CREATE_DEDUCT,
+                    TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntityTmp.getStatus()).getDesc(),
+                    0L,"系统");
+
         }else{
             /**
              * 依然存在未匹配的税编
