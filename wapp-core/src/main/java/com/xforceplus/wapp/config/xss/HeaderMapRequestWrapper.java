@@ -61,9 +61,11 @@ public class HeaderMapRequestWrapper extends HttpServletRequestWrapper {
 
     public Cookie[] getCookies() {
         Cookie[] cookies = super.getCookies();
-        for (Cookie cookie : cookies) {
-            cookie.setValue(StringUtils.replaceEach((cookie.getValue()),filterArray,new String[]{"","","","","",""}));
-        }
+        Optional.ofNullable(cookies).ifPresent(x->{
+            for (Cookie cookie : x) {
+                cookie.setValue(StringUtils.replaceEach((cookie.getValue()),filterArray,new String[]{"","","","","",""}));
+            }
+        });
         return cookies;
     }
 }
