@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.deduct.service;
 import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.config.TaxRateConfig;
+import com.xforceplus.wapp.enums.OperateLogEnum;
 import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.enums.TXfInvoiceDeductTypeEnum;
@@ -128,7 +129,10 @@ public class ClaimBillService extends DeductService{
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
                         tXfBillDeductEntity =  doItemMatch(tXfBillDeductEntity, matchItem);
-                        saveCreateDeductLog(tXfBillDeductEntity);
+                        //新增系统日志
+                        operateLogService.add(tXfBillDeductEntity.getId(), OperateLogEnum.CREATE_DEDUCT,
+                                TXfDeductStatusEnum.getEnumByCode(tXfBillDeductEntity.getStatus()).getDesc(),
+                                0L,"系统");
                         claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
                     } catch (Exception e) {
                         log.error("索赔单 明细匹配 蓝票匹配异常：{}", e);
