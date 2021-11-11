@@ -85,7 +85,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
             wrapper.eq(TXfSettlementEntity::getSettlementStatus, settlementStatus);
         } else {
             Set<Integer> collect = Arrays.stream(TXfSettlementStatusEnum.values())
-                    .filter(it -> it.getCode() < 8)
+                    .filter(it -> it.getCode() < 8 || it.getValue() == 10)
                     .map(TXfSettlementStatusEnum::getValue).collect(Collectors.toSet());
             wrapper.in(TXfSettlementEntity::getSettlementStatus, collect);
         }

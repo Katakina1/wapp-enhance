@@ -103,6 +103,5 @@ public class Settlement {
     private BigDecimal taxRate;
 
     @ApiModelProperty("更新时间")
-
     private Long updateTime;
 }
