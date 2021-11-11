@@ -51,9 +51,6 @@ public class ExportEPDBillModel {
     @ExcelProperty("文档类型")
     private String agreementDocumentType;
 
-    @ExcelProperty("文档编号")
-    private String agreementDocumentNumber;
-
     /**
      * 含税金额
      */
@@ -83,14 +80,8 @@ public class ExportEPDBillModel {
     @ExcelProperty(value = "发票类型",converter = InvoiceTypeConverter.class)
     private String invoiceType;
 
-    @ExcelProperty("入账日期")
-    private Date verdictDate;
-
-
     @ExcelProperty("批次号")
     private String batchNo;
-
-
 
     @ExcelProperty("备注")
     private String remark;

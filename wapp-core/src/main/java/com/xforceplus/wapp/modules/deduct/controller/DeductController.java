@@ -6,10 +6,8 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfInvoiceStatusEnum;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
-import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.deduct.dto.*;
 import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
@@ -39,9 +37,6 @@ public class DeductController {
 
     @Autowired
     private DeductService deductService;
-
-    @Autowired
-    private RecordInvoiceService recordInvoiceService;
 
 
     @ApiOperation(value = "修改业务单状态")
@@ -88,9 +83,10 @@ public class DeductController {
 
     @ApiOperation(value = "索赔单发票列表详情")
     @GetMapping(value = "invoice/{businessNo}")
-    public R<List<InvoiceDetailResponse>> queryInvoiceList(@ApiParam(value = "业务单号",required = true) @PathVariable String businessNo){
+    public R<List<InvoiceDetailResponse>> queryInvoiceList(@ApiParam(value = "业务单号",required = true) @PathVariable String businessNo,
+                                                           @ApiParam(value = "红蓝标识 -1蓝字发票 0-红字发票") @RequestParam String invoiceColor){
         logger.info("索赔单发票列表详情--请求参数{}", businessNo);
-        return R.ok(deductService.queryDeductInvoiceList(businessNo));
+        return R.ok(deductService.queryDeductInvoiceList(businessNo,invoiceColor));
     }
 
     @ApiOperation(value = "业务单导出")
