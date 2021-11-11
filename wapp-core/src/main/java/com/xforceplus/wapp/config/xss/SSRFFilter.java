@@ -1,11 +1,15 @@
 package com.xforceplus.wapp.config.xss;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.servlet.*;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * Created by SunShiyong on 2021/11/10.
@@ -25,16 +29,7 @@ public class SSRFFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse)servletResponse;
         //HTTP Response Splitting
         HeaderMapRequestWrapper requestWrapper = new HeaderMapRequestWrapper(request);
-        //SSRF
-        if (servletRequest.getParameterMap().containsKey("url")) {
-            String url = request.getParameter("url");
-            if (url.startsWith("/") && !url.startsWith("//")) {
-                response.sendRedirect(url);
-            } else {
-                response.sendRedirect("/");
-            }
-        }
-        filterChain.doFilter(requestWrapper, servletResponse);
+        filterChain.doFilter(requestWrapper, response);
     }
 
     @Override

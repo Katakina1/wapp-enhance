@@ -32,6 +32,8 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -47,7 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class HttpUtils {
+@Component
+public  class HttpUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class);
     private static PoolingHttpClientConnectionManager connMgr;
@@ -60,6 +63,18 @@ public abstract class HttpUtils {
     private static final String APPLICATION_JSON = "application/json; charset=UTF-8";
 
     private static final String CONTENT_TYPE_TEXT_JSON = "text/json";
+
+    private static  List<String> whitelist = new ArrayList<>();
+
+
+    public static String host;
+
+    @Value("${wapp.integration.host.http}")
+    public  void setHost(String host) {
+        HttpUtils.host = host;
+        //添加白名单
+        whitelist.add(host);
+    }
 
     static {
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -82,6 +97,12 @@ public abstract class HttpUtils {
         // 在提交请求之前 测试连接是否可用
         configBuilder.setStaleConnectionCheckEnabled(true);
         requestConfig = configBuilder.build();
+    }
+
+    private static void checkWhitelist(String url) throws RuntimeException{
+        if(!whitelist.contains(url)){
+            throw new RuntimeException("访问地址不在白名单内");
+        }
     }
 
     private static class DefaultTrustManager implements X509TrustManager {
@@ -551,6 +572,7 @@ public abstract class HttpUtils {
     }
 
     public static String doPutHttpRequest(String url, Map<String, String> headerMap,String requestBody) {
+        checkWhitelist(url);
         CloseableHttpClient httpClient = HttpClients.createDefault();
         String entityStr = null;
          CloseableHttpResponse response = null;

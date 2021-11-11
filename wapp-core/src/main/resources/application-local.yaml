@@ -32,7 +32,7 @@ wapp:
 
     host:
       tcp: janus-tcp-inte-tx.xforceplus.com
-      http: https://janus-inte-tx.xforceplus.com
+      http: https://janus-inte-tx.xforceplus.com:443
     sign:
       tax-code: 0618de7ca5a54e44b85293cc7929312e
       splitInvoice: 0618de7ca5a54e44b85293cc7929312e

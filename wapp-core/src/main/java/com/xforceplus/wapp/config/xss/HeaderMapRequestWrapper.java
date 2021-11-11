@@ -1,5 +1,8 @@
 package com.xforceplus.wapp.config.xss;
 
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.*;
@@ -18,50 +21,49 @@ public class HeaderMapRequestWrapper extends HttpServletRequestWrapper {
         super(request);
     }
 
-    private Map<String, String> headerMap = new HashMap<>();
 
-    /**
-     * add a header with given name and value
-     *
-     * @param name
-     * @param value
-     */
-    public void addHeader(String name, String value) {
-        headerMap.put(name, value);
-    }
+    private String[] filterArray = new String[]{"\n","\r","％0d","％0D","％0a","％0A"};
 
     @Override
     public String getHeader(String name) {
-        String headerValue = super.getHeader(name);
-        if (headerMap.containsKey(name)) {
-            headerValue = headerMap.get(name);
+        String value = super.getHeader(name);
+        if (StringUtils.isNotBlank(value)) {
+            value = StringUtils.replaceEach(value,filterArray,new String[]{"","","","","",""});
         }
-        return headerValue;
-    }
-
-    /**
-     * get the Header names
-     */
-    @Override
-    public Enumeration<String> getHeaderNames() {
-        List<String> names = Collections.list(super.getHeaderNames());
-        for (String name : headerMap.keySet()) {
-            names.add(name);
-        }
-        return Collections.enumeration(names);
+        return value;
     }
 
     @Override
-    public Enumeration<String> getHeaders(String name) {
-        List<String> values = Collections.list(super.getHeaders(name));
-        List<String> newValues = new ArrayList<>();
-        for (String value : values) {
-            value = value.replace("\n", "").replace("\r", "").replace("\r\n","");
-            newValues.add(value);
+    public String[] getParameterValues(String name) {
+        String[] parameters = super.getParameterValues(name);
+        if (parameters == null || parameters.length == 0) {
+            return null;
         }
-        if (headerMap.containsKey(name)) {
-            newValues = Arrays.asList(headerMap.get(name));
+        for (int i = 0; i < parameters.length; i++) {
+            parameters[i] = StringUtils.replaceEach((parameters[i]),filterArray,new String[]{"","","","","",""});
         }
-        return Collections.enumeration(newValues);
+        return parameters;
+    }
+
+    @Override
+    public Map<String, String[]> getParameterMap() {
+        Map<String, String[]> map = new LinkedHashMap<>();
+        Map<String, String[]> parameters = super.getParameterMap();
+        for (String key : parameters.keySet()) {
+            String[] values = parameters.get(key);
+            for (int i = 0; i < values.length; i++) {
+                values[i] = StringUtils.replaceEach((values[i]),filterArray,new String[]{"","","","","",""});
+            }
+            map.put(key, values);
+        }
+        return map;
+    }
+
+    public Cookie[] getCookies() {
+        Cookie[] cookies = super.getCookies();
+        for (Cookie cookie : cookies) {
+            cookie.setValue(StringUtils.replaceEach((cookie.getValue()),filterArray,new String[]{"","","","","",""}));
+        }
+        return cookies;
     }
 }
