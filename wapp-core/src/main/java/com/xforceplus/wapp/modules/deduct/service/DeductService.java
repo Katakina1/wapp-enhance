@@ -550,6 +550,7 @@ public class DeductService   {
                 tXfSettlementItemEntity.setUpdateUser(tXfSettlementItemEntity.getCreateUser());
                 tXfSettlementItemEntity.setThridId(tXfBillDeductItemEntity.getId());
                 tXfSettlementItemEntity = checkItem(tXfSettlementItemEntity);
+                tXfSettlementItemEntity = checkItemName(tXfSettlementItemEntity);
                 if (tmpStatus < tXfSettlementItemEntity.getItemFlag() ) {
                     tmpStatus = tXfSettlementItemEntity.getItemFlag();
                 }
@@ -1019,6 +1020,21 @@ public class DeductService   {
         if (StringUtils.isEmpty(tXfSettlementItemEntity.getGoodsTaxNo())) {
             tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
         }
+        return tXfSettlementItemEntity;
+    }
+
+    /**
+     * 结算单明细校验
+     * @param tXfSettlementItemEntity
+     * @return
+     */
+    public TXfSettlementItemEntity checkItemName(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+        StringBuffer stringBuffer = new StringBuffer("*");
+        if (StringUtils.isEmpty(tXfSettlementItemEntity.getItemShortName())) {
+            return tXfSettlementItemEntity;
+        }
+        stringBuffer.append(tXfSettlementItemEntity.getItemShortName()).append("*").append(tXfSettlementItemEntity.getItemSpec());
+        tXfSettlementItemEntity.setItemName( stringBuffer.toString());
         return tXfSettlementItemEntity;
     }
 

@@ -164,6 +164,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
                 tmp.setItemFlag(TXfSettlementItemFlagEnum.WAIT_MATCH_TAX_CODE.getCode());
             }
             if (tmpStatus != tmp.getItemFlag()) {
+                tmp = deductService.checkItemName(tmp);
                 tXfSettlementItemDao.updateById(tmp);
             }
         }
