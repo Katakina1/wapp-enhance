@@ -49,9 +49,6 @@ public class SpeclialCompanyImportListener extends AnalysisEventListener<Special
         if(StringUtils.isEmpty(SpecialCompanyImportDto.getSupplier6d())){
             builder.append("供应商6D编号不能为空");
         }
-        if(StringUtils.isEmpty(SpecialCompanyImportDto.getSapNo())){
-            builder.append("SAP编号不能为空");
-        }
         if(StringUtils.isEmpty(SpecialCompanyImportDto.getCompanyName())){
             builder.append("供应商名称不能为空");
         }
