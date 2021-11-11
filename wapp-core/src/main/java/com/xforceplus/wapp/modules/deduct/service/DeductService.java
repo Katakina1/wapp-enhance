@@ -904,19 +904,27 @@ public class DeductService   {
         return flag;
     }
 
-
-
-    public List<InvoiceDetailResponse>  queryDeductInvoiceList(String businessNo){
-        QueryWrapper<TXfBillDeductInvoiceEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_NO,businessNo);
-        List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceEntities = tXfBillDeductInvoiceDao.selectList(wrapper);
-        InvoiceDetailResponse response;
-        List<InvoiceDetailResponse> list = new ArrayList<>();
-        for (TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity : tXfBillDeductInvoiceEntities) {
-            response = recordInvoiceService.queryInvoiceByUuid(tXfBillDeductInvoiceEntity.getInvoiceCode() + tXfBillDeductInvoiceEntity.getInvoiceNo());
-            list.add(response);
+    /**
+     * 根据业务单号查询发票，当是红票时传结算单号，当是蓝票时并且是索赔单时传业务单号
+     * @param businessNo
+     * @param invoiceColor
+     * @return List
+     */
+    public List<InvoiceDetailResponse>  queryDeductInvoiceList(String businessNo,String invoiceColor){
+        List<InvoiceDetailResponse> response = new ArrayList<>();
+        if("0".equals(invoiceColor)){
+            response = recordInvoiceService.queryInvoicesBySettlementNo(businessNo,InvoiceStatusEnum.INVOICE_STATUS_NORMAL.getCode(),invoiceColor,null);
+        }else{
+            QueryWrapper<TXfBillDeductInvoiceEntity> wrapper = new QueryWrapper<>();
+            wrapper.eq(TXfBillDeductInvoiceEntity.BUSINESS_NO,businessNo);
+            List<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceEntities = tXfBillDeductInvoiceDao.selectList(wrapper);
+            InvoiceDetailResponse invoiceDetailResponse;
+            for (TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity : tXfBillDeductInvoiceEntities) {
+                invoiceDetailResponse = recordInvoiceService.queryInvoiceByUuid(tXfBillDeductInvoiceEntity.getInvoiceCode() + tXfBillDeductInvoiceEntity.getInvoiceNo());
+                response.add(invoiceDetailResponse);
+            }
         }
-        return list;
+        return response;
     }
 
     /**
