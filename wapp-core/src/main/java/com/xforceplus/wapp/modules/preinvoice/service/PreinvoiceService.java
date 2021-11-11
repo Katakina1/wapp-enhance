@@ -361,7 +361,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         }
         billInfo.setBillItems(billItems);
         SplitRule splitRule =    JSONObject.parseObject(RULE_INFO, SplitRule.class);
-        splitRule.setInvoiceLimit(BigDecimal.valueOf(Objects.isNull(tAcOrgEntity) ||Objects.isNull(tAcOrgEntity.getQuota())?10000:tAcOrgEntity.getQuota() ));
+        splitRule.setInvoiceLimit(BigDecimal.valueOf((Objects.isNull(tAcOrgEntity) || Objects.isNull(tAcOrgEntity.getQuota()))?10000:tAcOrgEntity.getQuota() ));
         createPreInvoiceParam.setBillInfo(billInfo);
         createPreInvoiceParam.setRule(splitRule);
         createPreInvoiceParam.setRoutingKey("12");
