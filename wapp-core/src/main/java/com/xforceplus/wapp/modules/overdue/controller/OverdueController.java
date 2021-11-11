@@ -91,11 +91,14 @@ public class OverdueController {
         long start = System.currentTimeMillis();
         val hasExist = new LambdaQueryChainWrapper<>(overdueService.getBaseMapper())
                 .isNull(OverdueEntity::getDeleteFlag)
-                .eq(OverdueEntity::getSellerTaxNo, overdue.getSellerTaxNo())
-                .eq(OverdueEntity::getSellerNo, overdue.getSellerNo())
                 .eq(OverdueEntity::getType, overdue.getType())
-                .oneOpt();
-        if (hasExist.isPresent()) {
+                .eq(OverdueEntity::getSellerTaxNo, overdue.getSellerTaxNo())
+                .or()
+                .isNull(OverdueEntity::getDeleteFlag)
+                .eq(OverdueEntity::getType, overdue.getType())
+                .eq(OverdueEntity::getSellerNo, overdue.getSellerNo())
+                .count();
+        if (hasExist > 0) {
             return R.fail("配置已存在");
         }
         OverdueEntity map = overdueConverter.map(overdue, UserUtil.getUserName());
