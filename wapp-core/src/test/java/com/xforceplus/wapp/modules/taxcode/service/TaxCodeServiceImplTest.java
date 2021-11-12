@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.taxcode.service;
 
 import com.xforceplus.wapp.BaseUnitTest;
+import com.xforceplus.wapp.modules.taxcode.dto.TaxCodeDto;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class TaxCodeServiceImplTest extends BaseUnitTest {
 
     @Test
     public void getTaxCodeByItemNo() {
-        Optional<TaxCode> taxCodeByItemNo = taxCodeService.getTaxCodeByItemNo("");
+        Optional<TaxCodeDto> taxCodeByItemNo = taxCodeService.getTaxCodeByItemNo("");
         System.out.println(taxCodeByItemNo);
     }
 

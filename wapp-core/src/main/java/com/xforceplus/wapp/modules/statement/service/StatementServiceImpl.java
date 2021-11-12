@@ -165,6 +165,7 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
         val page = new LambdaQueryChainWrapper<>(preinvoiceService.getBaseMapper())
                 .eq(TXfPreInvoiceEntity::getSettlementNo, settlementNo)
                 .ne(TXfPreInvoiceEntity::getPreInvoiceStatus, TXfPreInvoiceStatusEnum.FINISH_SPLIT.getCode())
+                .ne(TXfPreInvoiceEntity::getPreInvoiceStatus, TXfPreInvoiceStatusEnum.DESTROY.getCode())
                 .page(new Page<>(current, size));
         log.debug("待开票列表查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(preInvoiceConverter.map(page.getRecords()), page);

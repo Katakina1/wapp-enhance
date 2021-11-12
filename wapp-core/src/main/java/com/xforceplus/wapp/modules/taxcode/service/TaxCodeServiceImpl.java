@@ -9,6 +9,7 @@ import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.client.WappDb2Client;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.modules.taxcode.converters.TaxCodeConverter;
+import com.xforceplus.wapp.modules.taxcode.dto.TaxCodeDto;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
 import com.xforceplus.wapp.repository.dao.TaxCodeDao;
 import com.xforceplus.wapp.repository.entity.TaxCodeEntity;
@@ -69,13 +70,15 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
         return Tuple.of(taxCodeConverter.map(page.getRecords()), page);
     }
 
-    public Optional<TaxCode> getTaxCodeByItemNo(@NonNull String itemNo) {
+    public Optional<TaxCodeDto> getTaxCodeByItemNo(@NonNull String itemNo) {
         log.debug("通过itemNo[{}]查询税编", itemNo);
-        Function<String, TaxCode> findTaxCode = (no) -> new LambdaQueryChainWrapper<>(getBaseMapper())
+        Function<String, TaxCodeDto> findTaxCode = (no) -> new LambdaQueryChainWrapper<>(getBaseMapper())
                 .isNull(TaxCodeEntity::getDeleteFlag)
                 .eq(TaxCodeEntity::getItemNo, no)
-                .oneOpt().map(taxCodeConverter::map).orElse(null);
-        TaxCode taxCode = findTaxCode.apply(itemNo);
+                .oneOpt().map(it -> taxCodeConverter.map(it,
+                        this.searchTaxCode(it.getGoodsTaxNo(), null).map(m -> m.get(0).getTaxShortName()).get())
+                ).orElse(null);
+        TaxCodeDto taxCode = findTaxCode.apply(itemNo);
         if (Objects.isNull(taxCode)) {
             taxCode = wappDb2Client.getItemNo(itemNo).map(findTaxCode).orElse(null);
         }
