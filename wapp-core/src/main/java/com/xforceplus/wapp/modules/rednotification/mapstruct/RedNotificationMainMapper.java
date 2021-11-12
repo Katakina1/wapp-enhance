@@ -53,6 +53,8 @@ public interface RedNotificationMainMapper {
 
 
     @Mapping(target = "serialNo", source = "sellerNumber")
+    @Mapping(target = "applyPerson", source = "userName")
+    @Mapping(target = "applyPersonTel", source = "tel")
     RedNotificationMain importInfoToMainEntity(ImportInfo importInfo);
 
     List<RedNotificationItem> importInfoListToItemEntityList(List<ImportInfo> importInfoList);
