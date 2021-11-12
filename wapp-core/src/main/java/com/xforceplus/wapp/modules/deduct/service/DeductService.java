@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
@@ -41,6 +42,7 @@ import com.xforceplus.wapp.service.CommonMessageService;
 import com.xforceplus.wapp.threadpool.ThreadPoolManager;
 import com.xforceplus.wapp.threadpool.callable.ExportDeductCallable;
 import com.xforceplus.wapp.util.CodeGenerator;
+import io.vavr.control.Either;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,6 +125,7 @@ public class DeductService   {
 
     @Autowired
     private RecordInvoiceService recordInvoiceService;
+
     /**
      * 接收索赔明细
      * 会由不同线程调用，每次调用，数据不会重复，由上游保证
@@ -953,7 +956,6 @@ public class DeductService   {
                         tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
                         tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getAmountWithoutTax().add(tXfSettlementItemEntity.getTaxAmount()));
-
                         tXfSettlementItemEntity.setCreateUser(0l);
                         tXfSettlementItemEntity.setUpdateUser(0l);
                         tXfSettlementItemEntity.setId(idSequence.nextId());
@@ -1005,6 +1007,22 @@ public class DeductService   {
         return status;
     }
 
+    public Map<String, TaxCodeBean> queryTaxCode(List<BlueInvoiceService.InvoiceItem> invoiceItems) {
+        Map<String, BlueInvoiceService.InvoiceItem> map = invoiceItems.stream().collect(Collectors.toMap(BlueInvoiceService.InvoiceItem::getGoodsName, invoiceItem -> invoiceItem));
+        map.keySet().stream().map(key -> {
+            Either<String, List<TaxCodeBean>> result = taxCodeService.searchTaxCode(null, key);
+            if (result.isRight()) {
+                BlueInvoiceService.InvoiceItem tmpInvoce = map.get(key);
+                List<TaxCodeBean> taxCodeBeans = result.get();
+                if (CollectionUtils.isEmpty(taxCodeBeans)) {
+                    return null;
+                }
+            }
+            return "TaxCodeBean";
+        }).collect(Collectors.toList());
+
+        return null;
+    }
     /**
      * 结算单明细校验
      * @param tXfSettlementItemEntity
