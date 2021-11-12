@@ -230,10 +230,13 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
      * @return R
      */
     public InvoiceDetailResponse queryInvoiceByUuid(String uuid){
+        InvoiceDetailResponse response = new InvoiceDetailResponse();
         QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TDxRecordInvoiceEntity.UUID,uuid);
         TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectOne(wrapper);
-        InvoiceDetailResponse response = new InvoiceDetailResponse();
+        if(entity == null){
+            return null;
+        }
         List<InvoiceDetail> list = queryInvoiceDetailByUuid(uuid);
         response.setItems(list);
         BeanUtil.copyProperties(entity,response);

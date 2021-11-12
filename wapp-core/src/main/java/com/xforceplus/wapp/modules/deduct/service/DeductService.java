@@ -925,7 +925,9 @@ public class DeductService   {
             InvoiceDetailResponse invoiceDetailResponse;
             for (TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity : tXfBillDeductInvoiceEntities) {
                 invoiceDetailResponse = recordInvoiceService.queryInvoiceByUuid(tXfBillDeductInvoiceEntity.getInvoiceCode() + tXfBillDeductInvoiceEntity.getInvoiceNo());
-                response.add(invoiceDetailResponse);
+                if(invoiceDetailResponse != null){
+                    response.add(invoiceDetailResponse);
+                }
             }
         }
         return response;

@@ -136,6 +136,14 @@ public class CheckMainService {
     private String checkGoodsTaxNo(ImportInfo importInfo) {
         StringBuilder errorBuilder = new StringBuilder();
         String goodsTaxNo = importInfo.getGoodsTaxNo();
+        if (StringUtils.isEmpty(goodsTaxNo)){
+            errorBuilder.append("税收分类编码必填");
+            return errorBuilder.toString();
+        }else if (goodsTaxNo.length() != 19){
+            errorBuilder.append("税收分类编码长度必须为19位");
+            return errorBuilder.toString();
+        }
+
         if(goodsTaxNo.startsWith("6")){
             errorBuilder.append("税收分类编码不能以6开头;");
         }else{
@@ -149,6 +157,10 @@ public class CheckMainService {
                     importInfo.setGoodsNoVer(taxCodeBean.getTaxCodeVersion());
 
                    String cargoName = importInfo.getGoodsName();
+                   if (StringUtils.isEmpty(cargoName)){
+                       errorBuilder.append("货物及服务名称必填");
+                   }
+
                     if(!StringUtils.isEmpty(cargoName) && !cargoName.matches("^\\*\\W+\\*\\W*")){
                         cargoName = new StringBuilder("*").append(taxCodeBean.getTaxShortName()).append("*").append(cargoName).toString();
                         if(cargoName.length()>200){
@@ -158,6 +170,8 @@ public class CheckMainService {
                         }
                     }
                 }
+            }else {
+                errorBuilder.append("税编库未查询到有效税收分类编码，当前填写值为【").append(goodsTaxNo).append("】;");
             }
         }
 

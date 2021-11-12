@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
@@ -97,6 +98,7 @@ public class WeekDaysService extends ServiceImpl<TXfMatchWeekdaysDao, TXfMatchWe
             List<TXfMatchWeekdaysEntity> addList = validList.stream().filter(x -> Objects.isNull(map.get(x.getWeekdays()))).collect(Collectors.toList());
             addList.stream().forEach(e -> {
                 e.setCreateUser(UserUtil.getLoginName());
+                e.setCreateTime(DateUtils.getNowDate());
             });
 
             boolean save = saveOrUpdateBatch(addList);

@@ -189,6 +189,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
                         .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
                         // 供应商6D
                         .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, memo)
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED)
         );
     }
 

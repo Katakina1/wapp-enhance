@@ -42,14 +42,14 @@ public class FilterConfig {
         return registration;
     }
 
-    @Bean
-    public FilterRegistrationBean ssrfFilterRegistration() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setDispatcherTypes(DispatcherType.REQUEST);
-        registration.setFilter(new SSRFFilter());
-        registration.addUrlPatterns("/*");
-        registration.setName("ssrfFilter");
-        registration.setOrder(Integer.MAX_VALUE-2);
-        return registration;
-    }
+//    @Bean
+//    public FilterRegistrationBean ssrfFilterRegistration() {
+//        FilterRegistrationBean registration = new FilterRegistrationBean();
+//        registration.setDispatcherTypes(DispatcherType.REQUEST);
+//        registration.setFilter(new SSRFFilter());
+//        registration.addUrlPatterns("/*");
+//        registration.setName("ssrfFilter");
+//        registration.setOrder(Integer.MAX_VALUE-2);
+//        return registration;
+//    }
 }
