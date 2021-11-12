@@ -92,8 +92,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     private static final String APPLY_REDNOTIFICATION_KEY = "apply_rednotification_key";
     private static final String EXPORT_REDNOTIFICATION_KEY = "export_rednotification_key";
 
-    @Value("${wapp.rednotification.maxApply}")
-    private Integer maxApply;
+//    @Value("${wapp.rednotification.maxApply}")
+    private Integer maxApply = 50;
 
     public static final int MAX_DETAIL_SIZE = 8;
 
@@ -186,7 +186,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             }
         }
 
-        List<List<TXfRedNotificationEntity>> partition = Lists.partition(filterData, 50);
+        List<List<TXfRedNotificationEntity>> partition = Lists.partition(filterData, 25);
         if (partition.size()>1){
 //            CompletableFuture<Response> cfA = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(0),request));
 //            CompletableFuture<Response> cfB = CompletableFuture.supplyAsync(() -> applyByBatch(partition.get(1),request));

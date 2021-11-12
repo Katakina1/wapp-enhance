@@ -64,8 +64,9 @@ public  class HttpUtils {
 
     private static final String CONTENT_TYPE_TEXT_JSON = "text/json";
 
-    private static  List<String> whitelist = new ArrayList<>();
+    private static final String[]  filterArray = new String[]{"\n","\r","％0d","％0D","％0a","％0A"};
 
+    private static  List<String> whitelist = new ArrayList<>();
 
     public static String host;
 
@@ -97,12 +98,6 @@ public  class HttpUtils {
         // 在提交请求之前 测试连接是否可用
         configBuilder.setStaleConnectionCheckEnabled(true);
         requestConfig = configBuilder.build();
-    }
-
-    private static void checkWhitelist(String url) throws RuntimeException{
-        if(!whitelist.contains(url)){
-            throw new RuntimeException("访问地址不在白名单内");
-        }
     }
 
     private static class DefaultTrustManager implements X509TrustManager {
@@ -571,21 +566,25 @@ public  class HttpUtils {
         return urlSb.toString();
     }
 
-    public static String doPutHttpRequest(String url, Map<String, String> headerMap,String requestBody) {
-        checkWhitelist(url);
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+    public static String doPutHttpRequest(String r, Map<String, String> hm,String requestBody) {
+        //修复SSRF漏洞
+        if(!whitelist.contains(r)){
+            throw new RuntimeException("访问地址不在白名单内");
+        }
+        CloseableHttpClient hc = HttpClients.createDefault();
         String entityStr = null;
          CloseableHttpResponse response = null;
          try {
-                 HttpPut post = new HttpPut(url);
+                 HttpPut post = new HttpPut(r);
                  //添加头部信息
-                 for (Map.Entry<String, String> header : headerMap.entrySet()) {
-                         post.addHeader(header.getKey(), header.getValue());
-                     }
+                 for (Map.Entry<String, String> h : hm.entrySet()) {
+                     String value = StringUtils.replaceEach(h.getValue(), filterArray, new String[]{"", "", "", "", "", ""});
+                     post.addHeader(h.getKey(), value);
+                 }
                  HttpEntity entity = new StringEntity(requestBody,"Utf-8");
 
                  post.setEntity(entity);
-                 response = httpClient.execute(post);
+                 response = hc.execute(post);
                  // 获得响应的实体对象
                  HttpEntity httpEntity = response.getEntity();
                 // 使用Apache提供的工具类进行转换成字符串
