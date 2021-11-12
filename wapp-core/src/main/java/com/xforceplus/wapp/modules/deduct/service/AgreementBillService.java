@@ -84,12 +84,6 @@ public class AgreementBillService extends DeductService{
                     Date expireDate =    DateUtils.addDate(DateUtils.getNow(), 0-expireScale);
                     excuteMergeAndMatch(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, expireDate, targetStatus);
                 } catch (NoSuchInvoiceException n ) {
-                    NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
-                    newExceptionReportEvent.setDeduct(tmp);
-                    newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
-                    newExceptionReportEvent.setType(deductionEnum == TXfDeductionBusinessTypeEnum.EPD_BILL?ExceptionReportTypeEnum.EPD:ExceptionReportTypeEnum.AGREEMENT);
-                    applicationContext.publishEvent(newExceptionReportEvent);
-                    nosuchInvoiceSeller.put(tmp.getSellerNo(), negativeBillAmount.add(tmp.getAmountWithoutTax()));
                     log.info(" {} 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {}",deductionEnum.getDes(),sellerNo,purchaserNo);
                 }
                 catch (Exception e) {
