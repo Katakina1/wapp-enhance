@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.weekdays.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -11,7 +12,9 @@ import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.weekdays.dto.TXfMatchWeekdaysDto;
+import com.xforceplus.wapp.modules.weekdays.dto.WeekDaysImportDto;
 import com.xforceplus.wapp.modules.weekdays.service.WeekDaysService;
+import com.xforceplus.wapp.repository.entity.TXfMatchWeekdaysEntity;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
@@ -69,6 +72,30 @@ public class WeekDaysController {
         weekDaysService.removeByIds(Arrays.asList(ids));
         log.info("上传记录批量批量删除,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok("删除成功");
+    }
+
+    @ApiOperation("上传记录批量批量保存")
+    @PostMapping("/add")
+    public R<String> add(@RequestBody List<TXfMatchWeekdaysEntity> list) {
+        if (list == null || list.size() == 0) {
+            return R.fail("请选中记录后保存");
+        }
+        long start = System.currentTimeMillis();
+        List<Date> weekList = list.stream().map(TXfMatchWeekdaysEntity::getWeekdays).collect(Collectors.toList());
+        QueryWrapper wrapperCode = new QueryWrapper<>();
+        wrapperCode.in(TXfMatchWeekdaysEntity.WEEKDAYS, weekList);
+        List<TXfMatchWeekdaysEntity> resultList = weekDaysService.list(wrapperCode);
+        Map<Date, Long> map = new HashMap<>();
+        resultList.stream().forEach(code -> {
+            map.put(code.getWeekdays(), code.getId());
+        });
+        List<TXfMatchWeekdaysEntity> addList = list.stream().filter(x -> Objects.isNull(map.get(x.getWeekdays()))).collect(Collectors.toList());
+        addList.stream().forEach(e -> {
+            e.setCreateUser(UserUtil.getLoginName());
+            e.setCreateTime(DateUtils.getNowDate());
+        });
+        weekDaysService.saveBatch(addList);
+        return R.ok("保存成功");
     }
 
     @ApiOperation("工作日信息导入")
