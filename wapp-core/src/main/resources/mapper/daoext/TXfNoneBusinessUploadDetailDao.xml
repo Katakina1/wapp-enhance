@@ -36,6 +36,7 @@
         <result column="update_user" property="updateUser"/>
         <result column="invoice_date" property="invoiceDate"/>
         <result column="submitFlag" property="submit_flag"/>
+        <result column="supplierId" property="supplie_id"/>
 
     </resultMap>
 
@@ -43,7 +44,7 @@
         select t.*,t1.jvcode as companyCode ,t1.invoice_amount,t1.tax_amount,t1.total_amount
         ,t1.confirm_date as authDate ,t1.confirm_status as authStatus,t1.invoice_status,t1.xf_name as sellerTaxName,t1.xf_tax_no as sellerTaxNo,
         t1.gf_tax_no as purTaxNo ,t1.gf_name as purTaxName
-        ,t1.sap,t1.tax_rate
+        ,t1.sap,t1.tax_rate,t1.venderid as supplie_id
         from
         t_xf_none_business_upload_detail t left join t_dx_record_invoice t1
 
@@ -78,8 +79,8 @@
             and t.create_time &gt; #{entity.createDateEnd}
         </if>
 
-        <if test="entity.venderId != null and entity.venderId != ''">
-            and t1.venderid = #{entity.venderId}
+        <if test="entity.supplierId != null and entity.supplierId != ''">
+            and t1.venderid = #{entity.supplierId}
         </if>
 
         <if test="entity.submitFlag != null and entity.submitFlag != ''">
@@ -93,7 +94,9 @@
         <if test="entity.ofdStatus != null and entity.ofdStatus != ''">
             and t.ofd_status = #{entity.ofdStatus}
         </if>
-
+        <if test="entity.invoiceType != null and entity.invoiceType != ''">
+            and t.invoice_type = #{entity.invoiceType}
+        </if>
         <if test="entity.invoiceStoreNo != null and entity.invoiceStoreNo != ''">
             and t.invoice_store_no = #{entity.invoiceStoreNo}
         </if>
@@ -104,7 +107,7 @@
         select t.*,t1.jvcode as companyCode,t1.invoice_amount,t1.tax_amount,t1.total_amount
         ,t1.confirm_date as authDate ,t1.confirm_status as authStatus,t1.invoice_status,t1.xf_name as sellerTaxName,t1.xf_tax_no as sellerTaxNo,
         t1.gf_tax_no as purTaxNo ,t1.gf_name as purTaxName
-        ,t1.sap,t1.tax_rate
+        ,t1.sap,t1.tax_rate,t1.venderid as supplieId
         from
         t_xf_none_business_upload_detail t left join t_dx_record_invoice t1
 

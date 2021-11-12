@@ -211,6 +211,11 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
      */
     private String sap;
 
+    /**
+     * supplieId
+     */
+    private String supplierId;
+
 
 
 }

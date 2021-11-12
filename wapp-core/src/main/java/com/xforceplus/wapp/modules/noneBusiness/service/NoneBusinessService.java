@@ -14,6 +14,7 @@ import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
+import com.xforceplus.wapp.enums.exceptionreport.NoneBusinessInvoiceTypeExportEnum;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
 import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
@@ -128,7 +129,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             addEntity.setSourceUploadId(data.getUploadId());
             addEntity.setCreateUser(UserUtil.getLoginName());
             addEntity.setSourceUploadPath(data.getUploadPath());
-            addEntity.setCreateTime(DateUtils.getNowDate());
+            addEntity.setCreateTime(new Date());
             //发送验签
             OfdResponse response = backFillService.signOfd(ofdEntity, entity.getBussinessNo());
             //验签成功
