@@ -1048,7 +1048,7 @@ public class DeductService   {
      * @param tXfSettlementItemEntity
      * @return
      */
-    public TXfSettlementItemEntity checkItemName(TXfSettlementItemEntity tXfSettlementItemEntity ) {
+    public static TXfSettlementItemEntity checkItemName(TXfSettlementItemEntity tXfSettlementItemEntity ) {
         StringBuffer stringBuffer = new StringBuffer("*");
         if (StringUtils.isEmpty(tXfSettlementItemEntity.getItemShortName())) {
             return tXfSettlementItemEntity;
