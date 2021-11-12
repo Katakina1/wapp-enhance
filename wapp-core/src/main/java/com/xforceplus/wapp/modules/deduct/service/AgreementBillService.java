@@ -122,10 +122,7 @@ public class AgreementBillService extends DeductService{
             }
             if (CollectionUtils.isEmpty(matchResList)) {
                 NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
-                TXfBillDeductEntity tXfBillDeductEntity = new TXfBillDeductEntity();
-                tXfBillDeductEntity.setSellerNo(tXfSettlementEntity.getSellerNo());
-                tXfBillDeductEntity.setPurchaserNo(tXfSettlementEntity.getPurchaserNo());
-                tXfBillDeductEntity.setTaxRate(tXfSettlementEntity.getTaxRate());
+                TXfBillDeductEntity tXfBillDeductEntity =  tXfBillDeductExtDao.queryOneBillBySettlementNo(tXfSettlementEntity.getSettlementNo());
                 newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
                 newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
                 newExceptionReportEvent.setType(deductionEnum == TXfDeductionBusinessTypeEnum.AGREEMENT_BILL? ExceptionReportTypeEnum.AGREEMENT:ExceptionReportTypeEnum.EPD);
