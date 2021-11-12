@@ -33,7 +33,7 @@ import com.xforceplus.wapp.modules.overdue.service.DefaultSettingServiceImpl;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
+import com.xforceplus.wapp.modules.taxcode.dto.TaxCodeDto;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
@@ -192,9 +192,9 @@ public class DeductService   {
             return entity;
         }
         try {
-            Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+            Optional<TaxCodeDto> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
             if (taxCodeOptional.isPresent()) {
-                TaxCode taxCode = taxCodeOptional.get();
+                TaxCodeDto taxCode = taxCodeOptional.get();
                 entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
                 entity.setTaxPre(taxCode.getTaxPre());
                 entity.setTaxPreCon(taxCode.getTaxPreCon());
@@ -220,9 +220,9 @@ public class DeductService   {
             if (StringUtils.isNotEmpty(entity.getGoodsTaxNo())) {
                 return entity;
             }
-            Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+            Optional<TaxCodeDto> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
             if (taxCodeOptional.isPresent()) {
-                TaxCode taxCode = taxCodeOptional.get();
+                TaxCodeDto taxCode = taxCodeOptional.get();
                 entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
                 entity.setTaxPre(taxCode.getTaxPre());
                 entity.setTaxPreCon(taxCode.getTaxPreCon());
@@ -245,7 +245,7 @@ public class DeductService   {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
-                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
+               // unlockAndCancel(deductionEnum, tXfBillDeductEntity);
 
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
