@@ -23,11 +23,14 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -107,5 +110,16 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
             }
             return result;
         }
+    }
+
+    public Either<String, List<TaxCodeBean>> searchTaxCode(@Nullable String taxRate, @Nullable String taxCode, @Nullable String keyWord) {
+        Either<String, List<TaxCodeBean>> either = searchTaxCode(taxCode, keyWord);
+        if (StringUtils.isBlank(taxRate)) {
+            return either;
+        }
+        return either.map(it -> it.stream().filter(tc -> {
+            tc.setTaxRate(taxRate);
+            return tc.getTaxRateList().contains(taxRate);
+        }).collect(Collectors.toList()));
     }
 }
