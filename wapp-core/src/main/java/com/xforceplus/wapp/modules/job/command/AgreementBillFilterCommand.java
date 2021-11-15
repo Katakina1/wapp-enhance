@@ -148,7 +148,7 @@ public class AgreementBillFilterCommand implements Command {
                             originAgreementMergeTmp.setTaxAmount(taxAmount);
                             return convertDeductBillBaseData(originAgreementMergeTmp, context);
                         }
-                        log.warn("协议单号[%s]税率为空", mergeTmpEntity.getReference());
+                        log.warn("协议单号[{}]税率为空", mergeTmpEntity.getReference());
                     } catch (Exception e) {
                         log.warn(e.getMessage(), e);
                     }
