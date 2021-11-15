@@ -99,8 +99,8 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/roll-back")
-    public Response rollback(@RequestBody RedNotificationApplyReverseRequest request){
-        return  rednotificationService.rollback(request);
+    public Response rollback(@RequestBody RedNotificationApplyReverseRequest r){
+        return  rednotificationService.rollback(r);
     }
 
     /**
@@ -111,8 +111,8 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/confirm-reject")
-    public Response<String> operation(@RequestBody RedNotificationConfirmRejectRequest request){
-        return rednotificationService.operation(request);
+    public Response<String> operation(@RequestBody RedNotificationConfirmRejectRequest r){
+        return rednotificationService.operation(r);
     }
 
     @ApiOperation(value = "红字信息表导入", notes = "", response = Response.class, tags = {"red-notification",})
