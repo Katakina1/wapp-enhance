@@ -15,6 +15,10 @@ import lombok.Setter;
 @ApiModel("发票详情实体")
 public class InvoiceDetail {
     /**
+     * 主键
+     */
+    private Long id;
+    /**
      * 货名
      */
     private String cargoName;

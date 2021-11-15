@@ -168,7 +168,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.purchaser_no= #{purchaserNo}\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==1'>"+
-            "and d.status = 104\n"+
+            "and (d.status = 101 or d.status = 102 or d.status = 103 or d.status = 104)\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==2'>"+
             "and d.status = 201\n"+
@@ -177,7 +177,6 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
             "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
             "</if>"+
             "<if test='key == 2'>"+
@@ -235,7 +234,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.purchaser_no= #{purchaserNo}\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==1'>"+
-            "and d.status = 104\n"+
+            "and (d.status = 101 or d.status = 102 or d.status = 103 or d.status = 104)\n"+
             "</if>"+
             "<if test='key == 0 and businessType ==2'>"+
             "and d.status = 201\n"+
@@ -244,7 +243,6 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
             "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
             "</if>"+
             "<if test='key == 2'>"+

@@ -360,6 +360,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
 
     public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){
         invoiceDetail.setAmountWithoutTax(entity.getDetailAmount());
+        invoiceDetail.setId(entity.getId());
         if(StringUtils.isNotEmpty(entity.getDetailAmount())&& StringUtils.isNotEmpty(entity.getTaxAmount())){
             BigDecimal amountWithTax = new BigDecimal(entity.getDetailAmount()).add(new BigDecimal(entity.getTaxAmount()));
             invoiceDetail.setAmountWithTax(amountWithTax.toPlainString());
