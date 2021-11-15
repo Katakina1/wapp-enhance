@@ -22,6 +22,8 @@ public interface ExceptionReportMapper {
 
     List<ExceptionReportDto> toDto(List<TXfExceptionReportEntity> entity);
 
+    @Mapping(source = "agreementReasonCode",target = "agreementTypeCode")
+    @Mapping(source = "agreementTaxCode",target = "taxCode")
     TXfExceptionReportEntity deductToReport(TXfBillDeductEntity entity);
 
 

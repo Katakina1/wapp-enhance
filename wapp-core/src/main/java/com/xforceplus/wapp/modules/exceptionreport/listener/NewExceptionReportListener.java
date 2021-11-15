@@ -21,8 +21,9 @@ public class NewExceptionReportListener {
 
     @Autowired
     private ExceptionReportMapper exceptionReportMapper;
+
     @EventListener
-    public void handle(NewExceptionReportEvent exceptionReportEvent){
+    public void handle(NewExceptionReportEvent exceptionReportEvent) {
         final TXfExceptionReportEntity entity = exceptionReportMapper.deductToReport(exceptionReportEvent.getDeduct());
 
         entity.setType(exceptionReportEvent.getType().getType());
@@ -35,9 +36,10 @@ public class NewExceptionReportListener {
         entity.setBillId(exceptionReportEvent.getDeduct().getId());
         entity.setBillNo(exceptionReportEvent.getDeduct().getBusinessNo());
         entity.setPurchaserName(exceptionReportEvent.getDeduct().getPurchaserName());
-        switch (exceptionReportEvent.getType()){
-            case CLAIM:exceptionReportService.add4Claim(entity);
-            break;
+        switch (exceptionReportEvent.getType()) {
+            case CLAIM:
+                exceptionReportService.add4Claim(entity);
+                break;
             case EPD:
                 exceptionReportService.add4EPD(entity);
                 break;
