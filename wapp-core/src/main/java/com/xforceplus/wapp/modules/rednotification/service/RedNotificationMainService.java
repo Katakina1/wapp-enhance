@@ -981,11 +981,17 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         redNoIds.stream().forEach(data->{
             // 获取明细
             List<TXfRedNotificationDetailEntity> tXfRedNotificationDetailEntities1 = listItemMap.get(data);
-            ExportInfo tmpDto = exportInfoMap.get(data);
-            tXfRedNotificationDetailEntities1.stream().forEach(item->{
-                ExportItemInfo exportItemInfo = redNotificationMainMapper.detailEntityToExportInfo(item, tmpDto);
-                itemInfos.add(exportItemInfo);
-            });
+            if (CollectionUtils.isEmpty(tXfRedNotificationDetailEntities1)){
+                log.info("找不到明细:{}",data);
+            }else {
+                ExportInfo tmpDto = exportInfoMap.get(data);
+                tXfRedNotificationDetailEntities1.stream().forEach(item->{
+                    ExportItemInfo exportItemInfo = redNotificationMainMapper.detailEntityToExportInfo(item, tmpDto);
+                    itemInfos.add(exportItemInfo);
+                });
+            }
+
+
         });
         // 清空批次
         redNoIds.clear();
