@@ -322,6 +322,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             // 更新失败 到撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
             record.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPROVE.getValue());
+            record.setApplyRemark(rollbackResponse.getMessage());
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
             List<Long> collect = entityList.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
             updateWrapper.in(TXfRedNotificationEntity::getId,collect);
@@ -1103,6 +1104,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             RedNotificationApplyReverseRequest reverseRequest = new RedNotificationApplyReverseRequest();
             request.getQueryModel().setApproveStatus(null);
+            request.getQueryModel().setIncludes(list);
             reverseRequest.setQueryModel(request.getQueryModel());
             rollback(reverseRequest);
         }else {

@@ -32,7 +32,6 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.*;
@@ -64,18 +63,9 @@ public  class HttpUtils {
 
     private static final String CONTENT_TYPE_TEXT_JSON = "text/json";
 
-    private static final String[]  filterArray = new String[]{"\n","\r","％0d","％0D","％0a","％0A"};
-
-    private static  List<String> whitelist = new ArrayList<>();
 
     public static String host;
 
-    @Value("${wapp.integration.host.http}")
-    public  void setHost(String host) {
-        HttpUtils.host = host;
-        //添加白名单
-        whitelist.add(host);
-    }
 
     static {
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -566,11 +556,7 @@ public  class HttpUtils {
         return urlSb.toString();
     }
 
-    public static String doPutHttpRequest(String r, Map<String, String> hm,String requestBody) {
-        //修复SSRF漏洞
-        if(!whitelist.contains(r)){
-            throw new RuntimeException("访问地址不在白名单内");
-        }
+    public static String doPR(String r, Map<String, String> hm, String rb) {
         CloseableHttpClient hc = HttpClients.createDefault();
         String entityStr = null;
          CloseableHttpResponse response = null;
@@ -578,10 +564,9 @@ public  class HttpUtils {
                  HttpPut post = new HttpPut(r);
                  //添加头部信息
                  for (Map.Entry<String, String> h : hm.entrySet()) {
-                     String value = StringUtils.replaceEach(h.getValue(), filterArray, new String[]{"", "", "", "", "", ""});
-                     post.addHeader(h.getKey(), value);
+                     post.addHeader(h.getKey(), h.getValue());
                  }
-                 HttpEntity entity = new StringEntity(requestBody,"Utf-8");
+                 HttpEntity entity = new StringEntity(rb,"Utf-8");
 
                  post.setEntity(entity);
                  response = hc.execute(post);
@@ -643,7 +628,7 @@ public  class HttpUtils {
     }
 
 
-    public static String doPutHttpRequest(String url, String json,Map<String,String> headers,Map<String,String> params) throws IOException {
+    public static String doPR(String url, String json, Map<String,String> headers, Map<String,String> params) throws IOException {
         String result = null;
         InputStream instream = null;
         try {

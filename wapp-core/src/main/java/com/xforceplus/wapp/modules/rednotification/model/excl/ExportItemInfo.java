@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ExportItemInfo extends BaseRowModel {
-    @ExcelProperty(value = "业务单号", index = 0)
+    @ExcelProperty(value = "结算单号", index = 0)
     private String billNo;
 
     @ExcelProperty(value = "申请流水号", index = 1)

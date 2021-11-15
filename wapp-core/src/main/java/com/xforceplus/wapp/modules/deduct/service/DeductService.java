@@ -314,7 +314,7 @@ public class DeductService   {
             if (Objects.nonNull(reference)) {
                 // 查找相同协议号的数据，取第一页数据，分页大小没有特殊要求，默认设置成10
                 Page<TXfBillDeductEntity> pages = tXfBillDeductExtDao
-                        .selectPage(new Page<>(1, 10),
+                        .selectPage(new Page<>(1, 1),
                                 new QueryWrapper<TXfBillDeductEntity>()
                                         .lambda()
                                         .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getValue())
