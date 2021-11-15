@@ -246,8 +246,6 @@ public class DeductService   {
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
                 unlockAndCancel(deductionEnum, tXfBillDeductEntity);
-
-                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
