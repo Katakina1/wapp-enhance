@@ -199,7 +199,7 @@ public class DeductService   {
                 entity.setTaxPre(taxCode.getTaxPre());
                 entity.setTaxPreCon(taxCode.getTaxPreCon());
                 entity.setZeroTax(taxCode.getZeroTax());
-                entity.setItemShortName(taxCode.getSmallCategoryName());
+                entity.setItemShortName(taxCode.getItemShortName());
             }
         } catch (Exception e) {
             log.error("查询税编异常：{}  异常 {} ）", entity.getItemNo(), e);
@@ -245,8 +245,7 @@ public class DeductService   {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
-               // unlockAndCancel(deductionEnum, tXfBillDeductEntity);
-
+                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
@@ -946,6 +945,10 @@ public class DeductService   {
         Integer relationType = xfDeductionBusinessTypeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL?TXfInvoiceDeductTypeEnum.SETTLEMENT.getCode():TXfInvoiceDeductTypeEnum.CLAIM.getCode();
             for (BlueInvoiceService.MatchRes matchRes : res) {
                 if (xfDeductionBusinessTypeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL) {
+                    if(CollectionUtils.isEmpty( matchRes.getInvoiceItems())){
+                        log.error("蓝票匹配明细为空，发票号码 {} 发票代码{},",matchRes.invoiceNo,matchRes.invoiceCode);
+                        throw new RuntimeException("匹配的发票明细为空");
+                    }
                       for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
                         TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
                         tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
