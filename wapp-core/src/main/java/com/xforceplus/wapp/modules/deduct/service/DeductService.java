@@ -246,7 +246,7 @@ public class DeductService   {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
-                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
+              //  unlockAndCancel(deductionEnum, tXfBillDeductEntity);
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
