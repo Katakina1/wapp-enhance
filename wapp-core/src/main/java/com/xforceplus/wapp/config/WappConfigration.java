@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.config;
 
+import com.xforceplus.wapp.interceptor.LoggerMDCTraceInterceptor;
 import com.xforceplus.wapp.sequence.IDSequence;
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,10 +8,13 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -53,4 +57,13 @@ public class WappConfigration {
         return initializer;
     }
 
+    @Bean
+    public WebMvcConfigurer loggerMdcTraceInterceptorConfigurer(LoggerMDCTraceInterceptor loggerMDCTraceInterceptor){
+        return new WebMvcConfigurer() {
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                registry.addInterceptor(loggerMDCTraceInterceptor).order(Ordered.HIGHEST_PRECEDENCE);
+            }
+        };
+    }
 }
