@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.validator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xforceplus.phoenix.split.model.PriceMethod;
 import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.enums.*;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
@@ -80,9 +81,17 @@ public class CheckMainService {
 
 //        String error4 = checkRefinedOilInvoice(importInfo);
 //        errorBuilder.append(error4);
+        //判断价格方式
+        if (StringUtils.isEmpty(importInfo.getPriceMethod())){
+            errorBuilder.append("价格方式必填;");
+        }else if (Objects.equals(importInfo.getPriceMethod(),"0")){
+            String error5 = checkPriceMethodWithoutTax(importInfo);
+            errorBuilder.append(error5);
+        }else if (Objects.equals(importInfo.getPriceMethod(),"1")){
+            String error5 = checkPriceMethodWithTax(importInfo);
+            errorBuilder.append(error5);
+        }
 
-        String error5 = checkPriceMethodWithoutTax(importInfo);
-        errorBuilder.append(error5);
 
         //校验税编
         String error6 = checkGoodsTaxNo(importInfo);
@@ -344,8 +353,78 @@ public class CheckMainService {
         }
 
         StringBuilder errorBuilder = new StringBuilder();
+        errorBuilder.append(DetailAmountCheckTools.checkAmountField(importInfo, PriceMethod.WITH_TAX));
         return errorBuilder.toString();
 
+    }
+
+
+    private String checkPriceMethodWithTax(ImportInfo importInfo){
+        BigDecimal amountWithTax = importInfo.getAmountWithTax();
+
+        BigDecimal quantity = null ;
+        if (importInfo.getNum() !=null){
+            quantity = new BigDecimal(importInfo.getNum());
+        }
+
+        BigDecimal unitPriceWithTax = null;
+        if (importInfo.getUnitPriceWithTax() !=null){
+            unitPriceWithTax = new BigDecimal(importInfo.getUnitPriceWithTax());
+        }
+
+        if (quantity == null  && unitPriceWithTax == null){
+            return "价格方式为含税 数量和含税单价至少填写一个;";
+        }
+
+        if (StringUtils.isEmpty(importInfo.getTaxRate())){
+            return "税率必填项;";
+        }
+
+        BigDecimal taxRate = new BigDecimal(importInfo.getTaxRate());
+
+
+        if(Objects.nonNull(amountWithTax)){
+            if(Objects.isNull(quantity) ^ Objects.isNull(unitPriceWithTax) ){
+                if(Objects.isNull(quantity)){
+                    quantity = amountWithTax.divide(unitPriceWithTax, 6 ,BigDecimal.ROUND_HALF_UP);
+                    importInfo.setNum(quantity.toPlainString());
+                }else{
+                    unitPriceWithTax = amountWithTax.divide(quantity, 15, BigDecimal.ROUND_HALF_UP);
+                    importInfo.setUnitPriceWithTax(unitPriceWithTax.toPlainString());
+                }
+                //重新计算不含税单价
+                importInfo.setUnitPrice(amountWithTax.divide(taxRate.add(new BigDecimal("1")).multiply(quantity),15, BigDecimal.ROUND_HALF_UP).toPlainString());
+            }
+
+            BigDecimal deduction = Optional.ofNullable(importInfo.getDeduction()).orElse(BigDecimal.ZERO);
+
+            if(deduction.compareTo(deduction) < 0){
+                return "扣除额必须大于等于不含税金额;";
+            }else{
+
+                //计算公式 https://wiki.xforceplus.com/pages/viewpage.action?pageId=73403822
+
+
+                BigDecimal amountWithoutTax = importInfo.getAmountWithoutTax();
+                if(Objects.isNull(amountWithoutTax)){
+                    amountWithoutTax = amountWithTax.add(deduction.multiply(taxRate)).divide(taxRate.add(new BigDecimal(1)),2, BigDecimal.ROUND_HALF_UP);
+                    importInfo.setAmountWithTax(amountWithoutTax);
+                }
+
+                BigDecimal taxAmount = importInfo.getTaxAmount();
+
+                if(Objects.isNull(taxAmount)){
+                    taxAmount = amountWithTax.subtract(amountWithoutTax).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    importInfo.setTaxAmount(taxAmount);
+                }
+
+            }
+        }
+
+        StringBuilder errorBuilder = new StringBuilder();
+        errorBuilder.append(DetailAmountCheckTools.checkAmountField(importInfo, PriceMethod.WITH_TAX));
+
+        return errorBuilder.toString();
     }
 
 
