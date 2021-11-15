@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.rednotification.validator;
 
 
 import com.xforceplus.phoenix.split.model.PriceMethod;
+import com.xforceplus.wapp.modules.rednotification.mapstruct.ConvertHelper;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 
 import java.math.BigDecimal;
@@ -16,9 +17,9 @@ public class DetailAmountCheckTools {
         BigDecimal amountWithoutTax = importInfo.getAmountWithoutTax();
         BigDecimal taxAmount = importInfo.getTaxAmount();
         BigDecimal quantity = importInfo.getNum()==null? null:new BigDecimal(importInfo.getNum());
-        BigDecimal unitPrice = importInfo.getUnitPrice()==null? null :new BigDecimal(importInfo.getUnitPrice());
-        BigDecimal unitPriceWithTax = importInfo.getUnitPriceWithTax()==null? null:new BigDecimal(importInfo.getUnitPriceWithTax());
-        BigDecimal taxRate = importInfo.getTaxRate()==null ?null:new BigDecimal(importInfo.getTaxRate());
+        BigDecimal unitPrice = importInfo.getUnitPrice()==null? null :new BigDecimal(importInfo.getUnitPrice().replace(",",""));
+        BigDecimal unitPriceWithTax = importInfo.getUnitPriceWithTax()==null? null:new BigDecimal(importInfo.getUnitPriceWithTax().replace(",",""));
+        BigDecimal taxRate = importInfo.getTaxRate()==null ?null: ConvertHelper.handleTaxRate(importInfo.getTaxRate());
         BigDecimal deduction = importInfo.getDeduction();
 
         if(null!=quantity){

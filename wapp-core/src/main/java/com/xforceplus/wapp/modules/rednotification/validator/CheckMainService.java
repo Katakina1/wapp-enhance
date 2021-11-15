@@ -353,7 +353,7 @@ public class CheckMainService {
         }
 
         StringBuilder errorBuilder = new StringBuilder();
-        errorBuilder.append(DetailAmountCheckTools.checkAmountField(importInfo, PriceMethod.WITH_TAX));
+        errorBuilder.append(DetailAmountCheckTools.checkAmountField(importInfo, PriceMethod.WITHOUT_TAX));
         return errorBuilder.toString();
 
     }
