@@ -380,7 +380,7 @@ public class CheckMainService {
             return "税率必填项;";
         }
 
-        BigDecimal taxRate = new BigDecimal(importInfo.getTaxRate());
+        BigDecimal taxRate = ConvertHelper.handleTaxRate(importInfo.getTaxRate());
 
 
         if(Objects.nonNull(amountWithTax)){
