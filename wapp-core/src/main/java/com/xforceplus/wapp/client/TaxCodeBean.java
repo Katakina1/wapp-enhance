@@ -17,11 +17,5 @@ public class TaxCodeBean {
     private String taxCodeVersion;
     private List<String> taxRateList;
     private String specialManagement;
-
-    public String getTaxRate() {
-        if (CollectionUtils.isEmpty(taxRateList)) {
-            return StringUtils.EMPTY;
-        }
-        return taxRateList.get(0);
-    }
+    private String taxRate;
 }
