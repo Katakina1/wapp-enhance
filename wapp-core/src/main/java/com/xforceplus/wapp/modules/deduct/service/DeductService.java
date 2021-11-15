@@ -976,6 +976,8 @@ public class DeductService   {
                         tXfSettlementItemEntity.setZeroTax(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
                         tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
+                        tXfSettlementItemEntity.setItemSpec(defaultValue(invoiceItem.getModel()));
+                        tXfSettlementItemEntity.setQuantityUnit(defaultValue(invoiceItem.getUnit()));
                         tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
 
                         if (StringUtils.isBlank(tXfSettlementItemEntity.getItemShortName())){
@@ -1055,6 +1057,9 @@ public class DeductService   {
     public static TXfSettlementItemEntity checkItemName(TXfSettlementItemEntity tXfSettlementItemEntity ) {
         StringBuffer stringBuffer = new StringBuffer("*");
         if (StringUtils.isEmpty(tXfSettlementItemEntity.getItemShortName())) {
+            return tXfSettlementItemEntity;
+        }
+        if (tXfSettlementItemEntity.getItemName().contains("*")) {
             return tXfSettlementItemEntity;
         }
         stringBuffer.append(tXfSettlementItemEntity.getItemShortName()).append("*").append(tXfSettlementItemEntity.getItemSpec());
