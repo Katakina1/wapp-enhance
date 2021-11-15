@@ -13,6 +13,7 @@ import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
@@ -947,7 +948,7 @@ public class DeductService   {
                 if (xfDeductionBusinessTypeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL) {
                     if(CollectionUtils.isEmpty( matchRes.getInvoiceItems())){
                         log.error("蓝票匹配明细为空，发票号码 {} 发票代码{},",matchRes.invoiceNo,matchRes.invoiceCode);
-                        throw new RuntimeException("匹配的发票明细为空");
+                        throw new NoSuchInvoiceException("匹配的发票明细为空");
                     }
                       for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
                         TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
