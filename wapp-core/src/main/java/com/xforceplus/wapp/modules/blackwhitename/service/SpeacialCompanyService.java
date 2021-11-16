@@ -106,7 +106,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      */
     public Either<String, Integer> importData(MultipartFile file, String type) throws IOException {
         QueryWrapper wrapper = new QueryWrapper<>();
-        SpeclialCompanyImportListener listener = new SpeclialCompanyImportListener();
+        SpeclialCompanyImportListener listener = new SpeclialCompanyImportListener(type);
         EasyExcel.read(file.getInputStream(), SpecialCompanyImportDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices()) && CollectionUtils.isEmpty(listener.getInvalidInvoices())) {
             return Either.left("未解析到数据");
