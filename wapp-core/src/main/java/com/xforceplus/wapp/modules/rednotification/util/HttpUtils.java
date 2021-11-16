@@ -556,7 +556,7 @@ public  class HttpUtils {
         return urlSb.toString();
     }
 
-    public static String doPR(String r, Map<String, String> hm, String rb) {
+    public static String doPutRequest(String r, Map<String, String> hm, String rb) {
         CloseableHttpClient hc = HttpClients.createDefault();
         String entityStr = null;
          CloseableHttpResponse response = null;
@@ -628,7 +628,7 @@ public  class HttpUtils {
     }
 
 
-    public static String doPR(String url, String json, Map<String,String> headers, Map<String,String> params) throws IOException {
+    public static String doPutRequest(String url, String json, Map<String,String> headers, Map<String,String> params) throws IOException {
         String result = null;
         InputStream instream = null;
         try {

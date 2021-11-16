@@ -68,7 +68,7 @@ public class AgreementController {
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
 
         if (Objects.nonNull(request.getTaxRate())&& BigDecimal.ZERO.compareTo( request.getTaxRate())<=0) {
-            final BigDecimal sum = deductService.sumDueAndNegative(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
+            final BigDecimal sum = deductService.sumDueAndNegative(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
             page.setExt(NegativeAndOverDueSummary.builder().negativeOverDueAmount(sum.toPlainString()).build());
         }
 

@@ -146,7 +146,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         return doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void reFixTaxCode(String settlementNo) {
         boolean success = true;
          List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
@@ -184,7 +184,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     }
 
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void reCalculation(String settlementNo) {
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
@@ -249,7 +249,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param splitPreInvoiceInfos
      * @param tXfSettlementEntity
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public List<PreInvoiceDTO>   savePreInvoiceInfo(List<SplitPreInvoiceInfo> splitPreInvoiceInfos,TXfSettlementEntity tXfSettlementEntity) {
         // check 拆票失败
         Date date = new Date();
@@ -353,7 +353,12 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterDiscountTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
-
+            String name = tXfSettlementItemEntity.getItemName();
+            List<String> list = splitItemName(name);
+            if (CollectionUtils.isNotEmpty(list)) {
+                billItem.setItemName(list.get(1));
+                billItem.setItemShortName(list.get(0));
+            }
             billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
@@ -368,6 +373,22 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         createPreInvoiceParam.setRoutingKey("12");
         return createPreInvoiceParam;
     }
+
+    private static List<String> splitItemName(String name) {
+        if (StringUtils.isEmpty(name)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<String> res = new ArrayList<>();
+        String[] str = name.split("\\*");
+        if (str.length == 3) {
+            res.add(str[1]);
+            res.add(str[2]);
+            return res;
+        }
+        return Collections.EMPTY_LIST;
+    }
+
     /**
      * 重新拆票
      * @param settlementNo

@@ -164,7 +164,7 @@ public class TaxWareService {
             requestHeaderMap.put("serialNo",revokeRequest.getSerialNo());
             HttpUtils.pack(requestHeaderMap,rollbackAction, this.authentication) ;
             log.info("撤销请求:{}", reqJson);
-            final String post = HttpUtils.doPR(host,requestHeaderMap,reqJson) ;
+            final String post = HttpUtils.doPutRequest(host,requestHeaderMap,reqJson) ;
 //            final String post2 = HttpUtils.doPutJsonSkipSsl(host,defaultHeader,reqJson) ;
             log.info("撤销结果:{}", post);
             return gson.fromJson(post, TaxWareResponse.class);
