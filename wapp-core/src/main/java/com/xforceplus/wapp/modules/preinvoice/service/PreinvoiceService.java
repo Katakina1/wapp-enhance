@@ -355,11 +355,9 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
             String name = tXfSettlementItemEntity.getItemName();
             List<String> list = splitItemName(name);
-            if (CollectionUtils.isEmpty(list)) {
+            if (CollectionUtils.isNotEmpty(list)) {
                 billItem.setItemName(list.get(1));
                 billItem.setItemShortName(list.get(0));
-            }else{
-                billItem.setItemName(name);
             }
             billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
@@ -412,6 +410,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             amountWithOutTax = amountWithOutTax.add(tXfPreInvoiceItemEntity.getAmountWithoutTax());
             BeanUtils.copyProperties (tXfPreInvoiceItemEntity,tXfSettlementItemEntity);
             tXfSettlementItemEntity.setItemName(tXfPreInvoiceItemEntity.getCargoName());
+            tXfSettlementItemEntity.setItemShortName(tXfPreInvoiceItemEntity.getCargoName());
             tXfSettlementItemEntity.setItemCode(tXfPreInvoiceItemEntity.getCargoCode());
             tXfSettlementItemEntity.setQuantityUnit(tXfPreInvoiceItemEntity.getQuantityUnit());
             list.add(tXfSettlementItemEntity);
