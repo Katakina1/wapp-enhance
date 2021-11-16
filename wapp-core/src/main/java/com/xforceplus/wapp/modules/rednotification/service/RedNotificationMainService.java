@@ -291,8 +291,8 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
      * @param request
      * @return
      */
-    public Response rollback(RedNotificationApplyReverseRequest request) {
-        QueryModel queryModel = request.getQueryModel();
+    public Response rollback(RedNotificationApplyModel model) {
+        QueryModel queryModel = model.getQueryModel();
 //        queryModel.setLockFlag(1);
 //        queryModel.setApplyingStatus(RedNoApplyingStatus.APPLIED.getValue());
 //        queryModel.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
@@ -304,7 +304,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (filterData.size()>0 && entityList.size() != filterData.size()){
             return Response.failed("锁定中或未审核通过 不允许撤销");
         }
-        RevokeRequest revokeRequest = buildRevokeRequestAndLogs(entityList,request);
+        RevokeRequest revokeRequest = buildRevokeRequestAndLogs(entityList,model);
 
         TaxWareResponse rollbackResponse = null ;
         try {
@@ -657,7 +657,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
 
 
-    private RevokeRequest buildRevokeRequestAndLogs(List<TXfRedNotificationEntity> entityList, RedNotificationApplyReverseRequest request) {
+    private RevokeRequest buildRevokeRequestAndLogs(List<TXfRedNotificationEntity> entityList, RedNotificationApplyModel request) {
 
         Long serialNo = iDSequence.nextId();
 
@@ -1068,11 +1068,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
     /**
      * 确认
      * 驳回  回到已申请 。从待审批页面消失
-     * @param request
+     * @param model
      * @return
      */
-    public Response<String> operation(RedNotificationConfirmRejectRequest request) {
-        List<TXfRedNotificationEntity> filterData = getFilterData(request.getQueryModel());
+    public Response<String> operation(RedNotificationConfirmRejectModel model) {
+        List<TXfRedNotificationEntity> filterData = getFilterData(model.getQueryModel());
         //获取结算单号 获取弹窗  相同单号 一起审批
         List<String> billNos = filterData.stream().map(TXfRedNotificationEntity::getBillNo).distinct().collect(Collectors.toList());
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -1086,7 +1086,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         List<Long> list = tXfRedNotificationEntities.stream().map(TXfRedNotificationEntity::getId).collect(Collectors.toList());
 
         List<Long> pidList = tXfRedNotificationEntities.stream().map(item->Long.parseLong(item.getPid())).collect(Collectors.toList());
-        if (Objects.equals(OperationType.CONFIRM.getValue(),request.getOperationType())){
+        if (Objects.equals(OperationType.CONFIRM.getValue(),model.getOperationType())){
            // 确认 //自动尝试一次 //撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
             record.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
@@ -1102,10 +1102,10 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
                 return Response.failed(e.getMessage());
             }
 
-            RedNotificationApplyReverseRequest reverseRequest = new RedNotificationApplyReverseRequest();
-            request.getQueryModel().setApproveStatus(null);
-            request.getQueryModel().setIncludes(list);
-            reverseRequest.setQueryModel(request.getQueryModel());
+            RedNotificationApplyModel reverseRequest = new RedNotificationApplyModel();
+            model.getQueryModel().setApproveStatus(null);
+            model.getQueryModel().setIncludes(list);
+            reverseRequest.setQueryModel(model.getQueryModel());
             rollback(reverseRequest);
         }else {
             // 驳回 ，修改状态到已申请

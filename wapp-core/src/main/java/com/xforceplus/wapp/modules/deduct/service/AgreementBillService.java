@@ -96,7 +96,7 @@ public class AgreementBillService extends DeductService{
         return false;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void excuteMergeAndMatch(TXfDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tmp, TXfBillDeductEntity negativeBill, TXfDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfDeductStatusEnum targetStatus) {
         TXfSettlementEntity tXfSettlementEntity = executeMerge(deductionEnum, tmp, negativeBill, tXfBillDeductStatusEnum, referenceDate, targetStatus);
         executeMatch(deductionEnum, tXfSettlementEntity,targetStatus.getCode(),null);
@@ -153,7 +153,6 @@ public class AgreementBillService extends DeductService{
             newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
             newExceptionReportEvent.setType( deductionEnum==TXfDeductionBusinessTypeEnum.AGREEMENT_BILL? ExceptionReportTypeEnum.AGREEMENT: ExceptionReportTypeEnum.EPD );
             applicationContext.publishEvent(newExceptionReportEvent);
-
             log.info(" {}单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} 金额 {} 税率 {}",deductionEnum.getDes(),tXfSettlementEntity.getSellerNo(),tXfSettlementEntity.getPurchaserNo(),tXfSettlementEntity.getAmountWithoutTax(),tXfSettlementEntity.getTaxRate());
             throw n;
         }
@@ -237,7 +236,7 @@ public class AgreementBillService extends DeductService{
          * @return
          */
 
-    public TXfSettlementEntity executeMerge(TXfDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tmp, TXfBillDeductEntity negativeBill, TXfDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfDeductStatusEnum targetSatus) {
+    private TXfSettlementEntity executeMerge(TXfDeductionBusinessTypeEnum deductionEnum, TXfBillDeductEntity tmp, TXfBillDeductEntity negativeBill, TXfDeductStatusEnum tXfBillDeductStatusEnum, Date referenceDate, TXfDeductStatusEnum targetSatus) {
         String purchaserNo = tmp.getPurchaserNo();
         String sellerNo = tmp.getSellerNo();
         BigDecimal taxRate = tmp.getTaxRate();

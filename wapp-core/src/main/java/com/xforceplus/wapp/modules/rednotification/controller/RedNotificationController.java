@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.controller;
 
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.RedRevokeMessageResult;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
@@ -99,8 +100,11 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/roll-back")
-    public Response rollback(@RequestBody RedNotificationApplyReverseRequest r){
-        return  rednotificationService.rollback(r);
+    public Response rollback(@RequestBody RedNotificationApplyReverseRequest request){
+        //ssrf是漏洞
+        RedNotificationApplyModel model = new RedNotificationApplyModel();
+        BeanUtil.copyProperties(request,model);
+        return  rednotificationService.rollback(model);
     }
 
     /**
@@ -111,8 +115,11 @@ public class RedNotificationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/confirm-reject")
-    public Response<String> operation(@RequestBody RedNotificationConfirmRejectRequest r){
-        return rednotificationService.operation(r);
+    public Response<String> operation(@RequestBody RedNotificationConfirmRejectRequest request){
+        //response splitting漏洞
+        RedNotificationConfirmRejectModel model = new RedNotificationConfirmRejectModel();
+        BeanUtil.copyProperties(request,model);
+        return rednotificationService.operation(model);
     }
 
     @ApiOperation(value = "红字信息表导入", notes = "", response = Response.class, tags = {"red-notification",})
