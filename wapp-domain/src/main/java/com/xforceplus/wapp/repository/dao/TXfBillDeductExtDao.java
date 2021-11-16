@@ -106,7 +106,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     public TXfBillDeductEntity queryBillBySettlementNo(@Param("settlementNo") String settlementNo, @Param("status") Integer status, @Param("flag") Integer flag );
 
 
-    @Select("select top 1 *  from t_xf_bill_deduct   where ref_settlement_no  = #{settlementNo}  ")
+    @Select("select top 1 *  from t_xf_bill_deduct  where ref_settlement_no = #{settlementNo}  ")
     public TXfBillDeductEntity queryOneBillBySettlementNo(@Param("settlementNo") String settlementNo  );
 
     @Update("update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where purchaser_no  = #{purchaserNo} and seller_no = #{sellerNo} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax < 0 and ref_settlement_no = '' and  lock_flag = #{flag} ")
@@ -177,11 +177,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '')  between 0 and  (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7) -1\n"+
             "</if>"+
             "<if test='key == 2'>"+
-            "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
+            "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
             "</if>"+
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+
@@ -243,11 +243,11 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '')  between 0 and  (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7) -1\n"+
             "</if>"+
             "<if test='key == 2'>"+
-            "and s.settlement_status = 2\n"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and (p.pre_invoice_status = 3 or p.pre_invoice_status =2)) = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
+            "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
+            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') = (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
             "</if>"+
             "<if test='key == 3'>"+
             "and s.settlement_status = 4\n"+

@@ -331,7 +331,7 @@ public class ClaimBillService extends DeductService{
                 newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
                 newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
                 applicationContext.publishEvent(newExceptionReportEvent);
-                return false;
+                throw new NoSuchInvoiceException();
             }
             matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getId(), TXfDeductionBusinessTypeEnum.CLAIM_BILL);
             TXfBillDeductEntity tmp = new TXfBillDeductEntity();
@@ -346,6 +346,7 @@ public class ClaimBillService extends DeductService{
             newExceptionReportEvent.setType( ExceptionReportTypeEnum.CLAIM );
             applicationContext.publishEvent(newExceptionReportEvent);
             log.info(" 索赔单 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} businessNo {}",tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getBusinessNo());
+            throw n;
         }
         catch (Exception e) {
             if (CollectionUtils.isNotEmpty(matchResList)) {
