@@ -9,10 +9,7 @@ import com.xforceplus.wapp.common.enums.RedNoApplyingStatus;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.modules.rednotification.log.LogOperate;
 import com.xforceplus.wapp.modules.rednotification.log.LogOperateType;
-import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
-import com.xforceplus.wapp.modules.rednotification.model.QueryModel;
-import com.xforceplus.wapp.modules.rednotification.model.RedNotificationApplyReverseRequest;
-import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +40,7 @@ public class RedNotificationOuterService {
      */
     @LogOperate(value = "对外接口红字信息撤销",type = LogOperateType.MODIFY)
     public Response<String> rollback(Long pid) {
-        RedNotificationApplyReverseRequest redNotificationApplyReverseRequest = new RedNotificationApplyReverseRequest();
+        RedNotificationApplyModel redNotificationApplyReverseRequest = new RedNotificationApplyModel();
         QueryModel queryModel = new QueryModel();
         ArrayList<Long> pidList = Lists.newArrayList(pid);
         queryModel.setPidList(pidList);
