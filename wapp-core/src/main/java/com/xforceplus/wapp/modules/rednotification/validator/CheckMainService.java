@@ -394,6 +394,8 @@ public class CheckMainService {
                 }
                 //重新计算不含税单价
                 importInfo.setUnitPrice(amountWithTax.divide(taxRate.add(new BigDecimal("1")).multiply(quantity),15, BigDecimal.ROUND_HALF_UP).toPlainString());
+            }else {
+                importInfo.setUnitPrice(amountWithTax.divide(taxRate.add(new BigDecimal("1")).multiply(quantity),15, BigDecimal.ROUND_HALF_UP).toPlainString());
             }
 
             BigDecimal deduction = Optional.ofNullable(importInfo.getDeduction()).orElse(BigDecimal.ZERO);
