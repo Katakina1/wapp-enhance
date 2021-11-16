@@ -246,7 +246,7 @@ public class DeductService   {
         List<TXfBillDeductEntity> list = transferBillData(deductBillBaseDataList, deductionEnum);
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
-              //  unlockAndCancel(deductionEnum, tXfBillDeductEntity);
+                unlockAndCancel(deductionEnum, tXfBillDeductEntity);
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
@@ -310,17 +310,17 @@ public class DeductService   {
         if (Objects.equals(deductionEnum, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL)
                 || Objects.equals(deductionEnum, TXfDeductionBusinessTypeEnum.EPD_BILL)) {
             // 获取协议单号
-            String reference = tXfBillDeductEntity.getAgreementReference();
-            if (Objects.nonNull(reference)) {
+            String businessNo = tXfBillDeductEntity.getBusinessNo();
+            if (Objects.nonNull(businessNo)) {
                 // 查找相同协议号的数据，取第一页数据，分页大小没有特殊要求，默认设置成10
                 Page<TXfBillDeductEntity> pages = tXfBillDeductExtDao
                         .selectPage(new Page<>(1, 1),
                                 new QueryWrapper<TXfBillDeductEntity>()
                                         .lambda()
                                         .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getValue())
-                                        .eq(TXfBillDeductEntity::getAgreementReference, reference)
+                                        .eq(TXfBillDeductEntity::getBusinessNo, businessNo)
                         );
-                log.info("根据单据id={}的匹配到的拥有相同的reference={}的单据数量为{}", tXfBillDeductEntity.getId(), reference, pages.getTotal());
+                log.info("根据单据id={}的匹配到的拥有相同的reference={}的单据数量为{}", tXfBillDeductEntity.getId(), businessNo, pages.getTotal());
                 if (pages.getTotal() > 0) {
                     //  如果返回个数大于1，则取第一条记录
                     TXfBillDeductEntity target = pages.getRecords().get(0);
