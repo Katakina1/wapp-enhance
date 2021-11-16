@@ -146,7 +146,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         return doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void reFixTaxCode(String settlementNo) {
         boolean success = true;
          List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
@@ -184,7 +184,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     }
 
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void reCalculation(String settlementNo) {
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
@@ -249,7 +249,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param splitPreInvoiceInfos
      * @param tXfSettlementEntity
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public List<PreInvoiceDTO>   savePreInvoiceInfo(List<SplitPreInvoiceInfo> splitPreInvoiceInfos,TXfSettlementEntity tXfSettlementEntity) {
         // check 拆票失败
         Date date = new Date();
