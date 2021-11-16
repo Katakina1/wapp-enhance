@@ -6,6 +6,7 @@ import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportServic
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,6 +24,7 @@ public class NewExceptionReportListener {
     private ExceptionReportMapper exceptionReportMapper;
 
     @EventListener
+    @Async
     public void handle(NewExceptionReportEvent exceptionReportEvent) {
         final TXfExceptionReportEntity entity = exceptionReportMapper.deductToReport(exceptionReportEvent.getDeduct());
 

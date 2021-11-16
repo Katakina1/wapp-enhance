@@ -40,6 +40,7 @@ import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommonMessageService;
+import com.xforceplus.wapp.service.TransactionalService;
 import com.xforceplus.wapp.threadpool.ThreadPoolManager;
 import com.xforceplus.wapp.threadpool.callable.ExportDeductCallable;
 import com.xforceplus.wapp.util.CodeGenerator;
@@ -126,6 +127,8 @@ public class DeductService   {
 
     @Autowired
     private RecordInvoiceService recordInvoiceService;
+    @Autowired
+    protected TransactionalService transactionalService;
 
     /**
      * 接收索赔明细
