@@ -33,6 +33,11 @@ public interface ExceptionReportMapper {
     List<ReportExportDto> toExport(List<TXfExceptionReportEntity> entity);
 
     @Mapping(target = "deductDate",expression = "java(com.xforceplus.wapp.common.utils.DateUtils.format(entity.getDeductDate()))")
+    AgreementReportExportDto toAgreementExport(TXfExceptionReportEntity entity);
+
+    List<AgreementReportExportDto> toAgreementExport(List<TXfExceptionReportEntity> entity);
+
+    @Mapping(target = "deductDate",expression = "java(com.xforceplus.wapp.common.utils.DateUtils.format(entity.getDeductDate()))")
     @Mapping(target = "verdictDate",expression = "java(com.xforceplus.wapp.common.utils.DateUtils.format(entity.getVerdictDate()))")
     ClaimReportExportDto toClaimExport(TXfExceptionReportEntity entity);
 

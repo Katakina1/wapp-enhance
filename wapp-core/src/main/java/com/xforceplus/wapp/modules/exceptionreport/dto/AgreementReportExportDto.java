@@ -9,11 +9,12 @@ import java.math.BigDecimal;
  * @author malong@xforceplus.com
  * @program wapp-enhance
  * @description
- * @create 2021-10-26 13:39
+ * @create 2021-11-16 18:54
  **/
 @Setter
 @Getter
-public class ReportExportDto {
+public class AgreementReportExportDto   {
+    private String agreementTypeCode;
     private String code;
     private String description;
     private String sellerNo;
