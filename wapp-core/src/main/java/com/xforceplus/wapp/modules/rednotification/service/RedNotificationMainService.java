@@ -860,11 +860,11 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             if(s != null){
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.FAIL, null);
-                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf失败",exportCommonService.getFailContent(s));
+                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf失败",exportCommonService.getFailContent(s),false);
                 return s;
             }else {
                 String userName = exportCommonService.updatelogStatus(tuple3._1, ExcelExportLogService.OK,ftpFilePath);
-                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf成功", exportCommonService.getSuccContent());
+                exportCommonService.sendMessage(tuple3._1,tuple3._3,"红字信息表下载pdf成功", exportCommonService.getSuccContent(),true);
                 return "导出成功,请在消息中心查看";
             }
         }
