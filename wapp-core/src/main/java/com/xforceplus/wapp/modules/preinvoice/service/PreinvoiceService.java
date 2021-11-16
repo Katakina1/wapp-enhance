@@ -391,10 +391,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         return Collections.EMPTY_LIST;
     }
 
-    public static void main(String[] args) {
-        System.out.println(splitItemName("*232323*123123123"));
-
-    }
     /**
      * 重新拆票
      * @param settlementNo
