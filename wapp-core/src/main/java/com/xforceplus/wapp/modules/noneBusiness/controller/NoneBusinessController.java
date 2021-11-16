@@ -269,7 +269,7 @@ public class NoneBusinessController {
             List<String> list = new ArrayList<>();
             submitList.stream().forEach(e -> {
                 e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
-                noneBusinessService.removeById(e.getId());
+                noneBusinessService.deleteSubmitInvoice(e.getInvoiceNo(), e.getInvoiceCode());
                 if (StringUtils.isNotEmpty(e.getInvoiceNo()) && StringUtils.isNotEmpty(e.getInvoiceCode())) {
                     list.add(e.getInvoiceCode() + e.getInvoiceNo());
                 }
@@ -287,7 +287,7 @@ public class NoneBusinessController {
             List<String> list1 = new ArrayList<>();
             submitList.stream().forEach(e -> {
                 e.setSubmitFlag(Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
-                noneBusinessService.removeById(e.getId());
+                noneBusinessService.deleteSubmitInvoice(e.getInvoiceNo(), e.getInvoiceCode());
                 if (StringUtils.isNotEmpty(e.getInvoiceNo()) && StringUtils.isNotEmpty(e.getInvoiceCode())) {
                     list1.add(e.getInvoiceCode() + e.getInvoiceNo());
                 }
