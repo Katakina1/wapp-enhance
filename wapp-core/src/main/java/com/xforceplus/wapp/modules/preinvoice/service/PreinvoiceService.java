@@ -353,7 +353,14 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterDiscountTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
-
+            String name = tXfSettlementItemEntity.getItemName();
+            List<String> list = splitItemName(name);
+            if (CollectionUtils.isEmpty(list)) {
+                billItem.setItemName(list.get(1));
+                billItem.setItemShortName(list.get(0));
+            }else{
+                billItem.setItemName(name);
+            }
             billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
@@ -367,6 +374,26 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         createPreInvoiceParam.setRule(splitRule);
         createPreInvoiceParam.setRoutingKey("12");
         return createPreInvoiceParam;
+    }
+
+    private static List<String> splitItemName(String name) {
+        if (StringUtils.isEmpty(name)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<String> res = new ArrayList<>();
+        String[] str = name.split("\\*");
+        if (str.length == 3) {
+            res.add(str[1]);
+            res.add(str[2]);
+            return res;
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(splitItemName("*232323*123123123"));
+
     }
     /**
      * 重新拆票
@@ -389,7 +416,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             amountWithOutTax = amountWithOutTax.add(tXfPreInvoiceItemEntity.getAmountWithoutTax());
             BeanUtils.copyProperties (tXfPreInvoiceItemEntity,tXfSettlementItemEntity);
             tXfSettlementItemEntity.setItemName(tXfPreInvoiceItemEntity.getCargoName());
-            tXfSettlementItemEntity.setItemShortName(tXfPreInvoiceItemEntity.getCargoName());
             tXfSettlementItemEntity.setItemCode(tXfPreInvoiceItemEntity.getCargoCode());
             tXfSettlementItemEntity.setQuantityUnit(tXfPreInvoiceItemEntity.getQuantityUnit());
             list.add(tXfSettlementItemEntity);
