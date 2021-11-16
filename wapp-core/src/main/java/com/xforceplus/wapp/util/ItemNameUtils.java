@@ -19,14 +19,19 @@ public class ItemNameUtils {
         if (StringUtils.isEmpty(name)) {
             return Collections.EMPTY_LIST;
         }
-
-        List<String> res = new ArrayList<>();
-        String[] str = name.split("\\*");
-        if (str.length == 3) {
-            res.add(str[1]);
-            res.add(str[2]);
-            return res;
-        }
+         final int first = name.indexOf("*");
+         final int length = name.length();
+         if (first > -1 && length > first+1) {
+             int end = name.indexOf("*", first + 1);
+             if (end > -1 && length > end) {
+                 List<String> res = new ArrayList<>();
+                 final String shortName = name.substring(first + 1, end);
+                 final String itemName = name.substring(end+1);
+                 res.add(shortName);
+                 res.add(itemName);
+                 return res;
+              }
+         }
         return Collections.EMPTY_LIST;
     }
 }

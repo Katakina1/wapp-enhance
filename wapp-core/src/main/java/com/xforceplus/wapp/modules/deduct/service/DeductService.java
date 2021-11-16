@@ -942,18 +942,7 @@ public class DeductService   {
                     tXfSettlementItemEntity.setQuantityUnit(defaultValue(invoiceItem.getUnit()));
                     tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
                     tXfSettlementItemEntity = fixTaxCode(tXfSettlementItemEntity, map);
-                    if (StringUtils.isBlank(tXfSettlementItemEntity.getItemShortName())){
-                        final String itemName = tXfSettlementItemEntity.getItemName();
-                        final int first = itemName.indexOf("*");
-                        final int length = itemName.length();
-                        if (first > -1 && length > first+1) {
-                            int end = itemName.indexOf("*", first + 1);
-                            if (end > -1 && length > end) {
-                                final String shortName = itemName.substring(first + 1, end);
-                                tXfSettlementItemEntity.setItemShortName(shortName);
-                            }
-                        }
-                    }
+
                     if (status < tXfSettlementItemEntity.getItemFlag() ) {
                         status = tXfSettlementItemEntity.getItemFlag();
                     }
@@ -1120,11 +1109,10 @@ public class DeductService   {
         String itemName = entity.getItemName();
         List<String> splitInfo = ItemNameUtils.splitItemName(itemName);
         if (splitInfo.size() == 2) {
-            String itemShortName = splitInfo.get(1);
+            String itemShortName = splitInfo.get(0);
+            entity.setItemShortName(itemShortName);
             if (map.containsKey(itemShortName)) {
                 TaxCodeBean taxCodeBean = map.get(itemShortName);
-                entity.setItemName(splitInfo.get(0));
-                entity.setItemShortName(taxCodeBean.getTaxShortName());
                 entity.setGoodsTaxNo(taxCodeBean.getTaxCode());
                 entity.setGoodsNoVer(taxCodeBean.getTaxCodeVersion());
                 entity.setTaxPreCon(taxCodeBean.getSpecialManagement());
