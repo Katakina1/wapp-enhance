@@ -112,7 +112,7 @@ public class AgreementBillService extends DeductService{
      * @param deductionEnum
      * @param tXfSettlementEntity
      */
-    public NewExceptionReportEvent executeMatch(TXfDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity, Integer targetStatus, List<BlueInvoiceService.MatchRes> matchResList) {
+    public void executeMatch(TXfDeductionBusinessTypeEnum deductionEnum, TXfSettlementEntity tXfSettlementEntity, Integer targetStatus, List<BlueInvoiceService.MatchRes> matchResList) {
         //匹配蓝票
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
         try {
@@ -169,7 +169,6 @@ public class AgreementBillService extends DeductService{
             log.error("结算单匹配蓝票失败："+e.getMessage(), e);
             throw e;
         }
-        return null;
     }
 
 
