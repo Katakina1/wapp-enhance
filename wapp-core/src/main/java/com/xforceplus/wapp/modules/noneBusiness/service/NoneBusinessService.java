@@ -417,8 +417,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         wrapper.eq(TXfNoneBusinessUploadDetailEntity::getInvoiceNo, invoiceNo);
         wrapper.eq(TXfNoneBusinessUploadDetailEntity::getInvoiceCode, invoiceCode);
         wrapper.eq(TXfNoneBusinessUploadDetailEntity::getSubmitFlag, Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
-        wrapper.set(TXfNoneBusinessUploadDetailEntity::getSubmitFlag, Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG);
-        return wrapper.update();
+        return wrapper.remove();
     }
 
     /**
