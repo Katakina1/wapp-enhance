@@ -157,6 +157,7 @@ public class AgreementBillService extends DeductService{
             newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );
             newExceptionReportEvent.setType( deductionEnum==TXfDeductionBusinessTypeEnum.AGREEMENT_BILL? ExceptionReportTypeEnum.AGREEMENT: ExceptionReportTypeEnum.EPD );
             applicationContext.publishEvent(newExceptionReportEvent);
+            log.info(" {}单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} 金额 {} 税率 {}",deductionEnum.getDes(),tXfSettlementEntity.getSellerNo(),tXfSettlementEntity.getPurchaserNo(),tXfSettlementEntity.getAmountWithoutTax(),tXfSettlementEntity.getTaxRate());
             throw n;
         }
         catch (Exception e) {
