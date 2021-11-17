@@ -307,7 +307,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             wrapper.eq(TDxRecordInvoiceEntity.VENDERID,venderid);
         }
         if(StringUtils.isNotEmpty(settlementNo)){
-            wrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,settlementNo);
+            wrapper.eq(TDxRecordInvoiceEntity.SETTLEMENT_NO,settlementNo);
         }
         if(StringUtils.isNotEmpty(invoiceStatus)){
             wrapper.eq(TDxRecordInvoiceEntity.INVOICE_STATUS,invoiceStatus);
