@@ -90,12 +90,15 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         return page;
     }
 
-    public TXfBlackWhiteCompanyEntity getBlackListBy6D(String supplier6d, String supplierType) {
+    public TXfBlackWhiteCompanyEntity getBlackListBySapNo(String sapNo, String supplierType) {
         QueryWrapper<TXfBlackWhiteCompanyEntity> wrapper = new QueryWrapper<>();
-        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_6D, supplier6d);
+        wrapper.eq(TXfBlackWhiteCompanyEntity.SAP_NO, sapNo);
         wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, supplierType);
-        return getOne(wrapper);
-
+        List<TXfBlackWhiteCompanyEntity> list = list(wrapper);
+        if(CollectionUtils.isEmpty(list)){
+            return null;
+        }
+        return list.get(0);
     }
 
     /**

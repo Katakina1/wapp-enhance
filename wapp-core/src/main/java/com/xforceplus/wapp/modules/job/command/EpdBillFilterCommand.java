@@ -14,12 +14,14 @@ import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
 import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -148,6 +150,12 @@ public class EpdBillFilterCommand implements Command {
                 .map(v -> {
                     try {
                         EPDBillData data = TXfOriginEpdBillEntityConvertor.INSTANCE.toEpdBillData(v);
+                        if (StringUtils.isNotBlank(v.getAccount())) {
+                            TXfBlackWhiteCompanyEntity tXfBlackWhiteCompanyEntity = speacialCompanyService.getBlackListBySapNo(v.getAccount(), "1");
+                            if (tXfBlackWhiteCompanyEntity != null) {
+                                data.setMemo(tXfBlackWhiteCompanyEntity.getSupplier6d());
+                            }
+                        }
                         data.setBatchNo(jobName);
                         return data;
                     } catch (Exception e) {
