@@ -424,13 +424,13 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             return Collections.emptyMap();
         }
 
-        final QueryWrapper<TDxRecordInvoiceEntity> wrapper = Wrappers.<TDxRecordInvoiceEntity>query().select(TDxRecordInvoiceEntity.SETTLEMENTNO, "count(1) as count ")
-                .in(TDxRecordInvoiceEntity.SETTLEMENTNO, settlementNos).groupBy(TDxRecordInvoiceEntity.SETTLEMENTNO);
+        final QueryWrapper<TDxRecordInvoiceEntity> wrapper = Wrappers.<TDxRecordInvoiceEntity>query().select(TDxRecordInvoiceEntity.SETTLEMENT_NO, "count(1) as count ")
+                .in(TDxRecordInvoiceEntity.SETTLEMENT_NO, settlementNos).groupBy(TDxRecordInvoiceEntity.SETTLEMENT_NO);
         final List<Map<String, Object>> maps = tDxRecordInvoiceDao.selectMaps(wrapper);
         Map<String, Integer> result = new HashMap<>();
         if (CollectionUtils.isNotEmpty(maps)) {
             maps.forEach(x -> {
-                final Object settlement = x.get(TDxRecordInvoiceEntity.SETTLEMENTNO);
+                final Object settlement = x.get(TDxRecordInvoiceEntity.SETTLEMENT_NO);
                 final Integer count = (Integer) x.get("count");
                 result.put(settlement.toString(), count);
             });

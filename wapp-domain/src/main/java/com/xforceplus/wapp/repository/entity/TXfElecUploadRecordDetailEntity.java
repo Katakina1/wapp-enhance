@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-11-01
+ * @since 2021-11-17
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -55,12 +55,6 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
      */
     @TableField("invoice_no")
     private String invoiceNo;
-
-    /**
-     * 发票代码
-     */
-    @TableField("invoice_code")
-    private String invoiceCode;
 
     /**
      * 失败原因
@@ -119,7 +113,7 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     /**
      * 结算单号
      */
-    @TableField("settlementNo")
+    @TableField("settlement_no")
     private String settlementNo;
 
     /**
@@ -140,6 +134,12 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     @TableField("check_code")
     private String checkCode;
 
+    /**
+     * 发票代码
+     */
+    @TableField("invoice_code")
+    private String invoiceCode;
+
 
     public static final String ID = "id";
 
@@ -150,8 +150,6 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     public static final String XF_VERIFY_TASK_ID = "xf_verify_task_id";
 
     public static final String INVOICE_NO = "invoice_no";
-
-    public static final String INVOICE_CODE = "invoice_code";
 
     public static final String REASON = "reason";
 
@@ -171,12 +169,14 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
 
     public static final String UPLOAD_PATH = "upload_path";
 
-    public static final String SETTLEMENTNO = "settlementNo";
+    public static final String SETTLEMENT_NO = "settlement_no";
 
     public static final String PAPER_DREW_DATE = "paper_drew_date";
 
     public static final String AMOUNT = "amount";
 
     public static final String CHECK_CODE = "check_code";
+
+    public static final String INVOICE_CODE = "invoice_code";
 
 }

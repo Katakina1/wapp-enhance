@@ -9,7 +9,7 @@
             <!--                </Pattern>-->
             <!--            </layout>-->
             <layout class="com.xforceplus.wapp.config.log.TraceIdMDCPatternLogbackLayout">
-                <Pattern>~~~[%level]~~[%d{yyyy-MM-dd HH:mm:ss.SSS}]~~[%X{traceId},%X{tid}]~~[%thread]~~[%logger{36}.%M:%L- %msg]~~%n
+                <Pattern>~~~[%level]~~[%d{yyyy-MM-dd HH:mm:ss.SSS}]~~[%X{traceId}]~~[%thread]~~[%logger{36}.%M:%L- %msg]~~%n
                 </Pattern>
             </layout>
             <charset>utf-8</charset>
