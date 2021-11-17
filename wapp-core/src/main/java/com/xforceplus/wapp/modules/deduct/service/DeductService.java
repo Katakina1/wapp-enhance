@@ -605,7 +605,6 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReference()));
             tXfBillDeductEntity.setAgreementTaxCode(defaultValue(tmp.getTaxCode()));
             tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()));
-            tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getDocumentNo()));
             tXfBillDeductEntity.setAmountWithTax( defaultValue(x.getAmountWithTax()));
             tXfBillDeductEntity.setAmountWithoutTax(tXfBillDeductEntity.getAmountWithTax().divide(BigDecimal.ONE.add(defaultValue(tXfBillDeductEntity.getTaxRate())), 2, RoundingMode.HALF_UP));
             tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithTax().subtract(tXfBillDeductEntity.getAmountWithoutTax()));
