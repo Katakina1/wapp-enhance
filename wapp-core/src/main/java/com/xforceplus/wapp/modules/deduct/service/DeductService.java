@@ -978,17 +978,17 @@ public class DeductService   {
             if (splitInfo.size() != 2) {
                 res.put(key, null);
             }
-            val either = taxCodeService.searchTaxCode(String.valueOf(tmpInvoce.getTaxRate()), null, splitInfo.get(1));
+            val either = taxCodeService.searchTaxCode(String.valueOf(TaxRateTransferEnum.transferTaxRate(tmpInvoce.getTaxRate())), null, splitInfo.get(0));
             if (either.isRight()) {
                 List<TaxCodeBean> taxCodeBeans = either.get();
                 if (CollectionUtils.isNotEmpty(taxCodeBeans)) {
                     TaxCodeBean taxCodeBean = taxCodeBeans.get(0);
-                    res.put(splitInfo.get(1), taxCodeBean);
+                    res.put(splitInfo.get(0), taxCodeBean);
                  }else{
-                    res.put(splitInfo.get(1), null);
+                    res.put(splitInfo.get(0), null);
                 }
             }
-            res.put(splitInfo.get(1), null);
+            res.put(splitInfo.get(0), null);
         });
         return res;
     }
