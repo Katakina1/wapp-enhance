@@ -265,6 +265,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCheckCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setPaperDrewDate(StringUtils.EMPTY);
+            tXfPreInvoiceEntity.setSaleListFlag(splitPreInvoiceInfo.getPreInvoiceMain().getSaleListFileFlag().intValue());
             tXfPreInvoiceEntity.setCreateTime(date);
             tXfPreInvoiceEntity.setUpdateTime(date);
             tXfPreInvoiceEntity.setCreateUserId(0L);

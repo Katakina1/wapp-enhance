@@ -1,15 +1,15 @@
 package com.xforceplus.wapp.repository.entity;
 
-import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.util.Date;
 /**
  * <p>
     * 
@@ -266,7 +266,8 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     @TableField("create_user_id")
     private Long createUserId;
 
-
+    @TableField("sale_list_flag")
+    private Integer saleListFlag;
     public static final String SETTLEMENT_NO = "settlement_no";
 
     public static final String PURCHASER_NO = "purchaser_no";
@@ -348,5 +349,7 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     public static final String UPDATE_USER_ID = "update_user_id";
 
     public static final String CREATE_USER_ID = "create_user_id";
+
+    public static final String SALE_LIST_FLAG = "sale_list_flag";
 
 }
