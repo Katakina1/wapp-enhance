@@ -131,7 +131,7 @@ public class ClaimBillService extends DeductService{
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
                         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
-                        AtomicReference<TXfBillDeductEntity> tmp = null;
+                        AtomicReference<TXfBillDeductEntity> tmp = new AtomicReference<>();
                         successSuppliers.add(() -> {
                                     tmp.set(doItemMatch(tXfBillDeductEntity, matchItem));
                                     return true;
