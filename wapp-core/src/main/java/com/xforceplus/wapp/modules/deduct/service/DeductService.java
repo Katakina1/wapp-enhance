@@ -976,7 +976,7 @@ public class DeductService   {
             BlueInvoiceService.InvoiceItem tmpInvoce = map.get(key);
             List<String> splitInfo = ItemNameUtils.splitItemName(key);
             if (splitInfo.size() != 2) {
-                res.put(key, null);
+                return;
             }
             val either = taxCodeService.searchTaxCode(String.valueOf(TaxRateTransferEnum.transferTaxRate(tmpInvoce.getTaxRate())), null, splitInfo.get(0));
             if (either.isRight()) {
@@ -984,11 +984,9 @@ public class DeductService   {
                 if (CollectionUtils.isNotEmpty(taxCodeBeans)) {
                     TaxCodeBean taxCodeBean = taxCodeBeans.get(0);
                     res.put(splitInfo.get(0), taxCodeBean);
-                 }else{
-                    res.put(splitInfo.get(0), null);
-                }
+                 }
             }
-            res.put(splitInfo.get(0), null);
+
         });
         return res;
     }
