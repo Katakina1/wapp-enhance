@@ -1112,7 +1112,7 @@ public class DeductService   {
                 TaxCodeBean taxCodeBean = map.get(itemShortName);
                 entity.setGoodsTaxNo(taxCodeBean.getTaxCode());
                 entity.setGoodsNoVer(taxCodeBean.getTaxCodeVersion());
-                entity.setTaxPreCon(taxCodeBean.getSpecialManagement());
+                entity.setTaxPreCon(defaultValue(taxCodeBean.getSpecialManagement()));
              }
         }
         return entity;
