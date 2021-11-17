@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -130,9 +131,15 @@ public class ClaimBillService extends DeductService{
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
                         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
+
+                        AtomicReference<TXfBillDeductEntity> tmp = null;
                         successSuppliers.add(() -> {
-                                    TXfBillDeductEntity tmp =  doItemMatch(tXfBillDeductEntity, matchItem);
-                                    claimMatchBlueInvoice(tmp, nosuchInvoiceSeller);
+                                    tmp.set(doItemMatch(tXfBillDeductEntity, matchItem));
+                                    return true;
+                                }
+                        );
+                        successSuppliers.add(() -> {
+                                    claimMatchBlueInvoice(tmp.get(), nosuchInvoiceSeller);
                                     return true;
                                 }
                         );
