@@ -939,8 +939,8 @@ public class DeductService   {
                     tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
                     tXfSettlementItemEntity.setItemSpec(defaultValue(invoiceItem.getModel()));
                     tXfSettlementItemEntity.setQuantityUnit(defaultValue(invoiceItem.getUnit()));
-                    tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
                     tXfSettlementItemEntity = fixTaxCode(tXfSettlementItemEntity, map);
+                    tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
 
                     if (status < tXfSettlementItemEntity.getItemFlag() ) {
                         status = tXfSettlementItemEntity.getItemFlag();
@@ -1074,7 +1074,7 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    public TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
+    public TXfSettlementItemEntity fixTaxCode(TXfSettlementItemEntity entity) {
         if (StringUtils.isEmpty(entity.getItemCode())) {
             return entity;
         }
