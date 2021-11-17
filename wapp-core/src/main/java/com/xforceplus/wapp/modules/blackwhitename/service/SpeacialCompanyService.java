@@ -94,6 +94,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         QueryWrapper<TXfBlackWhiteCompanyEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfBlackWhiteCompanyEntity.SAP_NO, sapNo);
         wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, supplierType);
+        wrapper.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
         List<TXfBlackWhiteCompanyEntity> list = list(wrapper);
         if(CollectionUtils.isEmpty(list)){
             return null;
