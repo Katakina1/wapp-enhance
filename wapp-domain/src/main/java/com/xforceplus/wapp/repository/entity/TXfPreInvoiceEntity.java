@@ -266,8 +266,8 @@ public class TXfPreInvoiceEntity extends BaseEntity {
     @TableField("create_user_id")
     private Long createUserId;
 
-    @TableField("sale_list_flag")
-    private Integer saleListFlag;
+    @TableField("goods_list_flag")
+    private Integer goodsListFlag;
     public static final String SETTLEMENT_NO = "settlement_no";
 
     public static final String PURCHASER_NO = "purchaser_no";
@@ -350,6 +350,6 @@ public class TXfPreInvoiceEntity extends BaseEntity {
 
     public static final String CREATE_USER_ID = "create_user_id";
 
-    public static final String SALE_LIST_FLAG = "sale_list_flag";
+    public static final String GOODS_LIST_FLAG = "goods_list_flag";
 
 }
