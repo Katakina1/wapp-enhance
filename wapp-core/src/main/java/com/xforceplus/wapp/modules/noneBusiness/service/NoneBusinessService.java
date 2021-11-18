@@ -314,7 +314,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             }
 
 
-            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
+            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadPath());
             try {
                 String suffix = null;
                 if (fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
