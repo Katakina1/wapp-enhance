@@ -160,7 +160,11 @@ public class AgreementBillFilterCommand implements Command {
                         return true;
                     }
                     // 非黑名单供应商
-                    return !speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
+                    boolean flag = speacialCompanyService.hitBlackOrWhiteList("0", mergeTmpEntity.getMemo());
+                    if(flag){
+                        log.warn("memo:{}已配置黑名单不能入库",mergeTmpEntity.getMemo());
+                    }
+                    return !flag;
                 })
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
