@@ -155,9 +155,6 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='sellerName!=null'>"+
             "and d.seller_name = #{sellerName}\n"+
             "</if>"+
-            "<if test='businessNo!=null'>"+
-            "and d.business_no = #{businessNo}\n"+
-            "</if>"+
             "<if test='deductStartDate!=null'>"+
             "and d.deduct_date &gt;=  #{deductStartDate}\n"+
             "</if>"+
@@ -177,7 +174,8 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') = 0 or  (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
+            "and s.settlement_status != 7 and d.ref_settlement_no != ''\n"+
+            "and ((select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') = 0 or  (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7))\n"+
             "</if>"+
             "<if test='key == 2'>"+
             "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+
@@ -221,9 +219,6 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "<if test='sellerName!=null'>"+
             "and d.seller_name = #{sellerName}\n"+
             "</if>"+
-            "<if test='businessNo!=null'>"+
-            "and d.business_no = #{businessNo}\n"+
-            "</if>"+
             "<if test='deductStartDate!=null'>"+
             "and d.deduct_date &gt;=  #{deductStartDate}\n"+
             "</if>"+
@@ -243,7 +238,8 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
             "and d.status = 301\n"+
             "</if>"+
             "<if test='key == 1'>"+
-            "and (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') = 0 or  (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7)\n"+
+            "and s.settlement_status != 7 and d.ref_settlement_no != ''\n"+
+            "and ((select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') = 0 or  (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.red_notification_no != '') &lt; (select count(1) from t_xf_pre_invoice p where p.settlement_no = s.settlement_no and p.pre_invoice_status != 7))\n"+
             "</if>"+
             "<if test='key == 2'>"+
             "and (s.settlement_status = 2 or s.settlement_status = 3)\n"+

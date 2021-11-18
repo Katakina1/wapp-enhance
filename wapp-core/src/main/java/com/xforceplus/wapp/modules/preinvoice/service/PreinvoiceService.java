@@ -21,6 +21,7 @@ import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommRedNotificationService;
 import com.xforceplus.wapp.service.CommSettlementService;
+import com.xforceplus.wapp.util.ItemNameUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -264,6 +265,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCheckCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setPaperDrewDate(StringUtils.EMPTY);
+            tXfPreInvoiceEntity.setGoodsListFlag(splitPreInvoiceInfo.getPreInvoiceMain().getSaleListFileFlag().intValue());
             tXfPreInvoiceEntity.setCreateTime(date);
             tXfPreInvoiceEntity.setUpdateTime(date);
             tXfPreInvoiceEntity.setCreateUserId(0L);
@@ -354,7 +356,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterDiscountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
             String name = tXfSettlementItemEntity.getItemName();
-            List<String> list = splitItemName(name);
+            List<String> list = ItemNameUtils.splitItemName(name);
             if (CollectionUtils.isNotEmpty(list)) {
                 billItem.setItemName(list.get(1));
                 billItem.setItemShortName(list.get(0));
@@ -372,21 +374,6 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         createPreInvoiceParam.setRule(splitRule);
         createPreInvoiceParam.setRoutingKey("12");
         return createPreInvoiceParam;
-    }
-
-    private static List<String> splitItemName(String name) {
-        if (StringUtils.isEmpty(name)) {
-            return Collections.EMPTY_LIST;
-        }
-
-        List<String> res = new ArrayList<>();
-        String[] str = name.split("\\*");
-        if (str.length == 3) {
-            res.add(str[1]);
-            res.add(str[2]);
-            return res;
-        }
-        return Collections.EMPTY_LIST;
     }
 
     /**

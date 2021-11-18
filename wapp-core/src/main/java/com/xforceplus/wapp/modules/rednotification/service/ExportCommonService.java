@@ -118,11 +118,21 @@ public class ExportCommonService {
      * @return
      */
     public  void sendMessage(Long logId,String userName , String title,String content){
+        sendMessage(logId,userName,title,content,true);
+    }
+
+    /**
+     * 发送消息
+     * @return
+     */
+    public  void sendMessage(Long logId,String userName , String title,String content,boolean success){
         TDxMessagecontrolEntity messagecontrolEntity = new TDxMessagecontrolEntity();
         //这里的userAccount是userName
         messagecontrolEntity.setUserAccount(userName);
         messagecontrolEntity.setContent(content);
-        messagecontrolEntity.setUrl(getUrl(logId));
+        if (success) {
+            messagecontrolEntity.setUrl(getUrl(logId));
+        }
         messagecontrolEntity.setTitle(title);
         commonMessageService.sendMessage(messagecontrolEntity);
     }

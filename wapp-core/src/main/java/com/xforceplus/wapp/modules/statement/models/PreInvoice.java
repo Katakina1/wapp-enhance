@@ -95,6 +95,8 @@ public class PreInvoice {
     private String redNotificationNo;
     @ApiModelProperty("红字信息编号申请状态:0.未申请、1.发起申请、2.已申请")
     private Integer redNotificationFlag;
+    @ApiModelProperty("是否有销货清单")
+    private Integer goodsListFlag;
     @ApiModelProperty("更新时间")
     private Long updateTime;
     @ApiModelProperty("明细列表")
