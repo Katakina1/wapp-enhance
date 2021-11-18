@@ -75,14 +75,14 @@ public class InvoiceFileService{
             file.setStorage(0);
             file.setOrigin(0);
             file.setCreateUser(electronicUploadRecordDetailEntity.getCreateUser());
-            file.setPath(electronicUploadRecordDetailEntity.getUploadId());
+            file.setPath(electronicUploadRecordDetailEntity.getUploadPath());
             if (isOfd) {
                 file.setType(InvoiceFileEntity.TYPE_OF_OFD);
                 final TXfInvoiceFileEntity jpeg = map.get(InvoiceFileEntity.TYPE_OF_JPEG);
                 if (jpeg != null) {
-                    updateImg(jpeg, invoiceMain.getOfdImageUrl());
+                    updateImg(jpeg, invoiceMain.getOfdImageUrl(),invoiceMain);
                 } else {
-                    saveImg(file, invoiceMain.getOfdImageUrl());
+                    saveImg(file, invoiceMain.getOfdImageUrl(),invoiceMain);
                 }
             } else {
                 file.setType(InvoiceFileEntity.TYPE_OF_PDF);
@@ -92,21 +92,21 @@ public class InvoiceFileService{
             if (isOfd) {
                 final TXfInvoiceFileEntity jpeg = map.get(InvoiceFileEntity.TYPE_OF_JPEG);
                 if (jpeg != null) {
-                    updateImg(jpeg, invoiceMain.getOfdImageUrl());
+                    updateImg(jpeg, invoiceMain.getOfdImageUrl(),invoiceMain);
                 } else {
-                    saveImg(file, invoiceMain.getOfdImageUrl());
+                    saveImg(file, invoiceMain.getOfdImageUrl(),invoiceMain);
                 }
             }
-            file.setPath(electronicUploadRecordDetailEntity.getUploadId());
+            file.setPath(electronicUploadRecordDetailEntity.getUploadPath());
             this.invoiceFileDao.update(file);
         }
     }
 
-    private void saveImg(TXfInvoiceFileEntity ofd, String imgPreviewUrl) {
+    private void saveImg(TXfInvoiceFileEntity ofd, String imgPreviewUrl,InvoiceMain invoiceMain) {
 
         final ResponseEntity<byte[]> forEntity = restTemplate.getForEntity(imgPreviewUrl, byte[].class);
         try {
-            final String uploadFile = fileService.uploadFile(forEntity.getBody(), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
+            final String uploadFile = fileService.uploadFile(forEntity.getBody(), UUID.randomUUID().toString().replace("-", "") + ".jpeg",invoiceMain.getSellerTaxNo());
             UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
             final String uploadId = uploadFileResult.getData().getUploadId();
             TXfInvoiceFileEntity img = new TXfInvoiceFileEntity();
@@ -126,10 +126,10 @@ public class InvoiceFileService{
         }
     }
 
-    private void updateImg(TXfInvoiceFileEntity img, String imgPreviewUrl) {
+    private void updateImg(TXfInvoiceFileEntity img, String imgPreviewUrl,InvoiceMain invoiceMain) {
         try {
             final ResponseEntity<byte[]> forEntity = restTemplate.getForEntity(imgPreviewUrl, byte[].class);
-            final String uploadFile = fileService.uploadFile(forEntity.getBody(), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
+            final String uploadFile = fileService.uploadFile(forEntity.getBody(), UUID.randomUUID().toString().replace("-", "") + ".jpeg",invoiceMain.getSellerTaxNo());
             UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
             final String uploadId = uploadFileResult.getData().getUploadId();
             img.setPath(uploadId);

@@ -119,7 +119,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             String uploadResult = null;
             try {
                 //上传源文件到ftp服务器
-                uploadResult = fileService.uploadFile(ofdEntity, fileName.toString());
+                uploadResult = fileService.uploadFile(ofdEntity, fileName.toString(),"noneBusiness");
             } catch (IOException ex) {
                 log.error("非商上传电票到文件服务器失败:{}", ex);
             }
@@ -179,7 +179,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             String uploadResult = null;
             try {
                 //上传源文件到ftp服务器
-                uploadResult = fileService.uploadFile(pdfEntity, fileName.toString());
+                uploadResult = fileService.uploadFile(pdfEntity, fileName.toString(),"noneBusiness");
             } catch (IOException ex) {
                 log.error("非商上传电票到文件服务器失败:{}", ex);
             }
