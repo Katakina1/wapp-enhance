@@ -144,7 +144,7 @@ public class EpdBillFilterCommand implements Command {
                         return false;
                     } else {
                         // 白名单供应商
-                        boolean flag = speacialCompanyService.hitBlackOrWhiteList("1", v.getAccount());
+                        boolean flag = speacialCompanyService.hitBlackOrWhiteBySapNo("1", v.getAccount());
                         if(!flag){
                             log.warn("sap编号:{} 未配置白名单不能入库",v.getAccount());
                         }
