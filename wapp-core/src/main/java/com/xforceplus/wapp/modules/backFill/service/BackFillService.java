@@ -330,7 +330,7 @@ public class BackFillService {
                         detailEntity.setXfVerifyTaskId(verifyTaskId);
                         detailEntity.setStatus(true);
                         //文件上传
-                        uploadFile(ofd, 0, detailEntity);
+                        uploadFile(ofd, 0, detailEntity,recordEntity.getVendorId());
                     } else {
                         detailEntity.setStatus(false);
                         detailEntity.setReason(verificationResponse.getMessage());
@@ -359,7 +359,7 @@ public class BackFillService {
                     detailEntity.setSettlementNo(specialElecUploadDto.getSettlementNo());
                     detailEntity.setCreateTime(new Date());
                     //文件上传
-                    uploadFile(m.getValue(), Constants.FILE_TYPE_PDF, detailEntity);
+                    uploadFile(m.getValue(), Constants.FILE_TYPE_PDF, detailEntity,recordEntity.getVendorId());
                     this.electronicUploadRecordDetailDao.insert(detailEntity);
 
                 }
@@ -384,7 +384,7 @@ public class BackFillService {
      * @param fileType
      * @param detailEntity
      */
-    private void uploadFile(byte[] file, Integer fileType, TXfElecUploadRecordDetailEntity detailEntity) {
+    private void uploadFile(byte[] file, Integer fileType, TXfElecUploadRecordDetailEntity detailEntity,String venderId) {
 
         try {
 
@@ -397,7 +397,7 @@ public class BackFillService {
                 fileName.append(Constants.SUFFIX_OF_PDF);
             }
 
-            String uploadResult = fileService.uploadFile(file, fileName.toString());
+            String uploadResult = fileService.uploadFile(file, fileName.toString(),venderId);
 
             UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
 

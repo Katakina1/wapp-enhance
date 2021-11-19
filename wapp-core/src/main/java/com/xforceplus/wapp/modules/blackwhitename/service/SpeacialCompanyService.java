@@ -59,7 +59,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         this.companyConverter = companyConverter;
     }
 
-    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type, String createTimeStart, String createTimeEnd, String supplier6d) {
+    public Page<TXfBlackWhiteCompanyEntity> page(Long current, Long size, String taxNo, String companyName, String type, String createTimeStart, String createTimeEnd, String supplier6d,String sapNo) {
         LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity> wrapper = new LambdaQueryChainWrapper<TXfBlackWhiteCompanyEntity>(baseMapper);
         wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED);
         if (StringUtils.isNotEmpty(taxNo)) {
@@ -70,6 +70,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         }
         if (StringUtils.isNotEmpty(type)) {
             wrapper.eq(TXfBlackWhiteCompanyEntity::getSupplierType, type);
+        }
+        if (StringUtils.isNotEmpty(sapNo)) {
+            wrapper.eq(TXfBlackWhiteCompanyEntity::getSapNo, sapNo);
         }
 
         if (StringUtils.isNotEmpty(createTimeStart)) {
@@ -185,14 +188,22 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * @param memo         供应商6D
      * @return
      */
-    public boolean hitBlackOrWhiteList(String supplierType, String memo) {
+    public boolean hitBlackOrWhiteBy6D(String supplierType, String memo) {
         return 0 < count(
                 new QueryWrapper<TXfBlackWhiteCompanyEntity>()
                         .lambda()
-                        // 黑名单
                         .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
-                        // 供应商6D
                         .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, memo)
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED)
+        );
+    }
+
+    public boolean hitBlackOrWhiteBySapNo(String supplierType, String sapNo) {
+        return 0 < count(
+                new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                        .lambda()
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
+                        .eq(TXfBlackWhiteCompanyEntity::getSapNo, sapNo)
                         .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED)
         );
     }

@@ -154,7 +154,7 @@ public class EInvoiceMatchService {
             try {
                 String base64 = verificationService.getBase64ByUrl(invoiceMain.getInvoiceCode() + invoiceMain.getInvoiceNo());
 
-                String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg");
+                String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg",invoiceMain.getSellerTaxNo());
                 UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
                 if (null != uploadFileImageResult) {
                     successEntity.setUploadId(uploadFileImageResult.getData().getUploadId());

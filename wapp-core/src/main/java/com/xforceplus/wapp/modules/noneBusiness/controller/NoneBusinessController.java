@@ -160,7 +160,7 @@ public class NoneBusinessController {
         }
         String result;
         try {
-            result = fileService.downLoadFile(tXfNoneBusinessUploadDetailEntity.getUploadId());
+            result = fileService.downLoadFile(tXfNoneBusinessUploadDetailEntity.getUploadPath());
         } catch (IOException e) {
             log.error("电票预览下载文件异常");
             return R.fail("电票预览下载文件异常");
