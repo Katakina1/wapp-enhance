@@ -74,6 +74,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         if (StringUtils.isNotEmpty(sapNo)) {
             wrapper.eq(TXfBlackWhiteCompanyEntity::getSapNo, sapNo);
         }
+
         if (StringUtils.isNotEmpty(createTimeStart)) {
             createTimeStart = DateUtils.date2DateTimeStart(createTimeStart);
 
