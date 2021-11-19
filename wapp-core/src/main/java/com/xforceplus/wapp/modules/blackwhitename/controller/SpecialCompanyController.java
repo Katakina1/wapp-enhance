@@ -46,13 +46,14 @@ public class SpecialCompanyController {
     public R<PageResult<TXfBlackWhiteCompanyEntity>> getOverdue(@ApiParam("页数") @RequestParam(required = true, defaultValue = "1") Long current,
                                                                 @ApiParam("条数") @RequestParam(required = true, defaultValue = "10") Long size,
                                                                 @ApiParam("税号") @RequestParam(required = false) String supplierTaxNo,
-                                                                @ApiParam("供应商编号") @RequestParam(required = false) String supplier6d,
+                                                                @ApiParam("供应商编号6D") @RequestParam(required = false) String supplier6d,
+                                                                @ApiParam("供应商编号") @RequestParam(required = false) String sapNo,
                                                                 @ApiParam("类型类型 0黑名单 1白名单") @RequestParam(required = false) String type,
                                                                 @ApiParam("创建时间开始") @RequestParam(required = false) String createTimeStart,
                                                                 @ApiParam("创建时间结束") @RequestParam(required = false) String createTimeEnd,
                                                                 @ApiParam("公司名称") @RequestParam(required = false) String companyName) {
         long start = System.currentTimeMillis();
-        Page<TXfBlackWhiteCompanyEntity> page = speacialCompanyService.page(current, size, supplierTaxNo,companyName,type,createTimeStart,createTimeEnd,supplier6d);
+        Page<TXfBlackWhiteCompanyEntity> page = speacialCompanyService.page(current, size, supplierTaxNo,companyName,type,createTimeStart,createTimeEnd,supplier6d,sapNo);
         log.info("黑白名单信息分页查询,耗时:{}ms", System.currentTimeMillis() - start);
         return R.ok(PageResult.of(page.getRecords(), page.getTotal(), page.getPages(), page.getSize()));
     }

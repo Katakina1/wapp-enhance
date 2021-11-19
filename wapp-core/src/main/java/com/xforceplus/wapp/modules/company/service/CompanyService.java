@@ -110,6 +110,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
      * @return
      */
     public TAcOrgEntity getOrgInfoByOrgCode(String orgCode, String orgType) {
+        log.info("根据orgcode获取公司信息 orgcode:{},orgType:{}",orgCode,orgType);
         if (StringUtils.isEmpty(orgCode)) {
             return null;
         }
