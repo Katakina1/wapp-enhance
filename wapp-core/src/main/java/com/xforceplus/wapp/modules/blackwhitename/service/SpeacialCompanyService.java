@@ -187,14 +187,22 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * @param memo         供应商6D
      * @return
      */
-    public boolean hitBlackOrWhiteList(String supplierType, String memo) {
+    public boolean hitBlackOrWhiteBy6D(String supplierType, String memo) {
         return 0 < count(
                 new QueryWrapper<TXfBlackWhiteCompanyEntity>()
                         .lambda()
-                        // 黑名单
                         .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
-                        // 供应商6D
                         .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, memo)
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED)
+        );
+    }
+
+    public boolean hitBlackOrWhiteBySapNo(String supplierType, String sapNo) {
+        return 0 < count(
+                new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                        .lambda()
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
+                        .eq(TXfBlackWhiteCompanyEntity::getSapNo, sapNo)
                         .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus,Constants.COMPANY_STATUS_ENABLED)
         );
     }
