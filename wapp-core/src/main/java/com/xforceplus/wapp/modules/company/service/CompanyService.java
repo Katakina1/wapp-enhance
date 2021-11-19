@@ -51,6 +51,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         if (StringUtils.isNotBlank(taxNo)) {
             wrapper.eq(TAcOrgEntity::getTaxNo, taxNo);
         }
+
         Page<TAcOrgEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(companyConverter.map(page.getRecords()), page);
