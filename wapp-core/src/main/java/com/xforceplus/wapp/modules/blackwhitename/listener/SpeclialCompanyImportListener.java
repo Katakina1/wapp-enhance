@@ -50,16 +50,16 @@ public class SpeclialCompanyImportListener extends AnalysisEventListener<Special
     public String checkData(SpecialCompanyImportDto SpecialCompanyImportDto){
         StringBuilder builder = new StringBuilder();
         if(StringUtils.isEmpty(SpecialCompanyImportDto.getSapNo())){
-            builder.append("供应商编号不能为空");
+            builder.append("供应商编号不能为空; ");
         }
         if(StringUtils.isEmpty(SpecialCompanyImportDto.getCompanyName())){
-            builder.append("供应商名称不能为空");
+            builder.append("供应商名称不能为空; ");
         }
         if(StringUtils.isEmpty(SpecialCompanyImportDto.getSupplierTaxNo())){
-            builder.append("供应商税号不能为空");
+            builder.append("供应商税号不能为空; ");
         }
         if(Constants.COMPANY_TYPE_WHITE.equals(type)&&StringUtils.isEmpty(SpecialCompanyImportDto.getSupplier6d())){
-            builder.append("供应商6D编号不能为空");
+            builder.append("供应商6D编号不能为空; ");
         }
         return builder.toString();
     }

@@ -8,8 +8,8 @@ import lombok.Data;
  * @author aiwentao@xforceplus.com
  */
 @Data
-@ApiModel("白名单导入配置")
-public class SpecialCompanyImportDto {
+@ApiModel("黑名单导入配置")
+public class SpecialCompanyBlackImportDto {
 
 
     @ExcelProperty(value = "供应商编号", index = 0)
@@ -23,10 +23,8 @@ public class SpecialCompanyImportDto {
     @ExcelProperty(value = "供应商税号", index = 2)
     private String supplierTaxNo;
 
-    @ExcelProperty(value = "供应商6D编号", index = 3)
-    private String supplier6d;
 
-    @ExcelProperty(index = 4)
+    @ExcelProperty(index = 3)
     private String errorMessage;
 
 
