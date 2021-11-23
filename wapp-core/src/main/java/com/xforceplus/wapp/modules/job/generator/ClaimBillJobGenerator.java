@@ -3,6 +3,7 @@ package com.xforceplus.wapp.modules.job.generator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import com.xforceplus.wapp.client.LockClient;
 import com.xforceplus.wapp.component.SFTPRemoteManager;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
@@ -36,6 +37,9 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Autowired
     private BillJobService billJobService;
 
+    @Autowired
+    private LockClient lockClient;
+
     @Value("${claimBill.remote.path}")
     private String remotePath;
 
@@ -44,10 +48,12 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Override
     public void generate() {
         try {
-
             log.info("启动原始索赔单任务生成器");
-            List<String> fileNames = scanFiles(remotePath);
-            createJob(CLAIM_BILL_JOB.getJobType(), fileNames);
+            lockClient.tryLock("claimBillJobGenerator", () -> {
+                log.info("启动原始索赔单任务生成器成功");
+                List<String> fileNames = scanFiles(remotePath);
+                createJob(CLAIM_BILL_JOB.getJobType(), fileNames);
+            }, -1, 1);
         }finally {
             this.sftpRemoteManager.closeChannel();
         }
