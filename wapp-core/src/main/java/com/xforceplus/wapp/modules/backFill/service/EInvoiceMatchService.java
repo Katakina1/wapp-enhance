@@ -262,33 +262,32 @@ public class EInvoiceMatchService {
         electronicUploadRecordDetailEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
         electronicUploadRecordDetailEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
         electronicUploadRecordDetailEntity.setStatus(true);
-        //validateOrg(invoiceMain, recordEntity, orgEntity);
-        validateTax(invoiceMain, invoiceDetails);
         //校验购销对
-        QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
-        settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO, electronicUploadRecordDetailEntity.getSettlementNo());
-        TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(settlementWrapper);
-        if (tXfSettlementEntity == null) {
-            throw new EnhanceRuntimeException("未找到对应的结算单");
+        //validateOrg(invoiceMain, recordEntity, orgEntity);
+        //校验税率
+        validateTax(invoiceMain, invoiceDetails);
+        if(StringUtils.isNotEmpty(electronicUploadRecordDetailEntity.getSettlementNo())){
+            QueryWrapper<TXfSettlementEntity> settlementWrapper = new QueryWrapper<>();
+            settlementWrapper.eq(TXfSettlementEntity.SETTLEMENT_NO, electronicUploadRecordDetailEntity.getSettlementNo());
+            TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectOne(settlementWrapper);
+            if (tXfSettlementEntity == null) {
+                throw new EnhanceRuntimeException("未找到对应的结算单");
+            }
+            /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
+            throw new EnhanceRuntimeException("购方名称不一致");
+            }
+            if (!invoiceMain.getPurchaserTaxNo().equals(tXfSettlementEntity.getPurchaserTaxNo())) {
+                throw new EnhanceRuntimeException("购方税号不一致");
+            }
+            if (!invoiceMain.getSellerName().equals(tXfSettlementEntity.getSellerName())) {
+                throw new EnhanceRuntimeException("销方名称不一致");
+            }
+            if (!invoiceMain.getSellerTaxNo().equals(tXfSettlementEntity.getSellerTaxNo())) {
+                throw new EnhanceRuntimeException("销方税号不一致");
+            }*/
         }
         String invoiceType = InvoiceUtil.getInvoiceType(invoiceMain.getInvoiceType(), invoiceMain.getInvoiceCode());
-
-//        if (!invoiceType.equals(tXfSettlementEntity.getInvoiceType())) {
-//            throw new EnhanceRuntimeException("发票类型与结算单不一致");
-//        }
         invoiceMain.setInvoiceType(invoiceType);
-     /*   if (!invoiceMain.getPurchaserName().equals(tXfSettlementEntity.getPurchaserName())) {
-            throw new EnhanceRuntimeException("购方名称不一致");
-        }
-        if (!invoiceMain.getPurchaserTaxNo().equals(tXfSettlementEntity.getPurchaserTaxNo())) {
-            throw new EnhanceRuntimeException("购方税号不一致");
-        }
-        if (!invoiceMain.getSellerName().equals(tXfSettlementEntity.getSellerName())) {
-            throw new EnhanceRuntimeException("销方名称不一致");
-        }
-        if (!invoiceMain.getSellerTaxNo().equals(tXfSettlementEntity.getSellerTaxNo())) {
-            throw new EnhanceRuntimeException("销方税号不一致");
-        }*/
         //从备注里截取红字信息编号
         TDxRecordInvoiceEntity recordInvoice = new TDxRecordInvoiceEntity();
         if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0  && new BigDecimal(invoiceDetails.get(0).getTaxRate()).compareTo(BigDecimal.ZERO) !=0){
@@ -303,7 +302,6 @@ public class EInvoiceMatchService {
                 }
             }
         }
-        recordInvoice.setSettlementNo(electronicUploadRecordDetailEntity.getSettlementNo());
         recordInvoice.setVenderid(recordEntity.getVendorId());
         recordInvoice.setJvcode(recordEntity.getJvCode());
         recordInvoice.setInvoiceCode(invoiceMain.getInvoiceCode());
