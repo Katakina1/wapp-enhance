@@ -1,3 +1,133 @@
 wapp:
+  tax-rate: 0.00,0.01,0.03,0.06,0.09,0.10,0.11,0.13,0.16,0.17
   integration:
-    enabled: false
+    authentication: Walmart-wapp-enhance-dev2021101114111213460599
+    client-id: T395054492021101114111213460567
+    customer-no: T395054492021101114111213460567
+    tenant-id: 4882809030005538709
+    tenant-code: Walmart
+    tenant-name: Walmart
+    action:
+      # ofd解析 验签
+      ofd: 0E707DB76E9B55CA069263CE911E36A5
+      # 发票验真
+      verification: 3A0ED452A8386C3B04B1F9C3F6C76A42
+      # 申请红字信息表
+      rednotification: FECD0B7724B239B3C5950FDBDB1D09E0
+      # 获取终端
+      terminals: 816A43875B12DE4B50EBEC29E4DA56E2
+      splitInvoice: 639C87A65FE9E5B0557651202E474581
+
+      # 红字信息撤销
+      rollback: 8F8D2FFCA3F768BB2D7A4D7634BB7274
+      # 红字信息生成pdf
+      genredpdf: E96F0AB61D35F93BF48928D568A97C5B
+      #识别
+      discern: 043F1FF00631D5E8F0261CD532D2F477
+      #下载附件
+      downLoadAction: 150DA7230F31582EC8F1B164E91DB0E4
+      discern-callbackUrl: inte-janus.melete
+      # 税编查询
+      tax-code: 978FDBCF06496528939EB352B3711394
+
+    host:
+      tcp: janus-tcp-inte-tx.xforceplus.com
+      http: https://janus-inte-tx.xforceplus.com:443
+    sign:
+      tax-code: 0618de7ca5a54e44b85293cc7929312e
+      splitInvoice: 0618de7ca5a54e44b85293cc7929312e
+    port:
+      tcp: 443
+  db2:
+    base-url: 127.0.0.1
+  export:
+    tmp: E:/tomcattmp
+  rednotification:
+    maxApply: 99
+
+activemq:
+  queue-name:
+    export-request: local-cn.wm.host.enhance.export-request.queue # 导出申请
+    enhance-claim-verdict-queue: local-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+    export-success-queue-gfone: local-cn.wm.host.export.success.queue.gfone
+taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+
+
+
+#图片存储路径
+filePathConstan:
+  remoteImageRootPath: /home/wappftp/jxfp/image/
+  remoteCostFileRootPath: /home/wappftp/jxfp/cost/
+  remoteKnowFileRootPath: /home/wappftp/jxfp/knowCenter/
+  remoteAnnouncementRootPath: /home/wappftp/jxfp/announcement/
+  remoteQuestionPaperFileRootPath: /home/wappftp/jxfp/question/
+  remoteQuestionPaperFileTempRootPath: /home/wappftp/jxfp/temp/question/
+  remoteCostFileTempRootPath: /home/wappftp/jxfp/temp/cost/
+  remoteExcelFileRootPath: /home/wappftp/wapp/excel/
+  remoteFixedRootPath: /jxfp/fixed/ #供应商红票remoteFixedRootPath
+  remoteFixedTempRootPath: /jxfp/temp/fixed/ #供应商红票远程文件临时存放路径
+  localImageRootPath: /home/vn03qsx/jxfp/image/
+  tempPath: /home/wappftp/jxfp/temp/zip/      # 文件暂存路径
+  depositPath: /home/wappftp/jxfp/zipto/ # 文件存储路
+  tempImgPath: /home/wappftp/jxfp/temp/imgzip/      # 图片临时存储路径
+  signInImgPath: /home/wappftp/jxfp/temp/image/     #扫码签收图片暂存路径
+  tempDir: /home/wappftp/jxfp/temp/excelZip/
+  sapRemoteRootPath: /jxfp/sap/source/   #sap源文件目录
+  sapRemoteBakPath: /jxfp/sap/bak/       #sap备份目录
+  sapLocalTempPath: /home/wappftp/jxfp/sap/temp/         #sap本地临时目录
+  aribatempPath: /usr/users/dxhy152/wapp/jxfp/temp/zip/      # 文件暂存路径
+  aribadepositPath: /usr/users/dxhy152/wapp/jxfp/zipto/ # 文件存储路
+  erweimaPath: /usr/users/dxhy152/wapp/jxfp/QRCode/image/
+  orderSapRemoteRootPath: /jxfp/order/sap/source/   #sap源文件目录（订单获取）
+  orderSapRemoteBakPath: /jxfp/order/sap/bak/       #sap备份目录（订单获取）
+  orderSapLocalTempPath: /usr/users/dxhy152/wapp/jxfp/order/sap/temp/
+  vendorRemoteRootPath: /jxfp/vendor/source/   #vendor源文件目录(导入10位供应商号)
+  vendorRemoteBakPath: /jxfp/vendor/bak/       #vendor备份目录
+  vendorLocalTempPath: /usr/users/dxhy152/wapp/jxfp/vendor/temp/         #vendor本地临时目录
+  localFixedRootPath: /usr/users/dxhy152/wapp/jxfp/fixed/temp/ #供应商红票本地文件存放路径
+  sso: d:/sso/sso.txt
+
+
+
+#sftp配置
+pro:
+  sftp:
+    host: 10.100.2.17  #10.44.100.123
+    username: wappftp
+    password: testwapp123
+    # 授权方式：公私钥和密码选择一个，测试时选择密码,pwd密码，private 私钥，默认private
+    auth-method: pwd
+    default:
+      port: 22
+      timeout: 60000
+
+      privateKey: /home/wappftp/.ssh/id_rsa
+      passphrase:
+
+agreementBill:
+  local:
+    #    path: D:/Workspace/wapp-enhance/wapp-core/target
+    path: /usr/local/wapp/agreement
+claimBill:
+  local:
+    path: D:/Workspace/wapp-enhance/wapp-core/target
+epdBill:
+  local:
+    path: D:/Workspace/wapp-enhance/wapp-core/target
+
+spring:
+  redis:
+    host: phoenix-t.xforceplus.com
+    port: 23333
+    password: 8eSf4M97VLhP6hq8
+    database: 2
+    enable-sentinel: false
+
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss

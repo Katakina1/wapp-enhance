@@ -6,36 +6,64 @@ import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.codec.SnappyCodecV2;
 import org.redisson.config.Config;
+import org.redisson.config.SentinelServersConfig;
 import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
+/**
+ * redisson配置
+ *
+ * @author Xforce
+ */
 @Configuration
 public class RedissonClientConfiguration {
 
-    @Value("${spring.redis.host}")
-    private String redisHost;
-    @Value("${spring.redis.port}")
-    private String redisPort;
-    @Value("${spring.redis.password:}")
-    private String redisPassword;
-    @Value("${spring.redis.database:0}")
-    private Integer database;
-    @Value("${spring.redis.timeout:9000}")
-    private Integer timeout;
-
+    @Value("${spring.redis.enable-sentinel}")
+    private Boolean enableRedisSentinel;
 
     @Bean
-    public RedissonClient redissonClient() {
+    public RedissonClient redissonClient(RedisProperties redisProperties) {
+        if (enableRedisSentinel) {
+            return redissonSentinelClient(redisProperties);
+        }
+        return redissonSingleClient(redisProperties);
+    }
+
+    /**
+     * 哨兵模式配置
+     *
+     * @param redisProperties
+     * @return
+     */
+    private RedissonClient redissonSentinelClient(RedisProperties redisProperties) {
+        Config config = new Config();
+        SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
+        sentinelServersConfig.setMasterName(redisProperties.getSentinel().getMaster());
+        sentinelServersConfig.addSentinelAddress(redisProperties.getSentinel().getNodes().stream().toArray(String[]::new));
+        if (StringUtils.isNotBlank(redisProperties.getPassword())) {
+            sentinelServersConfig.setPassword(redisProperties.getPassword());
+        }
+        return Redisson.create(config);
+    }
+
+    /**
+     * 单机模式配置
+     *
+     * @param redisProperties
+     * @return
+     */
+    private RedissonClient redissonSingleClient(RedisProperties redisProperties) {
         Config config = new Config();
         SingleServerConfig singleServerConfig = config.useSingleServer();
-        singleServerConfig.setAddress(String.format("redis://%s:%s", redisHost, redisPort));
-        if(StringUtils.isNotBlank(redisPassword)) {
-            singleServerConfig.setPassword(redisPassword);
+        singleServerConfig.setAddress(String.format("redis://%s:%s", redisProperties.getHost(), redisProperties.getPort()));
+        if (StringUtils.isNotBlank(redisProperties.getPassword())) {
+            singleServerConfig.setPassword(redisProperties.getPassword());
         }
-        singleServerConfig.setDatabase(database);
-        singleServerConfig.setTimeout(timeout);
+        singleServerConfig.setDatabase(redisProperties.getDatabase());
         singleServerConfig.setTcpNoDelay(true);
         config.setCodec(new SnappyCodecV2(new JsonJacksonCodec()));
         config.setNettyThreads(32);
