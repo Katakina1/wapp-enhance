@@ -41,9 +41,13 @@ public class RedissonClientConfiguration {
         SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
         sentinelServersConfig.setMasterName(redisProperties.getSentinel().getMaster());
         sentinelServersConfig.addSentinelAddress(redisProperties.getSentinel().getNodes().stream().toArray(String[]::new));
+        sentinelServersConfig.setDatabase(redisProperties.getDatabase());
         if (StringUtils.isNotBlank(redisProperties.getPassword())) {
             sentinelServersConfig.setPassword(redisProperties.getPassword());
         }
+        sentinelServersConfig.setTcpNoDelay(true);
+        config.setCodec(new SnappyCodecV2(new JsonJacksonCodec()));
+        config.setNettyThreads(32);
         return Redisson.create(config);
     }
 
