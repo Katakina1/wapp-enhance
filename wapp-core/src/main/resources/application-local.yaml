@@ -126,6 +126,7 @@ spring:
     port: 23333
     password: 8eSf4M97VLhP6hq8
     database: 2
+    enable-sentinel: false
 
   jackson:
     time-zone: GMT+8
