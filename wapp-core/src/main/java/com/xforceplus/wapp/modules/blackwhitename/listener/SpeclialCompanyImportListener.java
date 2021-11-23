@@ -34,6 +34,7 @@ public class SpeclialCompanyImportListener extends AnalysisEventListener<Special
 
     @Override
     public void invoke(SpecialCompanyImportDto specialCompanyImportDto, AnalysisContext analysisContext) {
+        rows++;
         if(StringUtils.isEmpty(checkData(specialCompanyImportDto))){
             validInvoices.add(specialCompanyImportDto);
         }else{

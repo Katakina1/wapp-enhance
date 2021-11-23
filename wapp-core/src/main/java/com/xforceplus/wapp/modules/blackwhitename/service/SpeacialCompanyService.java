@@ -14,6 +14,7 @@ import com.xforceplus.wapp.modules.blackwhitename.convert.SpeacialBlackCompanyCo
 import com.xforceplus.wapp.modules.blackwhitename.convert.SpeacialCompanyConverter;
 import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyBlackImportDto;
 import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportDto;
+import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportSizeDto;
 import com.xforceplus.wapp.modules.blackwhitename.listener.SpeclialBlackCompanyImportListener;
 import com.xforceplus.wapp.modules.blackwhitename.listener.SpeclialCompanyImportListener;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
@@ -119,13 +120,18 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * @param file
      * @return
      */
-    public Either<String, Integer> importBlackData(MultipartFile file, String type) throws IOException {
+    public SpecialCompanyImportSizeDto importBlackData(MultipartFile file, String type) throws IOException {
+        SpecialCompanyImportSizeDto sizeDto = new SpecialCompanyImportSizeDto();
         QueryWrapper wrapper = new QueryWrapper<>();
         SpeclialBlackCompanyImportListener listener = new SpeclialBlackCompanyImportListener(type);
         EasyExcel.read(file.getInputStream(), SpecialCompanyBlackImportDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices()) && CollectionUtils.isEmpty(listener.getInvalidInvoices())) {
-            return Either.left("未解析到数据");
+            sizeDto.setErrorMsg("未解析到数据");
+            return sizeDto;
         }
+        sizeDto.setImportCount(listener.getRows());
+        sizeDto.setUnValidCount(listener.getValidInvoices().size());
+        sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
         log.info("导入数据解析条数:{}", listener.getRows());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
             List<TXfBlackWhiteCompanyEntity> validList = speacialBlackCompanyConverter.reverse(listener.getValidInvoices(), UserUtil.getUserId());
@@ -148,7 +154,6 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
                 e.setUpdateUser(UserUtil.getLoginName());
             });
             boolean save = saveOrUpdateBatch(validList);
-            return save ? Either.right(listener.getValidInvoices().size()) : Either.right(0);
         }
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
             File tmpFile = new File(tmp);
@@ -186,16 +191,22 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "黑名单导入错误信息", exportCommonService.getSuccContent());
 
         }
-        return Either.right(listener.getInvalidInvoices().size());
+        return sizeDto;
     }
 
-    public Either<String, Integer> importWhiteData(MultipartFile file, String type) throws IOException {
+    public SpecialCompanyImportSizeDto importWhiteData(MultipartFile file, String type) throws IOException {
         QueryWrapper wrapper = new QueryWrapper<>();
         SpeclialCompanyImportListener listener = new SpeclialCompanyImportListener(type);
+        SpecialCompanyImportSizeDto sizeDto = new SpecialCompanyImportSizeDto();
         EasyExcel.read(file.getInputStream(), SpecialCompanyImportDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices()) && CollectionUtils.isEmpty(listener.getInvalidInvoices())) {
-            return Either.left("未解析到数据");
+            sizeDto.setErrorMsg("未解析到数据");
+            return sizeDto;
         }
+        sizeDto.setImportCount(listener.getRows());
+        sizeDto.setValidCDount(listener.getValidInvoices().size());
+        sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
+        log.info("导入数据解析条数:{}", listener.getRows());
         log.info("导入数据解析条数:{}", listener.getRows());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
             List<TXfBlackWhiteCompanyEntity> validList = companyConverter.reverse(listener.getValidInvoices(), UserUtil.getUserId());
@@ -218,7 +229,6 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
                 e.setUpdateUser(UserUtil.getLoginName());
             });
             boolean save = saveOrUpdateBatch(validList);
-            return save ? Either.right(listener.getValidInvoices().size()) : Either.right(0);
         }
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
             File tmpFile = new File(tmp);
@@ -256,7 +266,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             exportCommonService.sendMessage(excelExportlogEntity.getId(), UserUtil.getLoginName(), "白名单导入错误信息", exportCommonService.getSuccContent());
 
         }
-        return Either.right(listener.getInvalidInvoices().size());
+        return sizeDto;
     }
 
 
