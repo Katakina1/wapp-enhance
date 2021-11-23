@@ -40,10 +40,18 @@ public class RedissonClientConfiguration {
         Config config = new Config();
         SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
         sentinelServersConfig.setMasterName(redisProperties.getSentinel().getMaster());
-        sentinelServersConfig.addSentinelAddress(redisProperties.getSentinel().getNodes().stream().toArray(String[]::new));
+        String[] sentinelAddressesWithSchema = new String[redisProperties.getSentinel().getNodes().size()];
+        for (int i = 0; i < redisProperties.getSentinel().getNodes().size(); i++) {
+            sentinelAddressesWithSchema[i] = String.format("redis://%s", redisProperties.getSentinel().getNodes().get(i));
+        }
+        sentinelServersConfig.addSentinelAddress(sentinelAddressesWithSchema);
+        sentinelServersConfig.setDatabase(redisProperties.getDatabase());
         if (StringUtils.isNotBlank(redisProperties.getPassword())) {
             sentinelServersConfig.setPassword(redisProperties.getPassword());
         }
+        sentinelServersConfig.setTcpNoDelay(true);
+        config.setCodec(new SnappyCodecV2(new JsonJacksonCodec()));
+        config.setNettyThreads(32);
         return Redisson.create(config);
     }
 
