@@ -5,6 +5,7 @@ import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.blackwhitename.constants.Constants;
+import com.xforceplus.wapp.modules.blackwhitename.dto.SpecialCompanyImportSizeDto;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
 import io.swagger.annotations.Api;
@@ -61,15 +62,19 @@ public class SpecialCompanyController {
             return R.fail("导入类型不能为空");
         }
         long start = System.currentTimeMillis();
-        Either<String, Integer> result;
+        SpecialCompanyImportSizeDto result;
         if (Constants.COMPANY_TYPE_WHITE.equals(type)) {
             result = speacialCompanyService.importWhiteData(file, type);
         } else {
             result = speacialCompanyService.importBlackData(file, type);
         }
-
-        log.info("黑白名单信息导入,耗时:{}ms", System.currentTimeMillis() - start);
-        return result.isRight() ? R.ok(result.get(), String.format("导入失败[%d]条数据 导入失败数据请前往消息中心查看", result.get())) : R.fail("导入成功");
+        if(StringUtils.isNotEmpty(result.getErrorMsg())){
+            return R.fail(result.getErrorMsg());
+        }
+        if(result.getUnValidCount()==0){
+            return R.ok("导入成功");
+        }
+        return  R.ok( String.format("导入[%d]条数据  导入成功[%d]条数据 导入失败[%d]条数据 导入失败数据请前往消息中心查看", result.getImportCount(),result.getValidCDount(),result.getUnValidCount()));
     }
 
     @ApiOperation("黑白名单批量删除")
