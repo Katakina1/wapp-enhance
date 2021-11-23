@@ -22,12 +22,9 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 public class RedissonClientConfiguration {
 
-    @Value("${spring.redis.enable-sentinel}")
-    private Boolean enableRedisSentinel;
-
     @Bean
     public RedissonClient redissonClient(RedisProperties redisProperties) {
-        if (enableRedisSentinel) {
+        if (redisProperties.getSentinel() != null) {
             return redissonSentinelClient(redisProperties);
         }
         return redissonSingleClient(redisProperties);
