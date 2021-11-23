@@ -130,7 +130,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             return sizeDto;
         }
         sizeDto.setImportCount(listener.getRows());
-        sizeDto.setUnValidCount(listener.getValidInvoices().size());
+        sizeDto.setValidCDount(listener.getValidInvoices().size());
         sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
         log.info("导入数据解析条数:{}", listener.getRows());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
