@@ -14,6 +14,7 @@ import com.xforceplus.wapp.modules.backFill.model.UploadFileResultData;
 import com.xforceplus.wapp.modules.backFill.service.BackFillService;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.InvoiceFileService;
+import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
 import com.xforceplus.wapp.modules.exchange.model.*;
 import com.xforceplus.wapp.modules.exchange.service.InvoiceExchangeService;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
@@ -60,6 +61,9 @@ public class InvoiceExchangeController extends AbstractController {
     @Autowired
     private InvoiceFileService invoiceFileService;
 
+    @Autowired
+    private RecordInvoiceService recordInvoiceService;
+
     @ApiOperation(value = "换票列表查询")
     @GetMapping(value = "/list")
     public R<PageResult<InvoiceExchangeResponse>> list(@ApiParam(value = "换票列表请求",required = true)QueryInvoiceExchangeRequest request){
@@ -100,37 +104,14 @@ public class InvoiceExchangeController extends AbstractController {
 
     @ApiOperation(value = "电票发票上传（无需验真）" )
     @PostMapping("/upload")
-    public R upload(@RequestParam("file") MultipartFile file, @RequestParam("invoiceCode") String invoiceCode,@RequestParam("invoiceNo")String invoiceNo,@RequestParam("vendorId") String vendorid) {
-        try {
-            String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-            StringBuffer fileName = new StringBuffer();
-            fileName.append(UUID.randomUUID().toString());
-            fileName.append(".");
-            int type;
-            if (suffix.toLowerCase().equals(Constants.SUFFIX_OF_OFD)) {
-                fileName.append(Constants.SUFFIX_OF_OFD);
-                type = Constants.FILE_TYPE_OFD;
-            } else if(suffix.toLowerCase().equals(Constants.SUFFIX_OF_PDF)){
-                fileName.append(Constants.SUFFIX_OF_PDF);
-                type = Constants.FILE_TYPE_PDF;
-            }else{
-                throw new EnhanceRuntimeException("文件:[" + fileName + "]类型不正确,应为:[ofd/pdf]");
-            }
-            String uploadResult = fileService.uploadFile(file.getBytes(), fileName.toString(), vendorid);
-            UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
-            UploadFileResultData data = uploadFileResult.getData();
-            invoiceFileService.save(invoiceCode,invoiceNo,data.getUploadPath(),type,getUserId());
-        } catch (IOException e) {
-            logger.info(e.getMessage());
-            throw new EnhanceRuntimeException("上传文件异常");
-        }
-        return R.ok();
+    public R upload(@RequestParam("file") MultipartFile file, @RequestParam("newInvoiceId") String newInvoiceId,@RequestParam("vendorId") String vendorid) {
+        return invoiceExchangeService.upload(file, newInvoiceId, vendorid);
     }
 
     @ApiOperation(value = "电票发票下载" )
     @PostMapping("/download")
-    public R download(@RequestParam("invoiceCode")  String invoiceCode,@RequestParam("invoiceNo")String invoiceNo) {
-        return invoiceExchangeService.download(invoiceCode,invoiceNo);
+    public R download(@RequestParam("newInvoiceId")  String newInvoiceId) {
+        return invoiceExchangeService.download(newInvoiceId);
     }
 
 

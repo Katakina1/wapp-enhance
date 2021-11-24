@@ -33,5 +33,7 @@ public class QueryInvoiceExchangeRequest {
     private String returnEndDate;
     @ApiModelProperty("供应商号")
     private String venderid;
+    @ApiModelProperty("状态 0待换票 1已上传 2已完成 9删除")
+    private Integer status;
 
 }
