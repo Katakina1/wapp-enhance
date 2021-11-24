@@ -33,6 +33,7 @@ import com.xforceplus.wapp.repository.entity.TXfInvoiceFileEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -150,20 +152,36 @@ public class InvoiceExchangeService {
      * @param request
      * @return R
      */
+    @Transactional
     public R finish(ExchangeFinishRequest request){
         if(CollectionUtils.isEmpty(request.getIdList())){
             return R.fail("id不能为空");
         }
+        QueryWrapper<TXfInvoiceExchangeEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in(TXfInvoiceExchangeEntity.ID,request.getIdList());
+        List<TXfInvoiceExchangeEntity> tXfInvoiceExchangeEntities = tXfInvoiceExchangeDao.selectList(queryWrapper);
+        if(CollectionUtils.isEmpty(tXfInvoiceExchangeEntities)){
+            return R.fail("根据id没有查询到换票");
+        }
         UpdateWrapper<TXfInvoiceExchangeEntity> updateWrapper = new UpdateWrapper<>();
         updateWrapper.in(TXfInvoiceExchangeEntity.ID,request.getIdList());
-        TXfInvoiceExchangeEntity entity = new TXfInvoiceExchangeEntity();
-        entity.setVoucherNo(request.getVoucherNo());
-        entity.setStatus(InvoiceExchangeStatusEnum.FINISHED.getCode());
-        if(tXfInvoiceExchangeDao.update(entity,updateWrapper) > 0){
-            return R.ok("换票成功");
-        }else{
-            return R.fail("换票失败");
+        TXfInvoiceExchangeEntity invoiceExchangeEntity = new TXfInvoiceExchangeEntity();
+        invoiceExchangeEntity.setVoucherNo(request.getVoucherNo());
+        invoiceExchangeEntity.setStatus(InvoiceExchangeStatusEnum.FINISHED.getCode());
+        tXfInvoiceExchangeDao.update(invoiceExchangeEntity,updateWrapper);
+        //修改发票状态
+        for (TXfInvoiceExchangeEntity tXfInvoiceExchangeEntity : tXfInvoiceExchangeEntities) {
+            String[] split = tXfInvoiceExchangeEntity.getNewInvoiceId().split(",");
+            List<Long> idList = Arrays.stream(split).map(Long::parseLong).collect(Collectors.toList());
+            UpdateWrapper<TDxRecordInvoiceEntity> invoiceUpdateWrapper = new UpdateWrapper<>();
+            invoiceUpdateWrapper.in(TDxRecordInvoiceEntity.ID,idList);
+            TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
+            entity.setConfirmStatus("1");
+            entity.setConfirmTime(new Date());
+            tDxRecordInvoiceDao.update(entity,invoiceUpdateWrapper);
         }
+        return R.ok("换票完成");
+
     }
 
     /**
@@ -238,7 +256,7 @@ public class InvoiceExchangeService {
             for (TXfInvoiceFileEntity tXfInvoiceFileEntity : byInvoice) {
                 byte[] bytes = fileService.downLoadFile4ByteArray(tXfInvoiceFileEntity.getPath());
                 String suffix;
-                if (tXfInvoiceFileEntity.getType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
+                if (tXfInvoiceFileEntity.getType().equals(Constants.FILE_TYPE_OFD)) {
                     suffix = "." + Constants.SUFFIX_OF_OFD;
                 } else {
                     suffix = "." + Constants.SUFFIX_OF_PDF;
