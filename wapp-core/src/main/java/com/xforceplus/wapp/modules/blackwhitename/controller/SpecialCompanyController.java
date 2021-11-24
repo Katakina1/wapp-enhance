@@ -72,9 +72,9 @@ public class SpecialCompanyController {
             return R.fail(result.getErrorMsg());
         }
         if(result.getUnValidCount()==0){
-            return R.ok("导入成功");
+            return R.ok("message","导入成功");
         }
-        return  R.ok( String.format("导入[%d]条数据  导入成功[%d]条数据 导入失败[%d]条数据 导入失败数据请前往消息中心查看", result.getImportCount(),result.getValidCDount(),result.getUnValidCount()));
+        return  R.ok("message", String.format("导入[%d]条数据  导入成功[%d]条数据 导入失败[%d]条数据 导入失败数据请前往消息中心查看", result.getImportCount(),result.getValidCDount(),result.getUnValidCount()));
     }
 
     @ApiOperation("黑白名单批量删除")

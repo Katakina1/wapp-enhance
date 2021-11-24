@@ -130,7 +130,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             return sizeDto;
         }
         sizeDto.setImportCount(listener.getRows());
-        sizeDto.setUnValidCount(listener.getValidInvoices().size());
+        sizeDto.setValidCDount(listener.getValidInvoices().size());
         sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
         log.info("导入数据解析条数:{}", listener.getRows());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
@@ -164,7 +164,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             EasyExcel.write(tmp + "/" + file.getOriginalFilename(), SpecialCompanyBlackImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-            String exportFileName="导入失败原因" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ExcelExportUtil.FILE_NAME_SUFFIX;
+            String exportFileName="导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
             String ftpFilePath = ftpPath + "/" +exportFileName;
             FileInputStream inputStream = FileUtils.openInputStream(sourceFile);
             try {
@@ -239,7 +239,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             EasyExcel.write(tmp + "/" + file.getOriginalFilename(), SpecialCompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-            String exportFileName="导入失败原因" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ExcelExportUtil.FILE_NAME_SUFFIX;
+            String exportFileName="导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
             String ftpFilePath = ftpPath + "/" +exportFileName;
             FileInputStream inputStream = FileUtils.openInputStream(sourceFile);
             try {
