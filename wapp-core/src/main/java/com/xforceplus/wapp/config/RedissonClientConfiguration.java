@@ -5,6 +5,7 @@ import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.codec.SnappyCodecV2;
+import org.redisson.config.ClusterServersConfig;
 import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
 import org.redisson.config.SingleServerConfig;
@@ -13,6 +14,9 @@ import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * redisson配置
@@ -27,7 +31,33 @@ public class RedissonClientConfiguration {
         if (redisProperties.getSentinel() != null) {
             return redissonSentinelClient(redisProperties);
         }
+        if (redisProperties.getCluster() != null) {
+            return redissonClusterClient(redisProperties);
+        }
         return redissonSingleClient(redisProperties);
+    }
+
+    /**
+     * 集群模式配置
+     *
+     * @param redisProperties
+     * @return
+     */
+    private RedissonClient redissonClusterClient(RedisProperties redisProperties) {
+        Config config = new Config();
+        ClusterServersConfig clusterServersConfig = config.useClusterServers();
+        List<String> clusterNodes = new ArrayList<>();
+        for (int i = 0; i < redisProperties.getCluster().getNodes().size(); i++) {
+            clusterNodes.add(String.format("redis://%s", redisProperties.getCluster().getNodes().get(i)));
+        }
+        clusterServersConfig.addNodeAddress(clusterNodes.toArray(new String[clusterNodes.size()]));
+        if (StringUtils.isNotBlank(redisProperties.getPassword())) {
+            clusterServersConfig.setPassword(redisProperties.getPassword());
+        }
+        clusterServersConfig.setTcpNoDelay(true);
+        config.setCodec(new SnappyCodecV2(new JsonJacksonCodec()));
+        config.setNettyThreads(32);
+        return Redisson.create(config);
     }
 
     /**
@@ -40,11 +70,11 @@ public class RedissonClientConfiguration {
         Config config = new Config();
         SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
         sentinelServersConfig.setMasterName(redisProperties.getSentinel().getMaster());
-        String[] sentinelAddressesWithSchema = new String[redisProperties.getSentinel().getNodes().size()];
+        List<String> sentinelAddresses = new ArrayList<>();
         for (int i = 0; i < redisProperties.getSentinel().getNodes().size(); i++) {
-            sentinelAddressesWithSchema[i] = String.format("redis://%s", redisProperties.getSentinel().getNodes().get(i));
+            sentinelAddresses.add(String.format("redis://%s", redisProperties.getSentinel().getNodes().get(i)));
         }
-        sentinelServersConfig.addSentinelAddress(sentinelAddressesWithSchema);
+        sentinelServersConfig.addSentinelAddress(sentinelAddresses.toArray(new String[sentinelAddresses.size()]));
         sentinelServersConfig.setDatabase(redisProperties.getDatabase());
         if (StringUtils.isNotBlank(redisProperties.getPassword())) {
             sentinelServersConfig.setPassword(redisProperties.getPassword());
