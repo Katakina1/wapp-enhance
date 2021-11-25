@@ -55,15 +55,6 @@ public class InvoiceExchangeController extends AbstractController {
     @Autowired
     private BackFillService backFillService;
 
-    @Autowired
-    private FileService fileService;
-
-    @Autowired
-    private InvoiceFileService invoiceFileService;
-
-    @Autowired
-    private RecordInvoiceService recordInvoiceService;
-
     @ApiOperation(value = "换票列表查询")
     @GetMapping(value = "/list")
     public R<PageResult<InvoiceExchangeResponse>> list(@ApiParam(value = "换票列表请求",required = true)QueryInvoiceExchangeRequest request){

@@ -8,6 +8,7 @@ import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.*;
 import com.xforceplus.wapp.constants.Constants;
+import com.xforceplus.wapp.enums.InvoiceTypeEnum;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
 import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
 import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
@@ -337,6 +338,12 @@ public class EInvoiceMatchService {
         recordInvoice.setIsDel(IsDealEnum.NO.getValue());
         recordInvoice.setUuid(invoiceMain.getInvoiceCode()+invoiceMain.getInvoiceNo());
         recordInvoice.setCreateDate(new Date());
+        //电子发票改为签收状态
+        if (InvoiceTypeEnum.isElectronic(invoiceType)) {
+            recordInvoice.setQsStatus("1");
+            recordInvoice.setQsDate(new Date());
+            recordInvoice.setQsType("5");
+        }
         successSuppliers.add(() -> {
                     //结果存储-记录表
                     //成功计数
