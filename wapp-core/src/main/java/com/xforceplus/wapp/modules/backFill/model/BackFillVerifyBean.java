@@ -14,6 +14,10 @@ import lombok.Data;
 @Data
 public class BackFillVerifyBean {
 
+    @JsonProperty("id")
+    @ApiModelProperty("发票ID")
+    private String id = null;
+
     @JsonProperty("invoiceCode")
     @ApiModelProperty("发票代码")
     private String invoiceCode = null;

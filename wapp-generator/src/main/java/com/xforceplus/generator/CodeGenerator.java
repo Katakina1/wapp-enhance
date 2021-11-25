@@ -26,8 +26,7 @@ public class CodeGenerator {
 
 
     public static void main(String[] args) {
-        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity","t_dx_record_invoice",
-                "t_xf_elec_upload_record_detail"
+        generateCode("com.xforceplus.wapp.repository.entity.BaseEntity","t_xf_invoice_exchange"
                 );
 //         generateMainCode();
         // generateItemCode();

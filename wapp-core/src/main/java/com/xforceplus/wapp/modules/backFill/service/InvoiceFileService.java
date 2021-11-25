@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.entity.TXfElecUploadRecordDetailEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceFileEntity;
 import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -102,6 +103,21 @@ public class InvoiceFileService{
         }
     }
 
+
+    public void save(String invoiceCode,String invoiceNo,String path, int type,Long userId) {
+        TXfInvoiceFileEntity file = new TXfInvoiceFileEntity();
+        file.setInvoiceNo(invoiceNo);
+        file.setInvoiceCode(invoiceCode);
+        file.setStatus(1);
+        file.setId(idSequence.nextId());
+        file.setStorage(0);
+        file.setOrigin(0);
+        file.setCreateUser(String.valueOf(userId));
+        file.setPath(path);
+        file.setType(type);
+        this.invoiceFileDao.save(file);
+    }
+
     private void saveImg(TXfInvoiceFileEntity ofd, String imgPreviewUrl,InvoiceMain invoiceMain) {
 
         final ResponseEntity<byte[]> forEntity = restTemplate.getForEntity(imgPreviewUrl, byte[].class);
@@ -140,6 +156,10 @@ public class InvoiceFileService{
         }catch (RestClientException e){
             log.error("发票:no:["+img.getInvoiceNo()+"],code:["+img.getInvoiceCode()+"]获取国税文件失败"+e.getMessage(),e);
         }
+    }
+
+    public List<TXfInvoiceFileEntity> getByInvoice(String invoiceNo, String invoiceCode){
+        return invoiceFileDao.getByInvoice(invoiceNo,invoiceCode);
     }
 
 }

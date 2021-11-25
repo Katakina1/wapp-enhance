@@ -39,7 +39,7 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "纸票发票回填")
     @PostMapping(value = "/commitVerify")
-    public R comitVerify(@ApiParam(value = "BackFillCommitVerifyRequest" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
+    public R comitVerify(@ApiParam(value = "纸票发票回填请求" ,required=true )@RequestBody BackFillCommitVerifyRequest request){
         logger.info("纸票发票回填--入参：{}", JSONObject.toJSONString(request));
         request.setOpUserId(getUserId());
         request.setOpUserName(getUserName());
@@ -65,57 +65,7 @@ public class BackFillController  extends AbstractController {
         if (R.FAIL.equals(r.getCode())) {
             return r;
         }
-        if (files.length == 0) {
-            return R.fail("请选择您要上传的电票文件(pdf/ofd)");
-        }
-        if (files.length > 10) {
-            return R.fail("最多一次性上传10个文件");
-        }
-        List<byte[]> ofd = new ArrayList<>();
-        List<byte[]> pdf = new ArrayList<>();
-        try {
-            Set<String> fileNames=new HashSet<>();
-            for (int i = 0; i < files.length; i++) {
-                final MultipartFile file = files[i];
-                final String filename = file.getOriginalFilename();
-                if(!fileNames.add(filename)){
-                    return R.fail("文件["+filename+"]重复上传！");
-                }
-                final String suffix = filename.substring(filename.lastIndexOf(".") + 1);
-                if (StringUtils.isNotBlank(suffix)) {
-                    switch (suffix.toLowerCase()) {
-                        case Constants.SUFFIX_OF_OFD:
-                            //OFD处理
-                            ofd.add(IOUtils.toByteArray(file.getInputStream()));
-                            break;
-                        case Constants.SUFFIX_OF_PDF:
-                            // PDF 处理
-                            pdf.add(IOUtils.toByteArray(file.getInputStream()));
-                            break;
-                        default:
-                            throw new EnhanceRuntimeException("文件:[" + filename + "]类型不正确,应为:[ofd/pdf]");
-                    }
-                } else {
-                    throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[ofd/pdf]");
-                }
-            }
-
-            SpecialElecUploadDto dto = new SpecialElecUploadDto();
-            dto.setOfds(ofd);
-            dto.setJvCode(jvCode);
-            dto.setUserId(getUserId());
-            dto.setGfName(gfName);
-            dto.setPdfs(pdf);
-            dto.setVendorId(vendorid);
-            dto.setSettlementNo(settlementNo);
-            logger.info("电票发票上传--识别入参：{}",JSONObject.toJSONString(dto));
-            final String batchNo = backFillService.uploadAndVerify(dto);
-
-            return R.ok(batchNo);
-        } catch (Exception e) {
-            logger.error("上传过程中出现异常:" + e.getMessage(), e);
-            return R.fail("上传过程中出现错误，请重试");
-        }
+        return backFillService.upload(files,gfName,jvCode,vendorid,settlementNo);
     }
 
     @ApiOperation(value = "循环获取上传结果")
@@ -127,7 +77,7 @@ public class BackFillController  extends AbstractController {
 
     @ApiOperation(value = "上传发票匹配")
     @PostMapping("/match")
-    public R match(@ApiParam(value = "BackFillMatchRequest" ,required=true )@RequestBody BackFillMatchRequest request) {
+    public R match(@ApiParam(value = "上传发票匹配请求" ,required=true )@RequestBody BackFillMatchRequest request) {
         logger.info("发票回填后匹配--入参：{}", JSONObject.toJSONString(request));
         request.setVenderId(getUser().getUsercode());
         return backFillService.matchPreInvoice(request);

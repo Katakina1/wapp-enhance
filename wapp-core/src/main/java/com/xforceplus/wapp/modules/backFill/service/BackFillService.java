@@ -27,16 +27,20 @@ import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+
+import static com.xforceplus.wapp.modules.sys.util.UserUtil.getUserId;
 
 
 /**
@@ -140,7 +144,7 @@ public class BackFillService {
                 return R.fail("未查到发票");
             }
         }
-        if(org.apache.commons.lang3.StringUtils.isNotEmpty(settlementNo)){
+        if(StringUtils.isNotEmpty(settlementNo)){
             QueryWrapper<TXfPreInvoiceEntity> preinvoiceWrapper = new QueryWrapper<>();
             preinvoiceWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_NO, settlementNo);
             preinvoiceWrapper.ne(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.DESTROY.getCode());
@@ -164,12 +168,15 @@ public class BackFillService {
         return R.ok("校验通过");
     }
 
-
-    public R commitVerify(BackFillCommitVerifyRequest request) {
+    public R commitVerify(BackFillCommitVerifyRequest request){
         R r = checkCommitRequest(request);
         if (R.FAIL.equals(r.getCode())) {
             return r;
         }
+        return this.commitInvoiceVerify(request);
+    }
+
+    public R commitInvoiceVerify(BackFillCommitVerifyRequest request) {
         String batchNo = UUID.randomUUID().toString().replace("-", "");
         TXfElecUploadRecordEntity recordEntity = new TXfElecUploadRecordEntity();
         recordEntity.setCreateTime(new Date());
@@ -232,6 +239,62 @@ public class BackFillService {
         }
         return R.ok(batchNo);
     }
+
+    public R upload(MultipartFile[] files, String gfName,String jvCode,String vendorid, String settlementNo) {
+        if (files.length == 0) {
+            return R.fail("请选择您要上传的电票文件(pdf/ofd)");
+        }
+        if (files.length > 10) {
+            return R.fail("最多一次性上传10个文件");
+        }
+        List<byte[]> ofd = new ArrayList<>();
+        List<byte[]> pdf = new ArrayList<>();
+        try {
+            Set<String> fileNames=new HashSet<>();
+            for (int i = 0; i < files.length; i++) {
+                final MultipartFile file = files[i];
+                final String filename = file.getOriginalFilename();
+                if(!fileNames.add(filename)){
+                    return R.fail("文件["+filename+"]重复上传！");
+                }
+                final String suffix = filename.substring(filename.lastIndexOf(".") + 1);
+                if (org.apache.commons.lang.StringUtils.isNotBlank(suffix)) {
+                    switch (suffix.toLowerCase()) {
+                        case Constants.SUFFIX_OF_OFD:
+                            //OFD处理
+                            ofd.add(IOUtils.toByteArray(file.getInputStream()));
+                            break;
+                        case Constants.SUFFIX_OF_PDF:
+                            // PDF 处理
+                            pdf.add(IOUtils.toByteArray(file.getInputStream()));
+                            break;
+                        default:
+                            throw new EnhanceRuntimeException("文件:[" + filename + "]类型不正确,应为:[ofd/pdf]");
+                    }
+                } else {
+                    throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[ofd/pdf]");
+                }
+            }
+
+            SpecialElecUploadDto dto = new SpecialElecUploadDto();
+            dto.setOfds(ofd);
+            dto.setJvCode(jvCode);
+            dto.setUserId(getUserId());
+            dto.setGfName(gfName);
+            dto.setPdfs(pdf);
+            dto.setVendorId(vendorid);
+            dto.setSettlementNo(settlementNo);
+            log.info("电票发票上传--识别入参：{}",JSONObject.toJSONString(dto));
+            final String batchNo = this.uploadAndVerify(dto);
+
+            return R.ok(batchNo);
+        } catch (Exception e) {
+            log.error("上传过程中出现异常:" + e.getMessage(), e);
+            return R.fail("上传过程中出现错误，请重试");
+        }
+    }
+
+
 
     public VerificationResponse parseOfd(byte[] ofd, String batchNo,TXfElecUploadRecordDetailEntity detailEntity) {
         OfdParseRequest request = new OfdParseRequest();
@@ -543,10 +606,6 @@ public class BackFillService {
                         tDxRecordInvoiceEntity.setInvoiceStatus(InvoiceStatusEnum.INVOICE_STATUS_NORMAL.getCode());
                         tDxRecordInvoiceEntity.setStatusUpdateDate(updateDate);
                         tDxRecordInvoiceEntity.setIsDel(IsDealEnum.NO.getValue());
-                        //电子发票改为签收状态
-                        if (InvoiceTypeEnum.isElectronic(backFillVerifyBean.getInvoiceType())) {
-                            tDxRecordInvoiceEntity.setQsStatus("1");
-                        }
                         tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity, updateWrapper);
                         successCount++;
                     }
@@ -570,7 +629,7 @@ public class BackFillService {
                 }
                 tXfSettlementEntity.setUpdateTime(updateDate);
                 tXfSettlementDao.updateById(tXfSettlementEntity);
-                operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.UPLOAD_INVOICE, businessStatus, UserUtil.getUserId(), UserUtil.getUserName());
+                operateLogService.add(tXfSettlementEntity.getId(), OperateLogEnum.UPLOAD_INVOICE, businessStatus, getUserId(), UserUtil.getUserName());
             } else {
                 throw new EnhanceRuntimeException("未找到结算单");
             }
