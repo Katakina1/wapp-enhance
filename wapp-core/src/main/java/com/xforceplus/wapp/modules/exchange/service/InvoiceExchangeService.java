@@ -242,37 +242,40 @@ public class InvoiceExchangeService {
     }
 
 
-    public R upload(MultipartFile file,String newInvoiceId, String vendorid) {
+    @Transactional
+    public R upload(MultipartFile[] files,String newInvoiceId, String vendorid) {
         try {
-            String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-            StringBuffer fileName = new StringBuffer();
-            fileName.append(UUID.randomUUID().toString());
-            fileName.append(".");
-            int type;
-            if (suffix.toLowerCase().equals(Constants.SUFFIX_OF_OFD)) {
-                fileName.append(Constants.SUFFIX_OF_OFD);
-                type = Constants.FILE_TYPE_OFD;
-            } else if(suffix.toLowerCase().equals(Constants.SUFFIX_OF_PDF)){
-                fileName.append(Constants.SUFFIX_OF_PDF);
-                type = Constants.FILE_TYPE_PDF;
-            }else{
-                throw new EnhanceRuntimeException("文件:[" + fileName + "]类型不正确,应为:[ofd/pdf]");
-            }
-            String[] split = newInvoiceId.split(",");
-            TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(Long.valueOf(split[0]));
-            if(entity != null){
-                String uploadResult = fileService.uploadFile(file.getBytes(), fileName.toString(), vendorid);
-                UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
-                UploadFileResultData data = uploadFileResult.getData();
-                invoiceFileService.save(entity.getInvoiceCode(),entity.getInvoiceNo(),data.getUploadPath(),type,getUserId());
-            }else{
-                return R.fail("根据id未找到发票");
+            for (MultipartFile file : files) {
+                String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+                StringBuffer fileName = new StringBuffer();
+                fileName.append(UUID.randomUUID().toString());
+                fileName.append(".");
+                int type;
+                if (suffix.toLowerCase().equals(Constants.SUFFIX_OF_OFD)) {
+                    fileName.append(Constants.SUFFIX_OF_OFD);
+                    type = Constants.FILE_TYPE_OFD;
+                } else if(suffix.toLowerCase().equals(Constants.SUFFIX_OF_PDF)){
+                    fileName.append(Constants.SUFFIX_OF_PDF);
+                    type = Constants.FILE_TYPE_PDF;
+                }else{
+                    throw new EnhanceRuntimeException("文件:[" + fileName + "]类型不正确,应为:[ofd/pdf]");
+                }
+                String[] split = newInvoiceId.split(",");
+                TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(Long.valueOf(split[0]));
+                if(entity != null){
+                    String uploadResult = fileService.uploadFile(file.getBytes(), fileName.toString(), vendorid);
+                    UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
+                    UploadFileResultData data = uploadFileResult.getData();
+                    invoiceFileService.save(entity.getInvoiceCode(),entity.getInvoiceNo(),data.getUploadPath(),type,getUserId());
+                }else{
+                    return R.fail("根据id未找到发票");
+                }
             }
         } catch (IOException e) {
             log.info(e.getMessage());
             throw new EnhanceRuntimeException("上传文件异常");
         }
-        return R.ok("上传成功");
+        return R.ok();
     }
 
     public  R download(String newInvoiceId) {
@@ -293,7 +296,7 @@ public class InvoiceExchangeService {
             final File tempDirectory = FileUtils.getTempDirectory();
             File file = new File(tempDirectory, path);
             file.mkdir();
-            String downLoadFileName = "电票源文件" + ".zip";
+            String downLoadFileName = path+ ".zip";
             List<Integer> types = new ArrayList<>();
             types.add(InvoiceFileEntity.TYPE_OF_OFD);
             types.add(InvoiceFileEntity.TYPE_OF_PDF);

@@ -9,6 +9,7 @@ import com.xforceplus.wapp.repository.entity.TXfElecUploadRecordDetailEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceFileEntity;
 import com.xforceplus.wapp.sequence.IDSequence;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -79,11 +80,13 @@ public class InvoiceFileService{
             file.setPath(electronicUploadRecordDetailEntity.getUploadPath());
             if (isOfd) {
                 file.setType(InvoiceFileEntity.TYPE_OF_OFD);
-                final TXfInvoiceFileEntity jpeg = map.get(InvoiceFileEntity.TYPE_OF_JPEG);
-                if (jpeg != null) {
-                    updateImg(jpeg, invoiceMain.getOfdImageUrl(),invoiceMain);
-                } else {
-                    saveImg(file, invoiceMain.getOfdImageUrl(),invoiceMain);
+                if(StringUtils.isNotEmpty(invoiceMain.getOfdImageUrl())){
+                    final TXfInvoiceFileEntity jpeg = map.get(InvoiceFileEntity.TYPE_OF_JPEG);
+                    if (jpeg != null) {
+                        updateImg(jpeg, invoiceMain.getOfdImageUrl(),invoiceMain);
+                    } else {
+                        saveImg(file, invoiceMain.getOfdImageUrl(),invoiceMain);
+                    }
                 }
             } else {
                 file.setType(InvoiceFileEntity.TYPE_OF_PDF);
@@ -91,11 +94,13 @@ public class InvoiceFileService{
             this.invoiceFileDao.save(file);
         } else {
             if (isOfd) {
-                final TXfInvoiceFileEntity jpeg = map.get(InvoiceFileEntity.TYPE_OF_JPEG);
-                if (jpeg != null) {
-                    updateImg(jpeg, invoiceMain.getOfdImageUrl(),invoiceMain);
-                } else {
-                    saveImg(file, invoiceMain.getOfdImageUrl(),invoiceMain);
+                if(StringUtils.isNotEmpty(invoiceMain.getOfdImageUrl())){
+                    final TXfInvoiceFileEntity jpeg = map.get(InvoiceFileEntity.TYPE_OF_JPEG);
+                    if (jpeg != null) {
+                        updateImg(jpeg, invoiceMain.getOfdImageUrl(),invoiceMain);
+                    } else {
+                        saveImg(file, invoiceMain.getOfdImageUrl(),invoiceMain);
+                    }
                 }
             }
             file.setPath(electronicUploadRecordDetailEntity.getUploadPath());

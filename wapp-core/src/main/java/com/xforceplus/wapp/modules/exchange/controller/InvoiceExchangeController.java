@@ -95,8 +95,8 @@ public class InvoiceExchangeController extends AbstractController {
 
     @ApiOperation(value = "电票发票上传（无需验真）" )
     @PostMapping("/upload")
-    public R upload(@RequestParam("file") MultipartFile file, @RequestParam("newInvoiceId") String newInvoiceId,@RequestParam("vendorId") String vendorid) {
-        return invoiceExchangeService.upload(file, newInvoiceId, vendorid);
+    public R upload(@RequestParam("files") MultipartFile[] files, @RequestParam("newInvoiceId") String newInvoiceId,@RequestParam("vendorId") String vendorid) {
+        return invoiceExchangeService.upload(files, newInvoiceId, vendorid);
     }
 
     @ApiOperation(value = "电票发票下载" )

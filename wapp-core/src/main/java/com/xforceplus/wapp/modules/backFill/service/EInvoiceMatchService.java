@@ -350,7 +350,7 @@ public class EInvoiceMatchService {
                     electronicUploadRecordService.increaseSucceed(electronicUploadRecordDetailEntity.getBatchNo());
                     //保存发票号码代码到上传详情
                     electronicUploadRecordDetailService.updateById(electronicUploadRecordDetailEntity);
-                    if (electronicUploadRecordDetailEntity.getFileType() != null && StringUtils.isNotEmpty(invoiceMain.getOfdPreviewUrl())) {
+                    if (electronicUploadRecordDetailEntity.getFileType() != null) {
                         invoiceFileService.save(electronicUploadRecordDetailEntity, invoiceMain);
                     }
                     return true;
