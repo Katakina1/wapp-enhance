@@ -1,23 +1,29 @@
 package com.xforceplus.wapp.modules.rednotification.util;
 
+import com.xforceplus.wapp.common.utils.Base64;
+import com.xforceplus.wapp.modules.backFill.service.VerificationService;
 import com.xforceplus.wapp.modules.rednotification.model.ZipContentInfo;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
 @Slf4j
+@Service
 public class DownloadUrlUtils {
 
-    public static void commonZipFiles(List<ZipContentInfo> srcFiles, String zipFilePath){
+    @Autowired
+    private VerificationService verificationService;
+
+    public void commonZipFiles(List<ZipContentInfo> srcFiles, String zipFilePath) {
 
         File zipFile = new File(zipFilePath);
         if (!zipFile.exists()) {
@@ -30,17 +36,17 @@ public class DownloadUrlUtils {
             BufferedOutputStream bo = new BufferedOutputStream(out);
 
             for (ZipContentInfo zipInfo : srcFiles) {
-                try{
-                    if(zipInfo.isFile()){
+                try {
+                    if (zipInfo.isFile()) {
                         File file = new File(zipInfo.getSourceUrl());
-                        if(file.exists()){
+                        if (file.exists()) {
                             zip(out, file, file.getName(), bo);
                         }
-                    }else{
-                        zip(out,zipInfo.getSourceUrl(),zipInfo.getRelativePath(),bo);
+                    } else {
+                        zip(out, zipInfo.getSourceUrl(), zipInfo.getRelativePath(), bo);
                     }
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     //ignore
                 }
 
@@ -53,7 +59,7 @@ public class DownloadUrlUtils {
     }
 
 
-    private static void zip(ZipOutputStream out, File srcFile, String base, BufferedOutputStream bo) throws Exception {
+    private void zip(ZipOutputStream out, File srcFile, String base, BufferedOutputStream bo) throws Exception {
         if (srcFile.isDirectory()) {
             File[] fileList = srcFile.listFiles();
             if (fileList.length == 0) {
@@ -77,20 +83,17 @@ public class DownloadUrlUtils {
         }
     }
 
-    private static void zip(ZipOutputStream out, String urlStr, String relativePath, BufferedOutputStream bo) throws Exception {
-        URL url = new URL(urlStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setConnectTimeout(3 * 1000);
-        conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+    private void zip(ZipOutputStream out, String urlStr, String relativePath, BufferedOutputStream bo) throws Exception {
+//        URL url = new URL(urlStr);
+//        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//        conn.setConnectTimeout(3 * 1000);
+//        conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
         out.putNextEntry(new ZipEntry(relativePath));
-        InputStream inputStream = conn.getInputStream();
-        byte[] buffer = new byte[1024];
-        int len = 0;
-        while ((len = inputStream.read(buffer)) != -1) {
-            bo.write(buffer, 0, len);
-        }
+//        InputStream inputStream = conn.getInputStream();
+        String base64 = verificationService.getBase64ByRealUrl(java.util.Base64.getEncoder().encodeToString(urlStr.getBytes()));
+        byte[] buffer = Base64.decode(base64);
+        bo.write(buffer);
         bo.flush();
-        inputStream.close();
     }
 
 
