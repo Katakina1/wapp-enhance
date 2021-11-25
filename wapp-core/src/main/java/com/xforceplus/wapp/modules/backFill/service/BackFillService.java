@@ -606,10 +606,6 @@ public class BackFillService {
                         tDxRecordInvoiceEntity.setInvoiceStatus(InvoiceStatusEnum.INVOICE_STATUS_NORMAL.getCode());
                         tDxRecordInvoiceEntity.setStatusUpdateDate(updateDate);
                         tDxRecordInvoiceEntity.setIsDel(IsDealEnum.NO.getValue());
-                        //电子发票改为签收状态
-                        if (InvoiceTypeEnum.isElectronic(backFillVerifyBean.getInvoiceType())) {
-                            tDxRecordInvoiceEntity.setQsStatus("1");
-                        }
                         tDxRecordInvoiceDao.update(tDxRecordInvoiceEntity, updateWrapper);
                         successCount++;
                     }

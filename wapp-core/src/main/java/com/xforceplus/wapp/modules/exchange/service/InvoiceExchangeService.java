@@ -1,6 +1,5 @@
 package com.xforceplus.wapp.modules.exchange.service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -9,11 +8,11 @@ import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
+import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.enums.InvoiceExchangeStatusEnum;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
-import com.xforceplus.wapp.modules.backFill.model.BackFillVerifyBean;
-import com.xforceplus.wapp.modules.backFill.model.InvoiceDetailResponse;
+import com.xforceplus.wapp.modules.backFill.model.*;
 import com.xforceplus.wapp.modules.backFill.service.FileService;
 import com.xforceplus.wapp.modules.backFill.service.InvoiceFileService;
 import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceService;
@@ -21,11 +20,11 @@ import com.xforceplus.wapp.modules.exchange.model.*;
 import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.noneBusiness.util.ZipUtil;
-import com.xforceplus.wapp.modules.rednotification.mapstruct.IdGenerator;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfInvoiceExchangeDao;
+import com.xforceplus.wapp.repository.daoExt.InvoiceFileDao;
 import com.xforceplus.wapp.repository.entity.TDxExcelExportlogEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfInvoiceExchangeEntity;
@@ -37,17 +36,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
+import static com.xforceplus.wapp.modules.sys.util.UserUtil.getUserId;
 
 /**
  * Created by SunShiyong on 2021/11/18.
@@ -81,6 +80,9 @@ public class InvoiceExchangeService {
 
     @Autowired
     private ExcelExportLogService excelExportLogService;
+
+    @Autowired
+    private InvoiceFileDao invoiceFileDao;
     /**
      * 换票列表
      * @param request
@@ -150,20 +152,36 @@ public class InvoiceExchangeService {
      * @param request
      * @return R
      */
+    @Transactional
     public R finish(ExchangeFinishRequest request){
         if(CollectionUtils.isEmpty(request.getIdList())){
             return R.fail("id不能为空");
         }
+        QueryWrapper<TXfInvoiceExchangeEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in(TXfInvoiceExchangeEntity.ID,request.getIdList());
+        List<TXfInvoiceExchangeEntity> tXfInvoiceExchangeEntities = tXfInvoiceExchangeDao.selectList(queryWrapper);
+        if(CollectionUtils.isEmpty(tXfInvoiceExchangeEntities)){
+            return R.fail("根据id没有查询到换票");
+        }
         UpdateWrapper<TXfInvoiceExchangeEntity> updateWrapper = new UpdateWrapper<>();
         updateWrapper.in(TXfInvoiceExchangeEntity.ID,request.getIdList());
-        TXfInvoiceExchangeEntity entity = new TXfInvoiceExchangeEntity();
-        entity.setVoucherNo(request.getVoucherNo());
-        entity.setStatus(InvoiceExchangeStatusEnum.FINISHED.getCode());
-        if(tXfInvoiceExchangeDao.update(entity,updateWrapper) > 0){
-            return R.ok("换票成功");
-        }else{
-            return R.fail("换票失败");
+        TXfInvoiceExchangeEntity invoiceExchangeEntity = new TXfInvoiceExchangeEntity();
+        invoiceExchangeEntity.setVoucherNo(request.getVoucherNo());
+        invoiceExchangeEntity.setStatus(InvoiceExchangeStatusEnum.FINISHED.getCode());
+        tXfInvoiceExchangeDao.update(invoiceExchangeEntity,updateWrapper);
+        //修改发票状态可以去认证
+        for (TXfInvoiceExchangeEntity tXfInvoiceExchangeEntity : tXfInvoiceExchangeEntities) {
+            String[] split = tXfInvoiceExchangeEntity.getNewInvoiceId().split(",");
+            List<Long> idList = Arrays.stream(split).map(Long::parseLong).collect(Collectors.toList());
+            UpdateWrapper<TDxRecordInvoiceEntity> invoiceUpdateWrapper = new UpdateWrapper<>();
+            invoiceUpdateWrapper.in(TDxRecordInvoiceEntity.ID,idList);
+            TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
+            entity.setConfirmStatus("1");
+            entity.setConfirmTime(new Date());
+            tDxRecordInvoiceDao.update(entity,invoiceUpdateWrapper);
         }
+        return R.ok("换票完成");
+
     }
 
     /**
@@ -223,35 +241,82 @@ public class InvoiceExchangeService {
         return successs;
     }
 
-    public  R download(String invoiceCode,String invoiceNo) {
-        TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
-        String title = "";
-        String content = "";
+
+    public R upload(MultipartFile file,String newInvoiceId, String vendorid) {
         try {
-            List<TXfInvoiceFileEntity> byInvoice = invoiceFileService.getByInvoice(invoiceNo, invoiceCode);
+            String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+            StringBuffer fileName = new StringBuffer();
+            fileName.append(UUID.randomUUID().toString());
+            fileName.append(".");
+            int type;
+            if (suffix.toLowerCase().equals(Constants.SUFFIX_OF_OFD)) {
+                fileName.append(Constants.SUFFIX_OF_OFD);
+                type = Constants.FILE_TYPE_OFD;
+            } else if(suffix.toLowerCase().equals(Constants.SUFFIX_OF_PDF)){
+                fileName.append(Constants.SUFFIX_OF_PDF);
+                type = Constants.FILE_TYPE_PDF;
+            }else{
+                throw new EnhanceRuntimeException("文件:[" + fileName + "]类型不正确,应为:[ofd/pdf]");
+            }
+            String[] split = newInvoiceId.split(",");
+            TDxRecordInvoiceEntity entity = tDxRecordInvoiceDao.selectById(Long.valueOf(split[0]));
+            if(entity != null){
+                String uploadResult = fileService.uploadFile(file.getBytes(), fileName.toString(), vendorid);
+                UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
+                UploadFileResultData data = uploadFileResult.getData();
+                invoiceFileService.save(entity.getInvoiceCode(),entity.getInvoiceNo(),data.getUploadPath(),type,getUserId());
+            }else{
+                return R.fail("根据id未找到发票");
+            }
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            throw new EnhanceRuntimeException("上传文件异常");
+        }
+        return R.ok("上传成功");
+    }
+
+    public  R download(String newInvoiceId) {
+        TDxExcelExportlogEntity excelExportlogEntity = new TDxExcelExportlogEntity();
+        String title;
+        String content;
+        try {
+            String[] split = newInvoiceId.split(",");
+            List<Long> idList = Arrays.stream(split).map(Long::parseLong).collect(Collectors.toList());
+            QueryWrapper<TDxRecordInvoiceEntity> wrapper = new QueryWrapper<>();
+            wrapper.in(TDxRecordInvoiceEntity.ID,idList);
+            List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities = tDxRecordInvoiceDao.selectList(wrapper);
+            if(CollectionUtils.isEmpty(tDxRecordInvoiceEntities)){
+                return R.fail("成请失败，根据id未找到发票");
+            }
             String path = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
             String ftpPath = ftpUtilService.pathprefix + path;
             final File tempDirectory = FileUtils.getTempDirectory();
             File file = new File(tempDirectory, path);
             file.mkdir();
             String downLoadFileName = "电票源文件" + ".zip";
-            for (TXfInvoiceFileEntity tXfInvoiceFileEntity : byInvoice) {
-                byte[] bytes = fileService.downLoadFile4ByteArray(tXfInvoiceFileEntity.getPath());
-                String suffix;
-                if (tXfInvoiceFileEntity.getType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
-                    suffix = "." + Constants.SUFFIX_OF_OFD;
-                } else {
-                    suffix = "." + Constants.SUFFIX_OF_PDF;
+            List<Integer> types = new ArrayList<>();
+            types.add(InvoiceFileEntity.TYPE_OF_OFD);
+            types.add(InvoiceFileEntity.TYPE_OF_PDF);
+            for (TDxRecordInvoiceEntity invoice : tDxRecordInvoiceEntities) {
+                List<TXfInvoiceFileEntity> invoiceAndTypes = invoiceFileDao.getByInvoiceAndTypes(invoice.getInvoiceNo(), invoice.getInvoiceCode(), types);
+                for (TXfInvoiceFileEntity tXfInvoiceFileEntity : invoiceAndTypes) {
+                    byte[] bytes = fileService.downLoadFile4ByteArray(tXfInvoiceFileEntity.getPath());
+                    String suffix;
+                    if (tXfInvoiceFileEntity.getType().equals(Constants.FILE_TYPE_OFD)) {
+                        suffix = "." + Constants.SUFFIX_OF_OFD;
+                    } else {
+                        suffix = "." + Constants.SUFFIX_OF_PDF;
+                    }
+                    FileUtils.writeByteArrayToFile(new File(file, tXfInvoiceFileEntity.getInvoiceNo() + "-" + tXfInvoiceFileEntity.getInvoiceCode() + suffix), bytes);
                 }
-                FileUtils.writeByteArrayToFile(new File(file, tXfInvoiceFileEntity.getInvoiceNo() + "-" + tXfInvoiceFileEntity.getInvoiceCode() + suffix), bytes);
             }
             ZipUtil.zip(file.getPath() + ".zip", file);
             exportCommonService.putFile(ftpPath, tempDirectory.getPath() + "/" + downLoadFileName, downLoadFileName);
             excelExportlogEntity.setCreateDate(new Date());
             //这里的userAccount是userid
-            excelExportlogEntity.setUserAccount(UserUtil.getUserId().toString());
+            excelExportlogEntity.setUserAccount(getUserId().toString());
             excelExportlogEntity.setUserName(UserUtil.getUserName());
-            excelExportlogEntity.setConditions(invoiceCode+invoiceNo);
+            excelExportlogEntity.setConditions(newInvoiceId);
             excelExportlogEntity.setStartDate(new Date());
             excelExportlogEntity.setExportStatus(ExcelExportLogService.OK);
             excelExportlogEntity.setServiceType(SERVICE_TYPE);
@@ -300,6 +365,9 @@ public class InvoiceExchangeService {
         }
         if(StringUtils.isNotEmpty(request.getVenderid())){
             wrapper.eq(TXfInvoiceExchangeEntity.VENDERID,request.getVenderid());
+        }
+        if(request.getStatus() != null){
+            wrapper.eq(TXfInvoiceExchangeEntity.STATUS, request.getStatus());
         }
         return wrapper;
 
