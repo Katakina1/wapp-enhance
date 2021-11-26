@@ -16,7 +16,7 @@ public class BackFillVerifyBean {
 
     @JsonProperty("id")
     @ApiModelProperty("发票ID")
-    private String id = null;
+    private Long id = null;
 
     @JsonProperty("invoiceCode")
     @ApiModelProperty("发票代码")

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.dto.R;
+import com.xforceplus.wapp.common.enums.IsDealEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.JsonUtil;
@@ -132,8 +133,15 @@ public class InvoiceExchangeService {
         if(!(isElec || isNotElec)) {
             return R.fail("蓝票不允许纸电混合");
         }
-
-        //TODO 匹配状态校验
+        List<Long> idList = request.getVerifyBeanList().stream().filter(t-> new BigDecimal(t.getAmount()).compareTo(BigDecimal.ZERO) >0).map(BackFillVerifyBean::getId).collect(Collectors.toList());
+        QueryWrapper<TDxRecordInvoiceEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in(TDxRecordInvoiceEntity.ID,idList);
+        queryWrapper.ne(TDxRecordInvoiceEntity.DXHY_MATCH_STATUS, 0);
+        queryWrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO);
+        if(tDxRecordInvoiceDao.selectCount(queryWrapper) > 0){
+            return R.fail("蓝票必须是未匹配状态");
+        }
+        //保存新上传发票id到换票
         TXfInvoiceExchangeEntity entity = new TXfInvoiceExchangeEntity();
         entity.setId(request.getInvoiceId());
         StringBuilder sb = new StringBuilder();
