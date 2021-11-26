@@ -31,6 +31,12 @@ import java.util.function.Supplier;
 @Slf4j
 public class AgreementBillService extends DeductService{
 
+    private final static BigDecimal TAX_RATE_16=BigDecimal.valueOf(16);
+    private final static BigDecimal TAX_RATE_17=BigDecimal.valueOf(17);
+    private final static BigDecimal TAX_RATE_10=BigDecimal.valueOf(10);
+    private final static BigDecimal TAX_RATE_11=BigDecimal.valueOf(11);
+    private final static BigDecimal TAX_RATE_9=BigDecimal.valueOf(9);
+    private final static BigDecimal TAX_RATE_13=BigDecimal.valueOf(13);
     /**
      *
      * @param deductionEnum
@@ -106,6 +112,20 @@ public class AgreementBillService extends DeductService{
          transactionalService.execute(successSuppliers);
     }
 
+
+    public static BigDecimal convertTaxRate(TXfDeductionBusinessTypeEnum deductionEnum,BigDecimal taxRate){
+        if (deductionEnum==TXfDeductionBusinessTypeEnum.AGREEMENT_BILL || deductionEnum == TXfDeductionBusinessTypeEnum.EPD_BILL){
+            //当业务单的税率是16%、17%这两种时，默认匹配13%税率的蓝票；
+            if (taxRate.compareTo(TAX_RATE_17)==0 || taxRate.compareTo(TAX_RATE_16)==0){
+                taxRate=TAX_RATE_13;
+            }
+            //当业务单税率为10%、11%这两种时，默认匹配9%税率的蓝票
+            if (taxRate.compareTo(TAX_RATE_10)==0 || taxRate.compareTo(TAX_RATE_11)==0){
+                taxRate=TAX_RATE_9;
+            }
+        }
+        return taxRate;
+    }
     /**
      * 执行结算单匹配蓝票
      * @param deductionEnum
@@ -116,7 +136,9 @@ public class AgreementBillService extends DeductService{
         String sellerTaxNo = tXfSettlementEntity.getSellerTaxNo();
         try {
             if (CollectionUtils.isEmpty(matchResList)) {
-                matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),TaxRateTransferEnum.transferTaxRate(tXfSettlementEntity.getTaxRate() )  );
+                BigDecimal taxRate = TaxRateTransferEnum.transferTaxRate(tXfSettlementEntity.getTaxRate());
+                taxRate=convertTaxRate(deductionEnum,taxRate);
+                matchResList = blueInvoiceService.matchInvoiceInfo(tXfSettlementEntity.getAmountWithoutTax(), deductionEnum, tXfSettlementEntity.getSettlementNo(),sellerTaxNo,tXfSettlementEntity.getPurchaserTaxNo(),taxRate );
             }
             if (CollectionUtils.isEmpty(matchResList)) {
                 NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();

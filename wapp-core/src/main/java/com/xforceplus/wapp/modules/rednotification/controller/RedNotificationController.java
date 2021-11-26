@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.rednotification.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.modules.rednotification.model.*;
@@ -17,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping(value = "/api/red-notification")
+@RequestMapping(value = EnhanceApi.BASE_PATH +  "/red-notification")
 @Slf4j
 public class RedNotificationController {
     @Autowired

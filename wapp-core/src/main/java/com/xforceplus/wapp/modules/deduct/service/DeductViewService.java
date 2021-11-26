@@ -473,9 +473,12 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         if (Objects.isNull(sellerOrg)){
             throw new EnhanceRuntimeException("供应商编号:["+ request.getSellerNo()+"]不存在");
         }
+        BigDecimal taxRate = request.getTaxRate().movePointRight(2);
+
+        taxRate=AgreementBillService.convertTaxRate(typeEnum,taxRate);
 
         final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainAvailableInvoicesWithoutItems(amount, null,
-                sellerOrg.getTaxNo(), purchaserOrg.getTaxNo(), request.getTaxRate().movePointRight(2), false);
+                sellerOrg.getTaxNo(), purchaserOrg.getTaxNo(),taxRate , false);
 
         final List<MatchedInvoiceListResponse> responses = this.matchedInvoiceMapper.toMatchInvoice(matchRes);
         if (CollectionUtils.isNotEmpty(responses)){

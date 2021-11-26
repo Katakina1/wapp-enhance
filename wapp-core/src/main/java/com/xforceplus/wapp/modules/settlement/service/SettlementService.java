@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
 import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendResponse;
 import com.xforceplus.wapp.modules.deduct.mapstruct.InvoiceRecommendMapper;
+import com.xforceplus.wapp.modules.deduct.service.AgreementBillService;
 import com.xforceplus.wapp.modules.recordinvoice.mapstruct.InvoiceDtoMapper;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
@@ -90,8 +92,10 @@ public class SettlementService {
 //            throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
 //        }
 
-        final BigDecimal taxRate = request.getTaxRate();
-        final String taxRateStr = taxRate.compareTo(BigDecimal.ONE) < 0 ? taxRate.movePointRight(2).toPlainString() : taxRate.toPlainString();
+        BigDecimal taxRate = request.getTaxRate();
+        taxRate=taxRate.compareTo(BigDecimal.ONE) < 0 ? taxRate.movePointRight(2) : taxRate;
+        taxRate=AgreementBillService.convertTaxRate(TXfDeductionBusinessTypeEnum.EPD_BILL,taxRate);
+        final String taxRateStr = taxRate.toPlainString();
         final String sellerNo = request.getSellerNo();
         final TAcOrgEntity purchaserOrg = companyService.getByOrgCode(request.getPurchaserNo(), false);
         final String purchaserTaxNo = Optional.ofNullable(purchaserOrg).map(TAcOrgEntity::getTaxNo)
