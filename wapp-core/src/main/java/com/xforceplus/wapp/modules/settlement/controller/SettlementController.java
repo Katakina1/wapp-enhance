@@ -67,7 +67,7 @@ public class SettlementController {
     @PostMapping("undo-red-notification")
     @ApiOperation(value = "撤销红字信息表")
     public R undoRedNotification(@RequestBody SettlementUndoRedNotificationRequest request) {
-        commSettlementService.applyDestroySettlementPreInvoice(request.getSettlementId());
+        commSettlementService.applyDestroySettlementPreInvoice(request.getSettlementId(),request.getRemark());
         return R.ok("撤销红字信息表申请已提交成功");
     }
 
