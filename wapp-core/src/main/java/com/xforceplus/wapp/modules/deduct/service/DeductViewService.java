@@ -387,10 +387,10 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                 .toJdkDate();
         switch (overDue) {
             case 1:
-                wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                wrapper.lt(TXfBillDeductEntity.CREATE_TIME, date);
                 break;
             case 0:
-                wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                wrapper.gt(TXfBillDeductEntity.CREATE_TIME, date);
                 break;
         }
     }
