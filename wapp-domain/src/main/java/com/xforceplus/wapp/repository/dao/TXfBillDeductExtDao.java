@@ -63,7 +63,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
      */
     @Select("select sum(deduct.amount_without_tax) as amount_without_tax,sum(deduct.amount_with_tax) as amount_with_tax,sum(deduct.tax_amount) as tax_amount , deduct.seller_no,deduct.purchaser_no, deduct.tax_rate\n" +
             "from t_xf_bill_deduct deduct left join t_xf_overdue overdue on overdue.seller_no = deduct.seller_no AND overdue.type = #{type} AND overdue.delete_flag  is null \n" +
-            "where  deduct.deduct_date <=  IIF(  overdue.overdue_day is null, convert(varchar(10),DATEADD(d, 0 - #{referenceDate}, GETDATE()),120), convert(  varchar(10),DATEADD(d, 0 - (overdue.overdue_day), GETDATE()),120)) \n" +
+            "where  deduct.create_time <=  IIF(  overdue.overdue_day is null, convert(varchar(10),DATEADD(d, 0 - #{referenceDate}, GETDATE()),120), convert(  varchar(10),DATEADD(d, 0 - (overdue.overdue_day), GETDATE()),120)) \n" +
             "  and business_type = #{type} and status = #{status} and amount_without_tax > 0 and  lock_flag = #{flag}\n" +
             "group by deduct.purchaser_no, deduct.seller_no,deduct.tax_rate")
     public List<TXfBillDeductEntity> querySuitablePositiveBill(@Param("referenceDate") Integer referenceDate,@Param("type") Integer type,@Param("status") Integer status,@Param("flag") Integer flag);
@@ -112,7 +112,7 @@ public interface TXfBillDeductExtDao extends BaseMapper<TXfBillDeductEntity> {
     @Update("update t_xf_bill_deduct set status =#{targetStatus} ,ref_settlement_no=#{settlementNo}  where purchaser_no  = #{purchaserNo} and seller_no = #{sellerNo} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax < 0 and ref_settlement_no = '' and  lock_flag = #{flag} ")
     public int updateMergeNegativeBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus,@Param("flag") Integer flag );
 
-    @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and deduct_date <= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0 and ref_settlement_no = '' and  lock_flag = #{flag}")
+    @Update(" update t_xf_bill_deduct set status =#{targetStatus},ref_settlement_no=#{settlementNo}  where purchaser_no = #{purchaserNo} and seller_no = #{sellerNo} and create_time <= #{referenceDate} and business_type = #{type} and status = #{status} and tax_rate = #{taxRate} and amount_without_tax > 0 and ref_settlement_no = '' and  lock_flag = #{flag}")
     public int updateMergePositiveBill(@Param("settlementNo") String settlementNo,@Param("purchaserNo") String purchaserNo, @Param("sellerNo") String sellerNo, @Param("taxRate") BigDecimal taxRate,@Param("referenceDate") Date referenceDate, @Param("type") Integer type, @Param("status") Integer status, @Param("targetStatus") Integer targetStatus,@Param("flag") Integer flag );
 
     /**
