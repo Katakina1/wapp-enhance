@@ -16,4 +16,7 @@ public class RedNotificationConfirmRejectModel {
     @ApiModelProperty(value = "红字信息筛选条件")
     private QueryModel queryModel;
 
+    @ApiModelProperty(value = "操作备注")
+    private String operationRemark;
+
 }

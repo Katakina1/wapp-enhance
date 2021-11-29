@@ -1091,6 +1091,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
         if (Objects.equals(OperationType.CONFIRM.getValue(), model.getOperationType())) {
             // 确认 //自动尝试一次 //撤销待审核
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
+            record.setRevertRemark(model.getOperationRemark());
             record.setApproveStatus(ApproveStatus.APPROVE_PASS.getValue());
             record.setApplyingStatus(RedNoApplyingStatus.WAIT_TO_APPROVE.getValue());
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
@@ -1113,6 +1114,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
             // 驳回 ，修改状态到已申请
             TXfRedNotificationEntity record = new TXfRedNotificationEntity();
             record.setApproveStatus(ApproveStatus.APPROVE_FAIL.getValue());
+            record.setRejectRemark(model.getOperationRemark());
             LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.in(TXfRedNotificationEntity::getId, list);
             int update = getBaseMapper().update(record, updateWrapper);
