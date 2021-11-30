@@ -1121,7 +1121,7 @@ public class RedNotificationMainService extends ServiceImpl<TXfRedNotificationDa
 
             // 驳回保留红字预制发票
             try {
-                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(pidList);
+                commSettlementService.rejectDestroySettlementPreInvoiceByPreInvoiceId(pidList,model.getOperationRemark());
             } catch (EnhanceRuntimeException e) {
                 return Response.failed(e.getMessage());
             }
