@@ -267,13 +267,13 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             int size = Math.abs(supplierCodeList.size() / 2000);
             for (int j = 0; j < size; j++) {
                 QueryWrapper wrapperCode = new QueryWrapper<>();
-                wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, (j + 1) * 2000));
+                wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, ((j + 1) * 2000)-1));
                 wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
                 wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
                 resultOrgCodeList.addAll(this.list(wrapperCode));
                 if (j == size - 1) {
                     QueryWrapper wrapperCode1 = new QueryWrapper<>();
-                    wrapperCode1.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, size - (j * 2000)));
+                    wrapperCode1.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, supplierCodeList.size() ));
                     wrapperCode1.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
                     wrapperCode1.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
                     resultOrgCodeList.addAll(this.list(wrapperCode1));
