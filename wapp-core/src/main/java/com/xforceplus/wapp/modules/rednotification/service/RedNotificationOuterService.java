@@ -86,7 +86,7 @@ public class RedNotificationOuterService {
      * @return
      */
     @LogOperate(value = "对外接口修改已申请的红字信息为撤销待审核",type = LogOperateType.MODIFY)
-    public Response<String> updateAppliedToWaitAppproveByPid(Long pid) {
+    public Response<String> updateAppliedToWaitAppproveByPid(Long pid,String remark) {
         LambdaQueryWrapper<TXfRedNotificationEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TXfRedNotificationEntity::getPid,pid).eq(TXfRedNotificationEntity::getApplyingStatus,RedNoApplyingStatus.APPLIED.getValue());
         TXfRedNotificationEntity tXfRedNotificationEntity = redNotificationService.getBaseMapper().selectOne(queryWrapper);
@@ -94,6 +94,7 @@ public class RedNotificationOuterService {
           return   Response.failed(String.format("pid[%s]未找到已申请的记录",pid));
         }
 
+        tXfRedNotificationEntity.setRevertRemark(remark);
         tXfRedNotificationEntity.setApproveStatus(ApproveStatus.WAIT_TO_APPROVE.getValue());
         tXfRedNotificationEntity.setUpdateDate(new Date());
         redNotificationService.getBaseMapper().updateById(tXfRedNotificationEntity);
@@ -117,11 +118,12 @@ public class RedNotificationOuterService {
      * 删除待申请的红字信息
      */
     @LogOperate(value = "对外接口删除待申请的红字信息请求",type = LogOperateType.MODIFY)
-    public void deleteRednotification(List<Long> pidList){
+    public void deleteRednotification(List<Long> pidList,String remark){
          LambdaUpdateWrapper<TXfRedNotificationEntity> updateWrapper = new LambdaUpdateWrapper<>();
          updateWrapper.in(TXfRedNotificationEntity::getPid , pidList);
          TXfRedNotificationEntity record = new TXfRedNotificationEntity();
          record.setStatus(0);
+        record.setRevertRemark(remark);
          redNotificationService.getBaseMapper().update(record,updateWrapper);
     }
 
