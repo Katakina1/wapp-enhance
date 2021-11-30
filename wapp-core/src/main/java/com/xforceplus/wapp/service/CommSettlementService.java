@@ -62,7 +62,7 @@ public class CommSettlementService {
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public void applyDestroySettlementPreInvoice(Long settlementId) {
+    public void applyDestroySettlementPreInvoice(Long settlementId,String remark) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {

@@ -69,6 +69,9 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         if (StringUtils.isNotBlank(taxNo)) {
             wrapper.eq(TAcOrgEntity.TAX_NO, taxNo);
         }
+        if(Objects.nonNull(UserUtil.getUser())&&StringUtils.isNotEmpty(UserUtil.getUser().getUsercode())){
+            wrapper.eq(TAcOrgEntity.ORG_CODE, UserUtil.getUser().getUsercode());
+        }
         return getOne(wrapper);
     }
 

@@ -95,6 +95,12 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(wrapper);
+        tXfPreInvoiceEntityList.forEach(x -> {
+            final boolean bool = Objects.equals(x.getPreInvoiceStatus(), TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+            if (!bool){
+                throw new EnhanceRuntimeException("结算单存在未申请红字信息的预制发票，不能提交");
+            }
+        });
 
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
