@@ -130,7 +130,7 @@ public class PreInvoiceDaoService extends ServiceImpl<TXfPreInvoiceDao, TXfPreIn
 
         //删除待审核红字信息
         if (!CollectionUtils.isEmpty(waitApplyPreIds)){
-            redNotificationOuterService.deleteRednotification(waitApplyPreIds);
+            redNotificationOuterService.deleteRednotification(waitApplyPreIds,null);
         }
 
         // 获取明细重新拆票
