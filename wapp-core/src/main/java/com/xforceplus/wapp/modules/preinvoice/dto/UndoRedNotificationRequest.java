@@ -14,4 +14,5 @@ import lombok.Setter;
 public class UndoRedNotificationRequest {
     private String invoiceNo;
     private String invoiceCode;
+    private String remark;
 }

@@ -64,7 +64,7 @@ public class PreInvoiceController {
     @PostMapping(value = "/undo-notification")
     public Response undoRedNotificationByInvoice(@RequestBody UndoRedNotificationRequest request){
 
-        this.preinvoiceService.applyDestroyPreInvoiceAndRedNotification(request.getInvoiceNo(), request.getInvoiceCode());
+        this.preinvoiceService.applyDestroyPreInvoiceAndRedNotification(request.getInvoiceNo(), request.getInvoiceCode(),request.getRemark());
 
         return Response.ok("申请成功！请等待购方审核或操作！");
 
