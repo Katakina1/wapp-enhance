@@ -137,11 +137,7 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             List<TXfBlackWhiteCompanyEntity> validList = speacialBlackCompanyConverter.reverse(listener.getValidInvoices(), UserUtil.getUserId());
 
             List<String> supplierCodeList = listener.getValidInvoices().stream().map(SpecialCompanyBlackImportDto::getSupplierTaxNo).collect(Collectors.toList());
-            QueryWrapper wrapperCode = new QueryWrapper<>();
-            wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
-            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
-            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
-            List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = this.list(wrapperCode);
+            List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = getTaxNoResult(type, supplierCodeList);
             Map<String, Long> map = new HashMap<>();
             resultOrgCodeList.stream().forEach(code -> {
                 map.put(code.getSupplierTaxNo(), code.getId());
@@ -164,8 +160,8 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             EasyExcel.write(tmp + "/" + file.getOriginalFilename(), SpecialCompanyBlackImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-            String exportFileName="导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
-            String ftpFilePath = ftpPath + "/" +exportFileName;
+            String exportFileName = "导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
+            String ftpFilePath = ftpPath + "/" + exportFileName;
             FileInputStream inputStream = FileUtils.openInputStream(sourceFile);
             try {
                 ftpUtilService.uploadFile(ftpPath, exportFileName, inputStream);
@@ -206,17 +202,13 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         sizeDto.setImportCount(listener.getRows());
         sizeDto.setValidCDount(listener.getValidInvoices().size());
         sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
-        log.info("导入数据解析条数:{}", listener.getRows());
-        log.info("导入数据解析条数:{}", listener.getRows());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
             List<TXfBlackWhiteCompanyEntity> validList = companyConverter.reverse(listener.getValidInvoices(), UserUtil.getUserId());
 
             List<String> supplierCodeList = listener.getValidInvoices().stream().map(SpecialCompanyImportDto::getSupplierTaxNo).collect(Collectors.toList());
-            QueryWrapper wrapperCode = new QueryWrapper<>();
-            wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
-            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
-            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
-            List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = this.list(wrapperCode);
+            List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = getTaxNoResult(type, supplierCodeList);
+
+
             Map<String, Long> map = new HashMap<>();
             resultOrgCodeList.stream().forEach(code -> {
                 map.put(code.getSupplierTaxNo(), code.getId());
@@ -239,8 +231,8 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             EasyExcel.write(tmp + "/" + file.getOriginalFilename(), SpecialCompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
-            String exportFileName="导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
-            String ftpFilePath = ftpPath + "/" +exportFileName;
+            String exportFileName = "导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
+            String ftpFilePath = ftpPath + "/" + exportFileName;
             FileInputStream inputStream = FileUtils.openInputStream(sourceFile);
             try {
                 ftpUtilService.uploadFile(ftpPath, exportFileName, inputStream);
@@ -267,6 +259,35 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
 
         }
         return sizeDto;
+    }
+
+    private List<TXfBlackWhiteCompanyEntity> getTaxNoResult(String type, List<String> supplierCodeList) {
+        List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = new ArrayList<>();
+        if (supplierCodeList.size() > 2000) {
+            int size = Math.abs(supplierCodeList.size() / 2000);
+            for (int j = 0; j < size; j++) {
+                QueryWrapper wrapperCode = new QueryWrapper<>();
+                wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, (j + 1) * 2000));
+                wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
+                wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
+                resultOrgCodeList.addAll(this.list(wrapperCode));
+                if (j == size - 1) {
+                    QueryWrapper wrapperCode1 = new QueryWrapper<>();
+                    wrapperCode1.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, size - (j * 2000)));
+                    wrapperCode1.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
+                    wrapperCode1.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
+                    resultOrgCodeList.addAll(this.list(wrapperCode1));
+                }
+            }
+
+        } else {
+            QueryWrapper wrapperCode = new QueryWrapper<>();
+            wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
+            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
+            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
+            resultOrgCodeList = this.list(wrapperCode);
+        }
+        return resultOrgCodeList;
     }
 
 
