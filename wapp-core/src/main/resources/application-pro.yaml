@@ -1,67 +1,61 @@
 wapp:
-  tax-rate: 0.00,0.01,0.03,0.06,0.09,0.10,0.11,0.13,0.16,0.17
   integration:
-    authentication: Walmart-wapp-enhance-dev2021101114111213460599
-    client-id: T395054492021101114111213460567
-    customer-no: T395054492021101114111213460567
-    tenant-id: 4882809030005538709
+    authentication: walmart-red20211130094319792199387
+    client-id: T3950544920211130094319792199357
+    customer-no: T3950544920211130094319792199357
+    tenant-id: 5793722992790675456
     tenant-code: Walmart
     tenant-name: Walmart
     action:
       # ofd解析 验签
-      ofd: 0E707DB76E9B55CA069263CE911E36A5
+      ofd: D632AA5AC056788525147AD0A4D843F1
       # 发票验真
-      verification: 3A0ED452A8386C3B04B1F9C3F6C76A42
+      verification: 6AE0C78D3E561474334A25EE8CC4020F
       # 申请红字信息表
-      rednotification: FECD0B7724B239B3C5950FDBDB1D09E0
+      rednotification: 82152984CC74EE4E87B8D965F8A72808
       # 获取终端
-      terminals: 816A43875B12DE4B50EBEC29E4DA56E2
-      splitInvoice: 639C87A65FE9E5B0557651202E474581
-
+      terminals: BC81277C3F8B1E26DD227838486BCA04
+      splitInvoice: 723EA9FE0EBB4FFA589D86DD2B512741
       # 红字信息撤销
-      rollback: 8F8D2FFCA3F768BB2D7A4D7634BB7274
+      rollback: E041B9B1D025D63A2B7E78033694205A
       # 红字信息生成pdf
-      genredpdf: E96F0AB61D35F93BF48928D568A97C5B
+      genredpdf: 9F98620DEB4889598D6EF6FE02E0D70F
       #识别
-      discern: 043F1FF00631D5E8F0261CD532D2F477
+      discern: F4679DBC6755820AB12AB7AAB05D0E5B
+      discern-callbackUrl: prod-janus.melete
       #下载附件
-      downLoadAction: 150DA7230F31582EC8F1B164E91DB0E4
-      discern-callbackUrl: inte-janus.melete
+      downLoadAction: 7A9D0DE54A30B9E985120BAC8F42C09B
       # 税编查询
-      tax-code: 978FDBCF06496528939EB352B3711394
-
+      tax-code: 7C0E7F8E1BCF4B31BA00603CBAE391AB
     host:
-      tcp: janus-tcp-inte-tx.xforceplus.com
-      http: https://janus-inte-tx.xforceplus.com:443
+      tcp: janus-tcp-tx.xforceplus.com
+      http: https://janus-tx.xforceplus.com:443
     sign:
-      tax-code: 0618de7ca5a54e44b85293cc7929312e
       splitInvoice: 0618de7ca5a54e44b85293cc7929312e
+      tax-code: 9afc34ea775683aa44fc1787da9bbeaf
     port:
       tcp: 443
   db2:
     base-url: 127.0.0.1
+  export_success_queue_gfone: cn.wm.host.export.success.queue.gfone
   export:
-      tmp: E:/tomcattmp
+    tmp: /tmp/excel
   rednotification:
-    maxApply: 99
-#  tax-rate-mapping:
-#    16: 13
-#    17: 13
-#    10: 9
-#    11: 9
-
+    maxApply: 50
 activemq:
   queue-name:
-    export-request: local-cn.wm.host.enhance.export-request.queue # 导出申请
-    enhance-claim-verdict-queue: local-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
-    export-success-queue-gfone: local-cn.wm.host.export.success.queue.gfone
+    export-request: fat-cn.wm.host.enhance.export-request.queue # 导出申请
+    enhance-claim-verdict-queue: fat-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+    export-success-queue-gfone: cn.wm.host.export.success.queue.gfone
 taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+spring:
+  redis:
+    host: wapp-redis
+    port: 6379
+    password:
 
-
-
+server:
+  port: 6060
 
 
 #图片存储路径
@@ -98,7 +92,6 @@ filePathConstan:
   sso: d:/sso/sso.txt
 
 
-
 #sftp配置
 pro:
   sftp:
@@ -110,31 +103,5 @@ pro:
     default:
       port: 22
       timeout: 60000
-
       privateKey: /home/wappftp/.ssh/id_rsa
       passphrase:
-
-agreementBill:
-  local:
-#    path: D:/Workspace/wapp-enhance/wapp-core/target
-    path: /usr/local/wapp/agreement
-claimBill:
-  local:
-    path: D:/Workspace/wapp-enhance/wapp-core/target
-epdBill:
-  local:
-    path: D:/Workspace/wapp-enhance/wapp-core/target
-
-spring:
-  redis:
-    host: phoenix-t.xforceplus.com
-    port: 23333
-    password: 8eSf4M97VLhP6hq8
-    database: 2
-
-  jackson:
-    time-zone: GMT+8
-    date-format: yyyy-MM-dd HH:mm:ss
-server:
-  tomcat:
-    basedir: E:\tomcattmp
