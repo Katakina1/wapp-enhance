@@ -1,0 +1,107 @@
+wapp:
+  integration:
+    authentication: walmart-red20211130094319792199387
+    client-id: T3950544920211130094319792199357
+    customer-no: T3950544920211130094319792199357
+    tenant-id: 5793722992790675456
+    tenant-code: Walmart
+    tenant-name: Walmart
+    action:
+      # ofd解析 验签
+      ofd: D632AA5AC056788525147AD0A4D843F1
+      # 发票验真
+      verification: 6AE0C78D3E561474334A25EE8CC4020F
+      # 申请红字信息表
+      rednotification: 82152984CC74EE4E87B8D965F8A72808
+      # 获取终端
+      terminals: BC81277C3F8B1E26DD227838486BCA04
+      splitInvoice: 723EA9FE0EBB4FFA589D86DD2B512741
+      # 红字信息撤销
+      rollback: E041B9B1D025D63A2B7E78033694205A
+      # 红字信息生成pdf
+      genredpdf: 9F98620DEB4889598D6EF6FE02E0D70F
+      #识别
+      discern: F4679DBC6755820AB12AB7AAB05D0E5B
+      discern-callbackUrl: prod-janus.melete
+      #下载附件
+      downLoadAction: 7A9D0DE54A30B9E985120BAC8F42C09B
+      # 税编查询
+      tax-code: 7C0E7F8E1BCF4B31BA00603CBAE391AB
+    host:
+      tcp: janus-tcp-tx.xforceplus.com
+      http: https://janus-tx.xforceplus.com:443
+    sign:
+      splitInvoice: 0618de7ca5a54e44b85293cc7929312e
+      tax-code: 9afc34ea775683aa44fc1787da9bbeaf
+    port:
+      tcp: 443
+  db2:
+    base-url: 127.0.0.1
+  export_success_queue_gfone: cn.wm.host.export.success.queue.gfone
+  export:
+    tmp: /tmp/excel
+  rednotification:
+    maxApply: 50
+activemq:
+  queue-name:
+    export-request: fat-cn.wm.host.enhance.export-request.queue # 导出申请
+    enhance-claim-verdict-queue: fat-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+    export-success-queue-gfone: cn.wm.host.export.success.queue.gfone
+taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
+spring:
+  redis:
+    host: wapp-redis
+    port: 6379
+    password:
+
+server:
+  port: 6060
+
+
+#图片存储路径
+filePathConstan:
+  remoteImageRootPath: /home/wappftp/jxfp/image/
+  remoteCostFileRootPath: /home/wappftp/jxfp/cost/
+  remoteKnowFileRootPath: /home/wappftp/jxfp/knowCenter/
+  remoteAnnouncementRootPath: /home/wappftp/jxfp/announcement/
+  remoteQuestionPaperFileRootPath: /home/wappftp/jxfp/question/
+  remoteQuestionPaperFileTempRootPath: /home/wappftp/jxfp/temp/question/
+  remoteCostFileTempRootPath: /home/wappftp/jxfp/temp/cost/
+  remoteExcelFileRootPath: /home/wappftp/wapp/excel/
+  remoteFixedRootPath: /jxfp/fixed/ #供应商红票remoteFixedRootPath
+  remoteFixedTempRootPath: /jxfp/temp/fixed/ #供应商红票远程文件临时存放路径
+  localImageRootPath: /home/vn03qsx/jxfp/image/
+  tempPath: /home/wappftp/jxfp/temp/zip/      # 文件暂存路径
+  depositPath: /home/wappftp/jxfp/zipto/ # 文件存储路
+  tempImgPath: /home/wappftp/jxfp/temp/imgzip/      # 图片临时存储路径
+  signInImgPath: /home/wappftp/jxfp/temp/image/     #扫码签收图片暂存路径
+  tempDir: /home/wappftp/jxfp/temp/excelZip/
+  sapRemoteRootPath: /jxfp/sap/source/   #sap源文件目录
+  sapRemoteBakPath: /jxfp/sap/bak/       #sap备份目录
+  sapLocalTempPath: /home/wappftp/jxfp/sap/temp/         #sap本地临时目录
+  aribatempPath: /usr/users/dxhy152/wapp/jxfp/temp/zip/      # 文件暂存路径
+  aribadepositPath: /usr/users/dxhy152/wapp/jxfp/zipto/ # 文件存储路
+  erweimaPath: /usr/users/dxhy152/wapp/jxfp/QRCode/image/
+  orderSapRemoteRootPath: /jxfp/order/sap/source/   #sap源文件目录（订单获取）
+  orderSapRemoteBakPath: /jxfp/order/sap/bak/       #sap备份目录（订单获取）
+  orderSapLocalTempPath: /usr/users/dxhy152/wapp/jxfp/order/sap/temp/
+  vendorRemoteRootPath: /jxfp/vendor/source/   #vendor源文件目录(导入10位供应商号)
+  vendorRemoteBakPath: /jxfp/vendor/bak/       #vendor备份目录
+  vendorLocalTempPath: /usr/users/dxhy152/wapp/jxfp/vendor/temp/         #vendor本地临时目录
+  localFixedRootPath: /usr/users/dxhy152/wapp/jxfp/fixed/temp/ #供应商红票本地文件存放路径
+  sso: d:/sso/sso.txt
+
+
+#sftp配置
+pro:
+  sftp:
+    host: 10.100.2.17  #10.44.100.123
+    username: wappftp
+    password: testwapp123
+    # 授权方式：公私钥和密码选择一个，测试时选择密码,pwd密码，private 私钥，默认private
+    auth-method: pwd
+    default:
+      port: 22
+      timeout: 60000
+      privateKey: /home/wappftp/.ssh/id_rsa
+      passphrase:
