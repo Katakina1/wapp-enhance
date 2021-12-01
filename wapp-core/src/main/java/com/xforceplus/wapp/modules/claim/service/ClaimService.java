@@ -260,7 +260,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tDxQuestionPaperEntity.setUsername(tXfSettlementEntity.getSellerName());
         //用来存储结算单id
         tDxQuestionPaperEntity.setInvoiceNo(String.valueOf(tXfSettlementEntity.getId()));
-        tDxQuestionPaperEntity.setProblemCause("索赔单申请不定单");
+        tDxQuestionPaperEntity.setProblemCause("100704");
         tDxQuestionPaperEntity.setDescription("索赔单号：" + Joiner.on(",").join(billDeductList.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList())));
         tDxQuestionPaperEntity.setCheckstatus("0");
         //流水号
