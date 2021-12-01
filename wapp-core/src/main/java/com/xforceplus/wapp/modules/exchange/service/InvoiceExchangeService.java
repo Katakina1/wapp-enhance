@@ -95,6 +95,9 @@ public class InvoiceExchangeService {
         Page<TXfInvoiceExchangeEntity> pageResult = tXfInvoiceExchangeDao.selectPage(page,wrapper);
         List<InvoiceExchangeResponse> response = new ArrayList<>();
         BeanUtil.copyList(pageResult.getRecords(),response,InvoiceExchangeResponse.class);
+        for (InvoiceExchangeResponse invoiceExchangeResponse : response) {
+            invoiceExchangeResponse.setElectronic(InvoiceTypeEnum.isElectronic(invoiceExchangeResponse.getInvoiceType()));
+        }
         return PageResult.of(response,pageResult.getTotal(), pageResult.getPages(), pageResult.getSize());
     }
 

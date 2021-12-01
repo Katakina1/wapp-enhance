@@ -29,6 +29,9 @@ public class InvoiceExchangeJobExecutor {
     @Autowired
     private InvoiceExchangeService invoiceExchangeService;
 
+    //扫描的天数
+    private static final int days = 7;
+
     @Async
     //@Scheduled(cron = "0 */1 * * * ?")
     public void execute(){
@@ -38,7 +41,7 @@ public class InvoiceExchangeJobExecutor {
             recordInvoiceWrapper.eq(TDxRecordInvoiceEntity.IS_DEL, IsDealEnum.NO);
             recordInvoiceWrapper.eq(TDxRecordInvoiceEntity.RZH_YESORNO,"1");
             recordInvoiceWrapper.eq(TDxRecordInvoiceEntity.INVOICE_STATUS, InvoiceStatusEnum.INVOICE_STATUS_LOSE.getCode());
-            recordInvoiceWrapper.ge(TDxRecordInvoiceEntity.CREATE_DATE, DateUtils.addDate(new Date(), -30));
+            recordInvoiceWrapper.ge(TDxRecordInvoiceEntity.CREATE_DATE, DateUtils.addDate(new Date(), -days));
             List<TDxRecordInvoiceEntity> tDxRecordInvoiceEntities =  tDxRecordInvoiceDao.selectList(recordInvoiceWrapper);
             if(CollectionUtils.isNotEmpty(tDxRecordInvoiceEntities)){
                 invoiceExchangeService.saveBatch(tDxRecordInvoiceEntities, "底账同步该发票已失控");
