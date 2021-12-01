@@ -1,20 +1,21 @@
 package com.xforceplus.wapp.modules.backFill.service;
 
-import cn.hutool.core.codec.Base64Encoder;
-import com.alibaba.fastjson.JSON;
-import com.xforceplus.wapp.modules.backFill.model.FileUploadResult;
+import com.xforceplus.wapp.common.utils.DateUtils;
+import com.xforceplus.wapp.common.utils.JsonUtil;
+import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
+import com.xforceplus.wapp.modules.backFill.model.UploadFileResultData;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import sun.misc.BASE64Encoder;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -27,50 +28,43 @@ public class FileService {
 
     @Value("${Esb.url.downLoad}")
     private String downLoadUrl;
-    public String uploadFile(MultipartFile file) throws IOException {
+    @Value("${wapp.nas.url}")
+    private String nasBaseUrl;
+
+    public String uploadFile(MultipartFile file, String venderId) throws IOException {
         //设置请求头
-    	
-        return uploadFile(file.getBytes(), file.getOriginalFilename());
-    }
-    
-    public String uploadFile(byte[] fileBytes,String  originalFilename) throws IOException {
-        //设置请求头
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("multipart/form-data");
-        headers.setContentType(type);
 
-        //设置请求体，注意是LinkedMultiValueMap
-        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
-        ByteArrayResource contentsAsResource = new ByteArrayResource(fileBytes) {
-            @Override
-            public String getFilename() {
-                return originalFilename;
-            }
-        };
-        form.add("uploadFile", contentsAsResource);
-        HttpEntity<MultiValueMap<String, Object>> files = new HttpEntity<>(form, headers);
-        String s = restTemplate.postForObject(uploadUrl, files, String.class);
-        log.info("上传文件返回结果:{}", s);
-        return s;
+        return uploadFile(file.getBytes(), file.getOriginalFilename(), venderId);
     }
 
-    public FileUploadResult upload(byte[] fileBytes,String  originalFilename) throws IOException {
-        final String s = uploadFile(fileBytes, originalFilename);
-        final FileUploadResult fileUploadResult = JSON.parseObject(s, FileUploadResult.class);
-        return fileUploadResult;
+    public String uploadFile(byte[] fileBytes, String originalFilename, String venderId) throws IOException {
+        File file = new File(nasBaseUrl + "/" + venderId + "/" + DateUtils.getStringDateShort());
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        File uploadFile = new File(file, originalFilename);
+        FileUtils.writeByteArrayToFile(uploadFile,fileBytes);
+        UploadFileResult uploadFileResult = new UploadFileResult();
+        UploadFileResultData data = new UploadFileResultData();
+        data.setUploadPath(uploadFile.getAbsolutePath());
+        data.setUploadId(UUID.randomUUID().toString());
+        uploadFileResult.setData(data);
+
+        return JsonUtil.toJsonStr(uploadFileResult);
     }
 
-    public byte[] downLoadFile4ByteArray(String uploadId)  {
-        final ResponseEntity<byte[]> entity = restTemplate.getForEntity(downLoadUrl + "?uploadId=" + uploadId, byte[].class);
-        return entity.getBody();
-    }
-
-    public String downLoadFile(String uploadId)throws IOException {
-        HttpHeaders headers = new HttpHeaders();
-        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(downLoadUrl + "?uploadId=" + uploadId, HttpMethod.GET, new HttpEntity<>(headers), byte[].class);
-        if (responseEntity.getBody() != null) {
-            return  Base64Encoder.encode(responseEntity.getBody());
+    public byte[] downLoadFile4ByteArray(String uploadId) {
+        File file = new File(uploadId);
+        try {
+            return FileUtils.readFileToByteArray(file);
+        } catch (IOException e) {
+            log.error("下载图片异常:{}", e);
         }
         return null;
+    }
+
+    public String downLoadFile(String uploadId) throws IOException {
+        File file = new File(uploadId);
+        return new BASE64Encoder().encode(FileUtils.readFileToByteArray(file));
     }
 }

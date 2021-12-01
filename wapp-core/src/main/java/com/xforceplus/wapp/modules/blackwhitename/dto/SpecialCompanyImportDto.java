@@ -8,7 +8,7 @@ import lombok.Data;
  * @author aiwentao@xforceplus.com
  */
 @Data
-@ApiModel("黑白名单导入配置")
+@ApiModel("白名单导入配置")
 public class SpecialCompanyImportDto {
 
 

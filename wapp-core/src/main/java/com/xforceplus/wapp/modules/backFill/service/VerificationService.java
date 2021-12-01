@@ -115,7 +115,21 @@ public class VerificationService implements IntegrationResultHandler {
             paramMeterMap.put("type","1");
             defaultHeader.put("serialNo",uuId);
             final String get = httpClientFactory.get(downLoadAction,paramMeterMap,defaultHeader);
-            log.info("获取下载结果:{}", get);
+            return get;
+        } catch (IOException e) {
+            log.error("获取下载结果:" + e.getMessage(), e);
+            throw new EnhanceRuntimeException("获取下载结果:" + e.getMessage());
+        }
+    }
+
+    public String getBase64ByRealUrl(String url) {
+
+        try {
+            HashMap<String, Object> paramMeterMap = Maps.newHashMap();
+            paramMeterMap.put("ossUrl",url);
+            paramMeterMap.put("type","1");
+            defaultHeader.put("serialNo","123456");
+            final String get = httpClientFactory.get(downLoadAction,paramMeterMap,defaultHeader);
             return get;
         } catch (IOException e) {
             log.error("获取下载结果:" + e.getMessage(), e);

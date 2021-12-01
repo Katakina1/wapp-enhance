@@ -49,8 +49,8 @@ public class CommRedNotificationService {
      * @param preInvoiceId 预制发票id
      * @return
      */
-    public void applyDestroyRedNotification(Long preInvoiceId) {
-        redNotificationOuterService.updateAppliedToWaitAppproveByPid(preInvoiceId);
+    public void applyDestroyRedNotification(Long preInvoiceId,String remark) {
+        redNotificationOuterService.updateAppliedToWaitAppproveByPid(preInvoiceId,remark);
     }
 
     /**
@@ -75,8 +75,8 @@ public class CommRedNotificationService {
      *
      * @param preInvoiceId
      */
-    public void deleteRedNotification(Long preInvoiceId) {
-        redNotificationOuterService.deleteRednotification(Collections.singletonList(preInvoiceId));
+    public void deleteRedNotification(Long preInvoiceId,String remark) {
+        redNotificationOuterService.deleteRednotification(Collections.singletonList(preInvoiceId),remark);
     }
 
     private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {

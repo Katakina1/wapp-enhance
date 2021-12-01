@@ -164,6 +164,18 @@ public class RedNotificationMain {
     @ApiModelProperty("计价方式")
     private String priceMethod;
 
+    /**
+     * 驳回备注
+     */
+    @ApiModelProperty("驳回备注")
+    private String rejectRemark;
+
+    /**
+     * 撤销备注
+     */
+    @ApiModelProperty("撤销备注")
+    private String revertRemark;
+
 
 
 }

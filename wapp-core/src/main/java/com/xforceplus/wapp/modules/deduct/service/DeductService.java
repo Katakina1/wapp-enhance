@@ -605,7 +605,6 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReference()));
             tXfBillDeductEntity.setAgreementTaxCode(defaultValue(tmp.getTaxCode()));
             tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()));
-            tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getDocumentNo()));
             tXfBillDeductEntity.setAmountWithTax( defaultValue(x.getAmountWithTax()));
             tXfBillDeductEntity.setAmountWithoutTax(tXfBillDeductEntity.getAmountWithTax().divide(BigDecimal.ONE.add(defaultValue(tXfBillDeductEntity.getTaxRate())), 2, RoundingMode.HALF_UP));
             tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithTax().subtract(tXfBillDeductEntity.getAmountWithoutTax()));
@@ -940,8 +939,8 @@ public class DeductService   {
                     tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
                     tXfSettlementItemEntity.setItemSpec(defaultValue(invoiceItem.getModel()));
                     tXfSettlementItemEntity.setQuantityUnit(defaultValue(invoiceItem.getUnit()));
-                    tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
                     tXfSettlementItemEntity = fixTaxCode(tXfSettlementItemEntity, map);
+                    tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
 
                     if (status < tXfSettlementItemEntity.getItemFlag() ) {
                         status = tXfSettlementItemEntity.getItemFlag();
@@ -977,19 +976,17 @@ public class DeductService   {
             BlueInvoiceService.InvoiceItem tmpInvoce = map.get(key);
             List<String> splitInfo = ItemNameUtils.splitItemName(key);
             if (splitInfo.size() != 2) {
-                res.put(key, null);
+                return;
             }
-            val either = taxCodeService.searchTaxCode(String.valueOf(tmpInvoce.getTaxRate()), null, splitInfo.get(1));
+            val either = taxCodeService.searchTaxCode(String.valueOf(TaxRateTransferEnum.transferTaxRate(tmpInvoce.getTaxRate())), null, splitInfo.get(0));
             if (either.isRight()) {
                 List<TaxCodeBean> taxCodeBeans = either.get();
                 if (CollectionUtils.isNotEmpty(taxCodeBeans)) {
                     TaxCodeBean taxCodeBean = taxCodeBeans.get(0);
-                    res.put(splitInfo.get(1), taxCodeBean);
-                 }else{
-                    res.put(splitInfo.get(1), null);
-                }
+                    res.put(splitInfo.get(0), taxCodeBean);
+                 }
             }
-            res.put(splitInfo.get(1), null);
+
         });
         return res;
     }
@@ -1077,7 +1074,7 @@ public class DeductService   {
      * @param entity
      * @return
      */
-    public TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
+    public TXfSettlementItemEntity fixTaxCode(TXfSettlementItemEntity entity) {
         if (StringUtils.isEmpty(entity.getItemCode())) {
             return entity;
         }
@@ -1115,7 +1112,7 @@ public class DeductService   {
                 TaxCodeBean taxCodeBean = map.get(itemShortName);
                 entity.setGoodsTaxNo(taxCodeBean.getTaxCode());
                 entity.setGoodsNoVer(taxCodeBean.getTaxCodeVersion());
-                entity.setTaxPreCon(taxCodeBean.getSpecialManagement());
+                entity.setTaxPreCon(defaultValue(taxCodeBean.getSpecialManagement()));
              }
         }
         return entity;

@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-25
+ * @since 2021-11-17
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -881,7 +881,7 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     /**
      * 结算单号
      */
-    @TableField("settlementNo")
+    @TableField("settlement_no")
     private String settlementNo;
 
     /**
@@ -905,6 +905,9 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("host_taxRate")
     private BigDecimal hostTaxrate;
 
+    @TableField("confirm_reason")
+    private String confirmReason;
+
     @TableField("is_gl")
     private String isGl;
 
@@ -914,17 +917,17 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("scan_fail_reason")
     private String scanFailReason;
 
-    @TableField("confirm_reason")
-    private String confirmReason;
-
     @TableField("borrow_return_date")
     private Date borrowReturnDate;
 
-    @TableField("is_return_ticket")
-    private String isReturnTicket;
-
     @TableField("borrow_dept")
     private String borrowDept;
+
+    @TableField("borrow_reason")
+    private String borrowReason;
+
+    @TableField("is_return_ticket")
+    private String isReturnTicket;
 
     @TableField("category2")
     private String category2;
@@ -932,20 +935,11 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("yqkgxbz")
     private String yqkgxbz;
 
-    @TableField("borrow_reason")
-    private String borrowReason;
-
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @TableField("eps_no")
     private String epsNo;
-
-    @TableField("confirm_status")
-    private String confirmStatus;
-
-    @TableField("confirm_user_id")
-    private Long confirmUserId;
 
     @TableField("category1")
     private String category1;
@@ -953,8 +947,17 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("xxly")
     private String xxly;
 
+    @TableField("confirm_status")
+    private String confirmStatus;
+
+    @TableField("confirm_user_id")
+    private Long confirmUserId;
+
     @TableField("confirm_time")
     private Date confirmTime;
+
+    @TableField("glzt")
+    private String glzt;
 
     @TableField("ariba_confirm_status")
     private String aribaConfirmStatus;
@@ -964,9 +967,6 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     @TableField("borrow_user")
     private String borrowUser;
-
-    @TableField("glzt")
-    private String glzt;
 
     @TableField("sap")
     private String sap;
@@ -1256,7 +1256,7 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     public static final String PACKING_ADDRESS = "packing_address";
 
-    public static final String SETTLEMENTNO = "settlementNo";
+    public static final String SETTLEMENT_NO = "settlement_no";
 
     public static final String CIPHER_TEXT = "cipher_text";
 
@@ -1266,47 +1266,47 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     public static final String HOST_TAXRATE = "host_taxRate";
 
+    public static final String CONFIRM_REASON = "confirm_reason";
+
     public static final String IS_GL = "is_gl";
 
     public static final String YXSE = "yxse";
 
     public static final String SCAN_FAIL_REASON = "scan_fail_reason";
 
-    public static final String CONFIRM_REASON = "confirm_reason";
-
     public static final String BORROW_RETURN_DATE = "borrow_return_date";
 
-    public static final String IS_RETURN_TICKET = "is_return_ticket";
-
     public static final String BORROW_DEPT = "borrow_dept";
+
+    public static final String BORROW_REASON = "borrow_reason";
+
+    public static final String IS_RETURN_TICKET = "is_return_ticket";
 
     public static final String CATEGORY2 = "category2";
 
     public static final String YQKGXBZ = "yqkgxbz";
 
-    public static final String BORROW_REASON = "borrow_reason";
-
     public static final String ID = "id";
 
     public static final String EPS_NO = "eps_no";
-
-    public static final String CONFIRM_STATUS = "confirm_status";
-
-    public static final String CONFIRM_USER_ID = "confirm_user_id";
 
     public static final String CATEGORY1 = "category1";
 
     public static final String XXLY = "xxly";
 
+    public static final String CONFIRM_STATUS = "confirm_status";
+
+    public static final String CONFIRM_USER_ID = "confirm_user_id";
+
     public static final String CONFIRM_TIME = "confirm_time";
+
+    public static final String GLZT = "glzt";
 
     public static final String ARIBA_CONFIRM_STATUS = "ariba_confirm_status";
 
     public static final String BORROW_RETURN_USER = "borrow_return_user";
 
     public static final String BORROW_USER = "borrow_user";
-
-    public static final String GLZT = "glzt";
 
     public static final String SAP = "sap";
 

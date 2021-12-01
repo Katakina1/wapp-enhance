@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.rednotification.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.modules.rednotification.model.*;
@@ -7,7 +8,6 @@ import com.xforceplus.wapp.modules.rednotification.model.taxware.RedRevokeMessag
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationMainService;
 import com.xforceplus.wapp.modules.rednotification.service.TaxWareService;
-import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -15,17 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.net.URLDecoder;
-import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/red-notification")
+@RequestMapping(value = EnhanceApi.BASE_PATH +  "/red-notification")
 @Slf4j
 public class RedNotificationController {
     @Autowired

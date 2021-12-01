@@ -430,11 +430,11 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     }
 
 
-    public void applyDestroyPreInvoiceAndRedNotification(String invoiceNo,String invoiceCode){
+    public void applyDestroyPreInvoiceAndRedNotification(String invoiceNo,String invoiceCode,String remark){
         LambdaQueryWrapper<TXfPreInvoiceEntity> wrapper=new LambdaQueryWrapper<>();
         wrapper.select(TXfPreInvoiceEntity::getId).eq(TXfPreInvoiceEntity::getInvoiceNo,invoiceNo)
                 .eq(TXfPreInvoiceEntity::getInvoiceCode,invoiceCode);
         final TXfPreInvoiceEntity one = super.getOne(wrapper);
-        commSettlementService.applyDestroyPreInvoiceAndRedNotification(one.getId());
+        commSettlementService.applyDestroyPreInvoiceAndRedNotification(one.getId(),remark);
     }
 }

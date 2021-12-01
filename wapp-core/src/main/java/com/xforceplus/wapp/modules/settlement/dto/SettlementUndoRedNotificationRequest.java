@@ -13,4 +13,6 @@ import lombok.Data;
 public class SettlementUndoRedNotificationRequest {
     private Long settlementId;
 
+    private String remark;
+
 }

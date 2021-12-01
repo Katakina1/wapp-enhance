@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,7 @@ public class ClaimBillService extends DeductService{
                  * 查询符合条件的明细
                  */
                 Long itemId = 1L;
-                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate,  itemId,limit, tXfBillDeductEntity.getBusinessNo());
+                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, sellerNo, taxRate,  itemId,limit, tXfBillDeductEntity.getBusinessNo());
                 while (billAmount.compareTo(BigDecimal.ZERO) > 0) {
                     if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
                         taxRate = taxRateMap.get(taxRate);
@@ -96,7 +97,7 @@ public class ClaimBillService extends DeductService{
                             break;
                         }
                         itemId = 0L;
-                        tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
+                        tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
                         continue;
                     }
                     BigDecimal total = tXfBillDeductItemEntities.stream().map(TXfBillDeductItemEntity::getAmountWithoutTax).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -110,7 +111,7 @@ public class ClaimBillService extends DeductService{
                         break;
                     }
                     itemId =   tXfBillDeductItemEntities.stream().mapToLong(TXfBillDeductItemEntity::getId).max().getAsLong();
-                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
+                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate , sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
                 }
                 /**
                  * 匹配失败，明细金额不足
@@ -130,9 +131,16 @@ public class ClaimBillService extends DeductService{
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
                         List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
+                        AtomicReference<TXfBillDeductEntity> tmp = new AtomicReference<>();
                         successSuppliers.add(() -> {
-                                    TXfBillDeductEntity tmp =  doItemMatch(tXfBillDeductEntity, matchItem);
-                                    claimMatchBlueInvoice(tmp, nosuchInvoiceSeller);
+                                    tmp.set(doItemMatch(tXfBillDeductEntity, matchItem));
+                                    return true;
+                                }
+                        );
+                        transactionalService.execute(successSuppliers);
+                        successSuppliers = new ArrayList<>();
+                        successSuppliers.add(() -> {
+                                    claimMatchBlueInvoice(tmp.get(), nosuchInvoiceSeller);
                                     return true;
                                 }
                         );
