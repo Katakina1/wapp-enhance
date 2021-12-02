@@ -119,7 +119,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             String uploadResult = null;
             try {
                 //上传源文件到ftp服务器
-                uploadResult = fileService.uploadFile(ofdEntity, fileName.toString());
+                uploadResult = fileService.uploadFile(ofdEntity, fileName.toString(),"noneBusiness");
             } catch (IOException ex) {
                 log.error("非商上传电票到文件服务器失败:{}", ex);
             }
@@ -179,7 +179,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             String uploadResult = null;
             try {
                 //上传源文件到ftp服务器
-                uploadResult = fileService.uploadFile(pdfEntity, fileName.toString());
+                uploadResult = fileService.uploadFile(pdfEntity, fileName.toString(),"noneBusiness");
             } catch (IOException ex) {
                 log.error("非商上传电票到文件服务器失败:{}", ex);
             }
@@ -314,7 +314,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
             }
 
 
-            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadId());
+            final byte[] bytes = fileService.downLoadFile4ByteArray(fileEntity.getSourceUploadPath());
             try {
                 String suffix = null;
                 if (fileEntity.getFileType().equals(String.valueOf(Constants.FILE_TYPE_OFD))) {
@@ -417,8 +417,7 @@ public class NoneBusinessService extends ServiceImpl<TXfNoneBusinessUploadDetail
         wrapper.eq(TXfNoneBusinessUploadDetailEntity::getInvoiceNo, invoiceNo);
         wrapper.eq(TXfNoneBusinessUploadDetailEntity::getInvoiceCode, invoiceCode);
         wrapper.eq(TXfNoneBusinessUploadDetailEntity::getSubmitFlag, Constants.SUBMIT_NONE_BUSINESS_DONE_FLAG);
-        wrapper.set(TXfNoneBusinessUploadDetailEntity::getSubmitFlag, Constants.SUBMIT_NONE_BUSINESS_UNDO_FLAG);
-        return wrapper.update();
+        return wrapper.remove();
     }
 
     /**

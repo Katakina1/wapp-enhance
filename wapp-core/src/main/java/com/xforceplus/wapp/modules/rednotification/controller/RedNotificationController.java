@@ -1,12 +1,13 @@
 package com.xforceplus.wapp.modules.rednotification.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.model.taxware.RedRevokeMessageResult;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationMainService;
 import com.xforceplus.wapp.modules.rednotification.service.TaxWareService;
-import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -14,17 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.net.URLDecoder;
-import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/red-notification")
+@RequestMapping(value = EnhanceApi.BASE_PATH +  "/red-notification")
 @Slf4j
 public class RedNotificationController {
     @Autowired
@@ -100,7 +94,10 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/roll-back")
     public Response rollback(@RequestBody RedNotificationApplyReverseRequest request){
-        return  rednotificationService.rollback(request);
+        //ssrf是漏洞
+        RedNotificationApplyModel model = new RedNotificationApplyModel();
+        BeanUtil.copyProperties(request,model);
+        return  rednotificationService.rollback(model);
     }
 
     /**
@@ -112,7 +109,10 @@ public class RedNotificationController {
             @ApiResponse(code = 200, message = "response", response = Response.class)})
     @PostMapping(value = "/confirm-reject")
     public Response<String> operation(@RequestBody RedNotificationConfirmRejectRequest request){
-        return rednotificationService.operation(request);
+        //response splitting漏洞
+        RedNotificationConfirmRejectModel model = new RedNotificationConfirmRejectModel();
+        BeanUtil.copyProperties(request,model);
+        return rednotificationService.operation(model);
     }
 
     @ApiOperation(value = "红字信息表导入", notes = "", response = Response.class, tags = {"red-notification",})

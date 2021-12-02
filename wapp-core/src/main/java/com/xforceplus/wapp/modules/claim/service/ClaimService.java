@@ -95,6 +95,12 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
         List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(wrapper);
+        tXfPreInvoiceEntityList.forEach(x -> {
+            final boolean bool = Objects.equals(x.getPreInvoiceStatus(), TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+            if (!bool){
+                throw new EnhanceRuntimeException("结算单存在未申请红字信息的预制发票，不能提交");
+            }
+        });
 
         //修改预制发票状态
         tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
@@ -254,7 +260,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         tDxQuestionPaperEntity.setUsername(tXfSettlementEntity.getSellerName());
         //用来存储结算单id
         tDxQuestionPaperEntity.setInvoiceNo(String.valueOf(tXfSettlementEntity.getId()));
-        tDxQuestionPaperEntity.setProblemCause("索赔单申请不定单");
+        tDxQuestionPaperEntity.setProblemCause("100704");
         tDxQuestionPaperEntity.setDescription("索赔单号：" + Joiner.on(",").join(billDeductList.stream().map(TXfBillDeductEntity::getBusinessNo).collect(Collectors.toList())));
         tDxQuestionPaperEntity.setCheckstatus("0");
         //流水号

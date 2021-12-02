@@ -307,7 +307,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             wrapper.eq(TDxRecordInvoiceEntity.VENDERID,venderid);
         }
         if(StringUtils.isNotEmpty(settlementNo)){
-            wrapper.eq(TDxRecordInvoiceEntity.SETTLEMENTNO,settlementNo);
+            wrapper.eq(TDxRecordInvoiceEntity.SETTLEMENT_NO,settlementNo);
         }
         if(StringUtils.isNotEmpty(invoiceStatus)){
             wrapper.eq(TDxRecordInvoiceEntity.INVOICE_STATUS,invoiceStatus);
@@ -356,10 +356,15 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             BigDecimal taxRate = entity.getTaxRate().divide(BigDecimal.valueOf(100L), 2, RoundingMode.HALF_UP);
             invoice.setTaxRate(taxRate.toPlainString());
         }
+        //判断销货清单，当明细大于8条时 值为1
+        if(CollectionUtils.isNotEmpty(invoice.getItems()) && invoice.getItems().size() >8){
+            invoice.setGoodsListFlag("1");
+        }
     }
 
     public void convertItem(TDxRecordInvoiceDetailEntity entity,InvoiceDetail invoiceDetail){
         invoiceDetail.setAmountWithoutTax(entity.getDetailAmount());
+        invoiceDetail.setId(entity.getId());
         if(StringUtils.isNotEmpty(entity.getDetailAmount())&& StringUtils.isNotEmpty(entity.getTaxAmount())){
             BigDecimal amountWithTax = new BigDecimal(entity.getDetailAmount()).add(new BigDecimal(entity.getTaxAmount()));
             invoiceDetail.setAmountWithTax(amountWithTax.toPlainString());

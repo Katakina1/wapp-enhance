@@ -92,7 +92,7 @@ public class WeekDaysController {
         List<TXfMatchWeekdaysEntity> addList = list.stream().filter(x -> Objects.isNull(map.get(x.getWeekdays()))).collect(Collectors.toList());
         addList.stream().forEach(e -> {
             e.setCreateUser(UserUtil.getLoginName());
-            e.setCreateTime(DateUtils.getNowDate());
+            e.setCreateTime(new Date());
         });
         weekDaysService.saveBatch(addList);
         return R.ok("保存成功");

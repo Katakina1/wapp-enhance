@@ -21,7 +21,6 @@ public class ReportExportDto {
     private String purchaserName;
     private String purchaserNo;
     private String amountWithTax;
-    private String agreementTypeCode;
     private String billNo;
     private String taxCode;
     private String deductDate;

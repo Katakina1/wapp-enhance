@@ -26,18 +26,16 @@ public interface TXfBillDeductItemExtDao extends BaseMapper<TXfBillDeductItemEnt
     /**
      * 查询索赔明细（未匹配到税编明细的不能进行匹配）
      * @param startDate
-     * @param purchaserNo
      * @param sellerNo
      * @param taxRate
      * @param id
      * @param limit
      * @return
      */
-    @Select("select top ${limit} * from t_xf_bill_deduct_item  where id > #{id} and  claim_no = #{claimNo}  and  create_time >= #{startDate} and create_time <= #{endDate}  and remaining_amount > 0  and purchaser_no  = #{purchaserNo} and seller_no  = #{sellerNo} and tax_rate = #{taxRate}   order by id   ")
+    @Select("select top ${limit} * from t_xf_bill_deduct_item  where id > #{id} and  claim_no = #{claimNo}  and  create_time >= #{startDate} and create_time <= #{endDate}  and remaining_amount > 0  and  seller_no  = #{sellerNo} and tax_rate = #{taxRate}   order by id   ")
     public List<TXfBillDeductItemEntity > queryMatchBillItem(@Param("startDate") Date startDate,
                                                              @Param("endDate") Date endDate,
-                                                             @Param("purchaserNo")String purchaserNo,
-                                                             @Param("sellerNo")String sellerNo,
+                                                              @Param("sellerNo")String sellerNo,
                                                              @Param("taxRate") BigDecimal taxRate,
                                                              @Param("id") Long id,
                                                              @Param("limit") int limit,

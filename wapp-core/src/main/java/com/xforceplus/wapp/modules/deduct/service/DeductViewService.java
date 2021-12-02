@@ -387,10 +387,10 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
                 .toJdkDate();
         switch (overDue) {
             case 1:
-                wrapper.lt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                wrapper.lt(TXfBillDeductEntity.CREATE_TIME, date);
                 break;
             case 0:
-                wrapper.gt(TXfBillDeductEntity.DEDUCT_DATE, date);
+                wrapper.gt(TXfBillDeductEntity.CREATE_TIME, date);
                 break;
         }
     }
@@ -424,13 +424,13 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
             return Collections.emptyMap();
         }
 
-        final QueryWrapper<TDxRecordInvoiceEntity> wrapper = Wrappers.<TDxRecordInvoiceEntity>query().select(TDxRecordInvoiceEntity.SETTLEMENTNO, "count(1) as count ")
-                .in(TDxRecordInvoiceEntity.SETTLEMENTNO, settlementNos).groupBy(TDxRecordInvoiceEntity.SETTLEMENTNO);
+        final QueryWrapper<TDxRecordInvoiceEntity> wrapper = Wrappers.<TDxRecordInvoiceEntity>query().select(TDxRecordInvoiceEntity.SETTLEMENT_NO, "count(1) as count ")
+                .in(TDxRecordInvoiceEntity.SETTLEMENT_NO, settlementNos).groupBy(TDxRecordInvoiceEntity.SETTLEMENT_NO);
         final List<Map<String, Object>> maps = tDxRecordInvoiceDao.selectMaps(wrapper);
         Map<String, Integer> result = new HashMap<>();
         if (CollectionUtils.isNotEmpty(maps)) {
             maps.forEach(x -> {
-                final Object settlement = x.get(TDxRecordInvoiceEntity.SETTLEMENTNO);
+                final Object settlement = x.get(TDxRecordInvoiceEntity.SETTLEMENT_NO);
                 final Integer count = (Integer) x.get("count");
                 result.put(settlement.toString(), count);
             });
@@ -473,9 +473,12 @@ public class DeductViewService extends ServiceImpl<TXfBillDeductExtDao, TXfBillD
         if (Objects.isNull(sellerOrg)){
             throw new EnhanceRuntimeException("供应商编号:["+ request.getSellerNo()+"]不存在");
         }
+        BigDecimal taxRate = request.getTaxRate().movePointRight(2);
+
+        taxRate=AgreementBillService.convertTaxRate(typeEnum,taxRate);
 
         final List<BlueInvoiceService.MatchRes> matchRes = blueInvoiceService.obtainAvailableInvoicesWithoutItems(amount, null,
-                sellerOrg.getTaxNo(), purchaserOrg.getTaxNo(), request.getTaxRate().movePointRight(2), false);
+                sellerOrg.getTaxNo(), purchaserOrg.getTaxNo(),taxRate , false);
 
         final List<MatchedInvoiceListResponse> responses = this.matchedInvoiceMapper.toMatchInvoice(matchRes);
         if (CollectionUtils.isNotEmpty(responses)){

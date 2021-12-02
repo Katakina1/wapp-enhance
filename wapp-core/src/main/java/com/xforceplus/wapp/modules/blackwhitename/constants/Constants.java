@@ -30,4 +30,7 @@ public interface Constants {
     String COMPANY_STATUS_DELETE = "1";
 
     String COMPANY_STATUS_ENABLED = "0";
+
+    //白名单
+    String COMPANY_TYPE_WHITE = "1";
 }

@@ -9,10 +9,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import com.xforceplus.wapp.client.TaxCodeBean;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.exception.NoSuchInvoiceException;
 import com.xforceplus.wapp.common.utils.BeanUtil;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
@@ -33,17 +35,19 @@ import com.xforceplus.wapp.modules.overdue.service.DefaultSettingServiceImpl;
 import com.xforceplus.wapp.modules.overdue.service.OverdueServiceImpl;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
+import com.xforceplus.wapp.modules.taxcode.dto.TaxCodeDto;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.repository.dao.*;
 import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommonMessageService;
+import com.xforceplus.wapp.service.TransactionalService;
 import com.xforceplus.wapp.threadpool.ThreadPoolManager;
 import com.xforceplus.wapp.threadpool.callable.ExportDeductCallable;
 import com.xforceplus.wapp.util.CodeGenerator;
-import io.vavr.control.Either;
+import com.xforceplus.wapp.util.ItemNameUtils;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -125,6 +129,8 @@ public class DeductService   {
 
     @Autowired
     private RecordInvoiceService recordInvoiceService;
+    @Autowired
+    protected TransactionalService transactionalService;
 
     /**
      * 接收索赔明细
@@ -182,59 +188,7 @@ public class DeductService   {
         }
         return list;
     }
-    /**
-     * 补充商品
-     * @param entity
-     * @return
-     */
-    public TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
-        if (StringUtils.isEmpty(entity.getItemNo())) {
-            return entity;
-        }
-        try {
-            Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
-            if (taxCodeOptional.isPresent()) {
-                TaxCode taxCode = taxCodeOptional.get();
-                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-                entity.setTaxPre(taxCode.getTaxPre());
-                entity.setTaxPreCon(taxCode.getTaxPreCon());
-                entity.setZeroTax(taxCode.getZeroTax());
-                entity.setItemShortName(taxCode.getSmallCategoryName());
-            }
-        } catch (Exception e) {
-            log.error("查询税编异常：{}  异常 {} ）", entity.getItemNo(), e);
-            entity.setGoodsTaxNo(StringUtils.EMPTY);
-        }
-        return entity;
-    }
-    /**
-     * 补充商品
-     * @param entity
-     * @return
-     */
-    public TXfSettlementItemEntity fixTaxCode(  TXfSettlementItemEntity entity) {
-        if (StringUtils.isEmpty(entity.getItemCode())) {
-            return entity;
-        }
-        try {
-            if (StringUtils.isNotEmpty(entity.getGoodsTaxNo())) {
-                return entity;
-            }
-            Optional<TaxCode> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
-            if (taxCodeOptional.isPresent()) {
-                TaxCode taxCode = taxCodeOptional.get();
-                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
-                entity.setTaxPre(taxCode.getTaxPre());
-                entity.setTaxPreCon(taxCode.getTaxPreCon());
-                entity.setZeroTax(taxCode.getZeroTax());
-                entity.setItemShortName(taxCode.getSmallCategoryName());
-            }
-        } catch (Exception e) {
-            log.error("查询税编异常：{}  异常 {} ）", entity.getItemCode(), e);
-            entity.setGoodsTaxNo(StringUtils.EMPTY);
-        }
-        return entity;
-    }
+
     /**
      * 接收索赔 协议 EPD主信息数据
      * @param deductBillBaseDataList
@@ -246,7 +200,6 @@ public class DeductService   {
         for (TXfBillDeductEntity tXfBillDeductEntity : list) {
             try {
                 unlockAndCancel(deductionEnum, tXfBillDeductEntity);
-
                 tXfBillDeductExtDao.insert(tXfBillDeductEntity);
                 //日志
                 saveCreateDeductLog(tXfBillDeductEntity);
@@ -310,17 +263,17 @@ public class DeductService   {
         if (Objects.equals(deductionEnum, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL)
                 || Objects.equals(deductionEnum, TXfDeductionBusinessTypeEnum.EPD_BILL)) {
             // 获取协议单号
-            String reference = tXfBillDeductEntity.getAgreementReference();
-            if (Objects.nonNull(reference)) {
+            String businessNo = tXfBillDeductEntity.getBusinessNo();
+            if (Objects.nonNull(businessNo)) {
                 // 查找相同协议号的数据，取第一页数据，分页大小没有特殊要求，默认设置成10
                 Page<TXfBillDeductEntity> pages = tXfBillDeductExtDao
-                        .selectPage(new Page<>(1, 10),
+                        .selectPage(new Page<>(1, 1),
                                 new QueryWrapper<TXfBillDeductEntity>()
                                         .lambda()
                                         .eq(TXfBillDeductEntity::getBusinessType, deductionEnum.getValue())
-                                        .eq(TXfBillDeductEntity::getAgreementReference, reference)
+                                        .eq(TXfBillDeductEntity::getBusinessNo, businessNo)
                         );
-                log.info("根据单据id={}的匹配到的拥有相同的reference={}的单据数量为{}", tXfBillDeductEntity.getId(), reference, pages.getTotal());
+                log.info("根据单据id={}的匹配到的拥有相同的reference={}的单据数量为{}", tXfBillDeductEntity.getId(), businessNo, pages.getTotal());
                 if (pages.getTotal() > 0) {
                     //  如果返回个数大于1，则取第一条记录
                     TXfBillDeductEntity target = pages.getRecords().get(0);
@@ -652,7 +605,6 @@ public class DeductService   {
             tXfBillDeductEntity.setAgreementReference(defaultValue(tmp.getReference()));
             tXfBillDeductEntity.setAgreementTaxCode(defaultValue(tmp.getTaxCode()));
             tXfBillDeductEntity.setAgreementDocumentType(defaultValue(tmp.getDocumentType()));
-            tXfBillDeductEntity.setAgreementMemo(defaultValue(tmp.getDocumentNo()));
             tXfBillDeductEntity.setAmountWithTax( defaultValue(x.getAmountWithTax()));
             tXfBillDeductEntity.setAmountWithoutTax(tXfBillDeductEntity.getAmountWithTax().divide(BigDecimal.ONE.add(defaultValue(tXfBillDeductEntity.getTaxRate())), 2, RoundingMode.HALF_UP));
             tXfBillDeductEntity.setTaxAmount(tXfBillDeductEntity.getAmountWithTax().subtract(tXfBillDeductEntity.getAmountWithoutTax()));
@@ -944,55 +896,58 @@ public class DeductService   {
         Date date = new Date();
         Integer status = TXfSettlementItemFlagEnum.NORMAL.getCode();
         Integer relationType = xfDeductionBusinessTypeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL?TXfInvoiceDeductTypeEnum.SETTLEMENT.getCode():TXfInvoiceDeductTypeEnum.CLAIM.getCode();
-            for (BlueInvoiceService.MatchRes matchRes : res) {
-                if (xfDeductionBusinessTypeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL) {
-                      for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
-                        TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
-                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
-                        tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount().negate());
-                        tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
-                        tXfSettlementItemEntity.setTaxRate(TaxRateTransferEnum.transferTaxRate(invoiceItem.getTaxRate()));
-                        tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()).negate());
-                        tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
-                        tXfSettlementItemEntity.setQuantity(invoiceItem.getNum().negate());
-                        tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
-                        tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
-                        tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getAmountWithoutTax().add(tXfSettlementItemEntity.getTaxAmount()));
-                        tXfSettlementItemEntity.setCreateUser(0l);
-                        tXfSettlementItemEntity.setUpdateUser(0l);
-                        tXfSettlementItemEntity.setId(idSequence.nextId());
-                        tXfSettlementItemEntity.setSettlementNo(settlementNo);
-                        tXfSettlementItemEntity.setCreateTime(date);
-                        tXfSettlementItemEntity.setUpdateTime(date);
-                        tXfSettlementItemEntity.setItemCode(defaultValue(invoiceItem.getGoodsNum()));
-                        tXfSettlementItemEntity.setThridId(defaultValue(invoiceItem.getItemId()));
-                        tXfSettlementItemEntity.setItemName(invoiceItem.getGoodsName());
-                        tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
-                        tXfSettlementItemEntity.setGoodsNoVer("33.0");
-                        tXfSettlementItemEntity.setZeroTax(StringUtils.EMPTY);
-                        tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
-                        tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
-                        tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
+        if (CollectionUtils.isEmpty(res)) {
+            throw new NoSuchInvoiceException("匹配的发票明细为空");
+        }else{
+            BlueInvoiceService.MatchRes ma = res.get(0);
+            if(Objects.isNull(ma)  ){
+                 throw new NoSuchInvoiceException("匹配的发票明细为空");
+            }
+        }
+        for (BlueInvoiceService.MatchRes matchRes : res) {
+            if (xfDeductionBusinessTypeEnum != TXfDeductionBusinessTypeEnum.CLAIM_BILL) {
+                if(CollectionUtils.isEmpty( matchRes.getInvoiceItems())){
+                    log.error("蓝票匹配明细为空，发票号码 {} 发票代码{},",matchRes.invoiceNo,matchRes.invoiceCode);
+                    throw new NoSuchInvoiceException("匹配的发票明细为空");
+                }
+                Map<String, TaxCodeBean> map = queryTaxCode(matchRes.getInvoiceItems());
+                for(BlueInvoiceService.InvoiceItem invoiceItem:matchRes.getInvoiceItems()){
+                    TXfSettlementItemEntity tXfSettlementItemEntity = new TXfSettlementItemEntity();
+                    tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                    tXfSettlementItemEntity.setTaxAmount(invoiceItem.getTaxAmount().negate());
+                    tXfSettlementItemEntity.setGoodsTaxNo(invoiceItem.getGoodsNum());
+                    tXfSettlementItemEntity.setTaxRate(TaxRateTransferEnum.transferTaxRate(invoiceItem.getTaxRate()));
+                    tXfSettlementItemEntity.setAmountWithoutTax(defaultValue(invoiceItem.getDetailAmount()).negate());
+                    tXfSettlementItemEntity.setRemark(StringUtils.EMPTY);
+                    tXfSettlementItemEntity.setQuantity(invoiceItem.getNum().negate());
+                    tXfSettlementItemEntity.setUnitPrice(invoiceItem.getUnitPrice());
+                    tXfSettlementItemEntity.setUnitPriceWithTax(invoiceItem.getUnitPrice());
+                    tXfSettlementItemEntity.setAmountWithTax(tXfSettlementItemEntity.getAmountWithoutTax().add(tXfSettlementItemEntity.getTaxAmount()));
+                    tXfSettlementItemEntity.setCreateUser(0l);
+                    tXfSettlementItemEntity.setUpdateUser(0l);
+                    tXfSettlementItemEntity.setId(idSequence.nextId());
+                    tXfSettlementItemEntity.setSettlementNo(settlementNo);
+                    tXfSettlementItemEntity.setCreateTime(date);
+                    tXfSettlementItemEntity.setUpdateTime(date);
+                    tXfSettlementItemEntity.setItemCode(defaultValue(invoiceItem.getGoodsNum()));
+                    tXfSettlementItemEntity.setThridId(defaultValue(invoiceItem.getItemId()));
+                    tXfSettlementItemEntity.setItemName(invoiceItem.getGoodsName());
+                    tXfSettlementItemEntity.setItemFlag(TXfSettlementItemFlagEnum.NORMAL.getCode());
+                    tXfSettlementItemEntity.setGoodsNoVer("33.0");
+                    tXfSettlementItemEntity.setZeroTax(StringUtils.EMPTY);
+                    tXfSettlementItemEntity.setTaxPre(StringUtils.EMPTY);
+                    tXfSettlementItemEntity.setTaxPreCon(StringUtils.EMPTY);
+                    tXfSettlementItemEntity.setItemSpec(defaultValue(invoiceItem.getModel()));
+                    tXfSettlementItemEntity.setQuantityUnit(defaultValue(invoiceItem.getUnit()));
+                    tXfSettlementItemEntity = fixTaxCode(tXfSettlementItemEntity, map);
+                    tXfSettlementItemEntity = checkItem(  tXfSettlementItemEntity);
 
-                        if (StringUtils.isBlank(tXfSettlementItemEntity.getItemShortName())){
-                            final String itemName = tXfSettlementItemEntity.getItemName();
-                            final int first = itemName.indexOf("*");
-                            final int length = itemName.length();
-                            if (first > -1 && length > first+1) {
-                                int end = itemName.indexOf("*", first + 1);
-                                if (end > -1 && length > end) {
-                                    final String shortName = itemName.substring(first + 1, end);
-                                    tXfSettlementItemEntity.setItemShortName(shortName);
-                                }
-                            }
-                        }
-
-                        if (status < tXfSettlementItemEntity.getItemFlag() ) {
-                            status = tXfSettlementItemEntity.getItemFlag();
-                        }
-                        tXfSettlementItemDao.insert(tXfSettlementItemEntity);
+                    if (status < tXfSettlementItemEntity.getItemFlag() ) {
+                        status = tXfSettlementItemEntity.getItemFlag();
                     }
-              }
+                    tXfSettlementItemDao.insert(tXfSettlementItemEntity);
+                }
+             }
             TXfBillDeductInvoiceEntity tXfBillDeductInvoiceEntity = new TXfBillDeductInvoiceEntity();
             tXfBillDeductInvoiceEntity.setId(idSequence.nextId());
             tXfBillDeductInvoiceEntity.setBusinessNo(settlementNo);
@@ -1009,22 +964,35 @@ public class DeductService   {
         return status;
     }
 
+    /**
+     * 根据简称查询税编信息
+     * @param invoiceItems
+     * @return
+     */
     public Map<String, TaxCodeBean> queryTaxCode(List<BlueInvoiceService.InvoiceItem> invoiceItems) {
         Map<String, BlueInvoiceService.InvoiceItem> map = invoiceItems.stream().collect(Collectors.toMap(BlueInvoiceService.InvoiceItem::getGoodsName, invoiceItem -> invoiceItem));
-        map.keySet().stream().map(key -> {
-            Either<String, List<TaxCodeBean>> result = taxCodeService.searchTaxCode(null, key);
-            if (result.isRight()) {
-                BlueInvoiceService.InvoiceItem tmpInvoce = map.get(key);
-                List<TaxCodeBean> taxCodeBeans = result.get();
-                if (CollectionUtils.isEmpty(taxCodeBeans)) {
-                    return null;
-                }
+        Map<String, TaxCodeBean> res =   Maps.newHashMap();
+        map.keySet().stream().forEach(key -> {
+            BlueInvoiceService.InvoiceItem tmpInvoce = map.get(key);
+            List<String> splitInfo = ItemNameUtils.splitItemName(key);
+            if (splitInfo.size() != 2) {
+                return;
             }
-            return "TaxCodeBean";
-        }).collect(Collectors.toList());
+            val either = taxCodeService.searchTaxCode(String.valueOf(TaxRateTransferEnum.transferTaxRate(tmpInvoce.getTaxRate())), null, splitInfo.get(0));
+            if (either.isRight()) {
+                List<TaxCodeBean> taxCodeBeans = either.get();
+                if (CollectionUtils.isNotEmpty(taxCodeBeans)) {
+                    TaxCodeBean taxCodeBean = taxCodeBeans.get(0);
+                    res.put(splitInfo.get(0), taxCodeBean);
+                 }
+            }
 
-        return null;
+        });
+        return res;
     }
+
+
+
     /**
      * 结算单明细校验
      * @param tXfSettlementItemEntity
@@ -1053,6 +1021,9 @@ public class DeductService   {
         if (StringUtils.isEmpty(tXfSettlementItemEntity.getItemShortName())) {
             return tXfSettlementItemEntity;
         }
+        if (tXfSettlementItemEntity.getItemName().contains("*")) {
+            return tXfSettlementItemEntity;
+        }
         stringBuffer.append(tXfSettlementItemEntity.getItemShortName()).append("*").append(tXfSettlementItemEntity.getItemSpec());
         tXfSettlementItemEntity.setItemName( stringBuffer.toString());
         return tXfSettlementItemEntity;
@@ -1073,7 +1044,79 @@ public class DeductService   {
         PageResult<QueryDeductListResponse> pageResult = queryPageList(request);
         return pageResult.getRows() ;
     }
-
+    /**
+     * 补充商品
+     * @param entity
+     * @return
+     */
+    public TXfBillDeductItemEntity fixTaxCode(  TXfBillDeductItemEntity entity) {
+        if (StringUtils.isEmpty(entity.getItemNo())) {
+            return entity;
+        }
+        try {
+            Optional<TaxCodeDto> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemNo());
+            if (taxCodeOptional.isPresent()) {
+                TaxCodeDto taxCode = taxCodeOptional.get();
+                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+                entity.setTaxPre(taxCode.getTaxPre());
+                entity.setTaxPreCon(taxCode.getTaxPreCon());
+                entity.setZeroTax(taxCode.getZeroTax());
+                entity.setItemShortName(taxCode.getItemShortName());
+            }
+        } catch (Exception e) {
+            log.error("查询税编异常：{}  异常 {} ）", entity.getItemNo(), e);
+            entity.setGoodsTaxNo(StringUtils.EMPTY);
+        }
+        return entity;
+    }
+    /**
+     * 补充商品
+     * @param entity
+     * @return
+     */
+    public TXfSettlementItemEntity fixTaxCode(TXfSettlementItemEntity entity) {
+        if (StringUtils.isEmpty(entity.getItemCode())) {
+            return entity;
+        }
+        try {
+            if (StringUtils.isNotEmpty(entity.getGoodsTaxNo())) {
+                return entity;
+            }
+            Optional<TaxCodeDto> taxCodeOptional = taxCodeService.getTaxCodeByItemNo(entity.getItemCode());
+            if (taxCodeOptional.isPresent()) {
+                TaxCodeDto taxCode = taxCodeOptional.get();
+                entity.setGoodsTaxNo(taxCode.getGoodsTaxNo());
+                entity.setTaxPre(taxCode.getTaxPre());
+                entity.setTaxPreCon(taxCode.getTaxPreCon());
+                entity.setZeroTax(taxCode.getZeroTax());
+                entity.setItemShortName(taxCode.getSmallCategoryName());
+            }
+        } catch (Exception e) {
+            log.error("查询税编异常：{}  异常 {} ）", entity.getItemCode(), e);
+            entity.setGoodsTaxNo(StringUtils.EMPTY);
+        }
+        return entity;
+    }
+    /**
+     * 补充商品
+     * @param entity
+     * @return
+     */
+    public TXfSettlementItemEntity fixTaxCode(TXfSettlementItemEntity entity, Map<String, TaxCodeBean> map) {
+        String itemName = entity.getItemName();
+        List<String> splitInfo = ItemNameUtils.splitItemName(itemName);
+        if (splitInfo.size() == 2) {
+            String itemShortName = splitInfo.get(0);
+            entity.setItemShortName(itemShortName);
+            if (map.containsKey(itemShortName)) {
+                TaxCodeBean taxCodeBean = map.get(itemShortName);
+                entity.setGoodsTaxNo(taxCodeBean.getTaxCode());
+                entity.setGoodsNoVer(taxCodeBean.getTaxCodeVersion());
+                entity.setTaxPreCon(defaultValue(taxCodeBean.getSpecialManagement()));
+             }
+        }
+        return entity;
+    }
     public List<ExportClaimBillItemModel> getExportItem(List<Long> idList){
         List<ExportClaimBillItemModel> response = new ArrayList<>();
         for (Long id : idList) {

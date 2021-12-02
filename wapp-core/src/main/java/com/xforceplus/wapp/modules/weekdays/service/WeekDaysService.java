@@ -98,7 +98,7 @@ public class WeekDaysService extends ServiceImpl<TXfMatchWeekdaysDao, TXfMatchWe
             List<TXfMatchWeekdaysEntity> addList = validList.stream().filter(x -> Objects.isNull(map.get(x.getWeekdays()))).collect(Collectors.toList());
             addList.stream().forEach(e -> {
                 e.setCreateUser(UserUtil.getLoginName());
-                e.setCreateTime(DateUtils.getNowDate());
+                e.setCreateTime(new Date());
             });
 
             boolean save = saveOrUpdateBatch(addList);

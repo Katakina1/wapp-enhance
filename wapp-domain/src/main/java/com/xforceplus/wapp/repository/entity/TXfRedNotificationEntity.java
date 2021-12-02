@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-28
+ * @since 2021-11-29
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -266,17 +266,29 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("user_name")
     private String userName;
 
+    /**
+     * 驳回备注
+     */
+    @TableField("reject_remark")
+    private String rejectRemark;
+
+    /**
+     * 撤销备注
+     */
+    @TableField("revert_remark")
+    private String revertRemark;
+
     @TableField("user_id")
     private Long userId;
 
     @TableField("remark")
     private String remark;
 
-    @TableField("terminal_type")
-    private Integer terminalType;
-
     @TableField("pdf_url")
     private String pdfUrl;
+
+    @TableField("terminal_type")
+    private Integer terminalType;
 
 
     public static final String ID = "id";
@@ -359,12 +371,16 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String USER_NAME = "user_name";
 
+    public static final String REJECT_REMARK = "reject_remark";
+
+    public static final String REVERT_REMARK = "revert_remark";
+
     public static final String USER_ID = "user_id";
 
     public static final String REMARK = "remark";
 
-    public static final String TERMINAL_TYPE = "terminal_type";
-
     public static final String PDF_URL = "pdf_url";
+
+    public static final String TERMINAL_TYPE = "terminal_type";
 
 }

@@ -41,7 +41,7 @@ wapp:
   export:
     tmp: /tmp/excel
   rednotification:
-    maxApply: 100
+    maxApply: 50
 activemq:
   queue-name:
     export-request: fat-cn.wm.host.enhance.export-request.queue # 导出申请
@@ -53,6 +53,7 @@ spring:
     host: wapp-redis
     port: 6379
     password:
+
 server:
   port: 6060
 

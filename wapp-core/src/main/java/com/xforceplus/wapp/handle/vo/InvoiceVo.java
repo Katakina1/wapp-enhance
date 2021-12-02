@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.handle.vo;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class InvoiceVo {
         private String invoiceCode;
         private String invoiceNo;
         @JSONField(format = "yyyy-MM-dd")
+        @JsonFormat(pattern = "yyyy-MM-dd")
         private Date paperDrewDate;
         private String purchaserName;
         private String purchaserTaxNo;

@@ -80,7 +80,8 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                         "invoiceType:{},businessNo:{},taxRate:{},分页数据,current:{},size:{}",
                 type, settlementStatus, settlementNo, purchaserNo, invoiceType, businessNo, taxRate, current, size);
         LambdaQueryChainWrapper<TXfSettlementEntity> wrapper = new LambdaQueryChainWrapper<>(getBaseMapper())
-                .eq(TXfSettlementEntity::getSettlementType, type);
+                .eq(TXfSettlementEntity::getSettlementType, type)
+                .eq(TXfSettlementEntity::getSellerNo, UserUtil.getUser().getUsercode());
         if (Objects.nonNull(settlementStatus)) {
             wrapper.eq(TXfSettlementEntity::getSettlementStatus, settlementStatus);
         } else {
@@ -125,9 +126,10 @@ public class StatementServiceImpl extends ServiceImpl<TXfSettlementDao, TXfSettl
                 .map(it -> SettlementCount.builder().status(it.getCode().toString()).total(0).build())
                 .collect(Collectors.toMap(SettlementCount::getStatus, Function.identity()));
         QueryWrapper<TXfSettlementEntity> wrapper = new QueryWrapper<>();
-        val lambda = wrapper.lambda();
-        lambda.eq(TXfSettlementEntity::getSettlementType, type)
+        val lambda = wrapper.lambda()
+                .eq(TXfSettlementEntity::getSettlementType, type)
                 .in(TXfSettlementEntity::getSettlementStatus, tabMap.keySet())
+                .eq(TXfSettlementEntity::getSellerNo, UserUtil.getUser().getUsercode())
                 .groupBy(TXfSettlementEntity::getSettlementStatus);
 
         if (StringUtils.isNotBlank(settlementNo)) {

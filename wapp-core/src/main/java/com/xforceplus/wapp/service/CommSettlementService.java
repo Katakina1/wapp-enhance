@@ -16,6 +16,7 @@ import com.xforceplus.wapp.repository.dao.TXfSettlementItemDao;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class CommSettlementService {
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public void applyDestroySettlementPreInvoice(Long settlementId) {
+    public void applyDestroySettlementPreInvoice(Long settlementId,String remark) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -81,7 +82,7 @@ public class CommSettlementService {
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
                 tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
                 //调用沃尔玛 需要沃尔玛审核
-                commRedNotificationService.applyDestroyRedNotification(tXfPreInvoiceEntity.getId());
+                commRedNotificationService.applyDestroyRedNotification(tXfPreInvoiceEntity.getId(),remark);
             });
         }
         //预制发票
@@ -96,7 +97,7 @@ public class CommSettlementService {
                 updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
                 updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_APPLY_RED_NOTIFICATION.getCode());
                 tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-                commRedNotificationService.deleteRedNotification(tXfPreInvoiceEntity.getId());
+                commRedNotificationService.deleteRedNotification(tXfPreInvoiceEntity.getId(),remark);
             });
         }
 
@@ -120,7 +121,7 @@ public class CommSettlementService {
      * @param settlementId
      */
     @Transactional(rollbackFor = Exception.class)
-    public void rejectDestroySettlementPreInvoice(Long settlementId) {
+    public void rejectDestroySettlementPreInvoice(Long settlementId,String remark) {
         //结算单
         TXfSettlementEntity tXfSettlementEntity = tXfSettlementDao.selectById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -141,8 +142,12 @@ public class CommSettlementService {
             });
             //日志
             TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
+            String desc = TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc();
+            if(StringUtils.isNotBlank(remark)){
+                desc = desc + "【驳回原因："+remark+"】";
+            }
             operateLogService.add(settlementId, OperateLogEnum.REJECT_CANCEL_RED_NOTIFICATION_APPLY,
-                    TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                    desc,
                     UserUtil.getUserId(), UserUtil.getUserName());
         }
     }
@@ -203,7 +208,7 @@ public class CommSettlementService {
      * @param preInvoiceId
      */
     @Transactional(rollbackFor = Exception.class)
-    public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId) {
+    public void applyDestroyPreInvoiceAndRedNotification(Long preInvoiceId,String remark) {
         if (preInvoiceId == null) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -216,7 +221,7 @@ public class CommSettlementService {
         updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
         tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
         //调用沃尔玛撤销红字信息审批
-        commRedNotificationService.applyDestroyRedNotification(preInvoiceId);
+        commRedNotificationService.applyDestroyRedNotification(preInvoiceId,remark);
 
         //日志
         TXfSettlementEntity settlement = tXfSettlementDao.selectById(preInvoiceEntity.getSettlementId());
@@ -293,7 +298,7 @@ public class CommSettlementService {
      * @param preInvoiceIdList 预制发票id
      */
     @Transactional(rollbackFor = Exception.class)
-    public void rejectDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList) {
+    public void rejectDestroySettlementPreInvoiceByPreInvoiceId(List<Long> preInvoiceIdList,String remark) {
         if (CollectionUtils.isEmpty(preInvoiceIdList)) {
             throw new EnhanceRuntimeException("参数异常");
         }
@@ -312,7 +317,7 @@ public class CommSettlementService {
         }
         //作废结算单
         tXfSettlementEntityList.forEach(tXfSettlementEntity -> {
-            rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId());
+            rejectDestroySettlementPreInvoice(tXfSettlementEntity.getId(),remark);
         });
     }
 

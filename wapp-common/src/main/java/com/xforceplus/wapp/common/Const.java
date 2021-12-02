@@ -10,5 +10,5 @@ public abstract class Const {
     /**
      * API 基础路径
      */
-    public static final String BASE_PATH="/api";
+    public static final String BASE_PATH="/enhance/api";
 }

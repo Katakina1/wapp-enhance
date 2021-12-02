@@ -44,6 +44,11 @@ wapp:
       tmp: E:/tomcattmp
   rednotification:
     maxApply: 99
+#  tax-rate-mapping:
+#    16: 13
+#    17: 13
+#    10: 9
+#    11: 9
 
 activemq:
   queue-name:
@@ -111,7 +116,8 @@ pro:
 
 agreementBill:
   local:
-    path: D:/Workspace/wapp-enhance/wapp-core/target
+#    path: D:/Workspace/wapp-enhance/wapp-core/target
+    path: /usr/local/wapp/agreement
 claimBill:
   local:
     path: D:/Workspace/wapp-enhance/wapp-core/target
@@ -129,3 +135,6 @@ spring:
   jackson:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
+server:
+  tomcat:
+    basedir: E:\tomcattmp

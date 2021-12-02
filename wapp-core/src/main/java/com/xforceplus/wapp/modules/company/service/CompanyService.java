@@ -51,6 +51,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         if (StringUtils.isNotBlank(taxNo)) {
             wrapper.eq(TAcOrgEntity::getTaxNo, taxNo);
         }
+
         Page<TAcOrgEntity> page = wrapper.page(new Page<>(current, size));
         log.debug("抬头信息分页查询,总条数:{},分页数据:{}", page.getTotal(), page.getRecords());
         return Tuple.of(companyConverter.map(page.getRecords()), page);
@@ -67,6 +68,9 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
         QueryWrapper<TAcOrgEntity> wrapper = new QueryWrapper<TAcOrgEntity>();
         if (StringUtils.isNotBlank(taxNo)) {
             wrapper.eq(TAcOrgEntity.TAX_NO, taxNo);
+        }
+        if(Objects.nonNull(UserUtil.getUser())&&StringUtils.isNotEmpty(UserUtil.getUser().getUsercode())){
+            wrapper.eq(TAcOrgEntity.ORG_CODE, UserUtil.getUser().getUsercode());
         }
         return getOne(wrapper);
     }
@@ -110,6 +114,7 @@ public class CompanyService extends ServiceImpl<TAcOrgDao, TAcOrgEntity> {
      * @return
      */
     public TAcOrgEntity getOrgInfoByOrgCode(String orgCode, String orgType) {
+        log.info("根据orgcode获取公司信息 orgcode:{},orgType:{}",orgCode,orgType);
         if (StringUtils.isEmpty(orgCode)) {
             return null;
         }

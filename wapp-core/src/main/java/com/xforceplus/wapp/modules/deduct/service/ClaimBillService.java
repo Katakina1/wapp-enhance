@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +59,7 @@ public class ClaimBillService extends DeductService{
         Map<String, BigDecimal> nosuchInvoiceSeller = new HashMap<>();
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, limit, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_ITEM.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
-            for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
+            for (final TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
                 String sellerNo = tXfBillDeductEntity.getSellerNo();
                 String purcharseNo = tXfBillDeductEntity.getPurchaserNo();
                 if (StringUtils.isEmpty(sellerNo) || StringUtils.isEmpty(purcharseNo)) {
@@ -86,7 +88,7 @@ public class ClaimBillService extends DeductService{
                  * 查询符合条件的明细
                  */
                 Long itemId = 1L;
-                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate,  itemId,limit, tXfBillDeductEntity.getBusinessNo());
+                List<TXfBillDeductItemEntity> tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, sellerNo, taxRate,  itemId,limit, tXfBillDeductEntity.getBusinessNo());
                 while (billAmount.compareTo(BigDecimal.ZERO) > 0) {
                     if (CollectionUtils.isEmpty(tXfBillDeductItemEntities)) {
                         taxRate = taxRateMap.get(taxRate);
@@ -95,7 +97,7 @@ public class ClaimBillService extends DeductService{
                             break;
                         }
                         itemId = 0L;
-                        tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
+                        tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
                         continue;
                     }
                     BigDecimal total = tXfBillDeductItemEntities.stream().map(TXfBillDeductItemEntity::getAmountWithoutTax).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -109,7 +111,7 @@ public class ClaimBillService extends DeductService{
                         break;
                     }
                     itemId =   tXfBillDeductItemEntities.stream().mapToLong(TXfBillDeductItemEntity::getId).max().getAsLong();
-                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate, purcharseNo, sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
+                    tXfBillDeductItemEntities = tXfBillDeductItemExtDao.queryMatchBillItem(startDate,endDate , sellerNo, taxRate, itemId, limit,tXfBillDeductEntity.getBusinessNo());
                 }
                 /**
                  * 匹配失败，明细金额不足
@@ -128,9 +130,21 @@ public class ClaimBillService extends DeductService{
                  */
                 if (CollectionUtils.isNotEmpty(matchItem)) {
                     try {
-                        tXfBillDeductEntity =  doItemMatch(tXfBillDeductEntity, matchItem);
-
-                        claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
+                        List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
+                        AtomicReference<TXfBillDeductEntity> tmp = new AtomicReference<>();
+                        successSuppliers.add(() -> {
+                                    tmp.set(doItemMatch(tXfBillDeductEntity, matchItem));
+                                    return true;
+                                }
+                        );
+                        transactionalService.execute(successSuppliers);
+                        successSuppliers = new ArrayList<>();
+                        successSuppliers.add(() -> {
+                                    claimMatchBlueInvoice(tmp.get(), nosuchInvoiceSeller);
+                                    return true;
+                                }
+                        );
+                        transactionalService.execute(successSuppliers);
                     } catch (Exception e) {
                         log.error("索赔单 明细匹配 蓝票匹配异常：{}", e);
                     }
@@ -153,8 +167,7 @@ public class ClaimBillService extends DeductService{
      * @param tXfBillDeductItemEntitys
      * @return
      */
-    @Transactional
-    public TXfBillDeductEntity doItemMatch(TXfBillDeductEntity tXfBillDeductEntity, List<TXfBillDeductItemEntity> tXfBillDeductItemEntitys ) {
+     public TXfBillDeductEntity doItemMatch(TXfBillDeductEntity tXfBillDeductEntity, List<TXfBillDeductItemEntity> tXfBillDeductItemEntitys ) {
         Long billId = tXfBillDeductEntity.getId();
         BigDecimal billAmount = tXfBillDeductEntity.getAmountWithoutTax();
         BigDecimal taxAmount = tXfBillDeductEntity.getTaxAmount();
@@ -286,8 +299,14 @@ public class ClaimBillService extends DeductService{
         List<TXfBillDeductEntity> tXfBillDeductEntities = tXfBillDeductExtDao.queryUnMatchBill(deductId,null, 2, TXfDeductionBusinessTypeEnum.CLAIM_BILL.getValue(), TXfDeductStatusEnum.CLAIM_NO_MATCH_BLUE_INVOICE.getCode());
         while (CollectionUtils.isNotEmpty(tXfBillDeductEntities)) {
             for (TXfBillDeductEntity tXfBillDeductEntity : tXfBillDeductEntities) {
-                 try {
-                    claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
+                try {
+                    List<Supplier<Boolean>> successSuppliers = new ArrayList<>();
+                    successSuppliers.add(() -> {
+                                claimMatchBlueInvoice(tXfBillDeductEntity, nosuchInvoiceSeller);
+                                return true;
+                            }
+                    );
+                    transactionalService.execute(successSuppliers);
                 } catch (Exception e) {
                         log.error("蓝票匹配索赔异常：{} 单据：{}",e,tXfBillDeductEntity.getBusinessNo());
                 }
@@ -302,7 +321,6 @@ public class ClaimBillService extends DeductService{
              *
              * @return
              */
-    @Transactional
     public boolean claimMatchBlueInvoice(TXfBillDeductEntity tXfBillDeductEntity,Map<String, BigDecimal> nosuchInvoiceSeller) {
         List<BlueInvoiceService.MatchRes> matchResList = null;
         try {
@@ -331,7 +349,7 @@ public class ClaimBillService extends DeductService{
                 newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE);
                 newExceptionReportEvent.setType(ExceptionReportTypeEnum.CLAIM);
                 applicationContext.publishEvent(newExceptionReportEvent);
-                return false;
+                throw new NoSuchInvoiceException();
             }
             matchInfoTransfer(matchResList, tXfBillDeductEntity.getBusinessNo(), tXfBillDeductEntity.getId(), TXfDeductionBusinessTypeEnum.CLAIM_BILL);
             TXfBillDeductEntity tmp = new TXfBillDeductEntity();
@@ -346,13 +364,14 @@ public class ClaimBillService extends DeductService{
             newExceptionReportEvent.setType( ExceptionReportTypeEnum.CLAIM );
             applicationContext.publishEvent(newExceptionReportEvent);
             log.info(" 索赔单 单据匹配合并失败销方蓝票不足->sellerNo : {} purcharseNo : {} businessNo {}",tXfBillDeductEntity.getSellerNo(),tXfBillDeductEntity.getPurchaserNo(),tXfBillDeductEntity.getBusinessNo());
+            throw n;
         }
         catch (Exception e) {
-            if (CollectionUtils.isNotEmpty(matchResList)) {
-                List<String> invoiceList = matchResList.stream().map(x -> x.getInvoiceCode() + "=---" + x.getInvoiceNo()).collect(Collectors.toList());
-                log.error(" 索赔单 匹配蓝票 回撤匹配信息 单据id {} 回撤匹配信息:{}", e,tXfBillDeductEntity.getId(),invoiceList );
-                blueInvoiceService.withdrawInvoices(matchResList);
-            }
+//            if (CollectionUtils.isNotEmpty(matchResList)) {
+//                List<String> invoiceList = matchResList.stream().map(x -> x.getInvoiceCode() + "=---" + x.getInvoiceNo()).collect(Collectors.toList());
+//                log.error(" 索赔单 匹配蓝票 回撤匹配信息 单据id {} 回撤匹配信息:{}", e,tXfBillDeductEntity.getId(),invoiceList );
+//                blueInvoiceService.withdrawInvoices(matchResList);
+//            }
             NewExceptionReportEvent newExceptionReportEvent = new NewExceptionReportEvent();
             newExceptionReportEvent.setDeduct(tXfBillDeductEntity);
             newExceptionReportEvent.setReportCode( ExceptionReportCodeEnum.NOT_MATCH_BLUE_INVOICE );

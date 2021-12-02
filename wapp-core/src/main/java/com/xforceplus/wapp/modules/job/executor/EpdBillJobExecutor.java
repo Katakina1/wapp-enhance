@@ -44,6 +44,7 @@ public class EpdBillJobExecutor extends AbstractBillJobExecutor {
     public void execute() {
         log.info("启动原始EPD单任务执行器");
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(EPD_BILL_JOB.getJobType());
+        log.info("启动原始EPD单任务执行器 任务数量:{}",availableJobs.size());
         Chain chain = new EpdBillJobChain(applicationContext);
         availableJobs.forEach(
                 availableJob -> {

@@ -101,6 +101,8 @@ public class RedNotificationMain {
     @ApiModelProperty("红字信息表编号")
     private String redNotificationNo;
 
+
+
     /**
      * 公司编号
      */
@@ -155,6 +157,24 @@ public class RedNotificationMain {
     //============== 新增不需要====
     @ApiModelProperty("红字信息主键")
     private Long id;
+
+    /**
+     * 红字信息表编号
+     */
+    @ApiModelProperty("计价方式")
+    private String priceMethod;
+
+    /**
+     * 驳回备注
+     */
+    @ApiModelProperty("驳回备注")
+    private String rejectRemark;
+
+    /**
+     * 撤销备注
+     */
+    @ApiModelProperty("撤销备注")
+    private String revertRemark;
 
 
 

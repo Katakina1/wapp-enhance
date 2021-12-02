@@ -21,6 +21,7 @@ import com.xforceplus.wapp.repository.entity.*;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommRedNotificationService;
 import com.xforceplus.wapp.service.CommSettlementService;
+import com.xforceplus.wapp.util.ItemNameUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -146,7 +147,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         return doSplit(createPreInvoiceParam, tXfSettlementEntity);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void reFixTaxCode(String settlementNo) {
         boolean success = true;
          List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
@@ -184,7 +185,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     }
 
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void reCalculation(String settlementNo) {
         List<TXfSettlementItemEntity> tXfSettlementItemEntities = tXfSettlementItemDao.queryItemBySettlementNo(settlementNo);
         List<TXfSettlementItemEntity> fixAmountList = tXfSettlementItemEntities.stream().filter(x -> x.getUnitPrice().multiply(x.getQuantity()).setScale(2, RoundingMode.HALF_UP).compareTo(x.getAmountWithoutTax()) != 0)  .collect(Collectors.toList());
@@ -249,7 +250,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
      * @param splitPreInvoiceInfos
      * @param tXfSettlementEntity
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public List<PreInvoiceDTO>   savePreInvoiceInfo(List<SplitPreInvoiceInfo> splitPreInvoiceInfos,TXfSettlementEntity tXfSettlementEntity) {
         // check 拆票失败
         Date date = new Date();
@@ -264,6 +265,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             tXfPreInvoiceEntity.setInvoiceNo(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setCheckCode(StringUtils.EMPTY);
             tXfPreInvoiceEntity.setPaperDrewDate(StringUtils.EMPTY);
+            tXfPreInvoiceEntity.setGoodsListFlag(splitPreInvoiceInfo.getPreInvoiceMain().getSaleListFileFlag().intValue());
             tXfPreInvoiceEntity.setCreateTime(date);
             tXfPreInvoiceEntity.setUpdateTime(date);
             tXfPreInvoiceEntity.setCreateUserId(0L);
@@ -353,7 +355,12 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
             billItem.setOutterDiscountTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterDiscountWithTax(BigDecimal.ZERO);
-
+            String name = tXfSettlementItemEntity.getItemName();
+            List<String> list = ItemNameUtils.splitItemName(name);
+            if (CollectionUtils.isNotEmpty(list)) {
+                billItem.setItemName(list.get(1));
+                billItem.setItemShortName(list.get(0));
+            }
             billItem.setOutterPrepayAmountTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithoutTax(BigDecimal.ZERO);
             billItem.setOutterPrepayAmountWithTax(BigDecimal.ZERO);
@@ -368,6 +375,7 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
         createPreInvoiceParam.setRoutingKey("12");
         return createPreInvoiceParam;
     }
+
     /**
      * 重新拆票
      * @param settlementNo
@@ -422,11 +430,11 @@ public class PreinvoiceService extends ServiceImpl<TXfPreInvoiceDao, TXfPreInvoi
     }
 
 
-    public void applyDestroyPreInvoiceAndRedNotification(String invoiceNo,String invoiceCode){
+    public void applyDestroyPreInvoiceAndRedNotification(String invoiceNo,String invoiceCode,String remark){
         LambdaQueryWrapper<TXfPreInvoiceEntity> wrapper=new LambdaQueryWrapper<>();
         wrapper.select(TXfPreInvoiceEntity::getId).eq(TXfPreInvoiceEntity::getInvoiceNo,invoiceNo)
                 .eq(TXfPreInvoiceEntity::getInvoiceCode,invoiceCode);
         final TXfPreInvoiceEntity one = super.getOne(wrapper);
-        commSettlementService.applyDestroyPreInvoiceAndRedNotification(one.getId());
+        commSettlementService.applyDestroyPreInvoiceAndRedNotification(one.getId(),remark);
     }
 }

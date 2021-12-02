@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-10-25
+* @since 2021-11-17
 */
 public interface TDxRecordInvoiceDao extends BaseMapper<TDxRecordInvoiceEntity> {
 

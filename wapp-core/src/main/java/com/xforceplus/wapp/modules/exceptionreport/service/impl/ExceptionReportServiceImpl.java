@@ -93,10 +93,12 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
 
     private final Map<String, String> headClaim;
     private final Map<String, String> headEPD;
+    private final Map<String, String> headAgreement;
 
     public ExceptionReportServiceImpl() {
         headClaim = excelHeadClaim();
         headEPD = excelHeadEPD();
+        headAgreement = excelHeadAgreement();
     }
 
     @Override
@@ -220,10 +222,24 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
 
         List<TXfExceptionReportEntity> list = getExportData(request, typeEnum, 0);
         try (BigExcelWriter bigExcelWriter = new BigExcelWriter()) {
-            Map<String, String> head = typeEnum == ExceptionReportTypeEnum.CLAIM ? headClaim : headEPD;
-            Function<List<TXfExceptionReportEntity>,List> toExport = typeEnum == ExceptionReportTypeEnum.CLAIM ?
-                    this.exceptionReportMapper::toClaimExport :
-                    this.exceptionReportMapper::toExport;
+            Map<String, String> head = null;
+            Function<List<TXfExceptionReportEntity>,List> toExport ;
+            switch (typeEnum){
+                case EPD:
+                    head=headEPD;
+                    toExport=this.exceptionReportMapper::toExport;
+                    break;
+                case AGREEMENT:
+                    head=headAgreement;
+                    toExport=this.exceptionReportMapper::toAgreementExport;
+                    break;
+                case CLAIM:
+                    head=headClaim;
+                    toExport=this.exceptionReportMapper::toClaimExport;
+                    break;
+                default:
+                    throw new EnhanceRuntimeException("不支持的例外报告类型:"+typeEnum);
+            }
             bigExcelWriter.setHeaderAlias(head);
             bigExcelWriter.autoSizeColumnAll();
             while (CollectionUtils.isNotEmpty(list)) {
@@ -354,6 +370,15 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
 
 
     private Map<String, String> excelHeadEPD() {
+        return excelHead();
+    }
+
+    private Map<String, String> excelHeadAgreement() {
+        Map<String, String> head = excelHead();
+        head.put("agreementTypeCode", "协议类型编码");
+        return head;
+    }
+    private Map<String, String> excelHead() {
         Map<String, String> head = new LinkedHashMap<>();
         head.put("code", "例外CODE");
         head.put("description", "例外说明");
@@ -369,6 +394,8 @@ public class ExceptionReportServiceImpl extends ServiceImpl<TXfExceptionReportDa
         head.put("taxRate", "税率");
         return head;
     }
+
+
 
     private Map<String, String> excelHeadClaim() {
         Map<String, String> head = new LinkedHashMap<>();

@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.preinvoice.controller;
 
+import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.preinvoice.dto.ApplyOperationRequest;
 import com.xforceplus.wapp.modules.preinvoice.dto.PreInvoiceItem;
@@ -20,7 +21,7 @@ import java.util.List;
  * 预制发票
  */
 @RestController
-@RequestMapping(value = "/api/pre-invoice")
+@RequestMapping(value = EnhanceApi.BASE_PATH + "/pre-invoice")
 public class PreInvoiceController {
 
     @Autowired
@@ -63,7 +64,7 @@ public class PreInvoiceController {
     @PostMapping(value = "/undo-notification")
     public Response undoRedNotificationByInvoice(@RequestBody UndoRedNotificationRequest request){
 
-        this.preinvoiceService.applyDestroyPreInvoiceAndRedNotification(request.getInvoiceNo(), request.getInvoiceCode());
+        this.preinvoiceService.applyDestroyPreInvoiceAndRedNotification(request.getInvoiceNo(), request.getInvoiceCode(),request.getRemark());
 
         return Response.ok("申请成功！请等待购方审核或操作！");
 

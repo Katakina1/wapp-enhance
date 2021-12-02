@@ -42,12 +42,6 @@ public class ExportEPDBillModel {
     @ExcelProperty("供应商6D")
     private String agreementMemo;
 
-    @ExcelProperty("协议类型")
-    private String agreementReference;
-
-    @ExcelProperty("协议类型编码")
-    private String agreementReasonCode;
-
     @ExcelProperty("文档类型")
     private String agreementDocumentType;
 
@@ -82,9 +76,6 @@ public class ExportEPDBillModel {
 
     @ExcelProperty("批次号")
     private String batchNo;
-
-    @ExcelProperty("备注")
-    private String remark;
 
     @ExcelProperty("红字信息表编号")
     private String redNotificationNo;
