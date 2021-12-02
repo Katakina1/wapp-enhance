@@ -43,6 +43,7 @@ public class ClaimBillJobExecutor extends AbstractBillJobExecutor {
     public void execute() {
         log.info("启动原始索赔单任务执行器");
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(CLAIM_BILL_JOB.getJobType());
+        log.info("启动原始索赔单任务执行器 任务数量:{}",availableJobs.size());
         Chain chain = new ClaimBillJobChain(applicationContext);
         availableJobs.forEach(
                 availableJob -> {

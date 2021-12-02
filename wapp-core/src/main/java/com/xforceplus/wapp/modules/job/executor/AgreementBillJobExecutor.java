@@ -46,6 +46,7 @@ public class AgreementBillJobExecutor extends AbstractBillJobExecutor {
     public void execute() {
         log.info("启动原始协议单任务执行器");
         List<Map<String, Object>> availableJobs = billJobService.obtainAvailableJobs(AGREEMENT_BILL_JOB.getJobType());
+        log.info("启动原始协议单任务执行器 任务数量:{}",availableJobs.size());
         Chain chain = new AgreementBillJobChain(applicationContext);
         availableJobs.forEach(
                 availableJob -> {
