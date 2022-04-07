@@ -1,4 +1,4 @@
-package com.xforceplus.wapp.modules.backFill.service;
+package com.xforceplus.wapp.modules.backfill.service;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -9,10 +9,10 @@ import com.xforceplus.wapp.common.utils.Base64;
 import com.xforceplus.wapp.common.utils.*;
 import com.xforceplus.wapp.constants.Constants;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
-import com.xforceplus.wapp.modules.backFill.model.InvoiceDetail;
-import com.xforceplus.wapp.modules.backFill.model.InvoiceMain;
-import com.xforceplus.wapp.modules.backFill.model.UploadFileResult;
-import com.xforceplus.wapp.modules.backFill.model.VerificationBack;
+import com.xforceplus.wapp.modules.backfill.model.InvoiceDetail;
+import com.xforceplus.wapp.modules.backfill.model.InvoiceMain;
+import com.xforceplus.wapp.modules.backfill.model.UploadFileResult;
+import com.xforceplus.wapp.modules.backfill.model.VerificationBack;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.noneBusiness.service.NoneBusinessService;
 import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -101,6 +102,7 @@ public class EInvoiceMatchService {
     private boolean needOrgCheck;
 
     @Autowired
+    @Lazy
     private VerificationService verificationService;
 
     @Autowired
@@ -149,18 +151,21 @@ public class EInvoiceMatchService {
         successEntity.setReason(verificationBack.getMessage());
         successEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
         successEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
+        successEntity.setInvoiceRemark(invoiceMain.getRemark());
         successEntity.setInvoiceDate(invoiceMain.getPaperDrewDate());
         successEntity.setOfdStatus(Constants.SIGN_NONE_BUSINESS_SUCCESS);
         if (org.apache.commons.lang3.StringUtils.isNotEmpty(invoiceMain.getOfdImageUrl())) {
             try {
                 String base64 = verificationService.getBase64ByUrl(invoiceMain.getInvoiceCode() + invoiceMain.getInvoiceNo());
-
-                String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg",invoiceMain.getSellerTaxNo());
-                UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
-                if (null != uploadFileImageResult) {
-                    successEntity.setUploadId(uploadFileImageResult.getData().getUploadId());
-                    successEntity.setUploadPath(uploadFileImageResult.getData().getUploadPath());
+                if(StringUtils.isNotEmpty(base64)){
+                    String uploadFile = fileService.uploadFile(Base64.decode(base64), UUID.randomUUID().toString().replace("-", "") + ".jpeg",invoiceMain.getSellerTaxNo());
+                    UploadFileResult uploadFileImageResult = JsonUtil.fromJson(uploadFile, UploadFileResult.class);
+                    if (null != uploadFileImageResult) {
+                        successEntity.setUploadId(uploadFileImageResult.getData().getUploadId());
+                        successEntity.setUploadPath(uploadFileImageResult.getData().getUploadPath());
+                    }
                 }
+
             } catch (IOException e) {
                 log.error("非商下载税局OFD图片失败:{}", e);
             }
@@ -169,12 +174,57 @@ public class EInvoiceMatchService {
 
         TAcOrgEntity purEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getPurchaserTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_WALMART);
         TAcOrgEntity sellerEntity = companyService.getOrgInfoByTaxNo(invoiceMain.getSellerTaxNo(), com.xforceplus.wapp.modules.blackwhitename.constants.Constants.COMPANY_TYPE_SUPPLIER);
+
         Map<String, Object> map = new HashMap<>();
+        TDxRecordInvoiceEntity recordInvoice = new TDxRecordInvoiceEntity();
+
+        recordInvoice.setInvoiceCode(invoiceMain.getInvoiceCode());
+        recordInvoice.setInvoiceNo(invoiceMain.getInvoiceNo());
+        recordInvoice.setInvoiceAmount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
+        recordInvoice.setDkInvoiceamount(new BigDecimal(invoiceMain.getAmountWithoutTax()));
+        recordInvoice.setInvoiceDate(DateUtils.convertStringToDate(invoiceMain.getPaperDrewDate()));
+        recordInvoice.setTotalAmount(new BigDecimal(invoiceMain.getAmountWithTax()));
+        recordInvoice.setTaxAmount(new BigDecimal( invoiceMain.getTaxAmount()));
+        recordInvoice.setTaxRate(new BigDecimal(invoiceDetails.get(0).getTaxRate()));
+        recordInvoice.setInvoiceType(invoiceMain.getInvoiceType());
+        recordInvoice.setGfName(invoiceMain.getPurchaserName());
+        recordInvoice.setGfTaxNo(invoiceMain.getPurchaserTaxNo());
+        recordInvoice.setGfAddressAndPhone(invoiceMain.getPurchaserAddrTel());
+        recordInvoice.setGfBankAndNo(invoiceMain.getPurchaserBankInfo());
+        recordInvoice.setCheckCode(invoiceMain.getCheckCode());
+        recordInvoice.setXfName( invoiceMain.getSellerName());
+        recordInvoice.setXfTaxNo(invoiceMain.getSellerTaxNo());
+        recordInvoice.setXfAddressAndPhone(invoiceMain.getSellerAddrTel());
+        recordInvoice.setXfBankAndNo(invoiceMain.getSellerBankInfo());
+//        底账来源  0-采集 1-查验 2-录入
+        recordInvoice.setSourceSystem("1");
+        recordInvoice.setGoodsListFlag(invoiceMain.getGoodsListFlag());
+        recordInvoice.setMachinecode(invoiceMain.getMachineCode());
+//        发票状态 0-正常  1-失控 2-作废  3-红冲 4-异常
+        recordInvoice.setInvoiceStatus(convertStatus(invoiceMain.getStatus(), invoiceMain.getRedFlag()));
+        recordInvoice.setRemark(invoiceMain.getRemark());
+        recordInvoice.setDxhyMatchStatus("0");
+        recordInvoice.setDetailYesorno("1");
+        recordInvoice.setFlowType("1");
+        recordInvoice.setTpStatus("0");
+        recordInvoice.setIsDel(IsDealEnum.NO.getValue());
+        recordInvoice.setUuid(invoiceMain.getInvoiceCode()+invoiceMain.getInvoiceNo());
+        recordInvoice.setCreateDate(new Date());
+        //电子发票改为签收状态
+        if (InvoiceTypeEnum.isElectronic(invoiceMain.getInvoiceType())) {
+            recordInvoice.setQsStatus("1");
+            recordInvoice.setQsDate(new Date());
+            recordInvoice.setQsType("5");
+        }
+
         if (null != sellerEntity) {
+            recordInvoice.setVenderid(sellerEntity.getOrgCode());
+
             map.put("venderid", sellerEntity.getOrgCode());
             map.put("xfName", sellerEntity.getOrgName());
         }
         if (null != purEntity) {
+            recordInvoice.setJvcode(purEntity.getOrgCode());
             map.put("jvcode", purEntity.getOrgCode());
             map.put("gfName", purEntity.getOrgName());
         }else {
@@ -184,7 +234,10 @@ public class EInvoiceMatchService {
             noneBusinessService.updateById(successEntity);
             return;
         }
+        this.saveOrUpdateInvoice(recordInvoice);
         noneBusinessService.updateById(successEntity);
+        map.put("remark", invoiceMain.getRemark());
+        map.put("detailYesorno","1");
         map.put("invoiceNo", invoiceMain.getInvoiceNo());
         map.put("invoiceCode", invoiceMain.getInvoiceCode());
         map.put("invoiceAmount", invoiceMain.getAmountWithoutTax());
@@ -226,6 +279,7 @@ public class EInvoiceMatchService {
             }
         }
 
+
     }
 
     /**
@@ -248,7 +302,7 @@ public class EInvoiceMatchService {
         //失败计数
         electronicUploadRecordService.increaseFailure(electronicUploadRecordDetailEntity.getBatchNo());
         electronicUploadRecordDetailEntity.setReason(message);
-        electronicUploadRecordDetailEntity.setStatus(false);
+        electronicUploadRecordDetailEntity.setStatus(0);
         electronicUploadRecordDetailService.updateById(electronicUploadRecordDetailEntity);
     }
 
@@ -262,9 +316,9 @@ public class EInvoiceMatchService {
         final OrgEntity orgEntity = this.electronicInvoiceDao.selectGfByJvCode(recordEntity.getJvCode());
         electronicUploadRecordDetailEntity.setInvoiceNo(invoiceMain.getInvoiceNo());
         electronicUploadRecordDetailEntity.setInvoiceCode(invoiceMain.getInvoiceCode());
-        electronicUploadRecordDetailEntity.setStatus(true);
+        electronicUploadRecordDetailEntity.setStatus(1);
         //校验购销对
-        //validateOrg(invoiceMain, recordEntity, orgEntity);
+        validateOrg(invoiceMain, recordEntity, orgEntity);
         //校验税率
         validateTax(invoiceMain, invoiceDetails);
         if(StringUtils.isNotEmpty(electronicUploadRecordDetailEntity.getSettlementNo())){
@@ -291,7 +345,8 @@ public class EInvoiceMatchService {
         invoiceMain.setInvoiceType(invoiceType);
         //从备注里截取红字信息编号
         TDxRecordInvoiceEntity recordInvoice = new TDxRecordInvoiceEntity();
-        if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0  && new BigDecimal(invoiceDetails.get(0).getTaxRate()).compareTo(BigDecimal.ZERO) !=0){
+        if (new BigDecimal(invoiceMain.getAmountWithoutTax()).compareTo(BigDecimal.ZERO) < 0  && new BigDecimal(invoiceDetails.get(0).getTaxRate()).compareTo(BigDecimal.ZERO) !=0 &&
+                (invoiceType.equals(InvoiceTypeEnum.SPECIAL_INVOICE.getValue()) || invoiceType.equals(InvoiceTypeEnum.E_SPECIAL_INVOICE.getValue()))){
             String redNo = StringUtils.substring(invoiceMain.getRemark(), invoiceMain.getRemark().indexOf("信息表编号") + 5, invoiceMain.getRemark().indexOf("信息表编号") + 21);
             if (StringUtils.isNotEmpty(redNo)) {
                 String trim = redNo.trim();
@@ -425,6 +480,7 @@ public class EInvoiceMatchService {
                 TDxRecordInvoiceEntity newEntity = new TDxRecordInvoiceEntity();
                 newEntity.setId(entity.getId());
                 newEntity.setIsDel(IsDealEnum.NO.getValue());
+                newEntity.setLastUpdateDate(new Date());
                 tDxRecordInvoiceDao.updateById(entity);
             }
         } catch (Exception e) {
@@ -516,3 +572,4 @@ public class EInvoiceMatchService {
     }
 
 }
+
