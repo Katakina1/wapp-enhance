@@ -175,6 +175,11 @@ public class TXfExceptionReportEntity extends BaseEntity {
      */
     @TableField("bill_id")
     private Long billId;
+    /**
+     * 备注
+     */
+    @TableField("remark")
+    private String remark;
 
 
     public static final String ID = "id";
