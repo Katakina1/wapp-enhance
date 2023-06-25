@@ -37,6 +37,7 @@ docker-build:
     - develop
     - crclocal
     - selftest
+    - /^feature.*$/
     - /^hotfix.*$/
     - /^release.*$/
     - /^prod.*$/
