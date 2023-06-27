@@ -1,0 +1,38 @@
+image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/cibase:0.5.0
+stages:
+  - mvn-package
+  - helm-package
+
+include: 'http://gitlab4.0.xforceplus.com/common/gitlabci4/raw/devops-gitlabci/ci-java-v2/.gitlab-ci-init.yml'
+
+maven package:
+  stage: mvn-package
+  script:
+    - mvn_package -u
+  only:
+    - master
+    - develop
+    - /^hotfix.*$/
+    - /^feature.*$/
+    - /^release.*$/
+    - /^prod.*$/
+    - /^dev.*$/
+    - /^demo.*$/
+    - /^uat.*$/
+    - /^sit.*$/
+
+helm package:
+  stage: helm-package
+  script:
+    - helm_package
+  only:
+    - master
+    - develop
+    - /^hotfix.*$/
+    - /^feature.*$/
+    - /^release.*$/
+    - /^prod.*$/
+    - /^dev.*$/
+    - /^demo.*$/
+    - /^uat.*$/
+    - /^sit.*$/

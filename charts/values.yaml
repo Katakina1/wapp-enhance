@@ -1,0 +1,39 @@
+replicas:
+  count: 1
+  terminationGracePeriodSeconds: 120
+ports:
+  serverPort: 6060
+healthCheck:
+  httpGet:
+    path: /health
+annotations:
+  container:
+    yamlContent:
+      choerodon.io/metrics-path: /actuator/prometheus
+      prometheus.io/path: /actuator/prometheus
+
+startup:
+  jvmOptions: >-
+    -server -Xms1024m -Xmx3072m -XX:HeapDumpPath=/dump.hprof -XX:+HeapDumpOnOutOfMemoryError -Dconfig.resource=application-fat.conf -Dspring.profiles.active=fat -Dspring.config.name=common,application
+  prod:
+    jvmOptions: >-
+      -server -Xms1024m -Xmx4096m -XX:HeapDumpPath=/dump.hprof -XX:+HeapDumpOnOutOfMemoryError -Dconfig.resource=application-prod.conf -Dspring.profiles.active=prod
+  sit:
+    jvmOptions: >-
+      -server -Xms1024m -Xmx3072m -XX:HeapDumpPath=/dump.hprof -XX:+HeapDumpOnOutOfMemoryError -Dconfig.resource=application-sit.conf -Dspring.profiles.active=sit
+
+resources:
+  cpu: 1000m
+  memory: 2048Mi
+  prod:
+    cpu: 2000m
+    memory: 5120Mi
+  fat:
+    cpu: 1000m
+    memory: 2048Mi
+  sit:
+    cpu: 4000m
+    memory: 4096Mi
+
+service:
+  enabled: true
