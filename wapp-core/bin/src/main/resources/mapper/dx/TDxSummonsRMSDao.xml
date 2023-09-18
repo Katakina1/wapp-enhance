@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.repository.dao.TDxSummonsRMSDao">
+
+    <select id="queryCount" parameterType="com.xforceplus.wapp.common.vo.InvoiceSummonsVo" resultType="int">
+        select count(*)
+        from t_dx_summons_rms sr
+        left join t_dx_record_invoice ri
+        on sr.uuid = ri.uuid
+        <where>
+            ri.auth_status = #{authStatus}
+            <if test="jvCode != null and jvCode != ''">
+                and sr.jvcode = #{jvCode}
+            </if>
+            <if test="invoiceCode != null and invoiceCode != ''">
+                and sr.invoice_code = #{invoiceCode}
+            </if>
+            <if test="invoiceNo != null and invoiceNo != ''">
+                and sr.invoice_no = #{invoiceNo}
+            </if>
+            <if test="venderid != null and venderid != ''">
+                and sr.venderid = #{venderid}
+            </if>
+            <if test="vendername != null and vendername != ''">
+                and sr.vendername = #{vendername}
+            </if>
+            <if test="certificateNo != null and certificateNo != ''">
+                and sr.certificate_no = #{certificateNo}
+            </if>
+            <if test="voucherAccountTimeStart != null and voucherAccountTimeStart != ''">
+                and sr.certificate_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:00')
+            </if>
+            <if test="voucherAccountTimeEnd != null and voucherAccountTimeEnd != ''">
+                and sr.certificate_time &lt;= concat(#{voucherAccountTimeStart}, ' 23:59:59')
+            </if>
+        </where>
+    </select>
+
+
+    <select id="invoiceSummonsList" parameterType="com.xforceplus.wapp.common.vo.InvoiceSummonsVo"
+            resultType="com.xforceplus.wapp.repository.entity.TDxSummonsRMSEntity">
+        select ri.rzh_belong_date as taxPeriod, *
+        from t_dx_summons_rms sr
+        left join t_dx_record_invoice ri
+        on sr.uuid = ri.uuid
+        <where>
+                ri.auth_status = #{authStatus}
+            <if test="jvCode != null and jvCode != ''">
+                and sr.jvcode = #{jvCode}
+            </if>
+            <if test="invoiceCode != null and invoiceCode != ''">
+                and sr.invoice_code = #{invoiceCode}
+            </if>
+            <if test="invoiceNo != null and invoiceNo != ''">
+                and sr.invoice_no = #{invoiceNo}
+            </if>
+            <if test="venderid != null and venderid != ''">
+                and sr.venderid = #{venderid}
+            </if>
+            <if test="vendername != null and vendername != ''">
+                and sr.vendername like concat(#{vendername}, "%")
+            </if>
+            <if test="certificateNo != null and certificateNo != ''">
+                and sr.certificate_no = #{certificateNo}
+            </if>
+            <if test="voucherAccountTimeStart != null and voucherAccountTimeStart != ''">
+                and sr.certificate_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:00')
+            </if>
+            <if test="voucherAccountTimeEnd != null and voucherAccountTimeEnd != ''">
+                and sr.certificate_time &lt;= concat(#{voucherAccountTimeStart}, ' 23:59:59')
+            </if>
+        </where>
+        <if test='pageNo != null and pageSize !=null'>
+            ORDER by sr.invoice_date desc offset #{pageNo} rows fetch next #{pageSize} rows only
+        </if>
+    </select>
+
+</mapper>

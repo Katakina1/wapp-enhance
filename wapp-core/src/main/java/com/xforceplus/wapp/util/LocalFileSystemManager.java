@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
+
 /**
  * @program: wapp-enhance
  * @description: manage local file system
@@ -26,7 +28,7 @@ public class LocalFileSystemManager {
      * @throws FileNotFoundException
      */
     public static List<String> getFileNames(String path, String fileNameKeyWords) throws FileNotFoundException {
-        File directory = new File(path);
+        File directory = FileUtils.getFile(path);
         // 文件夹是否存在
         if (!directory.exists()) {
             // 创建文件夹
@@ -50,7 +52,7 @@ public class LocalFileSystemManager {
      * @throws FileNotFoundException
      */
     public static void createFolderIfNonExist(String directory) throws FileNotFoundException {
-        File localFolder = new File(directory);
+        File localFolder = FileUtils.getFile(directory);
         // 文件夹是否存在
         if (!localFolder.exists()) {
             // 创建文件夹
@@ -72,7 +74,7 @@ public class LocalFileSystemManager {
      * @return
      */
     public static boolean isFileExists(String path, String fileName) {
-        File file = new File(path, fileName);
+        File file = FileUtils.getFile(path, fileName);
         return file.exists();
     }
 
@@ -84,7 +86,7 @@ public class LocalFileSystemManager {
      * @return
      */
     public static boolean deleteFile(String path, String fileName) {
-        File file = new File(path, fileName);
+        File file = FileUtils.getFile(path, fileName);
         return file.delete();
     }
 }

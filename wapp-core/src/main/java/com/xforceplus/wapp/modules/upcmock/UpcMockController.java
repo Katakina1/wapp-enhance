@@ -1,56 +1,42 @@
 package com.xforceplus.wapp.modules.upcmock;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.xforceplus.wapp.annotation.AuthIgnore;
-import com.xforceplus.wapp.client.UpcRsp;
-import com.xforceplus.wapp.repository.dao.UpcTestDao;
-import com.xforceplus.wapp.repository.entity.UpcTest;
-import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.xforceplus.wapp.annotation.EnhanceApiV1;
+import com.xforceplus.wapp.client.NbrRsp;
+import com.xforceplus.wapp.client.WappHostClient;
+import com.xforceplus.wapp.modules.taxcode.service.impl.TaxCodeRiversandServiceImpl;
+import com.xforceplus.wapp.repository.entity.TXfTaxCodeRiversandEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * @author mashaopeng@xforceplus.com
  */
 @RestController
+@RequiredArgsConstructor
+@RequestMapping(EnhanceApiV1.BASE_PATH)
 public class UpcMockController {
-    private final UpcTestDao upcTestDao;
+    private final WappHostClient wappHostClient;
+    private final TaxCodeRiversandServiceImpl taxCodeRiversandService;
 
-    public UpcMockController(UpcTestDao upcTestDao) {
-        this.upcTestDao = upcTestDao;
+    @GetMapping("/findNbrs")
+    public Map<String, Object> sendUpc(@RequestParam Set<String> nbrs) {
+        Mono<List<NbrRsp.HyperNbr>> hyper = wappHostClient.findHyperByNbrs(nbrs);
+        Mono<List<NbrRsp.SamsNbr>> sams = wappHostClient.findSamsByNbrs(nbrs);
+        return new HashMap<String, Object>() {{
+            put("hyper", hyper.block());
+            put("sams", sams.block());
+        }};
     }
-
-    @AuthIgnore
-    @PostMapping("/item-oe/findByNbrs")
-    public UpcRsp findByNbrs(@RequestBody UpcVo vo) {
-        String itemNo = "";
-        List<UpcTest> list = upcTestDao.selectList(new QueryWrapper<>());
-        for (UpcTest test : list) {
-            if (vo.nbrs.contains(test.getUpc())) {
-                 itemNo = test.getItemNo();
-                 break;
-            }
-        }
-        UpcRsp upcRsp = new UpcRsp();
-        if (StringUtils.isNotBlank(itemNo)) {
-            upcRsp.setCode("1");
-            upcRsp.setMessage("成功");
-            UpcRsp.UpcVO upcVO = new UpcRsp.UpcVO();
-            upcVO.setItemNo(itemNo);
-            upcRsp.setResult(upcVO);
-        } else {
-            upcRsp.setCode("0");
-            upcRsp.setMessage("未查到数据");
-        }
-        return upcRsp;
-    }
-
-    @Data
-    public static class UpcVo {
-        private List<String> nbrs;
+    @GetMapping("/list")
+    public List<TXfTaxCodeRiversandEntity> listTaxCode(@RequestParam(required = false) String time) {
+        ArrayList<TXfTaxCodeRiversandEntity> list = new ArrayList<>();
+        taxCodeRiversandService.getRiverSandTaxCode(time, list::addAll);
+        return list;
     }
 }

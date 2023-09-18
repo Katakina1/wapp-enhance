@@ -30,7 +30,7 @@ public enum TXfDeductStatusEnum {
     EPD_NO_MATCH_BLUE_INVOICE(303, "EPD单:待匹配蓝票"),
     EPD_DESTROY(304, "EPD单:已作废"),
 
-    LOCK(1, " 已锁定"),
+    LOCK(1, "锁定"),
     UNLOCK(0, "解锁"),
     ;
 
@@ -44,7 +44,7 @@ public enum TXfDeductStatusEnum {
         this.desc = desc;
     }
 
-    public static TXfDeductStatusEnum getEnumByCode(@NonNull Integer code) {
+    public static TXfDeductStatusEnum getEnumByCode(Integer code) {
         return Stream.of(TXfDeductStatusEnum.values())
                 .filter(t -> t.getCode().equals(code)).findFirst().orElseGet( null);
     }

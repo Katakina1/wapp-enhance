@@ -11,21 +11,23 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 
-@Mapper
+@Mapper(uses = BaseConverter.class, imports = {BigDecimal.class})
 public interface TXfOriginClaimItemSamsEntityConvertor {
 
     TXfOriginClaimItemSamsEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginClaimItemSamsEntityConvertor.class);
 
     @Mapping(source = "primaryDesc", target = "cnDesc")
     @Mapping(source = "itemTaxPct", target = "taxRate")
-    @Mapping(target = "amountWithoutTax", expression = "java(parse(tXfOriginClaimItemSamsEntity.getShipCost(),0))")
+    @Mapping(target = "amountWithoutTax", expression = "java(calcPrice(tXfOriginClaimItemSamsEntity.getShipQty(),tXfOriginClaimItemSamsEntity.getShipCost()))")
     @Mapping(source = "itemNbr", target = "itemNo")
+    @Mapping(source = "itemNbr", target = "itemNbr")
     @Mapping(source = "rtnDate", target = "verdictDate", dateFormat = "yyyy/MM/dd")
     // @Mapping(source = "shipRetail", target = "")
     @Mapping(source = "deptNbr", target = "deptNbr")
     // @Mapping(source = "claimNumber", target = "")
-    @Mapping(source = "vendorNumber", target = "sellerNo")
-    @Mapping(source = "storeNbr", target = "storeNbr")
+    @Mapping( target = "sellerNo" ,expression = "java(com.xforceplus.wapp.common.utils.CommonUtil.fillZero(tXfOriginClaimItemSamsEntity.getVendorNumber()))")
+//    @Mapping(source = "storeNbr", target = "storeNbr")
+    @Mapping(target = "storeNbr",expression = "java(com.xforceplus.wapp.common.utils.CommonUtil.fillZero(tXfOriginClaimItemSamsEntity.getStoreNbr()))")
     @Mapping(source = "unit", target = "unit")
     // @Mapping(source = "vendorTaxIdChc", target = "")
     // @Mapping(source = "vendorName", target = "")
@@ -34,7 +36,9 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
     @Mapping(source = "shipQty", target = "quantity")
     @Mapping(source = "claimNumber", target = "claimNo")
     // @Mapping(source = "oldItem", target = "")
-    @Mapping(target = "price", expression = "java(calcPrice(tXfOriginClaimItemSamsEntity.getShipQty(),tXfOriginClaimItemSamsEntity.getShipCost()))")
+    @Mapping(target = "price",
+            expression = "java(parse(tXfOriginClaimItemSamsEntity.getShipCost(),0))"
+            )
     /**
      * @param tXfOriginClaimItemSamsEntity
      * @return
@@ -52,7 +56,7 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
         DecimalFormat format = new DecimalFormat();
         format.setParseBigDecimal(true);
         ParsePosition position = new ParsePosition(positionIndex);
-        return (BigDecimal) format.parse(number, position);
+        return ((BigDecimal) format.parse(number, position)).abs();
     }
 
     /**
@@ -63,8 +67,9 @@ public interface TXfOriginClaimItemSamsEntityConvertor {
      * @return
      */
     default BigDecimal calcPrice(String shipQty, String shipCost) {
-        BigDecimal amountWithoutTax = parse(shipCost, 0);
+        BigDecimal price = parse(shipCost, 0);
         BigDecimal quantity = parse(shipQty, 0);
-        return amountWithoutTax.divide(quantity, 15, RoundingMode.HALF_UP).abs();
+        return price.multiply(quantity).setScale(2,RoundingMode.HALF_UP);
     }
 }
+

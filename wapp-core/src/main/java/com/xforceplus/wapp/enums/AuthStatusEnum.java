@@ -32,5 +32,12 @@ public enum AuthStatusEnum {
         return null;
     }
 
-
+    public static String getCode(String code) {
+        for (AuthStatusEnum ele : values()) {
+            if (ele.getDescription().equals(code)) {
+                return ele.getCode();
+            }
+        }
+        return null;
+    }
 }

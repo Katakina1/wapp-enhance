@@ -1,22 +1,25 @@
 package com.xforceplus.wapp.modules.settlement.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendListRequest;
-import com.xforceplus.wapp.modules.deduct.dto.InvoiceRecommendResponse;
+import com.xforceplus.wapp.modules.deduct.dto.*;
 import com.xforceplus.wapp.modules.deduct.mapstruct.InvoiceRecommendMapper;
 import com.xforceplus.wapp.modules.deduct.service.AgreementBillService;
-import com.xforceplus.wapp.modules.recordinvoice.mapstruct.InvoiceDtoMapper;
+import com.xforceplus.wapp.modules.deduct.service.DeductBlueInvoiceService;
+import com.xforceplus.wapp.modules.settlement.converters.SettlementItemConverter;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.dao.TXfSettlementExtDao;
 import com.xforceplus.wapp.repository.daoExt.RecordInvoiceDetailExtDao;
+import com.xforceplus.wapp.repository.daoExt.SettlementExtDao;
+import com.xforceplus.wapp.repository.vo.SettlementRedVo;
 import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
@@ -48,9 +51,11 @@ public class SettlementService {
 
     @Autowired
     private TDxRecordInvoiceDao tDxRecordInvoiceDao;
+    @Autowired
+    private SettlementItemConverter settlementItemConverter;
 
     @Autowired
-    private InvoiceDtoMapper invoiceMapper;
+    private SettlementExtDao settlementExtDao;
 
     @Autowired
     private CompanyService companyService;
@@ -60,7 +65,8 @@ public class SettlementService {
 
     @Autowired
     private TXfSettlementDao tXfSettlementDao;
-
+    @Autowired
+    private DeductBlueInvoiceService deductBlueInvoiceService;
 
     public List<TXfSettlementEntity> querySettlementByStatus(Long id, Integer status, Integer limit ) {
         return settlementDao.querySettlementByStatus(status, id, limit);
@@ -78,8 +84,6 @@ public class SettlementService {
         return result;
     }
 
-
-
     public TXfSettlementEntity getById(Long id){
         return settlementDao.selectById(id);
     }
@@ -92,9 +96,7 @@ public class SettlementService {
 //            throw new EnhanceRuntimeException("结算单:[" + settlementId + "]不存在");
 //        }
 
-        BigDecimal taxRate = request.getTaxRate();
-        taxRate=taxRate.compareTo(BigDecimal.ONE) < 0 ? taxRate.movePointRight(2) : taxRate;
-        taxRate=AgreementBillService.convertTaxRate(TXfDeductionBusinessTypeEnum.EPD_BILL,taxRate);
+        BigDecimal taxRate = AgreementBillService.switchToTargetTaxRate(request.getTaxRate(),false,null);
         final String taxRateStr = taxRate.toPlainString();
         final String sellerNo = request.getSellerNo();
         final TAcOrgEntity purchaserOrg = companyService.getByOrgCode(request.getPurchaserNo(), false);
@@ -116,7 +118,7 @@ public class SettlementService {
                     s->s.isNull(TDxRecordInvoiceEntity::getRemainingAmount
             ));
         });
-        wrapper.orderByAsc(TDxRecordInvoiceEntity::getInvoiceDate);
+        wrapper.orderByDesc(TDxRecordInvoiceEntity::getInvoiceDate);
 
         Page<TDxRecordInvoiceEntity> page=new Page<>(request.getPage(),request.getSize());
 
@@ -127,9 +129,28 @@ public class SettlementService {
             final List<InvoiceRecommendResponse> collect = new ArrayList<>();
             for (TDxRecordInvoiceEntity entity : entityPage.getRecords()) {
                 InvoiceRecommendResponse x = invoiceRecommendMapper.toDto(entity);
-                final List<TDxRecordInvoiceDetailEntity> details = this.recordInvoiceDetailExtDao.selectTopGoodsName(5, x.getInvoiceCode() + x.getInvoiceNo());
+                //获取发票明细
+                String uuid = x.getInvoiceCode() + x.getInvoiceNo();
+                List<MatchedInvoiceDetailBean> detailList = deductBlueInvoiceService.gainInvoiceRecommendDetailList(entity);
+//                x.setDetailList(detailList);
+
+                List<String> goodsNameList = new ArrayList<>();
+                if (CollectionUtils.isNotEmpty(detailList)){
+                    for (MatchedInvoiceDetailBean detail : detailList){
+                        if (StringUtils.isNotBlank(detail.getGoodsName())
+                                && !goodsNameList.contains(detail.getGoodsName())){
+                            goodsNameList.add(detail.getGoodsName());
+                        }
+                        if (goodsNameList.size()>=5){
+                            break;
+                        }
+                    }
+                }
+                x.setGoodsName(String.join(",",goodsNameList));
+                /*final List<TDxRecordInvoiceDetailEntity> details = this.recordInvoiceDetailExtDao.selectTopGoodsName(5, x.getInvoiceCode() + x.getInvoiceNo());
                 final String goodsName = details.stream().map(TDxRecordInvoiceDetailEntity::getGoodsName).collect(Collectors.joining(","));
-                x.setGoodsName(goodsName);
+                x.setGoodsName(goodsName);*/
+
                 collect.add(x);
             }
             dtos.addAll(collect);
@@ -138,4 +159,12 @@ public class SettlementService {
     }
 
 
+    public PageResult<SettmentRedListResponse> redList(SettmentRedListRequest request) {
+        Page<SettlementRedVo> page = settlementExtDao.redList(new Page(request.getPage(), request.getSize()),
+                request.getSellerNo(), request.getQsStatus(),
+                request.getSettlementNo(), request.getRedNotification());
+        List<SettmentRedListResponse> list = settlementItemConverter.mapList(page.getRecords());
+
+        return PageResult.of(list, page.getTotal(), page.getCurrent(), page.getSize());
+    }
 }

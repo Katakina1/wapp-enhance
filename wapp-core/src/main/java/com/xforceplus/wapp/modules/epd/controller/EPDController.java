@@ -18,6 +18,8 @@ import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.service.CommEpdService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,7 +53,7 @@ public class EPDController {
     public R summary(DeductListRequest request) {
         request.setTaxRate(null);
         //只显示未超期的数据列表
-        request.setOverdue(0);
+//        request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
         final List<SummaryResponse> summary = deductService.summary(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
@@ -62,7 +64,7 @@ public class EPDController {
     @ApiOperation(value = "EPD列表")
     public R epds( DeductListRequest request) {
         //只显示未超期的数据列表
-        request.setOverdue(0);
+//        request.setOverdue(0);
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
         final PageResult<DeductListResponse> page = deductService.deductByPage(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
@@ -79,11 +81,12 @@ public class EPDController {
     public R makeSettlement(@RequestBody MakeSettlementRequest request){
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
+/*        final TXfSettlementEntity tXfSettlementEntity = deductService.makeSettlement(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
         Map<String, Object> map=new HashMap<>();
         map.put("settlementId",tXfSettlementEntity.getId());
         map.put("settlementNo",tXfSettlementEntity.getSettlementNo());
-        return R.ok(map, "结算单生成完毕");
+        return R.ok(map, "结算单生成完毕");*/
+        return R.fail("EPD生成结算单功能已下线");
     }
 
     @PostMapping("pre-settlement")
@@ -91,13 +94,27 @@ public class EPDController {
     public R preSettlement(@RequestBody PreMakeSettlementRequest request) {
         final String usercode = UserUtil.getUser().getUsercode();
         request.setSellerNo(usercode);
-        final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
-        return R.ok(matchedInvoice);
+        /*final List<MatchedInvoiceListResponse> matchedInvoice = deductService.getMatchedInvoice(request, TXfDeductionBusinessTypeEnum.EPD_BILL);
+        return R.ok(matchedInvoice);*/
+        return R.fail("EPD预匹配发票功能已下线");
     }
 
     @PostMapping("cancel-settlement")
     public R cancelSettlement(@RequestBody SettlementCancelRequest request){
         commEpdService.destroyEpdSettlement(request.getSettlementId());
         return R.ok("结算单取消成功");
+    }
+    
+    @ApiOperation(value = "EPD业务单导出")
+    @PostMapping("/export")
+    public R<Object> export(@ApiParam(value = "EPD业务单导出请求" ,required=true )@RequestBody DeductListRequest request) {
+    	request.setSize(99999);
+        request.setSellerNo(UserUtil.getUser().getUsercode());
+    	request.setBusinessType(TXfDeductionBusinessTypeEnum.EPD_BILL.getValue());
+        if(deductService.export(request)){
+            return R.ok("单据导出正在处理，请在消息中心");
+        }else{
+            return R.fail("导出任务添加失败");
+        }
     }
 }

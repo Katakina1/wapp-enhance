@@ -1,22 +1,22 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import java.util.Date;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.util.Date;
 /**
  * <p>
     * 业务单据明细信息
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-25
+ * @since 2021-12-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -188,14 +188,23 @@ public class TXfBillDeductItemEntity extends BaseEntity {
     @TableField("claim_no")
     private String claimNo;
 
+    /**
+     * 主键
+     */
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
+
     @TableField("create_time")
     private Date createTime;
 
-    @TableField("update_time")
+    @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    /**
+     * 规格型号
+     */
+    @TableField("item_spec")
+    private String itemSpec;
 
 
     public static final String VERDICT_DATE = "verdict_date";
@@ -252,10 +261,12 @@ public class TXfBillDeductItemEntity extends BaseEntity {
 
     public static final String CLAIM_NO = "claim_no";
 
+    public static final String ID = "id";
+
     public static final String CREATE_TIME = "create_time";
 
     public static final String UPDATE_TIME = "update_time";
 
-    public static final String ID = "id";
+    public static final String ITEM_SPEC = "item_spec";
 
 }

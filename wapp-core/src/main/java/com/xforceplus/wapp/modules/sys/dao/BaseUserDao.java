@@ -21,6 +21,11 @@ public interface BaseUserDao {
     UserEntity queryObject(@Param("schemaLabel") String schemaLabel, @Param("userId") Long userId);
 
     /**
+     *1：根据usercode查询用户信息
+     */
+    List<UserEntity> queryByUsercode(@Param("schemaLabel") String schemaLabel, @Param("usercode") String usercode);
+    
+    /**
      * 根据条件查询用户
      */
     List<UserEntity> queryList(@Param("schemaLabel") String schemaLabel, @Param("entity") UserEntity query);
@@ -99,3 +104,4 @@ public interface BaseUserDao {
      */
     String getOrgtypes(Long userid);
 }
+

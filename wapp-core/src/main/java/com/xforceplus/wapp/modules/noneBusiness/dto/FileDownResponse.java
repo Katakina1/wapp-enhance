@@ -23,4 +23,6 @@ public class FileDownResponse implements Serializable {
 
     @ApiModelProperty("ofd提交数量")
     private Integer ofdSubmit;
+    @ApiModelProperty("xml提交数量")
+    private Integer xmlSubmit;
 }

@@ -1,6 +1,7 @@
 package com.xforceplus.wapp;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
@@ -15,9 +16,9 @@ import java.io.InputStreamReader;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {WappApplication.class,ClientFactoryMockConfig.class})
 @Slf4j
-@ActiveProfiles({"local","unit"})
-@Rollback
-@Transactional
+@ActiveProfiles({"local"/*,"unit"*/})
+//@Rollback
+//@Transactional
 //@TestExecutionListeners({TransactionalTestExecutionListener.class})
 public class BaseUnitTest {
 

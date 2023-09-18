@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadDetailTaxCodeDto;
 import com.xforceplus.wapp.repository.entity.TXfNoneBusinessUploadQueryDto;
 import org.apache.ibatis.annotations.Param;
 
@@ -26,5 +27,7 @@ public interface TXfNoneBusinessUploadDetailDao extends BaseMapper<TXfNoneBusine
     public List<TXfNoneBusinessUploadDetailDto> list(@Param("entity") TXfNoneBusinessUploadQueryDto dto);
 
     public List<TXfNoneBusinessUploadDetailDto> getByIds(@Param("list") List<Long> ids);
+
+    public List<TXfNoneBusinessUploadDetailTaxCodeDto> queryTaxCodeList();
 
 }

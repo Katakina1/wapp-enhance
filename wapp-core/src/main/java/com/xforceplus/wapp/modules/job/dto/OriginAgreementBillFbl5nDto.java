@@ -73,7 +73,7 @@ public class OriginAgreementBillFbl5nDto {
     @ExcelProperty("Text")
     private String text;
 
-    @ExcelProperty("Tax code")
+    @ExcelProperty(index = 15)
     @Length(max = 20)
     private String taxCode;
 

@@ -1,6 +1,7 @@
 package com.xforceplus.wapp.modules.statement.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.xforceplus.wapp.modules.deduct.dto.QueryDeductBaseResponse;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,15 @@ public class Settlement {
     @ApiModelProperty("唯一id")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
+
+    @ApiModelProperty("业务单号")
+    private String businessNo;
+
+    /**
+     * 红字信息表编号
+     */
+    @ApiModelProperty("红字信息表编号")
+    private String redNotificationNo;
 
     @ApiModelProperty("销方编码，供应商编码")
     private String sellerNo;
@@ -102,6 +112,37 @@ public class Settlement {
     @ApiModelProperty("税率")
     private BigDecimal taxRate;
 
+    @ApiModelProperty("创建时间")
+    private Long createTime;
+
     @ApiModelProperty("更新时间")
     private Long updateTime;
+
+    @ApiModelProperty("撤销原因")
+    private String revertRemark;
+
+    @ApiModelProperty("审核状态 1-待审核 2-审核通过 3-审核不通过")
+    private Integer approveStatus;
+
+    @ApiModelProperty("审核类型 1-开票金额修改 2-金额有误 3-蓝冲")
+    private Integer approveType;
+
+    @ApiModelProperty("审核备注")
+    private String approveRemark;
+
+    @ApiModelProperty("审核时间")
+    private Long approveTime;
+
+    @ApiModelProperty("提交审核时间")
+    private Long approveRequestTime;
+
+    @ApiModelProperty("tab页标签 00：全部；01:待确认;02:待开票;03:部分开票;04:已开票;05:已完成;06:待审核;07:已撤销")
+    private QueryTabResp queryTab;
+
+    @Data
+    @AllArgsConstructor
+    public static class QueryTabResp {
+        private String code;
+        private String message;
+    }
 }

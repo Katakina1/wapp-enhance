@@ -15,14 +15,21 @@ public class SummaryResult {
     private Integer applied;
     @ApiModelProperty("待审核")
     private Integer waitApprove;
+
+    @ApiModelProperty("已撤销")
+    private Integer appliedCancel;
     @ApiModelProperty("全部")
     private Integer total;
+    @ApiModelProperty("供应商直接删除的数据")
+    private Integer sellerDel;
 
-    public SummaryResult(Integer applyPending, Integer applying, Integer applied, Integer waitApprove, Integer total) {
+    public SummaryResult(Integer applyPending, Integer applying, Integer applied, Integer waitApprove, Integer total, Integer sellerDel,Integer appliedCancel) {
         this.applyPending = applyPending;
         this.applying = applying;
         this.applied = applied;
         this.waitApprove = waitApprove;
         this.total = total;
+        this.sellerDel = sellerDel;
+        this.appliedCancel=appliedCancel;
     }
 }

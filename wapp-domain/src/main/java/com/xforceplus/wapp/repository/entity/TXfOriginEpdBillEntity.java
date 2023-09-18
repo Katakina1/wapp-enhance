@@ -106,6 +106,17 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
     @TableField("text")
     private String text;
 
+    /**
+     * 数据校验状态；0:正常;1:异常
+     */
+    @TableField("check_status")
+    private Integer checkStatus;
+
+    /**
+     * 数据校验异常信息
+     */
+    @TableField("check_remark")
+    private String checkRemark;
 
     public static final String JOB_ID = "job_id";
 
@@ -151,4 +162,7 @@ public class TXfOriginEpdBillEntity extends BaseEntity {
 
     public static final String TEXT = "text";
 
+    public static final String CHECK_STATUS = "check_status";
+
+    public static final String CHECK_REMARK = "check_remark";
 }

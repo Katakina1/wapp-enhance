@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.common.utils;
 
+import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -23,6 +24,26 @@ public class CommonUtil {
 
     private static String[] fpdmlist = {"144031539110", "131001570151", "133011501118", "111001571071"};
 
+    public static boolean isEdit(Long id) {
+        return id != null && id > 0L;
+    }
+
+    /**
+     * 字符创转成Long
+     *
+     * @param value
+     * @return
+     */
+    public static Long toLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+        try {
+            return Long.valueOf(value.toString());
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
 
     /**
      * 根据发票代码获取发票类型
@@ -156,4 +177,25 @@ public class CommonUtil {
         String reg = "^[0-9]+(.[0-9]+)?$";
         return reStr.matches(reg);
     }
+
+    public static void assertFalse(boolean expression,String message){
+        if (expression){
+            throw new EnhanceRuntimeException(message);
+        }
+    }
+
+    //供应商编号小于6位数前面补0
+	public static String fillZero(String sellerNo) {
+		if (StringUtils.isNotBlank(sellerNo)) {
+			final int length = sellerNo.length();
+			if (length < 6) {
+				StringBuilder stringBuilder = new StringBuilder();
+				for (int i = length; i < 6; i++) {
+					stringBuilder.append("0");
+				}
+				sellerNo = stringBuilder.append(sellerNo).toString();
+			}
+		}
+		return sellerNo;
+	}
 }

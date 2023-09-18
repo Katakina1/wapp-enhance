@@ -16,7 +16,7 @@ import java.util.List;
 @Mapper
 public interface RecordInvoiceDetailExtDao {
 
-    @Select("select top (#{size}) goods_name,uuid from t_dx_record_invoice_detail where uuid = #{uuid}")
+    @Select("select top (${size}) goods_name,uuid from t_dx_record_invoice_detail where uuid = #{uuid}")
     List<TDxRecordInvoiceDetailEntity> selectTopGoodsName(@Param("size") int size, @Param("uuid")String  uuid);
 
     @Select("select goods_name,uuid from t_dx_record_invoice_detail where uuid in (#{uuid})")

@@ -1,22 +1,27 @@
 package com.xforceplus.wapp.modules.rednotification.mapstruct;
 
 
-import com.alibaba.excel.annotation.ExcelProperty;
+import com.xforceplus.wapp.converters.BaseConverter;
+import com.xforceplus.wapp.modules.rednotification.model.RedNotificationItem;
 import com.xforceplus.wapp.modules.rednotification.model.RedNotificationMain;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ExportInfo;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ExportItemInfo;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
-import com.xforceplus.wapp.repository.entity.*;
-import org.mapstruct.*;
-import com.xforceplus.wapp.modules.rednotification.model.*;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationDetailEntity;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-
-import java.util.Date;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {RedNotificationFactory.class},imports = { ConvertHelper.class})
+@Mapper(componentModel = "spring", uses = {BaseConverter.class, RedNotificationFactory.class},imports = { ConvertHelper.class})
 public interface RedNotificationMainMapper {
-
+    @Mapping(target = "originInvoiceNo", source = "originalInvoiceNo")
+    @Mapping(target = "originInvoiceCode", source = "originalInvoiceCode")
+    //下面这行可能存在历史错误行未注释
+//    @Mapping(target = "invoiceDate", source = "originalInvoiceDate")
+    @Mapping(target = "originInvoiceDate", source = "originalInvoiceDate")
     TXfRedNotificationEntity mainInfoToEntity(RedNotificationMain rednotificationMain);
 
     @InheritInverseConfiguration(name = "mainInfoToEntity")
@@ -55,6 +60,11 @@ public interface RedNotificationMainMapper {
     @Mapping(target = "serialNo", source = "sellerNumber")
     @Mapping(target = "applyPerson", source = "userName")
     @Mapping(target = "applyPersonTel", source = "tel")
+    @Mapping(target = "oilMemo", source = "oliApplyReason")
+    @Mapping(target = "originInvoiceType", source = "originInvoiceType")
+    @Mapping(target = "originalInvoiceCode", source = "originInvoiceCode")
+    @Mapping(target = "originalInvoiceNo", source = "originInvoiceNo")
+    @Mapping(target = "originalInvoiceDate", source = "invoiceDate")
     RedNotificationMain importInfoToMainEntity(ImportInfo importInfo);
 
     List<RedNotificationItem> importInfoListToItemEntityList(List<ImportInfo> importInfoList);
@@ -62,3 +72,4 @@ public interface RedNotificationMainMapper {
     @Mapping(target = "taxRate", expression = "java(ConvertHelper.handleTaxRate(importInfo.getTaxRate()))")
     RedNotificationItem importInfoToRedNotificationItem(ImportInfo importInfo);
 }
+

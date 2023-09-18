@@ -14,10 +14,5 @@ public class DeductBillExportDto {
     private DeductExportRequest request;
     private Long logId;
     private Long userId;
-
-
-    /**
-     *
-     */
     private String loginName;
 }

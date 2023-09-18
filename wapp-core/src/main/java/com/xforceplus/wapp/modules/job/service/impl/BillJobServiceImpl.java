@@ -1,21 +1,18 @@
 package com.xforceplus.wapp.modules.job.service.impl;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.chain.Context;
+import org.apache.commons.lang.math.NumberUtils;
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
 import com.xforceplus.wapp.modules.job.service.BillJobService;
 import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
-import org.apache.commons.chain.Context;
-import org.apache.commons.lang.math.NumberUtils;
-import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static com.xforceplus.wapp.enums.BillJobLockStatusEnum.UNLOCKED;
 
 /**
  * @program: wapp-generator
@@ -32,8 +29,9 @@ public class BillJobServiceImpl extends ServiceImpl<TXfBillJobDao, TXfBillJobEnt
                 new QueryWrapper<TXfBillJobEntity>()
                         .lambda()
                         .eq(TXfBillJobEntity::getJobType, jobType)
+                        //.eq(TXfBillJobEntity::getId, 1699)
                         .ne(TXfBillJobEntity::getJobStatus, BillJobStatusEnum.DONE.getJobStatus())
-                        .orderByAsc(TXfBillJobEntity::getCreateTime)
+                        .orderByDesc(TXfBillJobEntity::getCreateTime)
         );
     }
 

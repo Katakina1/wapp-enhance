@@ -12,8 +12,8 @@ import lombok.Data;
 public class SpecialCompanyBlackImportDto {
 
 
-    @ExcelProperty(value = "供应商编号", index = 0)
-    private String sapNo;
+    @ExcelProperty(value = "供应商6D", index = 0)
+    private String supplier6d;
 
 
     @ExcelProperty(value = "供应商名称", index = 1)

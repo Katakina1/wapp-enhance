@@ -10,28 +10,29 @@ public class Response<T> {
     public Response() {
     }
 
-    public static Response ok(String message) {
-        Response response = new Response();
-        response.setCode(OK);
-        response.setMessage(message);
-        return response;
-    }
+	public static <T> Response<T> ok(String message) {
+		Response<T> response = new Response<>();
+		response.setCode(OK);
+		response.setMessage(message);
+		return response;
+	}
 
-    public static <T> Response ok(String message, T result) {
-        Response response = new Response();
-        response.setCode(OK);
-        response.setMessage(message);
-        response.result = result;
-        return response;
-    }
+	public static <T> Response<T> ok(String message, T result) {
+		Response<T> response = new Response<>();
+		response.setCode(OK);
+		response.setMessage(message);
+		response.result = result;
+		return response;
+	}
 
-    public static Response failed(String message) {
-        Response response = new Response();
-        response.setCode(Fail);
-        response.setMessage(message);
-        return response;
-    }
+	public static <T> Response<T> failed(String message) {
+		Response<T> response = new Response<>();
+		response.setCode(Fail);
+		response.setMessage(message);
+		return response;
+	}
 
+    @SuppressWarnings("rawtypes")
     public static Response from(Integer code, String message) {
         Response response = new Response();
         response.setCode(code);
@@ -39,6 +40,7 @@ public class Response<T> {
         return response;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <T> Response<T> from(Integer code, String message, T result) {
         Response response = new Response();
         response.setCode(code);

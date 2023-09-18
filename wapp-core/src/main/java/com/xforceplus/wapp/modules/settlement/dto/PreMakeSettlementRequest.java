@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.settlement.dto;
 
+import com.xforceplus.wapp.modules.deduct.model.DeductInvoiceDetailData;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -25,6 +26,10 @@ public class PreMakeSettlementRequest {
     private BigDecimal taxRate;
     @ApiModelProperty
     private List<Long> billIds;
+    @ApiModelProperty(value = "匹配指定蓝票ID列表")
+    private List<Long> invoiceIds;
+    @ApiModelProperty(value = "匹配指定蓝票明细列表")
+    private List<DeductInvoiceDetailData> detailDataList;
 
     @ApiModelProperty(hidden = true)
     private String sellerNo;

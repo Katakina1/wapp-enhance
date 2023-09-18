@@ -63,10 +63,10 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
      *
      * @param entityList 实体对象集合
      */
-    @Transactional(rollbackFor = Exception.class)
+/*    @Transactional(rollbackFor = Exception.class)
     public boolean withdrawRemainingAmountById(Collection<TDxRecordInvoiceEntity> entityList) {
         return updateBatchById(entityList, DEFAULT_BATCH_SIZE);
-    }
+    }*/
 
     /**
      * 根据id将入参实体的剩余金额加回到原发票上
@@ -75,7 +75,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
      * @param batchSize
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
+/*    @Transactional(rollbackFor = Exception.class)
     public boolean withdrawRemainingAmountById(List<TDxRecordInvoiceEntity> entityList, int batchSize) {
         String sqlStatement = "update t_dx_record_invoice set remaining_amount = remaining_amount + #{remainingAmount} where id = #{id}";
         return executeBatch(entityList, batchSize,
@@ -85,13 +85,13 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
                     sqlSession.update(sqlStatement, param);
                 }
         );
-    }
+    }*/
 
 
     /**
      * 保存结算单匹配的蓝票
      */
-    @Transactional
+  /*  @Transactional
     public void saveSettlementMatchedInvoice(Long settlementId, InvoiceMatchedRequest request) {
         TXfSettlementEntity tXfSettlementEntity = settlementService.getById(settlementId);
         if (tXfSettlementEntity == null) {
@@ -135,9 +135,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             //处理结算单明细
             dealSettlementItem(tXfSettlementEntity, tDxInvoice, useAmount);
         });
-    }
+    }*/
 
-    private void releaseSettlementItemAndInvoice(TXfSettlementEntity tXfSettlementEntity) {
+   /* private void releaseSettlementItemAndInvoice(TXfSettlementEntity tXfSettlementEntity) {
         LambdaQueryWrapper<TXfBillDeductInvoiceEntity> tXfBillDeductInvoiceWrapper = new LambdaQueryWrapper<>();
         tXfBillDeductInvoiceWrapper
                 .eq(TXfBillDeductInvoiceEntity::getBusinessNo, tXfSettlementEntity.getSettlementNo())
@@ -165,9 +165,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         QueryWrapper<TXfSettlementItemEntity> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(TXfSettlementItemEntity.SETTLEMENT_NO, tXfSettlementEntity.getSettlementNo());
         tXfSettlementItemDao.delete(queryWrapper);
-    }
+    }*/
 
-    private void dealSettlementBillDeductInvoice(TXfSettlementEntity tXfSettlementEntity,
+   /* private void dealSettlementBillDeductInvoice(TXfSettlementEntity tXfSettlementEntity,
                                                  TDxRecordInvoiceEntity tDxInvoice,
                                                  BigDecimal useAmount, BigDecimal remainingAmount) {
         //保存的匹配蓝票
@@ -187,9 +187,9 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         updateTDxInvoiceEntity.setId(tDxInvoice.getId());
         updateTDxInvoiceEntity.setRemainingAmount(remainingAmount);
         this.baseMapper.updateById(updateTDxInvoiceEntity);
-    }
+    }*/
 
-    private void dealSettlementItem(TXfSettlementEntity tXfSettlementEntity,
+   /* private void dealSettlementItem(TXfSettlementEntity tXfSettlementEntity,
                                     TDxRecordInvoiceEntity tDxInvoice,
                                     BigDecimal useAmount) {
         //匹配计算单明细
@@ -226,7 +226,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
             tXfSettlementItemEntity = deductService.checkItem(tXfSettlementItemEntity);
             tXfSettlementItemDao.insert(tXfSettlementItemEntity);
         });
-    }
+    }*/
 
     /**
      * 判断底账匹配额度
@@ -234,7 +234,7 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
      * @param tXfSettlementEntity
      * @param request
      */
-    public void checkSettlementMatchedInvoice(TXfSettlementEntity tXfSettlementEntity, InvoiceMatchedRequest request) {
+    /*public void checkSettlementMatchedInvoice(TXfSettlementEntity tXfSettlementEntity, InvoiceMatchedRequest request) {
         List<CompletableFuture<BigDecimal>> addCompletableFutureList = request.getInvoiceList().stream().map(invoice ->
                 CompletableFuture.supplyAsync(() -> {
                     LambdaQueryWrapper<TDxRecordInvoiceEntity> wrapper = new LambdaQueryWrapper<>();
@@ -257,5 +257,5 @@ public class InvoiceServiceImpl extends ServiceImpl<TDxRecordInvoiceDao, TDxReco
         if (tXfSettlementEntity.getAmountWithoutTax().compareTo(addAmount) > 0) {
             throw new EnhanceRuntimeException("匹配额度少于结算需要的额度");
         }
-    }
+    }*/
 }

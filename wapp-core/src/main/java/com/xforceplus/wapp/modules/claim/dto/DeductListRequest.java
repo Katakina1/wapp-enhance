@@ -23,6 +23,8 @@ public class DeductListRequest {
     private String purchaserNo;
     @ApiModelProperty("索赔号/协议号/EPD号")
     private String billNo;
+    @ApiModelProperty("业务类型")
+    private Integer businessType;
     /**
      * 页码
      */
@@ -34,11 +36,16 @@ public class DeductListRequest {
     private String deductDateBegin;
     @ApiModelProperty("扣款日期结束时间，YYYY-MM-DD")
     private String deductDateEnd;
+    @ApiModelProperty("入库日期开始时间，YYYY-MM-DD")
+    private String createTimeBegin;
+    @ApiModelProperty("入库日期结束时间，YYYY-MM-DD")
+    private String createTimeEnd;
+
     @ApiModelProperty("定案日期开始时间，YYYY-MM-DD")
     private String verdictDateBegin;
     @ApiModelProperty("定案日期结束时间，YYYY-MM-DD")
     private String verdictDateEnd;
-    @ApiModelProperty("扣款发票号码，YYYY-MM-DD")
+    @ApiModelProperty("扣款发票号码")
     private String deductInvoice;
     @ApiModelProperty("税率，小数")
     private BigDecimal taxRate;
@@ -59,4 +66,13 @@ public class DeductListRequest {
 
     @ApiModelProperty(value = "协议类型")
     private String agreementReasonCode;
+    
+    @ApiModelProperty(value = "关联结算单号")
+    private String refSettlementNo;
+
+    @ApiModelProperty(value = "关联结算状态")
+    private Integer refSettlementStatus;
+    
+    @ApiModelProperty("红字信息表编号")
+    private String redNotificationNo;
 }

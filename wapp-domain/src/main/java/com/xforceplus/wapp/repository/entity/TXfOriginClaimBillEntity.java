@@ -148,6 +148,23 @@ public class TXfOriginClaimBillEntity extends BaseEntity {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
+    /**
+     * 数据校验状态；0:正常;1:异常
+     */
+    @TableField("check_status")
+    private Integer checkStatus;
+
+    /**
+     * 数据校验异常信息
+     */
+    @TableField("check_remark")
+    private String checkRemark;
+    
+    /**
+     * 1:数据合并ID,多个ID“,”隔开
+     */
+    @TableField("merge_id")
+    private String mergeId;
 
     public static final String JOB_ID = "job_id";
 
@@ -190,5 +207,11 @@ public class TXfOriginClaimBillEntity extends BaseEntity {
     public static final String UPDATE_TIME = "update_time";
 
     public static final String ID = "id";
+
+    public static final String CHECK_STATUS = "check_status";
+
+    public static final String CHECK_REMARK = "check_remark";
+    
+    public static final String MERGE_ID = "merge_id";
 
 }

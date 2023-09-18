@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -58,12 +57,13 @@ public class InvoiceVo {
         private String authSyncStatus;
         private String authTaxPeriod;
         private String authUse;
-        private String authBussiDate;
+        private String authTime;
+        private String checkTime;
         private BigDecimal effectiveTaxAmount;
-        private BigDecimal remainingAmount;
         @JsonProperty("purchaserInvoiceItemVOList")
         @JSONField(name = "purchaserInvoiceItemVOList")
         private List<InvoiceItemVO> items;
+        private InvoiceExtend invoiceExtend;
     }
 
     @NoArgsConstructor
@@ -86,5 +86,14 @@ public class InvoiceVo {
         private String vehicleType;
         private String tollStartDate;
         private String tollEndDate;
+
+        //额外属性，序号
+        private Integer sequence;
+    }
+    
+    @NoArgsConstructor
+    @Data
+    public static class InvoiceExtend {
+        private String newPurchaserTaxNo;
     }
 }

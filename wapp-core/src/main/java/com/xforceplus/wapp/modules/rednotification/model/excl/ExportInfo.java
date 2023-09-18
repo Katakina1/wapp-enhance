@@ -48,4 +48,28 @@ public class ExportInfo extends BaseRowModel {
     @ExcelProperty(value = "原发票类型", index = 12)
     private String originInvoiceType;
 
+    @ExcelProperty(value = "销方税号", index = 13)
+    private String sellerTaxNo;
+
+    @ExcelProperty(value = "购方税号", index = 14)
+    private String purchaserTaxNo;
+
+    @ExcelProperty(value = "申请时间", index = 15)
+    private String createDate;
+
+    @ExcelProperty(value = "申请成功日期", index = 16)
+    private String invoiceDate;
+
+    @ExcelProperty(value = "撤销时间", index = 17)
+    private String cancelTime;
+
+    @ExcelProperty(value = "业务类型", index = 18)
+    private String invoiceOrigin;
+
+    @ExcelProperty(value = "失败原因", index = 19)
+    private String applyRemark;
+
+    @ExcelProperty(value = "撤销原因", index = 20)
+    private String applyReason;
+
 }

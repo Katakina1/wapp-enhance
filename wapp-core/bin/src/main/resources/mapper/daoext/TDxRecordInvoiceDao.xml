@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao">
+
+    <select id="queryRecordInvByUuid" resultType="com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity">
+        SELECT
+            *,
+            (select top 1 user_name scanName from t_dx_invoice aa WITH(NOLOCK) where  aa.uuid = uuid)  as scanUser
+        FROM
+            t_dx_record_invoice
+        where uuid = #{uuid}
+    </select>
+
+</mapper>

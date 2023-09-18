@@ -8,7 +8,7 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.constants.Constants;
-import com.xforceplus.wapp.modules.backFill.service.FileService;
+import com.xforceplus.wapp.modules.backfill.service.FileService;
 import com.xforceplus.wapp.modules.rednotification.exception.RRException;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.modules.weekdays.dto.TXfMatchWeekdaysDto;
@@ -80,9 +80,9 @@ public class WeekDaysController {
         if (list == null || list.size() == 0) {
             return R.fail("请选中记录后保存");
         }
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         List<Date> weekList = list.stream().map(TXfMatchWeekdaysEntity::getWeekdays).collect(Collectors.toList());
-        QueryWrapper wrapperCode = new QueryWrapper<>();
+        QueryWrapper<TXfMatchWeekdaysEntity> wrapperCode = new QueryWrapper<>();
         wrapperCode.in(TXfMatchWeekdaysEntity.WEEKDAYS, weekList);
         List<TXfMatchWeekdaysEntity> resultList = weekDaysService.list(wrapperCode);
         Map<Date, Long> map = new HashMap<>();

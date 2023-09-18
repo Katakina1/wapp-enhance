@@ -24,13 +24,19 @@ import lombok.ToString;
 @TableName(value="t_xf_settlement_item")
 public class TXfSettlementItemEntity extends BaseEntity {
 
-    private static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
     /**
      * 结算单编码
      */
     @TableField("settlement_no")
     private String settlementNo;
+    
+    /**
+     * 业务单号，用来排序无实际用处
+     */
+    @TableField(exist = false)
+    private String businessNo;
 
     /**
      * 明细编码
@@ -71,13 +77,13 @@ public class TXfSettlementItemEntity extends BaseEntity {
     /**
      * 单价
      */
-    @TableField("unit_price")
+    @TableField(value = "unit_price",updateStrategy= FieldStrategy.IGNORED,insertStrategy = FieldStrategy.IGNORED)
     private BigDecimal unitPrice;
 
     /**
      * 数量
      */
-    @TableField("quantity")
+    @TableField(value = "quantity",updateStrategy= FieldStrategy.IGNORED,insertStrategy = FieldStrategy.IGNORED)
     private BigDecimal quantity;
 
     /**
@@ -179,6 +185,17 @@ public class TXfSettlementItemEntity extends BaseEntity {
     @TableField("create_user")
     private Long createUser;
 
+    /**
+     * 是否成品油
+     */
+    @TableField("is_oil")
+    private Integer isOil;
+
+    /**
+     * 业务单明细关系ID
+     */
+    @TableField("item_ref_id")
+    private Long itemRefId;
 
     public static final String SETTLEMENT_NO = "settlement_no";
 
@@ -205,6 +222,8 @@ public class TXfSettlementItemEntity extends BaseEntity {
     public static final String AMOUNT_WITHOUT_TAX = "amount_without_tax";
 
     public static final String TAX_AMOUNT = "tax_amount";
+
+    public static final String IS_OIL = "is_oil";
 
     public static final String TAX_RATE = "tax_rate";
 
@@ -235,5 +254,7 @@ public class TXfSettlementItemEntity extends BaseEntity {
     public static final String REMARK = "remark";
 
     public static final String CREATE_USER = "create_user";
+
+    public static final String ITEM_REF_ID="item_ref_id";
 
 }

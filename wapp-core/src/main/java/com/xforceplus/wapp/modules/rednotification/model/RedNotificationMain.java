@@ -115,6 +115,14 @@ public class RedNotificationMain {
      */
     @ApiModelProperty("special_invoice_flag")
     private Integer specialInvoiceFlag;
+    
+    /**
+     * 成品油操作类型(成品油时必填)
+	0-成品油涉及销售数量变更 （单位、数量和单价必填）
+	1-成品油仅涉及销售金额变更 （单位、数量和单价为空）
+     */
+    @ApiModelProperty("oil_memo")
+    private Integer oilMemo;
 
     /**
      * 客户编号
@@ -176,6 +184,10 @@ public class RedNotificationMain {
     @ApiModelProperty("撤销备注")
     private String revertRemark;
 
-
+    /**
+     * 撤销时间
+     */
+    @ApiModelProperty("撤销时间")
+    private Date cancelTime;
 
 }

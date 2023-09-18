@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.repository.dao.TXfBillDeductItemRefExtDao">
+  <select id="queryDeductIdBySettlementItemId"
+          resultType="com.xforceplus.wapp.repository.dto.DeductSettlementItemRefDto">
+
+    select r.*,i.id settlementItemId from t_xf_bill_deduct_item_ref r inner join t_xf_settlement_item i on i.item_ref_id=r.id
+    where i.id in
+    <foreach collection="items" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+    and r.status=0
+  </select>
+</mapper>

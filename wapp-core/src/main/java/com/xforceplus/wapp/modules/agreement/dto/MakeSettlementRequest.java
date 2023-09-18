@@ -1,10 +1,10 @@
 package com.xforceplus.wapp.modules.agreement.dto;
 
 import com.xforceplus.wapp.modules.settlement.dto.PreMakeSettlementRequest;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * @author malong@xforceplus.com
@@ -14,6 +14,8 @@ import java.util.List;
  **/
 @Setter
 @Getter
+@ApiModel
 public class MakeSettlementRequest extends PreMakeSettlementRequest {
-    private List<Long> invoiceIds;
+  @ApiModelProperty(value = "是否人工修改 Y-是(默认) N-否")
+  private String userModifyFlag;
 }

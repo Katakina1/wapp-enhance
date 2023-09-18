@@ -97,6 +97,43 @@ public class TXfInvoiceFileEntity extends BaseEntity {
     @TableField("status")
     private Integer status;
 
+    /**
+     * 供应商6d号
+     */
+    @TableField("vender_id")
+    private String venderId;
+
+    /**
+     * 业务id
+     * 费用上传填入 扫描表id
+     */
+    @TableField("business_id")
+    private String businessId;
+
+    /**
+     * 业务类型 费用填入cost
+     */
+    @TableField("busines_type")
+    private String businesType;
+
+    /**
+     * 文件类型 0-发票 1-附件
+     */
+    @TableField("file_type")
+    private String fileType;
+
+    /**
+     * 文件后缀名
+     */
+    @TableField("file_suffix")
+    private String fileSuffix;
+
+    /**
+     * 文件名称
+     */
+    @TableField("file_name")
+    private String fileName;
+
 
     public static final String ID = "id";
 

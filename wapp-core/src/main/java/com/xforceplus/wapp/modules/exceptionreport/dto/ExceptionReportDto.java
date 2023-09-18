@@ -127,4 +127,12 @@ public class ExceptionReportDto {
 
     @ApiModelProperty("成本金额/不含税金额")
     private BigDecimal amountWithoutTax;
+
+    @ApiModelProperty("税差")
+    private BigDecimal taxBalance;
+
+    @ApiModelProperty("处理状态，1未处理，2已处理，，3无需处理")
+    private Integer status;
+    @ApiModelProperty("备注")
+    private String remark;
 }

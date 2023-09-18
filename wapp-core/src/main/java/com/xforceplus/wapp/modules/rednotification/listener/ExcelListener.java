@@ -21,6 +21,8 @@ import com.xforceplus.wapp.modules.sys.entity.UserEntity;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.vavr.Tuple3;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -119,6 +121,9 @@ public class ExcelListener extends AnalysisEventListener<ImportInfo> {
 
             RedNotificationInfo redNotificationInfo = new RedNotificationInfo();
             RedNotificationMain redNotificationMain = redNotificationMainMapper.importInfoToMainEntity(importInfo.getValue().get(0));
+            if(redNotificationMain.getOilMemo() != null ) {
+            	redNotificationMain.setSpecialInvoiceFlag(2);
+            }
             //补充而外信息
             redNotificationMain.setInvoiceOrigin(InvoiceOrigin.IMPORT.getValue());
             redNotificationInfo.setRednotificationMain(redNotificationMain);
@@ -160,7 +165,7 @@ public class ExcelListener extends AnalysisEventListener<ImportInfo> {
             log.info("文件ftp路径{}",ftpFilePath);
 
             String localFilePath = ftpFilePath.substring(1);
-            File localFile = new File(localFilePath);
+            File localFile = FileUtils.getFile(localFilePath);
             if (!localFile.getParentFile().exists()) {
                 localFile.getParentFile().mkdirs();
             }

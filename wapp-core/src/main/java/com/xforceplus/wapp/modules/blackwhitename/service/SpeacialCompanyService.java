@@ -1,11 +1,37 @@
 package com.xforceplus.wapp.modules.blackwhitename.service;
 
+import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.ExcelExportUtil;
 import com.xforceplus.wapp.export.dto.ExceptionReportExportDto;
@@ -21,27 +47,11 @@ import com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService;
 import com.xforceplus.wapp.modules.ftp.service.FtpUtilService;
 import com.xforceplus.wapp.modules.rednotification.service.ExportCommonService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.repository.dao.TAcOrgDao;
 import com.xforceplus.wapp.repository.dao.TXfBlackWhiteCompanyDao;
+import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TDxExcelExportlogEntity;
 import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
-import io.vavr.control.Either;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.xforceplus.wapp.modules.exportlog.service.ExcelExportLogService.SERVICE_TYPE;
 
 /**
  * 黑白名单相关逻辑操作
@@ -63,6 +73,9 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
 
     @Autowired
     ExportCommonService exportCommonService;
+    
+    @Autowired
+    private TAcOrgDao orgDao;
 
     public SpeacialCompanyService(SpeacialCompanyConverter companyConverter) {
         this.companyConverter = companyConverter;
@@ -120,11 +133,11 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
      * @param file
      * @return
      */
-    public SpecialCompanyImportSizeDto importBlackData(MultipartFile file, String type) throws IOException {
+    public SpecialCompanyImportSizeDto importBlackData(InputStream excelInputStream, String type, String originalFilename) throws IOException {
         SpecialCompanyImportSizeDto sizeDto = new SpecialCompanyImportSizeDto();
         QueryWrapper wrapper = new QueryWrapper<>();
         SpeclialBlackCompanyImportListener listener = new SpeclialBlackCompanyImportListener(type);
-        EasyExcel.read(file.getInputStream(), SpecialCompanyBlackImportDto.class, listener).sheet().doRead();
+        EasyExcel.read(excelInputStream, SpecialCompanyBlackImportDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices()) && CollectionUtils.isEmpty(listener.getInvalidInvoices())) {
             sizeDto.setErrorMsg("未解析到数据");
             return sizeDto;
@@ -134,17 +147,35 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
         log.info("导入数据解析条数:{}", listener.getRows());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
-            List<TXfBlackWhiteCompanyEntity> validList = speacialBlackCompanyConverter.reverse(listener.getValidInvoices(), UserUtil.getUserId());
+    //过滤出税号+6d去重后的数据
+            List<SpecialCompanyBlackImportDto> supplierCodeList = listener.getValidInvoices().stream().collect(Collectors.collectingAndThen(
+                    Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(f -> f.getSupplierTaxNo()+f.getSupplier6d()))), ArrayList::new)
+            );
+            List<TXfBlackWhiteCompanyEntity> validList = speacialBlackCompanyConverter.reverse(supplierCodeList, UserUtil.getUserId());
 
-            List<String> supplierCodeList = listener.getValidInvoices().stream().map(SpecialCompanyBlackImportDto::getSupplierTaxNo).collect(Collectors.toList());
-            List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = getTaxNoResult(type, supplierCodeList);
-            Map<String, Long> map = new HashMap<>();
-            resultOrgCodeList.stream().forEach(code -> {
-                map.put(code.getSupplierTaxNo(), code.getId());
-            });
+//            List<String> supplier6dList = validList.stream().map(s->s.getSupplier6d()).distinct().collect(Collectors.toList());
+//            QueryWrapper<TAcOrgEntity> q = new QueryWrapper<>();
+//            q.in(TAcOrgEntity.ORG_CODE,supplier6dList);
+//            int count = orgDao.selectCount(q);
+//            if(count != supplier6dList.size()){
+//                sizeDto.setErrorMsg("供应商6D编号无法与机构orgcode匹配，请修改正确供应商6D编号");
+//                return sizeDto;
+//            }
+            
             validList.stream().forEach(e -> {
                 e.setSupplierType(type);
-                e.setId(map.get(e.getSupplierTaxNo()));
+                TXfBlackWhiteCompanyEntity obj = getOne(
+                        new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                                .lambda()
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplierType, type)
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, e.getSupplierTaxNo())
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, e.getSupplier6d())
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED)
+                );
+                if (obj != null) {
+                    e.setId(obj.getId());
+                }
+
                 e.setCreateUser(UserUtil.getLoginName());
                 e.setSupplierStatus(Constants.COMPANY_STATUS_ENABLED);
                 e.setUpdateUser(UserUtil.getLoginName());
@@ -152,12 +183,12 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             boolean save = saveOrUpdateBatch(validList);
         }
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
-            File tmpFile = new File(tmp);
+            File tmpFile = FileUtils.getFile(tmp);
             if (!tmpFile.exists()) {
                 tmpFile.mkdirs();
             }
-            File sourceFile = new File(tmp, file.getOriginalFilename());
-            EasyExcel.write(tmp + "/" + file.getOriginalFilename(), SpecialCompanyBlackImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
+            File sourceFile = FileUtils.getFile(tmp, originalFilename);
+            EasyExcel.write(tmp + "/" + originalFilename, SpecialCompanyBlackImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
             String exportFileName = "导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
@@ -190,11 +221,11 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         return sizeDto;
     }
 
-    public SpecialCompanyImportSizeDto importWhiteData(MultipartFile file, String type) throws IOException {
+    public SpecialCompanyImportSizeDto importWhiteData(InputStream excelInputStream, String type, String originalFilename) throws IOException {
         QueryWrapper wrapper = new QueryWrapper<>();
         SpeclialCompanyImportListener listener = new SpeclialCompanyImportListener(type);
         SpecialCompanyImportSizeDto sizeDto = new SpecialCompanyImportSizeDto();
-        EasyExcel.read(file.getInputStream(), SpecialCompanyImportDto.class, listener).sheet().doRead();
+        EasyExcel.read(excelInputStream, SpecialCompanyImportDto.class, listener).sheet().doRead();
         if (CollectionUtils.isEmpty(listener.getValidInvoices()) && CollectionUtils.isEmpty(listener.getInvalidInvoices())) {
             sizeDto.setErrorMsg("未解析到数据");
             return sizeDto;
@@ -203,19 +234,34 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         sizeDto.setValidCDount(listener.getValidInvoices().size());
         sizeDto.setUnValidCount(listener.getInvalidInvoices().size());
         if (CollectionUtils.isNotEmpty(listener.getValidInvoices())) {
-            List<TXfBlackWhiteCompanyEntity> validList = companyConverter.reverse(listener.getValidInvoices(), UserUtil.getUserId());
+            List<SpecialCompanyImportDto> supplierCodeList = listener.getValidInvoices().stream().collect(Collectors.collectingAndThen(
+                    Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(f -> f.getSupplierTaxNo()+f.getSupplier6d()))), ArrayList::new)
+            );
+            List<TXfBlackWhiteCompanyEntity> validList = companyConverter.reverse(supplierCodeList, UserUtil.getUserId());
 
-            List<String> supplierCodeList = listener.getValidInvoices().stream().map(SpecialCompanyImportDto::getSupplierTaxNo).collect(Collectors.toList());
-            List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = getTaxNoResult(type, supplierCodeList);
+//            List<String> supplier6dList = validList.stream().map(s->s.getSupplier6d()).distinct().collect(Collectors.toList());
+//            QueryWrapper<TAcOrgEntity> q = new QueryWrapper<>();
+//            q.in(TAcOrgEntity.ORG_CODE,supplier6dList);
+//            int count = orgDao.selectCount(q);
+//            if(count != supplier6dList.size()){
+//                sizeDto.setErrorMsg("供应商6D编号无法与机构orgcode匹配，请修改正确供应商6D编号");
+//                return sizeDto;
+//            }
 
-
-            Map<String, Long> map = new HashMap<>();
-            resultOrgCodeList.stream().forEach(code -> {
-                map.put(code.getSupplierTaxNo(), code.getId());
-            });
             validList.stream().forEach(e -> {
                 e.setSupplierType(type);
-                e.setId(map.get(e.getSupplierTaxNo()));
+                TXfBlackWhiteCompanyEntity obj = getOne(
+                        new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                                .lambda()
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplierType, type)
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, e.getSupplier6d())
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplierTaxNo, e.getSupplierTaxNo())
+                                .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED)
+                );
+                if (obj != null) {
+                    e.setId(obj.getId());
+                }
+
                 e.setCreateUser(UserUtil.getLoginName());
                 e.setSupplierStatus(Constants.COMPANY_STATUS_ENABLED);
                 e.setUpdateUser(UserUtil.getLoginName());
@@ -223,12 +269,12 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
             boolean save = saveOrUpdateBatch(validList);
         }
         if (CollectionUtils.isNotEmpty(listener.getInvalidInvoices())) {
-            File tmpFile = new File(tmp);
+            File tmpFile = FileUtils.getFile(tmp);
             if (!tmpFile.exists()) {
                 tmpFile.mkdirs();
             }
-            File sourceFile = new File(tmp, file.getOriginalFilename());
-            EasyExcel.write(tmp + "/" + file.getOriginalFilename(), SpecialCompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
+            File sourceFile = FileUtils.getFile(tmp, originalFilename);
+            EasyExcel.write(tmp + "/" + originalFilename, SpecialCompanyImportDto.class).sheet("sheet1").doWrite(listener.getInvalidInvoices());
 
             String ftpPath = ftpUtilService.pathprefix + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
             String exportFileName = "导入失败原因" + String.valueOf(System.currentTimeMillis()) + ExcelExportUtil.FILE_NAME_SUFFIX;
@@ -261,35 +307,6 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
         return sizeDto;
     }
 
-    private List<TXfBlackWhiteCompanyEntity> getTaxNoResult(String type, List<String> supplierCodeList) {
-        List<TXfBlackWhiteCompanyEntity> resultOrgCodeList = new ArrayList<>();
-        if (supplierCodeList.size() > 2000) {
-            int size = Math.abs(supplierCodeList.size() / 2000);
-            for (int j = 0; j < size; j++) {
-                QueryWrapper wrapperCode = new QueryWrapper<>();
-                wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, ((j + 1) * 2000)-1));
-                wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
-                wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
-                resultOrgCodeList.addAll(this.list(wrapperCode));
-                if (j == size - 1) {
-                    QueryWrapper wrapperCode1 = new QueryWrapper<>();
-                    wrapperCode1.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList.subList(j * 2000, supplierCodeList.size() ));
-                    wrapperCode1.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
-                    wrapperCode1.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
-                    resultOrgCodeList.addAll(this.list(wrapperCode1));
-                }
-            }
-
-        } else {
-            QueryWrapper wrapperCode = new QueryWrapper<>();
-            wrapperCode.in(TXfBlackWhiteCompanyEntity.SUPPLIER_TAX_NO, supplierCodeList);
-            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_STATUS, Constants.COMPANY_STATUS_ENABLED);
-            wrapperCode.eq(TXfBlackWhiteCompanyEntity.SUPPLIER_TYPE, type);
-            resultOrgCodeList = this.list(wrapperCode);
-        }
-        return resultOrgCodeList;
-    }
-
 
     /**
      * 判断供应商是否在黑白名单中
@@ -306,6 +323,36 @@ public class SpeacialCompanyService extends ServiceImpl<TXfBlackWhiteCompanyDao,
                         .eq(TXfBlackWhiteCompanyEntity::getSupplier6d, memo)
                         .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED)
         );
+    }
+
+    public Map<String, TXfBlackWhiteCompanyEntity> hitBlackOrWhiteBy6D(String supplierType, List<String> memoList) {
+        List<TXfBlackWhiteCompanyEntity> list = list(
+                new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                        .lambda()
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
+                        .in(TXfBlackWhiteCompanyEntity::getSupplier6d, memoList)
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED)
+        );
+        Map<String, TXfBlackWhiteCompanyEntity> map = Maps.newHashMap();
+        list.forEach(t -> {
+            map.put(t.getSupplier6d(), t);
+        });
+        return map;
+    }
+
+    public Map<String, TXfBlackWhiteCompanyEntity> hitBlackOrWhiteBySapNo(String supplierType, List<String> sapNoList) {
+        List<TXfBlackWhiteCompanyEntity> list = list(
+                new QueryWrapper<TXfBlackWhiteCompanyEntity>()
+                        .lambda()
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierType, supplierType)
+                        .in(TXfBlackWhiteCompanyEntity::getSapNo, sapNoList)
+                        .eq(TXfBlackWhiteCompanyEntity::getSupplierStatus, Constants.COMPANY_STATUS_ENABLED)
+        );
+        Map<String, TXfBlackWhiteCompanyEntity> map = Maps.newHashMap();
+        list.forEach(t -> {
+            map.put(t.getSapNo(), t);
+        });
+        return map;
     }
 
     public boolean hitBlackOrWhiteBySapNo(String supplierType, String sapNo) {

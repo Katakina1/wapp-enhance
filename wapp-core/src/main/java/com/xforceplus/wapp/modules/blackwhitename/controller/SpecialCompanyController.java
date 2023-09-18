@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 索赔单业务逻辑
@@ -53,7 +54,10 @@ public class SpecialCompanyController {
     @PutMapping("/import")
     public R batchImport(@ApiParam("导入的文件") @RequestParam(required = true) MultipartFile file,
                          @ApiParam("导入类型 0黑名单 1白名单") @RequestParam(required = true) String type) throws IOException {
-        if (!"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(file.getContentType())) {
+    	String contentType = file.getContentType();
+    	InputStream excelInputStream = file.getInputStream();
+    	String originalFilename = file.getOriginalFilename().replaceAll("../", "").replaceAll("..\\\\", "").replaceAll("\\*", "");
+        if (!StringUtils.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", contentType)) {
             return R.fail("文件格式不正确");
         } else if (file.isEmpty()) {
             return R.fail("文件不能为空");
@@ -61,12 +65,11 @@ public class SpecialCompanyController {
         if (StringUtils.isEmpty(type)) {
             return R.fail("导入类型不能为空");
         }
-        long start = System.currentTimeMillis();
-        SpecialCompanyImportSizeDto result;
+        SpecialCompanyImportSizeDto result = null;
         if (Constants.COMPANY_TYPE_WHITE.equals(type)) {
-            result = speacialCompanyService.importWhiteData(file, type);
+            result = speacialCompanyService.importWhiteData(excelInputStream, type, originalFilename);
         } else {
-            result = speacialCompanyService.importBlackData(file, type);
+            result = speacialCompanyService.importBlackData(excelInputStream, type, originalFilename);
         }
         if(StringUtils.isNotEmpty(result.getErrorMsg())){
             return R.fail(result.getErrorMsg());

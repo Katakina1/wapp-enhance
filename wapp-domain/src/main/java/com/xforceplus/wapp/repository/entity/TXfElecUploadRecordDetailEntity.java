@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-11-17
+ * @since 2021-12-23
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -63,10 +63,10 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     private String reason;
 
     /**
-     * 0 失败,1成功
+     * 0 失败,1成功, 2待识别, 3识别验真中
      */
     @TableField("status")
-    private Boolean status;
+    private Integer status;
 
     /**
      * 创建人
@@ -96,7 +96,7 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
      * 文件类型: 0-ofd文件，1-pdf文件
      */
     @TableField("file_type")
-    private Boolean fileType;
+    private Integer fileType;
 
     /**
      * 文件服务返回-文件ID
@@ -140,6 +140,18 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     @TableField("invoice_code")
     private String invoiceCode;
 
+    /**
+     * 文件名称
+     */
+    @TableField("file_name")
+    private String fileName;
+
+    /**
+     * 业务类型  0结算单 1换票 2订单匹配
+     */
+    @TableField("business_type")
+    private Integer businessType;
+
 
     public static final String ID = "id";
 
@@ -178,5 +190,9 @@ public class TXfElecUploadRecordDetailEntity extends BaseEntity {
     public static final String CHECK_CODE = "check_code";
 
     public static final String INVOICE_CODE = "invoice_code";
+
+    public static final String FILE_NAME = "file_name";
+
+    public static final String BUSINESS_TYPE = "business_type";
 
 }

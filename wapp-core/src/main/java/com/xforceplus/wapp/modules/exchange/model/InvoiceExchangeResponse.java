@@ -14,29 +14,20 @@ import java.util.Date;
 @Data
 public class InvoiceExchangeResponse {
 
-    /**
-     * 主键
-     */
-    @ApiModelProperty("主键")
-    private Long id;
-
-    /**
-     * 底账发票id
-     */
     @ApiModelProperty("底账发票id")
     private Long invoiceId;
 
     /**
      * 状态 0待换票 1已上传 2已完成 9删除
      */
-    @ApiModelProperty("状态 0待换票 1已上传 2已完成 9删除")
-    private Boolean status;
+    @ApiModelProperty("换票状态 0初始 1待换票 2已上传 3已完成")
+    private Integer exchangeStatus;
 
     /**
-     * 创建时间
+     * 退单日期
      */
-    @ApiModelProperty("创建时间")
-    private Date createTime;
+    @ApiModelProperty("退单日期")
+    private Date rebateDate;
 
     /**
      * orgcode
@@ -57,34 +48,25 @@ public class InvoiceExchangeResponse {
     private BigDecimal amountWithoutTax;
 
     /**
+     * 不含税金额
+     */
+    @ApiModelProperty("不含税金额")
+    private BigDecimal amountWithTax;
+
+    /**
      * 税额
      */
     @ApiModelProperty("税额")
     private BigDecimal taxAmount;
 
+    @ApiModelProperty("税率")
+    private BigDecimal taxRate;
+
     /**
      * 业务类型
      */
     @ApiModelProperty("业务类型")
-    private String businessType;
-
-    /**
-     * 退单号
-     */
-    @ApiModelProperty("退单号")
-    private String returnNo;
-
-    /**
-     * 快递公司
-     */
-    @ApiModelProperty("快递公司")
-    private String expressCompany;
-
-    /**
-     * 快递单号
-     */
-    @ApiModelProperty("快递单号")
-    private String waybillNo;
+    private String flowType;
 
     /**
      * 发票代码
@@ -104,20 +86,23 @@ public class InvoiceExchangeResponse {
     @ApiModelProperty("开票日期")
     private String paperDrewDate;
 
-    /**
-     * 新开发票id，逗号隔开
-     */
-    @ApiModelProperty("新开发票id，逗号隔开")
-    private String newInvoiceId;
-
     @ApiModelProperty("换票原因")
-    private String remark;
+    private String exchangeReason;
 
     @ApiModelProperty("发票类型")
     private String invoiceType;
 
-    @ApiModelProperty("纸电类型：true电票 false纸票")
-    private boolean isElectronic;
+    @ApiModelProperty("购方名称")
+    private String gfName;
+
+    @ApiModelProperty("销方名称")
+    private String xfName;
+
+    @ApiModelProperty("购方税号")
+    private String gfTaxNo;
+
+    @ApiModelProperty("销方税号")
+    private String xfTaxNo;
 
 
 }

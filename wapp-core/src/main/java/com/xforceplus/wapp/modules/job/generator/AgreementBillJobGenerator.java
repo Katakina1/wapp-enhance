@@ -43,7 +43,7 @@ public class AgreementBillJobGenerator extends AbstractBillJobGenerator {
     @Value("${agreementBill.remote.path}")
     private String remotePath;
 
-    @Async
+    @Async("taskThreadPoolExecutor")
     @Scheduled(cron = "${agreementBill.scan-cron}")
     @Override
     public void generate() {
@@ -93,3 +93,4 @@ public class AgreementBillJobGenerator extends AbstractBillJobGenerator {
         );
     }
 }
+

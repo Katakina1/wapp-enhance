@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * Created by SunShiyong on 2021/11/18.
  */
@@ -18,22 +20,25 @@ public class QueryInvoiceExchangeRequest {
     @ApiModelProperty("orgcode")
     private String jvcode;
     @ApiModelProperty("业务类型")
-    private String businessType;
+    private String flowType;
     @ApiModelProperty("发票类型")
     private String invoiceType;
     @ApiModelProperty("开票开始日期")
     private String paperDrewStartDate;
     @ApiModelProperty("开票截至日期")
     private String paperDrewEndDate;
-    @ApiModelProperty("退单号")
-    private String returnNo;
-    @ApiModelProperty("退单开始日期")
-    private String returnStartDate;
-    @ApiModelProperty("退单截至日期")
-    private String returnEndDate;
     @ApiModelProperty("供应商号")
     private String venderid;
-    @ApiModelProperty("状态 0待换票 1已上传 2已完成 9删除")
-    private Integer status;
+    @ApiModelProperty("换票状态 0初始 1待换票 2已上传 3已完成")
+    private Integer exchangeStatus;
+    @ApiModelProperty("是否换票 1是  0否")
+    private Integer isExchange;
+    @ApiModelProperty("发票代码")
+    private String invoiceCode;
+    @ApiModelProperty("发票号码")
+    private String invoiceNo;
+    @ApiModelProperty("税率")
+    private BigDecimal taxRate;
+
 
 }

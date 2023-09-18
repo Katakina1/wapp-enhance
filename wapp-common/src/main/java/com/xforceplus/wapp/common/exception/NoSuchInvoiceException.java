@@ -8,7 +8,9 @@ package com.xforceplus.wapp.common.exception;
  **/
 public class NoSuchInvoiceException extends EnhanceRuntimeException {
 
-    public NoSuchInvoiceException() {
+	private static final long serialVersionUID = -3965178282732855397L;
+
+	public NoSuchInvoiceException() {
         super("没有匹配到合适的蓝票，请稍后重试");
     }
 

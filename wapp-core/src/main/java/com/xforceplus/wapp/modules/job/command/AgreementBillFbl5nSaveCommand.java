@@ -15,6 +15,7 @@ import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -142,8 +143,9 @@ public class AgreementBillFbl5nSaveCommand implements Command {
         }
         int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
-        File file = new File(localPath, fileName);
+        File file = FileUtils.getFile(localPath, fileName);
         OriginAgreementBillFbl5nDataListener readListener = new OriginAgreementBillFbl5nDataListener(jobId, cursor, service, validator);
+        long start = System.currentTimeMillis();
         try {
             EasyExcel.read(file, OriginAgreementBillFbl5nDto.class, readListener)
                     .sheet(sheetName)
@@ -161,5 +163,6 @@ public class AgreementBillFbl5nSaveCommand implements Command {
             // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
+        log.info("协议单:{} fbl5n原始数据入库花费{}ms", jobId, System.currentTimeMillis() - start);
     }
 }

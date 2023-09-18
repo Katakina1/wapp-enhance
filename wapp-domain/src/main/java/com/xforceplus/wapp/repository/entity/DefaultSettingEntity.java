@@ -41,7 +41,7 @@ public class DefaultSettingEntity {
     /**
      * 创建用户
      */
-    private Long createUser;
+    private String createUser;
 
     /**
      * 更新时间
@@ -52,5 +52,5 @@ public class DefaultSettingEntity {
     /**
      * 更新用户
      */
-    private Long updateUser;
+    private String updateUser;
 }

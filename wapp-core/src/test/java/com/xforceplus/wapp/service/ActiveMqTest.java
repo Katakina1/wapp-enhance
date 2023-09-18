@@ -2,7 +2,9 @@ package com.xforceplus.wapp.service;
 
 import com.alibaba.fastjson.JSON;
 import com.xforceplus.wapp.BaseUnitTest;
+import com.xforceplus.wapp.common.enums.DeductRedNotificationEventEnum;
 import com.xforceplus.wapp.mq.ActiveMqProducer;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ public class ActiveMqTest extends BaseUnitTest {
 
     @Autowired
     private ActiveMqProducer activeMqProducer;
+    @Autowired
+    private CommonMessageService commonMessageService;
 
     @Test
     public void testJms() {
@@ -27,6 +31,14 @@ public class ActiveMqTest extends BaseUnitTest {
         enhanceClaimVerdictMap.put("businessNo", "10000");
         activeMqProducer.send(activemqEnhanceClaimVerdictQueue, JSON.toJSONString(enhanceClaimVerdictMap));
         System.out.println("--");
+    }
+
+    @Test
+    public void test01() {
+        TXfRedNotificationEntity tXfRedNotificationEntity = new TXfRedNotificationEntity();
+        tXfRedNotificationEntity.setId(1231L);
+        tXfRedNotificationEntity.setPid("1222");
+        commonMessageService.sendMessage(DeductRedNotificationEventEnum.APPLY_FAILED, tXfRedNotificationEntity);
     }
 
 }

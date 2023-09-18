@@ -20,7 +20,7 @@ public interface ElectronicUploadRecordDao extends BaseDao<TXfElecUploadRecordEn
      * @param batchNo 批次号
      * @return
      */
-    int increaseSucceedNum(@Param("batchNo") String batchNo);
+    int increaseSucceedNum(@Param("batchNo") String batchNo, @Param("num") Integer num);
 
     /**
      * 失败数量+1
@@ -28,7 +28,7 @@ public interface ElectronicUploadRecordDao extends BaseDao<TXfElecUploadRecordEn
      * @param batchNo 批次号
      * @return
      */
-    int increaseFailureNum(@Param("batchNo") String batchNo);
+    int increaseFailureNum(@Param("batchNo") String batchNo, @Param("num") Integer num);
     /**
      * 失败数量+1
      *
@@ -38,4 +38,6 @@ public interface ElectronicUploadRecordDao extends BaseDao<TXfElecUploadRecordEn
     int increaseFailureSpecialNum(@Param("batchNo") String batchNo, @Param("num") int num);
 
     TXfElecUploadRecordEntity selectByBatchNo(@Param("batchNo") String batchNo);
+
+    int countNum(@Param("batchNo") String batchNo,@Param("status") String status);
 }

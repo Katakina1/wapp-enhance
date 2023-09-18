@@ -42,6 +42,30 @@ public class CompanyImportListener extends AnalysisEventListener<CompanyImportDt
 
     }
 
+    public Integer getRows() {
+        return rows;
+    }
+
+    public Integer getValidRows() {
+        return validRows;
+    }
+
+    public Integer getInvalidRows() {
+        return invalidRows;
+    }
+
+    public StringBuilder getBuilder() {
+        return builder;
+    }
+
+    public List<CompanyImportDto> getValidInvoices() {
+        return validInvoices;
+    }
+
+    public List<CompanyImportDto> getInvalidInvoices() {
+        return invalidInvoices;
+    }
+
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
 

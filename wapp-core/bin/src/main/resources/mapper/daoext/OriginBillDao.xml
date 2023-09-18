@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.repository.daoExt.OriginBillDao">
+
+    <select id="countOriginClaim" resultType="Long">
+        SELECT COUNT(1)
+        FROM t_xf_origin_claim_bill t with (nolock) left join t_xf_bill_job b with (nolock) on b.id = t.job_id
+        WHERE 1 = 1
+        <if test="startDate != null">
+            AND t.create_time >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND t.create_time <![CDATA[ <= ]]>#{endDate}
+        </if>
+        <if test="checkStatus != null and checkStatus != ''">
+            AND t.check_status = #{checkStatus}
+        </if>
+        <if test="jobName != null and jobName != ''">
+            AND b.job_name like #{jobName}
+        </if>
+        <if test="exchangeNo != null and exchangeNo != ''">
+            AND t.exchange_no = #{exchangeNo}
+        </if>
+    </select>
+
+    <select id="selectOriginClaimPage" resultType="com.xforceplus.wapp.repository.vo.OriginClaimBillVo">
+        WITH selectTemp AS (
+            SELECT
+                TOP 100 PERCENT ROW_NUMBER() OVER (ORDER BY t.create_time DESC) AS __row_number__,
+                t.id, t.job_id, b.job_name, t.deduction_date , t.deduction_month, t.deduction_month_index, t.deduction_company,
+                t.vendor_no, t.type , t.remark, t.exchange_no, t.claim_no, t.decision_date, t.cost_amount ,
+                t.invoice_reference, t.tax_rate, t.amount_with_tax, t.store_type, t.create_user ,
+                t.create_time, t.update_user, t.update_time, t.check_status, t.check_remark
+            FROM t_xf_origin_claim_bill t with (nolock) left join t_xf_bill_job b with (nolock) on b.id = t.job_id
+            WHERE 1 = 1
+            <if test="startDate != null">
+                AND t.create_time >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND t.create_time <![CDATA[ <= ]]>#{endDate}
+            </if>
+            <if test="checkStatus != null and checkStatus != ''">
+                AND t.check_status = #{checkStatus}
+            </if>
+            <if test="jobName != null and jobName != ''">
+                AND b.job_name like #{jobName}
+            </if>
+            <if test="exchangeNo != null and exchangeNo != ''">
+                AND t.exchange_no = #{exchangeNo}
+            </if>
+            ORDER BY t.create_time DESC
+        )
+        SELECT * FROM selectTemp
+        WHERE __row_number__ BETWEEN #{offsetStart} AND #{offsetEnd}
+        ORDER BY __row_number__
+    </select>
+</mapper>

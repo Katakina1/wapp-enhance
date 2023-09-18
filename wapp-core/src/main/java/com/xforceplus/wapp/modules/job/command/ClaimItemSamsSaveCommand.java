@@ -16,6 +16,7 @@ import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -56,6 +57,7 @@ public class ClaimItemSamsSaveCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {
+    	log.info("3. start ClaimItemSamsSaveCommand");
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
@@ -139,8 +141,9 @@ public class ClaimItemSamsSaveCommand implements Command {
     private void process(String localPath, String fileName, Context context) {
         int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
-        File file = new File(localPath, fileName);
+        File file = FileUtils.getFile(localPath, fileName);
         OriginClaimItemSamsDataListener readListener = new OriginClaimItemSamsDataListener(jobId, cursor, service, validator);
+        long start  = System.currentTimeMillis();
         try {
             EasyExcel.read(file, OriginClaimItemSamsDto.class, readListener)
                     .sheet(sheetName)
@@ -157,6 +160,7 @@ public class ClaimItemSamsSaveCommand implements Command {
             // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
+        log.info("索赔单:{} sams原始数据入库花费{}ms", jobId, System.currentTimeMillis() - start);
     }
 
 }

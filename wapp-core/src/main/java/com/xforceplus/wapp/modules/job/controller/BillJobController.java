@@ -2,22 +2,14 @@ package com.xforceplus.wapp.modules.job.controller;
 
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.modules.job.executor.AgreementBillJobExecutor;
-import com.xforceplus.wapp.modules.job.executor.ClaimBillJobExecutor;
-import com.xforceplus.wapp.modules.job.executor.EpdBillJobExecutor;
+import com.xforceplus.wapp.modules.job.executor.*;
 import com.xforceplus.wapp.modules.job.generator.AgreementBillJobGenerator;
 import com.xforceplus.wapp.modules.job.generator.ClaimBillJobGenerator;
 import com.xforceplus.wapp.modules.job.generator.EpdBillJobGenerator;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @program: wapp-generator
@@ -44,7 +36,10 @@ public class BillJobController {
     private ClaimBillJobExecutor claimBillJobExecutor;
     @Autowired
     private EpdBillJobExecutor epdBillJobExecutor;
-
+    @Autowired
+    private TaxCodeJobExecutor taxCodeJobExecutor;
+    @Autowired
+    private HostUnSuccInvoiceExecutor hostUnSuccInvoiceExecutor;
     @ApiOperation("立即触发协议单文件扫描任务")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "response", response = R.class)})
     @PostMapping("/agreement/scan")
@@ -90,6 +85,22 @@ public class BillJobController {
     @PostMapping("/epd/execute")
     public R<String> executeEpdJobs(@RequestBody String anyting) {
         epdBillJobExecutor.execute();
+        return R.ok(DEFAULT_RESPONSE);
+    }
+
+    @ApiOperation("立即触发HOST未签收发票执行任务")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "response", response = R.class)})
+    @PostMapping("/hostUnMatch/execute")
+    public R<String> executeHostUnMatchJobs(@RequestBody String anyting) {
+        hostUnSuccInvoiceExecutor.execute();
+        return R.ok(DEFAULT_RESPONSE);
+    }
+
+    @ApiOperation("立即触发税编例外报告执行任务")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "response", response = R.class)})
+    @GetMapping("/taxCodeReport/execute")
+    public R<String> executeTaxCodeReportJobs(@ApiParam(example = "2023-02-14 14:00:00") @RequestParam(required = false) String time) {
+        taxCodeJobExecutor.start(time);
         return R.ok(DEFAULT_RESPONSE);
     }
 }

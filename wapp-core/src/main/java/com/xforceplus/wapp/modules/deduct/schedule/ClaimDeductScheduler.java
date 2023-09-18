@@ -1,13 +1,14 @@
 package com.xforceplus.wapp.modules.deduct.schedule;
 
-import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.TimeUnit;
+import com.xforceplus.wapp.client.LockClient;
+import com.xforceplus.wapp.modules.deduct.service.ClaimBillService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -17,30 +18,24 @@ public class ClaimDeductScheduler {
     private ClaimBillService claimBillService;
     public static String KEY = "Claim-match";
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private LockClient lockClient;
+
     /**
      * 索赔单匹配
      */
-    @Scheduled(cron="${task.ClaimDeductScheduler-cron}")
-    public void claimDeductDeal(){
-        if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
-            log.info("Claim-match job 已经在执行，结束此次执行");
-            return;
-        }
-        redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
-        log.info("Claim-match job  开始");
-        try {
-            claimBillService.matchClaimBill();
-        } catch (Exception e) {
-            log.info("Claim-match job 异常：{}",e);
-        }finally {
+    @Async("taskThreadPoolExecutor")
+    @Scheduled(cron = "${task.ClaimDeductScheduler-cron}")
+    public void claimDeductDeal() {
+        lockClient.tryLock(KEY, () -> {
+            log.info("Claim-match job  开始");
             try {
-                redisTemplate.delete(KEY);
+                claimBillService.matchClaimBill();
             } catch (Exception e) {
-                log.info("Claim-matchjob 释放锁Redis 异常： {}", e);
+                log.error(e.getMessage(), e);
             }
-            log.info("Claim-match job 已经在执行，结束");
-        }
+            log.info("Claim-match job  结束");
+        }, -1, 1);
     }
 
 }
+

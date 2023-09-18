@@ -367,13 +367,20 @@ public  class HttpUtils {
 
 
 
-    public static String doPostJsonSkipSsl(String url, String json) {
-        CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(connMgr).setDefaultRequestConfig(requestConfig).build();
+    public static String doPostJsonSkipSsl(String url, String json, Map<String,String> headers) {
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setConnectionManager(connMgr)
+                .setDefaultRequestConfig(requestConfig).build();
         String result = null;
         InputStream instream = null;
         try {
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader(HTTP.CONTENT_TYPE, APPLICATION_JSON);
+            if(MapUtils.isNotEmpty(headers)){
+                for (Map.Entry<String,String> entry: headers.entrySet()) {
+                    httpPost.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
 
             StringEntity se = new StringEntity(json, DEFAULT_CHARSET);
             se.setContentType(CONTENT_TYPE_TEXT_JSON);
@@ -566,7 +573,9 @@ public  class HttpUtils {
                  for (Map.Entry<String, String> h : hm.entrySet()) {
                      post.addHeader(h.getKey(), h.getValue());
                  }
-                 HttpEntity entity = new StringEntity(rb,"Utf-8");
+             StringEntity entity = new StringEntity(rb,"Utf-8");
+                 entity.setContentType(APPLICATION_JSON);
+                 entity.setContentEncoding(new BasicHeader(HTTP.CONTENT_ENCODING, DEFAULT_CHARSET));
 
                  post.setEntity(entity);
                  response = hc.execute(post);

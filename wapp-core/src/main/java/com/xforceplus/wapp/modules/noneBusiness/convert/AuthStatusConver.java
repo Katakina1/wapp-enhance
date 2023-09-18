@@ -6,10 +6,11 @@ import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.GlobalConfiguration;
 import com.alibaba.excel.metadata.property.ExcelContentProperty;
 import com.xforceplus.wapp.enums.AuthStatusEnum;
+import org.apache.commons.lang.StringUtils;
 
 public class AuthStatusConver implements Converter<String> {
     @Override
-    public Class supportJavaTypeKey() {
+    public Class<String> supportJavaTypeKey() {
         return String.class;
     }
 
@@ -25,7 +26,9 @@ public class AuthStatusConver implements Converter<String> {
 
     @Override
     public CellData convertToExcelData(String o, ExcelContentProperty excelContentProperty, GlobalConfiguration globalConfiguration) throws Exception {
-
+		 if(StringUtils.isEmpty(o)){
+            return new CellData("未认证");
+        }
         return new CellData(AuthStatusEnum.getValue(o));
 
     }

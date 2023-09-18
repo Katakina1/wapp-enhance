@@ -1,11 +1,11 @@
 package com.xforceplus.wapp.modules.exchange.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.xforceplus.wapp.modules.backFill.model.BackFillVerifyBean;
+import com.xforceplus.wapp.modules.backfill.model.BackFillVerifyBean;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +17,7 @@ import java.util.List;
 public class BackFillExchangeRequest {
 
 
+    @NotNull(message = "发票ID不能为空")
     @ApiModelProperty("需要换票的发票id")
     private Long invoiceId = null;
 
@@ -25,5 +26,9 @@ public class BackFillExchangeRequest {
 
     @ApiModelProperty("回填发票id")
     private List<BackFillVerifyBean> verifyBeanList = new ArrayList<BackFillVerifyBean>();
+
+
+    @ApiModelProperty("换票原因")
+    private String exchangeReason = null;
 
 }

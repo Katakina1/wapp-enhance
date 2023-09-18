@@ -217,6 +217,24 @@ public class TXfSettlementEntity extends BaseEntity {
     @TableField("create_user")
     private Long createUser;
 
+    @TableField("revert_remark")
+    private String revertRemark;
+
+    @TableField("approve_status")
+    private Integer approveStatus;
+
+    @TableField("approve_type")
+    private Integer approveType;
+
+    @TableField("approve_remark")
+    private String approveRemark;
+
+    @TableField("approve_time")
+    private Date approveTime;
+
+    @TableField("approve_request_time")
+    private Date approveRequestTime;
+
 
     public static final String SELLER_NO = "seller_no";
 
@@ -281,5 +299,17 @@ public class TXfSettlementEntity extends BaseEntity {
     public static final String UPDATE_TIME = "update_time";
 
     public static final String CREATE_USER = "create_user";
+
+    public static final String REVERT_REMARK = "revert_remark";
+
+    public static final String APPROVE_STATUS = "approve_status";
+
+    public static final String APPROVE_TYPE = "approve_type";
+
+    public static final String APPROVE_REMARK = "approve_remark";
+
+    public static final String APPROVE_TIME = "approve_time";
+
+    public static final String APPROVE_REQUEST_TIME = "approve_request_time";
 
 }

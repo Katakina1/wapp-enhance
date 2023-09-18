@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.modules.rednotification.util;
 
 import com.xforceplus.wapp.common.utils.Base64;
-import com.xforceplus.wapp.modules.backFill.service.VerificationService;
+import com.xforceplus.wapp.modules.backfill.service.VerificationService;
 import com.xforceplus.wapp.modules.rednotification.model.ZipContentInfo;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class DownloadUrlUtils {
 
     public void commonZipFiles(List<ZipContentInfo> srcFiles, String zipFilePath) {
 
-        File zipFile = new File(zipFilePath);
+        File zipFile = FileUtils.getFile(zipFilePath);
         if (!zipFile.exists()) {
             zipFile.getParentFile().mkdirs();
         }
@@ -38,7 +38,7 @@ public class DownloadUrlUtils {
             for (ZipContentInfo zipInfo : srcFiles) {
                 try {
                     if (zipInfo.isFile()) {
-                        File file = new File(zipInfo.getSourceUrl());
+                        File file = FileUtils.getFile(zipInfo.getSourceUrl());
                         if (file.exists()) {
                             zip(out, file, file.getName(), bo);
                         }
@@ -100,7 +100,7 @@ public class DownloadUrlUtils {
     public static String putFile(String filePath) {
         File localFile = null;
         try {
-            localFile = new File(filePath);
+            localFile = FileUtils.getFile(filePath);
             if (!localFile.getParentFile().exists()) {
                 localFile.getParentFile().mkdirs();
             }

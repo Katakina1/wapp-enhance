@@ -2,7 +2,6 @@ package com.xforceplus.wapp.modules.job;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.BaseUnitTest;
-import com.xforceplus.wapp.modules.backFill.service.RecordInvoiceExtService;
 import com.xforceplus.wapp.modules.deduct.service.BlueInvoiceService;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,9 @@ public class BlueInvoiceServiceTest extends BaseUnitTest {
     private BlueInvoiceService blueInvoiceService;
 
     @Autowired
-    private RecordInvoiceExtService recordInvoiceExtService;
+    private com.xforceplus.wapp.modules.backfill.service.RecordInvoiceExtService recordInvoiceExtService;
 
-    // @Test
+/*    // @Test
     public void test1() {
         List<BlueInvoiceService.MatchRes> list = new ArrayList<>();
         BlueInvoiceService.MatchRes item = BlueInvoiceService.MatchRes
@@ -35,13 +34,5 @@ public class BlueInvoiceServiceTest extends BaseUnitTest {
                 .build();
         list.add(item);
         blueInvoiceService.withdrawInvoices(list);
-    }
-
-    // @Test
-    public void test2() {
-        Page<TDxRecordInvoiceEntity> page = recordInvoiceExtService
-                .obtainAvailableInvoices("914403006189074000", "9113030074540443", new BigDecimal(3), 1, 10);
-        System.out.print(page);
-        ;
-    }
+    }*/
 }

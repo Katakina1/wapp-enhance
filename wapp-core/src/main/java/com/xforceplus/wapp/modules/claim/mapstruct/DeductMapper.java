@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.claim.mapstruct;
 
 import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.xforceplus.wapp.repository.vo.BillDeductLeftSettlementVo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -14,5 +15,5 @@ public interface DeductMapper {
 
     @Mapping(target = "billNo",source = "businessNo")
     @Mapping(target = "lock",source = "lockFlag")
-    DeductListResponse toResponse(TXfBillDeductEntity entity);
+    DeductListResponse toResponse(BillDeductLeftSettlementVo entity);
 }

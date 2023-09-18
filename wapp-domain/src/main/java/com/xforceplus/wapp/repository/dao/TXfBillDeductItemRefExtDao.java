@@ -1,12 +1,15 @@
 package com.xforceplus.wapp.repository.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xforceplus.wapp.repository.dto.DeductSettlementItemRefDto;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemRefEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -19,7 +22,9 @@ import java.math.BigDecimal;
  */
 @Mapper
 public interface TXfBillDeductItemRefExtDao extends BaseMapper<TXfBillDeductItemRefEntity> {
-    @Select("  select  sum(amount_with_tax) from t_xf_bill_deduct_item_ref where deduct_id =  #{id}")
+    @Select("  select  sum(use_amount) from t_xf_bill_deduct_item_ref where deduct_id =  #{id} and status = 0")
     BigDecimal queryRefMatchAmountByBillId(@Param("id") Long id);
 
+
+    List<DeductSettlementItemRefDto> queryDeductIdBySettlementItemId(@Param("items") Collection<Long> settlementItemIds);
 }

@@ -3,10 +3,11 @@ package com.xforceplus.wapp.modules.rednotification.validator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xforceplus.phoenix.split.model.PriceMethod;
 import com.xforceplus.wapp.client.TaxCodeBean;
-import com.xforceplus.wapp.common.enums.*;
+import com.xforceplus.wapp.common.enums.InvoiceType;
+import com.xforceplus.wapp.common.enums.RedNoApplyType;
+import com.xforceplus.wapp.common.enums.ValueEnum;
 import com.xforceplus.wapp.modules.company.service.CompanyService;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.ConvertHelper;
-import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.model.excl.ImportInfo;
 import com.xforceplus.wapp.modules.rednotification.util.RegexUtils;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
@@ -15,8 +16,9 @@ import com.xforceplus.wapp.repository.entity.TAcOrgEntity;
 import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import io.vavr.control.Either;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,8 +38,11 @@ public class CheckMainService {
     TaxCodeServiceImpl taxCodeServiceImpl;
     @Autowired
     CompanyService companyService;
+//    @Autowired
+//    RedisTemplate redisTemplate;
+
     @Autowired
-    RedisTemplate redisTemplate;
+    private RedissonClient redissonClient;
     @Autowired
     TXfRedNotificationDao tXfRedNotificationDao;
 
@@ -108,35 +113,43 @@ public class CheckMainService {
         String purchaserName = importInfo.getPurchaserName();
         if (StringUtils.isEmpty(taxNo)){
             return "购方税号必须填写";
-        }else if (StringUtils.isEmpty(purchaserName)){
-            return "购方名称必须填写";
         }
+        else if (StringUtils.isEmpty(purchaserName)){
+           return "购方名称必须填写";
+       }
 
 
         String key = "purcherseTaxNo:"+taxNo;
-        Object result = redisTemplate.opsForValue().get(key);
+        Object result = // redisTemplate.opsForValue().get(key);
+        redissonClient.getBucket(key, StringCodec.INSTANCE).get();
         if ( result != null ){
             if ("false".equals(result)){
                 return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
             }else {
-                // 判断公司名称税号
-                if (!Objects.equals(result,purchaserName)){
+                // 判断公司名称税号,先过滤掉括号
+                String resultStr = String.valueOf(result).replace("(","").replace(")","").replace("（","").replace("）", "").replace("（", "").replace("）", "");
+                purchaserName = purchaserName.replace("(","").replace(")","").replace("（","").replace("）", "").replace("（", "").replace("）", "");
+                if (!Objects.equals(resultStr,purchaserName)){
                     return String.format("沃尔玛旗下该购方税号:[%s]对应的名称【%s】实际传入【%s】 ",taxNo,result,purchaserName);
                 }
+                importInfo.setPurchaserName(String.valueOf(result));
                 return "" ;
             }
         }
 
-        TAcOrgEntity company = companyService.getByTaxNo(taxNo);
+        TAcOrgEntity company = companyService.getByTaxNo(taxNo,null);
         if (company != null){
-            redisTemplate.opsForValue().set(key,company.getTaxName(),60, TimeUnit.SECONDS);
-            // 判断公司名称税号
-            if (!Objects.equals(company.getTaxName(),purchaserName)){
-                return String.format("沃尔玛旗下该购方税号:[%s]对应的名称【%s】实际传入【%s】 ",taxNo,company.getTaxName(),purchaserName);
-            }
+            redissonClient.getBucket(key,StringCodec.INSTANCE).set(company.getTaxName(),60,TimeUnit.SECONDS);
+            // 判断公司名称税号,先过滤掉括号
+            String taxName = company.getTaxName().replace("(","").replace(")","").replace("（","").replace("）", "").replace("（", "").replace("）", "");
+            purchaserName = purchaserName.replace("(","").replace(")","").replace("（","").replace("）", "").replace("（", "").replace("）", "");
+            if (!Objects.equals(taxName,purchaserName)){
+              return String.format("沃尔玛旗下该购方税号:[%s]对应的名称【%s】实际传入【%s】 ",taxNo,company.getTaxName(),purchaserName);
+           }
+            importInfo.setPurchaserName(company.getTaxName());
             return "" ;
         }else {
-            redisTemplate.opsForValue().set(key,"false",60, TimeUnit.SECONDS);
+            redissonClient.getBucket(key,StringCodec.INSTANCE).set("false",60,TimeUnit.SECONDS);
             return String.format("沃尔玛旗下未找到该购方税号:[%s]",taxNo);
         }
 

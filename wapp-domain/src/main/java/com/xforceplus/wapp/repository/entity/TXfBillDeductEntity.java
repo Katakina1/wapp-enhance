@@ -1,22 +1,22 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import java.util.Date;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.xforceplus.wapp.repository.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.util.Date;
 /**
  * <p>
     * 业务单据信息
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-10-28
+ * @since 2021-12-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -75,7 +75,7 @@ public class TXfBillDeductEntity extends BaseEntity {
     private String agreementReasonCode;
 
     /**
-     * 协议号
+     * 协议类型
      */
     @TableField("agreement_reference")
     private String agreementReference;
@@ -87,19 +87,19 @@ public class TXfBillDeductEntity extends BaseEntity {
     private String agreementTaxCode;
 
     /**
-     * 协议供应商6D
+     * sap供应商编号
      */
     @TableField("agreement_memo")
     private String agreementMemo;
 
     /**
-     * 协议凭证号码
+     * 协议凭证号码/文档编码
      */
     @TableField("agreement_document_number")
     private String agreementDocumentNumber;
 
     /**
-     * 协议凭证类型
+     * 协议凭证类型/文档类型
      */
     @TableField("agreement_document_type")
     private String agreementDocumentType;
@@ -181,15 +181,39 @@ EPD单:301待匹配结算单;302已匹配结算单;303待匹配蓝票;304已作�
     @TableField("purchaser_name")
     private String purchaserName;
 
-    @TableField("create_time")
-    private Date createTime;
-
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
-
     @TableField(value="update_time", update="getdate()" )
     private Date updateTime;
 
+    @TableField("create_time")
+    private Date createTime;
+
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private Long id;
+
+
+    /**
+     * 例外报告code
+     */
+    @TableField("exception_code")
+    private String exceptionCode;
+
+    /**
+     * 例外报告说明
+     */
+    @TableField("exception_description")
+    private String exceptionDescription;
+
+    /**
+     * 列外报告处理状态
+     */
+    @TableField("exception_status")
+    private Integer exceptionStatus;
+
+    /**
+     * 业务单开票状态(0:未开票;1:部分开票;2:已开票)
+     */
+    @TableField("make_invoice_status")
+    private Integer makeInvoiceStatus;
 
     public static final String BUSINESS_NO = "business_no";
 
@@ -241,10 +265,18 @@ EPD单:301待匹配结算单;302已匹配结算单;303待匹配蓝票;304已作�
 
     public static final String PURCHASER_NAME = "purchaser_name";
 
+    public static final String UPDATE_TIME = "update_time";
+
     public static final String CREATE_TIME = "create_time";
 
     public static final String ID = "id";
 
-    public static final String UPDATE_TIME = "update_time";
+    public static final String EXCEPTION_CODE = "exception_code";
+
+    public static final String EXCEPTION_DESCRIPTION = "exception_description";
+
+    public static final String EXCEPTION_STATUS = "exception_status";
+
+    public static final String MAKE_INVOICE_STATUS = "make_invoice_status";
 
 }

@@ -33,7 +33,7 @@ public class TXfBillDeductInvoiceEntity extends BaseEntity {
     private String businessNo;
 
     /**
-     * 业务单据类型;1:索赔;2:结算单
+     * 业务单据类型;1:索赔;2:协议
      */
     @TableField("business_type")
     private Integer businessType;

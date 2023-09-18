@@ -16,6 +16,12 @@ public class OriginClaimBillDto {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 报告日期
+     */
+    @ExcelProperty("报告日期")
+    @Length(max = 20)
+    private String createTime;
+    /**
      * 扣款日期
      */
     @ExcelProperty("扣款日期")
@@ -118,5 +124,17 @@ public class OriginClaimBillDto {
     @ExcelProperty("店铺类型")
     @Length(max = 20)
     private String storeType;
+
+    /**
+     * 批次号  -- 导出新增字段
+     */
+    @ExcelProperty("批次号")
+    private String jobName;
+
+    /**
+     * 数据校验异常信息
+     */
+    @ExcelProperty("异常数据描述")
+    private String checkRemark;
 
 }

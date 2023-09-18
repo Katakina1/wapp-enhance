@@ -105,7 +105,17 @@ public class TXfOriginClaimItemHyperEntity extends BaseEntity {
 
     @TableField("store_nbr")
     private String storeNbr;
+    /**
+     * 数据校验状态；0:正常;1:异常
+     */
+    @TableField("check_status")
+    private Integer checkStatus;
 
+    /**
+     * 数据校验异常信息
+     */
+    @TableField("check_remark")
+    private String checkRemark;
 
     public static final String CREATE_USER = "create_user";
 
@@ -151,4 +161,7 @@ public class TXfOriginClaimItemHyperEntity extends BaseEntity {
 
     public static final String STORE_NBR = "store_nbr";
 
+    public static final String CHECK_STATUS = "check_status";
+
+    public static final String CHECK_REMARK = "check_remark";
 }

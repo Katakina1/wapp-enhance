@@ -34,6 +34,7 @@ public class ClaimBillDownloadCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {
+    	log.info("1. start ClaimBillDownloadCommand ");
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus)) {

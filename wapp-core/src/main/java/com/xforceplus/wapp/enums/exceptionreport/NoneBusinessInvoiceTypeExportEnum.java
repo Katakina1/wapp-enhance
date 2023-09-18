@@ -6,11 +6,15 @@ import lombok.Getter;
  * 非商发票类型
  */
 public enum NoneBusinessInvoiceTypeExportEnum {
-    BUSINESS_INVOICE_TYPE_SGA("2", "SGA"),
-    BUSINESS_INVOICE_TYPE_IC("3", "IC"),
-    BUSINESS_INVOICE_TYPE_EC("4", "EC"),
-    BUSINESS_INVOICE_TYPE_RE("5", "RE"),
-    BUSINESS_INVOICE_TYPE_SR("6", "SR");
+    BUSINESS_INVOICE_TYPE_SGA("1", "SG&A"),
+    BUSINESS_INVOICE_TYPE_IC("5", "IC"),
+    BUSINESS_INVOICE_TYPE_RE("3", "RE"),
+    USINESS_INVOICE_TYPE_EC("6", "EC"),
+    USINESS_INVOICE_TYPE_RE("7", "BR"),
+    USINESS_INVOICE_TYPE_SR("8", "SR"),
+    BUSINESS_INVOICE_TYPE_SR("4", "FA"),
+    BUSINESS_INVOICE_TYPE_FAEP("9", "FA&EP"),
+    BUSINESS_INVOICE_TYPE_CONCUR("10", "Concur");
     @Getter
     private final String code;
     @Getter

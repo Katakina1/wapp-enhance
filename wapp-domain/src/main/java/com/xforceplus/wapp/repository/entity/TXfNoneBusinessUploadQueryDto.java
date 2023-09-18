@@ -8,6 +8,8 @@ import java.util.Date;
 @Data
 public class TXfNoneBusinessUploadQueryDto {
 
+    @ApiModelProperty("ID")
+    private Long id;
 
     @ApiModelProperty("发票号码")
     /**
@@ -43,13 +45,19 @@ public class TXfNoneBusinessUploadQueryDto {
      */
     private String bussinessNo;
 
-    @ApiModelProperty("发票类型 1 否 2 SGA 3 IC 4 EC 5 RE 6 SR")
+    @ApiModelProperty("发票类型 发票类型 1 SG 2 A 3 RE 4 FA")
     /**
      * 发票类型 1 否 2 SGA 3 IC 4 EC 5 RE 6 SR
      */
     private String invoiceType;
-    @ApiModelProperty("查询类型 0查询当前 1 查询所有")
 
+    @ApiModelProperty("发票类型")
+    /**
+     * 发票类型 01-增值税专用发票 03-机动车销售统一发票 04-增值税普通发票 10-电子发票 11-卷票 14-通行费发票
+     */
+    private String fpInvoiceType;
+
+    @ApiModelProperty("查询类型 0查询当前 1 查询所有")
     /**
      * 创建人
      */
@@ -58,9 +66,11 @@ public class TXfNoneBusinessUploadQueryDto {
      * 创建人
      */
     private String createUser;
-    @ApiModelProperty("订单开始时间")
+
+    private String invoiceCode;
+    @ApiModelProperty("开始时间")
     private String createDateStart;
-    @ApiModelProperty("订单结束时间")
+    @ApiModelProperty("结束时间")
     private String createDateEnd;
     @ApiModelProperty("沃尔玛公司代码")
     private String companyCode;

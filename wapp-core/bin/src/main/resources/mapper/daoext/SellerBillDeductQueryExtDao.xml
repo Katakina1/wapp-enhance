@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+主要方法及功能：
+主要涉及到 供应商 业务单查询
+
+-->
+<mapper namespace="com.xforceplus.wapp.repository.daoExt.SellerBillDeductQueryExtDao">
+    <!--tab 标签 count查询-->
+    <select id="countBill" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        t_xf_bill_deduct d with (nolock)
+        LEFT JOIN t_xf_settlement s ON
+        d.ref_settlement_no = s.settlement_no
+
+        WHERE
+        1 = 1
+        <!--    简单参数    -->
+        <include refid="simple_params"/>
+        <!--    状态参数    -->
+        <include refid="bill_query_params"/>
+        <!--    复杂参数    -->
+        <include refid="complex_params"/>
+
+
+    </select>
+
+    <!--列表数据查询-->
+    <select id="listBill" resultType="com.xforceplus.wapp.repository.entity.TXfSellerBillDeductExtEntity" >
+        SELECT
+        d.*,
+        s.settlement_status
+        FROM
+        t_xf_bill_deduct d with (nolock)
+        LEFT JOIN t_xf_settlement s ON
+        d.ref_settlement_no = s.settlement_no
+
+        WHERE
+        1 = 1
+
+        <!--    简单参数    -->
+        <include refid="simple_params"/>
+        <!--    状态参数    -->
+        <include refid="bill_query_params"/>
+        <!--    复杂参数    -->
+        <include refid="complex_params"/>
+
+        ORDER BY d.id DESC
+
+        <if test='offset != null and next !=null'>
+            offset #{offset} rows fetch next #{next} rows only
+        </if>
+
+
+    </select>
+
+    <!-- ###################################################简单参数################################################### -->
+    <sql id="simple_params">
+        <!-- 业务单ID 列表 -->
+        <if test='ids!=null and ids.size() !=0'>
+            and d.id in
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <!-- 业务单号 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(businessNo)">
+            and d.business_no like concat(#{businessNo},'%')
+        </if>
+        <!-- 业务单类型（索赔、协议、EPD） -->
+        <if test='businessType!=null'>
+            and d.business_type = #{businessType}
+        </if>
+        <!-- 税率 -->
+        <if test='taxRate != null'>
+            and d.tax_rate = #{taxRate}
+        </if>
+        <!-- 供应商编码 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(sellerNo)">
+            and d.seller_no = #{sellerNo}
+        </if>
+        <!-- 扣款日期-开始 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(deductDateStart)">
+            and d.deduct_date &gt;=  #{deductDateStart}
+        </if>
+        <!-- 扣款日期-结束 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(deductDateEnd)">
+            and d.deduct_date &lt;=  #{deductDateEnd}
+        </if>
+        <!-- 扣款发票号码 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(deductInvoice)">
+            and d.deduct_invoice = #{deductInvoice}
+        </if>
+        <!-- 定案日期-开始 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(verdictDateStart)">
+            and d.verdict_date &gt;=  #{verdictDateStart}
+        </if>
+        <!-- 定案日期-结束 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(verdictDateEnd)">
+            and d.verdict_date &lt;=  #{verdictDateEnd}
+        </if>
+        <!-- 扣款公司jv_code -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(purchaserNo)">
+            and d.purchaser_no= #{purchaserNo}
+        </if>
+        <!-- 结算单号 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(settlementNo)">
+            and d.ref_settlement_no like concat(#{settlementNo},'%')
+        </if>
+        <!-- 创建时间-开始 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(createTimeStart)">
+            and d.create_time &gt;= #{createTimeStart}
+        </if>
+        <!-- 创建时间-结束 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(createTimeEnd)">
+            and d.create_time &lt;= #{createTimeEnd}
+        </if>
+
+        <!-- 列表报告状态-不为空查询条件 -->
+        <if test='exceptionReportCodes != null and exceptionReportCodes.size()!=0'>
+            and (d.exception_status = 1 and d.exception_code in
+            <foreach collection="exceptionReportCodes" item="exceptionCode" index="index" open="(" close=")" separator=",">
+                #{exceptionCode}
+            </foreach>
+            )
+        </if>
+
+        <!-- 结算单状态查询条件部分 -->
+        <if test='settlementStatusList != null and settlementStatusList.size()!=0'>
+            AND s.settlement_status in
+            <foreach collection="settlementStatusList" item="settlementStatus" index="index" open="(" close=")" separator=",">
+                #{settlementStatus}
+            </foreach>
+        </if>
+
+    </sql>
+
+    <!-- ###################################################复杂参数################################################### -->
+    <sql id="complex_params">
+        <!-- 红字信息表编号 -->
+        <if test="@org.apache.commons.lang3.StringUtils@isNotBlank(redNotificationNo)">
+            and d.id in(SELECT deduct_id from t_xf_deduct_pre_invoice where red_notification_no = #{redNotificationNo})
+        </if>
+
+        <!-- 红字信息表状态-->
+        <if test='redNotificationStatus != null and redNotificationStatus.size !=0'>
+            AND (d.ref_settlement_no is not null and datalength(d.ref_settlement_no)>0 and (
+            select
+            count(1)
+            from
+            t_xf_deduct_pre_invoice txdpi
+            left join t_xf_pre_invoice txpi on
+            txdpi.pre_invoice_id = txpi .id
+            left join t_xf_settlement txs on
+            txpi.settlement_id= txs.id
+            where
+            txpi.pre_invoice_status &lt;&gt; 7
+            and txs.settlement_status &lt;&gt;7
+            and txdpi.deduct_id = d.id
+            and txdpi.apply_status
+            in
+            <foreach collection="redNotificationStatus" item="status" index="index" open="(" close=")" separator=",">
+                #{status}
+            </foreach>
+            )>0)
+        </if>
+
+    </sql>
+
+    <!-- ###################################################状态参数################################################### -->
+    <sql id="bill_query_params">
+        <if test="null != queryTab and null != queryTab.queryParams and queryTab.queryParams.size!=0">
+                <!-- 防止 SQL中  AND(()) 出现 -->
+                <if test="queryTab.queryParams[0].billStatus != null or queryTab.queryParams[0].settlementStatus != null">
+                    <!-- 业务单+结算单组合状态对象列表 -->
+                    <foreach collection="queryTab.queryParams" item="param" index="index" open="AND ((" close="))" separator=" OR ">
+                        <!-- 业务单状态判断 -->
+                        (
+                        <if test="param.billStatus !=null and param.billStatus.size!=0">
+                            d.status in
+                            <foreach collection="param.billStatus" item="billStatus" index="index" open="(" close=")"
+                                     separator=",">
+                                #{billStatus}
+                            </foreach>
+                        </if>
+                        <!-- 结算单状态判断 -->
+                        <if test="param.settlementStatus !=null and param.settlementStatus.size!=0">
+                            AND s.settlement_status in
+                            <foreach collection="param.settlementStatus" item="settStatus" index="index" open="("
+                                     close=")" separator=",">
+                                #{settStatus}
+                            </foreach>
+                        </if>
+                        <!-- 业务单开票状态判断 -->
+                        <if test="param.makeInvoiceStatus !=null and param.makeInvoiceStatus.size!=0">
+                            AND d.make_invoice_status in
+                            <foreach collection="param.makeInvoiceStatus" item="makeStatus" index="index" open="("
+                                     close=")" separator=",">
+                                #{makeStatus}
+                            </foreach>
+                        </if>
+                        <!-- 列外报告状态 -->
+                        <if test="param.exceptionCodes !=null and param.exceptionCodes.size!=0">
+                            AND d.exception_status = 1 and d.exception_code in
+                            <foreach collection="param.exceptionCodes" item="exceptionCode" index="index" open="("
+                                     close=")" separator=",">
+                                #{exceptionCode}
+                            </foreach>
+                        </if>
+                        )
+                    </foreach>
+                </if>
+        </if>
+    </sql>
+
+
+</mapper>

@@ -3,11 +3,8 @@ package com.xforceplus.wapp.repository.entity;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
 import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -60,13 +57,13 @@ public class TXfPreInvoiceItemEntity extends BaseEntity {
     /**
      * 不含税单价
      */
-    @TableField("unit_price")
+    @TableField(value = "unit_price",updateStrategy= FieldStrategy.IGNORED,insertStrategy = FieldStrategy.IGNORED)
     private BigDecimal unitPrice;
 
     /**
      * 数量
      */
-    @TableField("quantity")
+    @TableField(value = "quantity",updateStrategy= FieldStrategy.IGNORED,insertStrategy = FieldStrategy.IGNORED)
     private BigDecimal quantity;
 
     /**

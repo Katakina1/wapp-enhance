@@ -1,5 +1,7 @@
 package com.xforceplus.wapp.modules.exceptionreport.dto;
 
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportCodeEnum;
+import com.xforceplus.wapp.enums.exceptionreport.ExceptionReportStatusEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +16,7 @@ import java.math.BigDecimal;
 @Setter
 @Getter
 public class ClaimReportExportDto {
+    private String id;
     private String code;
     private String description;
     private String sellerNo;
@@ -23,5 +26,11 @@ public class ClaimReportExportDto {
     private String billNo;
     private String verdictDate;
     private String deductDate;
+    private String taxBalance;
+    private String status;
+    private String createTime;
+    private String remark;
+
+
 
 }

@@ -20,4 +20,8 @@ import java.util.List;
 public interface TXfSettlementItemExtDao extends BaseMapper<TXfSettlementItemEntity> {
     @Select("select  * from t_xf_settlement_item  where   settlement_no =  #{settlementNo}   "  )
     List<TXfSettlementItemEntity> queryItemBySettlementNo(String settlementNo);
+
+
+    @Select("select * from t_xf_settlement_item where ")
+    List queryAllByIdAndId();
 }

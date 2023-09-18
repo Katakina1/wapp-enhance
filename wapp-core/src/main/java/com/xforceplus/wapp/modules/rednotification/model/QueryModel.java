@@ -1,13 +1,13 @@
 package com.xforceplus.wapp.modules.rednotification.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.xforceplus.wapp.common.enums.ApproveStatus;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @ApiModel
 @Data
@@ -29,9 +29,24 @@ public class QueryModel {
 
     @ApiModelProperty("购方名称")
     private String purchaserName;
+    
+    @ApiModelProperty("申请时间-开始 YYYY-MM-DD")
+    private String invoiceDateBegin;
+    
+    @ApiModelProperty("申请时间-结束YYYY-MM-DD")
+    private String invoiceDateEnd;
+    
+    @ApiModelProperty("撤销时间-开始 YYYY-MM-DD")
+    private String cancelTimeBegin;
+    
+    @ApiModelProperty("撤销时间-结束 YYYY-MM-DD")
+    private String cancelTimeEnd;
 
     @ApiModelProperty("销方名称")
     private String sellerName;
+
+    @ApiModelProperty("销方税号")
+    private String sellerTaxNo;
 
     @ApiModelProperty("供应商公司编号")
     private String companyCode;
@@ -56,7 +71,7 @@ public class QueryModel {
     @ApiModelProperty("审批状态 1. 审核通过,2. 审核不通过,3. 已核销,4. 已撤销,5.撤销待审批")
     private Integer approveStatus;
 
-    @ApiModelProperty(" 1.未申请 2.申请中 3.已申请 4.撤销待审核 ")
+    @ApiModelProperty("1.未申请 2.申请中 3.已申请 4.撤销待审核 5.红字信息表已撤销")
     private Integer applyingStatus;
 
     @ApiModelProperty("1正常，2申请锁定中，3撤销锁定中")
@@ -71,5 +86,9 @@ public class QueryModel {
 
     @ApiModelProperty("分页大小")
     Integer pageSize ;
+    @ApiModelProperty("申请时间--开始")
+    private String createTimeBegin;
+    @ApiModelProperty("申请时间--结束")
+    private String createTimeEnd;
 
 }

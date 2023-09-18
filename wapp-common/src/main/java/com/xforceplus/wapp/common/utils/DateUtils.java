@@ -2,6 +2,7 @@ package com.xforceplus.wapp.common.utils;
 
 import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import java.text.ParseException;
@@ -28,9 +29,15 @@ public class DateUtils {
      */
     public final static String DATE_PATTERN = "yyyy-MM-dd";
     /**
+     * 时间格式(yyyyMMdd)
+     */
+    public final static String DATE_PATTERN_EN = "yyyyMMdd";
+    /**
      * 时间格式(yyyy-MM-dd HH:mm:ss)
      */
     public final static String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public final static SimpleDateFormat FORMATTER_LONG = new SimpleDateFormat(DATE_TIME_PATTERN);
 
     public static String format(Date date) {
         return format(date, DATE_PATTERN);
@@ -93,16 +100,15 @@ public class DateUtils {
 
     /**
      * 获取现在时间
+     * @throws ParseException 
      *
      * @return返回短时间格式 yyyy-MM-dd
      */
     public static Date getNowDateShort() {
         Date currentTime = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        String dateString = formatter.format(currentTime);
-        ParsePosition pos = new ParsePosition(8);
-        Date currentTime_2 = formatter.parse(dateString, pos);
-        return currentTime_2;
+        ParsePosition pos = new ParsePosition(0);
+        return formatter.parse(formatter.format(currentTime), pos);
     }
 
     /**
@@ -181,20 +187,31 @@ public class DateUtils {
      * @return
      */
     public static String dateToStrLong(Date dateDate) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateString = formatter.format(dateDate);
+        String dateString = FORMATTER_LONG.format(dateDate);
+        return dateString;
+    }
+
+
+    /**
+     * 将长时间格式时间转换为字符串 yyyy-MM-dd HH:mm:ss
+     *
+     * @param dateDate
+     * @return
+     */
+    public static String dateToStr(Date dateDate) {
+        String dateString = FORMATTER_LONG.format(dateDate);
         return dateString;
     }
 
     /**
-     * 将短时间格式时间转换为字符串 yyyy-MM-dd
+     * 将短时间格式时间转换为字符串 yyyyMMdd
      *
      * @param dateDate
      * @param
      * @return
      */
-    public static String dateToStr(Date dateDate) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    public static String dateToStrYM(Date dateDate) {
+        SimpleDateFormat formatter = new SimpleDateFormat(DATE_PATTERN_EN);
         String dateString = formatter.format(dateDate);
         return dateString;
     }
@@ -219,6 +236,19 @@ public class DateUtils {
      */
     public static Date strToDate(String strDate) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        ParsePosition pos = new ParsePosition(0);
+        Date strtodate = formatter.parse(strDate, pos);
+        return strtodate;
+    }
+
+    /**
+     * 将短时间格式字符串转换为时间 yyyy-MM-dd
+     *
+     * @param strDate
+     * @return
+     */
+    public static Date toDate(String strDate, String pattern) {
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         ParsePosition pos = new ParsePosition(0);
         Date strtodate = formatter.parse(strDate, pos);
         return strtodate;
@@ -258,31 +288,32 @@ public class DateUtils {
         return date_3_hm_date;
     }
 
-    /**
-     * 提取一个月中的第一天
-     * @return
-     */
-    public static Date getFristDate() {
-        Calendar   cal_1=Calendar.getInstance();//获取当前日期
-        cal_1.set(Calendar.DAY_OF_MONTH,1);//设置为1号,当前日期既为本月第一天
-        cal_1.set(Calendar.SECOND,0);//设置为1号,当前日期既为本月第一天
-        cal_1.set(Calendar.MINUTE,0);//设置为1号,当前日期既为本月第一天
-        cal_1.set(Calendar.HOUR_OF_DAY,0);//设置为1号,当前日期既为本月第一天
-        return cal_1.getTime();
-    }
+	/**
+	 * 提取一个月中的第一天
+	 * 
+	 * @return
+	 */
+	public static Date getFristDate() {
+		Calendar cal_1 = Calendar.getInstance();// 获取当前日期
+		cal_1.set(Calendar.DAY_OF_MONTH, 1);// 设置为1号,当前日期既为本月第一天
+		cal_1.set(Calendar.SECOND, 0);// 设置为1号,当前日期既为本月第一天
+		cal_1.set(Calendar.MINUTE, 0);// 设置为1号,当前日期既为本月第一天
+		cal_1.set(Calendar.HOUR_OF_DAY, 0);// 设置为1号,当前日期既为本月第一天
+		return cal_1.getTime();
+	}
 
 
-    /**
-     * 时间加减
-     *
-     * @return返回长时间格式 yyyy-MM-dd HH:mm:ss
-     */
-    public static Date addDate(Date date,int interval) {
-        Calendar   cal_1=Calendar.getInstance();//获取当前日期
-        cal_1.setTime(date);
-        cal_1.add(Calendar.DATE, interval);
-         return cal_1.getTime();
-    }
+	/**
+	 * 时间加减
+	 *
+	 * @return返回长时间格式 yyyy-MM-dd HH:mm:ss
+	 */
+	public static Date addDate(Date date, int interval) {
+		Calendar cal_1 = Calendar.getInstance();// 获取当前日期
+		cal_1.setTime(date);
+		cal_1.add(Calendar.DATE, interval);
+		return cal_1.getTime();
+	}
     /**
      * 提取一个月中的第一天
      * @return
@@ -315,9 +346,7 @@ public class DateUtils {
         Date currentTime = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String dateString = formatter.format(currentTime);
-        String hour;
-        hour = dateString.substring(11, 13);
-        return hour;
+        return dateString.substring(11, 13);
     }
 
     /**
@@ -887,6 +916,18 @@ public class DateUtils {
      * @param strDate
      * @return
      */
+    public static Date strToDateTaxPeriod(String strDate) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMM");
+        ParsePosition pos = new ParsePosition(0);
+        Date strtodate = formatter.parse(strDate, pos);
+        return strtodate;
+    }
+
+    /**
+     * 获取所属期格式
+     * @param strDate
+     * @return
+     */
     public static Date strToDatePeriod(String strDate) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
         ParsePosition pos = new ParsePosition(0);
@@ -935,6 +976,26 @@ public class DateUtils {
         }
         return strtostr;
     }
+
+    /**
+     * yyyy-MM-dd ת yyyyMMdd
+     * @param strDate
+     * @return
+     */
+    public static String strToStrDate3(String strDate) {
+        String  strtostr="";
+        try {
+            SimpleDateFormat formatter  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat formatter2  = new SimpleDateFormat("yyyyMMdd");
+            Date date = formatter.parse(strDate);
+            strtostr= formatter2.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return strtostr;
+    }
+
+
     public static final String YYYY_MM_DD = "yyyy-MM-dd";
 
     public static boolean isCurrentMonth(Date date){
@@ -951,10 +1012,26 @@ public class DateUtils {
     public static final SimpleDateFormat SDF_YYYY_MM_DD = new SimpleDateFormat(YYYY_MM_DD);
 
     public static String addDayToYYYYMMDD(String dateTime, int day) {
+        if (StringUtils.isBlank(dateTime)) {
+            return StringUtils.EMPTY;
+        }
         final Date parse = DateUtil.parse(dateTime);
         final Instant plus = parse.toInstant().plus(day, ChronoUnit.DAYS);
         final LocalDateTime from = LocalDateTime.ofInstant(plus, ZoneId.systemDefault());
         return from.format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+    }
+
+    /**
+     * @Description 月份小于10月补0处理
+     * @Author pengtao
+     * @return
+    **/
+    public static String getTransTime(String timeStr) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-M-dd HH:mm:ss");
+        LocalDateTime date = LocalDateTime.parse(timeStr, df);
+        DateTimeFormatter f2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String transTime = f2.format(date);
+        return transTime;
     }
 
     /**
@@ -1003,6 +1080,49 @@ public class DateUtils {
             log.error("date2DateTime error:{}",e);
         }
         return null;
+    }
+
+    /***
+     * @param strDate yyyyMMdd类型字符串
+     * @return yyyy-MM-dd类型字符串
+     */
+    public static String toFormatDate(String strDate) {
+        try {
+            Date date = new SimpleDateFormat(DATE_PATTERN_EN).parse(strDate);
+            return new SimpleDateFormat(DATE_PATTERN).format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    /***
+     * @param strDate yyyyMM类型字符串
+     * @return yyyy-MM类型字符串
+     */
+    public static String toFormatDateMM(String strDate) {
+        try {
+            Date date = new SimpleDateFormat("yyyyMM").parse(strDate);
+            return new SimpleDateFormat("yyyy-MM").format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /***
+     * @param strDate yyyy-MM类型字符串
+     * @return yyyyMM类型字符串
+     */
+    public static String toFormatDateMM2(String strDate) {
+        try {
+            Date date = new SimpleDateFormat("yyyy-MM").parse(strDate);
+            return new SimpleDateFormat("yyyyMM").format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

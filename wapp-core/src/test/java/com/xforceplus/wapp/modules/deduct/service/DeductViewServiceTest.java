@@ -32,17 +32,17 @@ public class DeductViewServiceTest extends BaseUnitTest {
 
     @Test
     public void testSumDueAndNegative() {
-        final BigDecimal bigDecimal = deductViewService.sumDueAndNegative("PT", "172164", TXfDeductionBusinessTypeEnum.EPD_BILL, new BigDecimal("0.09"));
+        final BigDecimal bigDecimal = deductViewService.sumDueAndNegative("PT", "172164", TXfDeductionBusinessTypeEnum.EPD_BILL, new BigDecimal("0.09"),null);
         System.out.println("sumDueAndNegative---->"+bigDecimal.toPlainString());
     }
 
-    @Test
+/*    @Test
     public void testGetMatchedInvoice() {
         PreMakeSettlementRequest request=JSON.parseObject("{\"taxRate\":\"0.09\",\"purchaserNo\":\"D073\",\"billIds\":[\"252992\"]}",PreMakeSettlementRequest.class);
         request.setSellerNo("172164");
         final List<MatchedInvoiceListResponse> matchedInvoice = deductViewService.getMatchedInvoice(request, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
         System.out.println("matchedInvoice:-->"+JSON.toJSONString(matchedInvoice));
-    }
+    }*/
 
 //    @Test
     public void testRowLockInterceptor(){

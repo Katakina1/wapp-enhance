@@ -2,6 +2,7 @@ package com.xforceplus.wapp.service;
 
 import com.xforceplus.wapp.dto.PreInvoiceDTO;
 import com.xforceplus.wapp.enums.InvoiceTypeEnum;
+import com.xforceplus.wapp.enums.RedNoEventTypeEnum;
 import com.xforceplus.wapp.modules.rednotification.model.*;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +41,7 @@ public class CommRedNotificationService {
         AddRedNotificationRequest request = new AddRedNotificationRequest();
         request.setAutoApplyFlag(1);
         request.setRedNotificationInfoList(Collections.singletonList(redNotificationInfo));
+        //新增红字信息
         redNotificationOuterService.add(request);
     }
 
@@ -59,9 +62,9 @@ public class CommRedNotificationService {
      * @param preInvoiceId
      */
     @Async
-    public void confirmDestroyRedNotification(Long preInvoiceId) {
+    public void confirmDestroyRedNotification(Long preInvoiceId, RedNoEventTypeEnum eventTypeEnum) {
         try {
-            Response response = redNotificationOuterService.rollback(preInvoiceId);
+            Response response = redNotificationOuterService.rollback(preInvoiceId, eventTypeEnum);
             if (response.getCode() == 0) {
                 log.error("撤销红字信息失败：" + response.getMessage());
             }
@@ -79,6 +82,11 @@ public class CommRedNotificationService {
         redNotificationOuterService.deleteRednotification(Collections.singletonList(preInvoiceId),remark);
     }
 
+    /**
+     * @Description 根据预制发票转换红字信息表
+     * @Author pengtao
+     * @return
+    **/
     private RedNotificationInfo convertApplyPreInvoiceRedNotificationDTOToRedNotificationInfo(PreInvoiceDTO applyProInvoiceRedNotificationDTO) {
 
         TXfPreInvoiceEntity preInvoice = applyProInvoiceRedNotificationDTO.getTXfPreInvoiceEntity();
@@ -98,10 +106,13 @@ public class CommRedNotificationService {
         } else {
             throw new RuntimeException("不支持的发票票种申请红字信息");
         }
+
         redNotificationMain.setOriginInvoiceType(preInvoice.getOriginInvoiceType());
+        //填充原号码代码日期，成品油必填
         redNotificationMain.setOriginalInvoiceNo(preInvoice.getOriginInvoiceNo());
         redNotificationMain.setOriginalInvoiceCode(preInvoice.getOriginInvoiceCode());
         redNotificationMain.setOriginalInvoiceDate(preInvoice.getOriginPaperDrewDate());
+
         redNotificationMain.setPurchaserTaxNo(preInvoice.getPurchaserTaxNo());
         redNotificationMain.setPurchaserName(preInvoice.getPurchaserName());
         redNotificationMain.setSellerTaxNo(preInvoice.getSellerTaxNo());
@@ -110,7 +121,11 @@ public class CommRedNotificationService {
         redNotificationMain.setAmountWithoutTax(preInvoice.getAmountWithoutTax());
         redNotificationMain.setTaxAmount(preInvoice.getTaxAmount());
         redNotificationMain.setCompanyCode(preInvoice.getSellerNo());
-        redNotificationMain.setSpecialInvoiceFlag(0);
+        if(Optional.ofNullable(preInvoice.getIsOil()).orElse(0) == 1) {
+            redNotificationMain.setSpecialInvoiceFlag(2);
+        }else{
+            redNotificationMain.setSpecialInvoiceFlag(0);
+        }
         redNotificationMain.setBillNo(preInvoice.getSettlementNo());
         redNotificationMain.setInvoiceOrigin(preInvoice.getSettlementType());
         redNotificationMain.setApplyType(0);

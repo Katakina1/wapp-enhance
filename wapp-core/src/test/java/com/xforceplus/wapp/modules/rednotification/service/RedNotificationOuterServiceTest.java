@@ -1,11 +1,15 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
+import com.google.common.collect.Lists;
 import com.xforceplus.wapp.BaseUnitTest;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.modules.rednotification.model.AddRedNotificationRequest;
 import com.xforceplus.wapp.modules.rednotification.model.Response;
+import com.xforceplus.wapp.repository.entity.TXfRedNotificationEntity;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -43,5 +47,17 @@ public class RedNotificationOuterServiceTest extends BaseUnitTest {
 
     @Test
     public void update() {
+        TXfRedNotificationEntity entity = new TXfRedNotificationEntity();
+        entity.setApplyingStatus(1);
+        TXfRedNotificationEntity entity1 = new TXfRedNotificationEntity();
+
+        entity1.setApplyingStatus(3);
+        List<TXfRedNotificationEntity> entityList = Lists.newArrayList(
+                entity,entity1
+        );
+        boolean b = entityList.stream().anyMatch(item -> item.getApplyingStatus() == 3);
+        assertTrue(b);
     }
+
+
 }

@@ -25,7 +25,7 @@ public class OperateLogServiceTest extends BaseUnitTest {
     @Test
     public void testAdd() {
         System.out.println("添加开始");
-        operateLogService.add(12L, OperateLogEnum.APPLY_RED_NOTIFICATION,"待开票",null,null);
+        operateLogService.add(12L, OperateLogEnum.APPLY_RED_NOTIFICATION,"待开票",null,0L,"系统");
         System.out.println("添加成功");
     }
 

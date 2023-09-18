@@ -1,10 +1,24 @@
 package com.xforceplus.wapp.modules.job.command;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.chain.Command;
+import org.apache.commons.chain.Context;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.converters.TXfOriginAgreementBillEntityConvertor;
-import com.xforceplus.wapp.enums.*;
+import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
+import com.xforceplus.wapp.enums.BillJobStatusEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
 import com.xforceplus.wapp.modules.blackwhitename.service.SpeacialCompanyService;
 import com.xforceplus.wapp.modules.deduct.model.AgreementBillData;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillBaseData;
@@ -13,20 +27,10 @@ import com.xforceplus.wapp.modules.job.service.OriginAgreementMergeService;
 import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
 import com.xforceplus.wapp.repository.dao.TXfOriginAgreementMergeDao;
 import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
+import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginAgreementMergeEntity;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.chain.Command;
-import org.apache.commons.chain.Context;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @program: wapp-generator
@@ -46,8 +50,6 @@ public class AgreementBillFilterCommand implements Command {
     private SpeacialCompanyService speacialCompanyService;
     @Autowired
     private DeductService deductService;
-    @Autowired
-    private OriginAgreementMergeService originAgreementMergeTmpService;
     @Autowired
     private TXfOriginAgreementMergeDao tXfOriginAgreementMergeDao;
     @Autowired
@@ -106,11 +108,12 @@ public class AgreementBillFilterCommand implements Command {
         }
         // 先获取分页总数
         long pages;
+        long start = System.currentTimeMillis();
         do {
             Page<TXfOriginAgreementMergeEntity> page = new QueryChainWrapper<>(tXfOriginAgreementMergeDao)
-                    .select("reference", "sum(with_amount) as with_amount")
+                    //.select("reference", "sum(with_amount) as with_amount")
                     .eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId)
-                    .groupBy(TXfOriginAgreementMergeEntity.REFERENCE)
+                    //.groupBy(TXfOriginAgreementMergeEntity.REFERENCE)
                     .page(new Page<>(++last, BATCH_COUNT));
             pages = page.getPages();
             filter(page.getRecords(), context, jobId);
@@ -121,6 +124,8 @@ public class AgreementBillFilterCommand implements Command {
             updateTXfBillJobEntity.setJobEntryProgress(last);
             tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
+        log.info("协议单:{} 数据入业务表花费{}ms", jobId, System.currentTimeMillis() - start);
+
     }
 
     /**
@@ -129,46 +134,39 @@ public class AgreementBillFilterCommand implements Command {
      * @param list
      */
     private void filter(List<TXfOriginAgreementMergeEntity> list, Context context, Integer jobId) {
+        if(CollectionUtils.isEmpty(list)){
+            log.info("协议单:{} 没有数据入业务表", jobId);
+            return;
+        }
+        List<String> memoList = list.stream().map(TXfOriginAgreementMergeEntity::getMemo).collect(Collectors.toList());
+        Map<String, TXfBlackWhiteCompanyEntity> hitBlackOrWhiteBy6DMap = speacialCompanyService.hitBlackOrWhiteBy6D("0", memoList);
         List<DeductBillBaseData> newList = list.stream()
-                .filter(mergeTmpEntity -> mergeTmpEntity.getWithAmount().compareTo(BigDecimal.ZERO) != 0)
+                .filter(mergeTmpEntity -> {
+                    if (StringUtils.isBlank(mergeTmpEntity.getMemo())) {
+                        return true;
+                    }
+                    //非黑名单供应商
+                    TXfBlackWhiteCompanyEntity flag = hitBlackOrWhiteBy6DMap.get(mergeTmpEntity.getMemo());
+                    if (Objects.nonNull(flag)) {
+                        log.warn("memo:{}已配置黑名单不能入库", mergeTmpEntity.getMemo());
+                        return false;
+                    }
+                    return true;
+                })
                 .map(mergeTmpEntity -> {
-                    // 根据reference合并数据 重新计算税额 含税金额
                     try {
-                        QueryWrapper<TXfOriginAgreementMergeEntity> queryWrapper = new QueryWrapper<>();
-                        queryWrapper.eq(TXfOriginAgreementMergeEntity.JOB_ID, jobId);
-                        queryWrapper.eq(TXfOriginAgreementMergeEntity.REFERENCE, mergeTmpEntity.getReference());
-                        queryWrapper.isNotNull(TXfOriginAgreementMergeEntity.TAX_RATE);
-                        List<TXfOriginAgreementMergeEntity> originAgreementMergeList = tXfOriginAgreementMergeDao.selectList(queryWrapper);
-                        if (CollectionUtils.isNotEmpty(originAgreementMergeList)) {
-                            TXfOriginAgreementMergeEntity originAgreementMergeTmp = originAgreementMergeList.get(0);
-                            originAgreementMergeTmp.setWithAmount(mergeTmpEntity.getWithAmount());
-                            BigDecimal taxAmount = originAgreementMergeTmp.getWithAmount()
-                                    .divide(originAgreementMergeTmp.getTaxRate().add(BigDecimal.ONE), 2, BigDecimal.ROUND_HALF_UP)
-                                    .multiply(originAgreementMergeTmp.getTaxRate()).setScale(2, BigDecimal.ROUND_HALF_UP);
-                            originAgreementMergeTmp.setTaxAmount(taxAmount);
-                            return convertDeductBillBaseData(originAgreementMergeTmp, context);
-                        }
-                        log.warn("协议单号[{}]税率为空", mergeTmpEntity.getReference());
+                        return convertDeductBillBaseData(mergeTmpEntity, context);
                     } catch (Exception e) {
                         log.warn(e.getMessage(), e);
                     }
                     return null;
                 })
                 .filter(Objects::nonNull)
-                .filter(mergeTmpEntity -> {
-                    if (StringUtils.isBlank(mergeTmpEntity.getMemo())) {
-                        return true;
-                    }
-                    // 非黑名单供应商
-                    boolean flag = speacialCompanyService.hitBlackOrWhiteBy6D("0", mergeTmpEntity.getMemo());
-                    if(flag){
-                        log.warn("memo:{}已配置黑名单不能入库",mergeTmpEntity.getMemo());
-                    }
-                    return !flag;
-                })
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
+            long start = System.currentTimeMillis();
             deductService.receiveData(newList, TXfDeductionBusinessTypeEnum.AGREEMENT_BILL);
+            log.info("协议单:{} 调用创建业务单接口：{}条数据花费时间{}ms", jobId, newList.size(), System.currentTimeMillis() - start);
         }
     }
 
@@ -179,10 +177,11 @@ public class AgreementBillFilterCommand implements Command {
         AgreementBillData deductBillBaseData = new AgreementBillData();
         deductBillBaseData.setBusinessNo(mergeTmpEntity.getReference());
         deductBillBaseData.setBusinessType(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL.getValue());
-        deductBillBaseData.setSellerNo(mergeTmpEntity.getCustomerNo());
+        deductBillBaseData.setSellerNo(CommonUtil.fillZero(mergeTmpEntity.getMemo()));
         deductBillBaseData.setSellerName(mergeTmpEntity.getCustomerName());
         deductBillBaseData.setDeductDate(mergeTmpEntity.getDeductDate());
-        deductBillBaseData.setPurchaserNo(mergeTmpEntity.getCompanyCode());
+        //mergeTmpEntity.getCompanyCode()) 所有的都是D073  改为WI
+        deductBillBaseData.setPurchaserNo("WI");
         deductBillBaseData.setAmountWithTax(mergeTmpEntity.getWithAmount());
         deductBillBaseData.setAmountWithoutTax(mergeTmpEntity.getWithAmount().subtract(mergeTmpEntity.getTaxAmount()));
         deductBillBaseData.setTaxRate(mergeTmpEntity.getTaxRate());
@@ -190,18 +189,16 @@ public class AgreementBillFilterCommand implements Command {
         deductBillBaseData.setBatchNo(String.valueOf(context.get(TXfBillJobEntity.JOB_NAME)));
         deductBillBaseData.setDocumentType(mergeTmpEntity.getDocumentType());
         deductBillBaseData.setDocumentNo(mergeTmpEntity.getDocumentNumber());
-        deductBillBaseData.setMemo(mergeTmpEntity.getMemo());
+        //sap 供应商编号
+        deductBillBaseData.setMemo(mergeTmpEntity.getCustomerNo());
         deductBillBaseData.setTaxCode(mergeTmpEntity.getTaxCode());
         deductBillBaseData.setReference(mergeTmpEntity.getReference());
-        if(StringUtils.isNotBlank(mergeTmpEntity.getReasonCode())) {
+        if (StringUtils.isNotBlank(mergeTmpEntity.getReasonCode())) {
             String desc = TXfOriginAgreementBillEntityConvertor.REASON_CODE_MAP.get(mergeTmpEntity.getReasonCode());
             deductBillBaseData.setReferenceType(desc);
         }
         deductBillBaseData.setReasonCode(mergeTmpEntity.getReasonCode());
-        if (mergeTmpEntity.getPostDate() != null) {
-            SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-            deductBillBaseData.setPostingDate(fmt.format(mergeTmpEntity.getPostDate()));
-        }
+        deductBillBaseData.setPostingDate(mergeTmpEntity.getPostDate());
         return deductBillBaseData;
     }
 

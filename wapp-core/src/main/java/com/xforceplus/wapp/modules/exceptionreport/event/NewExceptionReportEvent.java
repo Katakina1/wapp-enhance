@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 /**
  * 新增例外报告事件
  *
@@ -20,20 +22,29 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class NewExceptionReportEvent {
 
-    /**
-     * 协议单、EPD单、索赔单 实例对象
-     */
-    private TXfBillDeductEntity deduct;
+	/**
+	 * 1、协议单、EPD单、索赔单 实例对象
+	 */
+	private TXfBillDeductEntity deduct;
 
-    /**
-     * 例外报告类型
-     */
-    private ExceptionReportTypeEnum type;
+	/**
+	 * 1、例外报告类型
+	 */
+	private ExceptionReportTypeEnum type;
 
+	/**
+	 * 1、例外报告代码
+	 */
+	private ExceptionReportCodeEnum reportCode;
 
-    /**
-     * 例外报告代码
-     */
-    private ExceptionReportCodeEnum reportCode;
+	/**
+	 * 1、税差
+	 */
+	private BigDecimal taxBalance;
+	
+	/**
+	 * 1、例外报告原因
+	 */
+	private String message;
 
 }

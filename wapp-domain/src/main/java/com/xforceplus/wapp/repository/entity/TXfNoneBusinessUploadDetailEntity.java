@@ -1,25 +1,27 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.Date;
 /**
  * <p>
     * 非商电票上传记录明细表
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-11-01
+ * @since 2022-08-05
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper=true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @TableName(value="t_xf_none_business_upload_detail")
 public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
 
@@ -104,7 +106,17 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     private String storeEnd;
 
     /**
-     * 业务类型  0 水电费 1 leasing in  2 固定资产转移
+     * 0: 电费
+     * 1: leasing in
+     * 2: 固定资产转移
+     * 4: MTR本地订单-山姆
+     * 5: Intercom-特殊收入分配
+     * 6: E-com
+     * 7: BR-银行对账
+     * 8: SR-门店对账
+     * 9: MTR-Hyper
+     * 10: GNFR
+     * 11: 提货券
      */
     @TableField("bussiness_type")
     private String bussinessType;
@@ -116,6 +128,7 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     private String bussinessNo;
 
     /**
+     * 功能组 5 IC,  IC 固定传5
      * 发票类型 1 否 2 SGA 3 IC 4 EC 5 RE 6 SR
      */
     @TableField("invoice_type")
@@ -181,9 +194,38 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
     @TableField("submit_flag")
     private String submitFlag;
 
+    /**
+     * 备注
+     */
+    @TableField("remark")
+    private String remark;
+
+    @TableField("voucher_no")
+    private String voucherNo;
+
     @TableField("invoice_date")
     private String invoiceDate;
 
+    @TableField("entry_date")
+    private String entryDate;
+
+    @TableField("invoice_remark")
+    private String invoiceRemark;
+
+    @TableField(exist = false)
+    private String companyCode;
+
+    @TableField("tax_rate")
+    private String taxRate;
+
+    @TableField("tax_code")
+    private String taxCode;
+
+    @TableField("goods_name")
+    private String goodsName;
+
+    @TableField(exist = false)
+    private String fileName;
 
     public static final String ID = "id";
 
@@ -237,6 +279,18 @@ public class TXfNoneBusinessUploadDetailEntity extends BaseEntity {
 
     public static final String SUBMIT_FLAG = "submit_flag";
 
+    public static final String REMARK = "remark";
+
+    public static final String VOUCHER_NO = "voucher_no";
+
     public static final String INVOICE_DATE = "invoice_date";
+
+    public static final String ENTRY_DATE = "entry_date";
+
+    public static final String INVOICE_REMARK = "invoice_remark";
+
+    public static final String TAX_RATE = "tax_rate";
+
+    public static final String TAX_CODE = "tax_code";
 
 }

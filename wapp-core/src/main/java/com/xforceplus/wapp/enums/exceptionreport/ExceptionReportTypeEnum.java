@@ -3,7 +3,7 @@ package com.xforceplus.wapp.enums.exceptionreport;
 import lombok.Getter;
 
 /**
- * 例外报告类型，1 索赔单，2 协议单 ，3 EPD
+ * 例外报告类型，1 索赔单，2 协议单 ，3 EPD,4 税编分类编码
  */
 public enum ExceptionReportTypeEnum {
     /**
@@ -17,7 +17,9 @@ public enum ExceptionReportTypeEnum {
     /**
      * 协议单
      */
-    AGREEMENT(2);
+    AGREEMENT(2),
+
+    TAXCODEREPORT(4);
     /**
      * 类型
      */

@@ -40,6 +40,15 @@ public class ClaimBillItemData {
      */
     private String itemNo;
     /**
+     * 规格型号转换代码，查询用户系统接口获取商品信息
+     */
+    private String itemNbr;
+
+    /**
+     * 规格型号
+     */
+    private String itemSpec;
+    /**
      *商品条码
      */
     private String upc;

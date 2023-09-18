@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.repository.dao.TDiscountRateSettingDao">
+    <select id="findOrgByUserCode" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select orgid from t_ac_user WITH(NOLOCK) where usercode = #{userCode}
+    </select>
+    <select id="selectOrg" parameterType="java.lang.Integer" resultType="com.xforceplus.wapp.repository.entity.TAcOrgEntity">
+        select * from t_ac_org WITH(NOLOCK) where orgid = #{orgid}
+    </select>
+    <!--  修改折扣率  -->
+    <update id="editDiscountRate" parameterType="com.xforceplus.wapp.repository.entity.TAcOrgEntity">
+        UPDATE t_ac_org
+        <set>
+            discount_rate = #{entity.discountRate}
+        </set>
+        WHERE
+        orgid=#{entity.orgId}
+    </update>
+    <!--  修改限额  -->
+    <update id="editQuota" parameterType="com.xforceplus.wapp.repository.entity.TAcOrgEntity">
+        UPDATE t_ac_org
+        <set>
+            quota = #{entity.quota},
+            tax_device_type = #{entity.taxDeviceType},
+            last_modify_time = getdate()
+        </set>
+        WHERE
+        orgid=#{entity.orgId}
+    </update>
+    <!--  查询修改前折扣率  -->
+    <select id="selectNowDiscountRate"  parameterType="java.lang.Long" resultType="java.lang.Long">
+        select discount_rate from t_ac_org WITH(NOLOCK) where orgid = #{orgid}
+    </select>
+    <!--  查询修改前限额  -->
+    <select id="selectNowQuota"  parameterType="java.lang.Long" resultType="java.lang.Long">
+        select quota from t_ac_org WITH(NOLOCK) where orgid = #{orgid}
+    </select>
+
+    <select id="selectQuotaLog"  parameterType="java.lang.Long" resultType="com.xforceplus.wapp.repository.entity.OrgQuotaLogEntity">
+        select orgid,update_user as updateUser,quota_before as updateBefore,quota_after as updateAfter,update_time as updateTime from t_ac_org_quota_log WITH(NOLOCK)
+                                                                                                                                 where orgid = #{orgid} order by update_time desc
+    </select>
+    <select id="queryPage" resultType="com.xforceplus.wapp.repository.entity.TAcOrgEntity">
+        select * from t_ac_org
+        WHERE orgid is not null
+        <if test="orgCode != null and orgCode != ''">
+            and orgcode  = #{orgCode}
+        </if>
+        <if test="orgName != null and orgName != ''">
+            and orgname  = #{orgName}
+        </if>
+        <if test="offset != null and next !=null">
+            ORDER by update_time desc offset #{offset} rows fetch next #{next} rows only
+        </if>
+    </select>
+
+</mapper>

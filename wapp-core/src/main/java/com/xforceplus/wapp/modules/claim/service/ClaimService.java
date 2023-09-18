@@ -94,26 +94,24 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         //预制发票
         QueryWrapper<TXfPreInvoiceEntity> wrapper = new QueryWrapper<>();
         wrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
-        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(wrapper);
-        tXfPreInvoiceEntityList.forEach(x -> {
-            final boolean bool = Objects.equals(x.getPreInvoiceStatus(), TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
-            if (!bool){
-                throw new EnhanceRuntimeException("结算单存在未申请红字信息的预制发票，不能提交");
-            }
-        });
-
+        wrapper.eq(TXfPreInvoiceEntity.PRE_INVOICE_STATUS,TXfPreInvoiceStatusEnum.UPLOAD_RED_INVOICE.getCode());
+        Integer preInvoiceCount = tXfPreInvoiceDao.selectCount(wrapper);
+        if(preInvoiceCount > 0){
+            throw new EnhanceRuntimeException("结算单存在上传红票，不能提交");
+        }
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
-            TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
-            updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
-            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
-            tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-        });
+//        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+//            TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+//            updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
+//            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.WAIT_CHECK.getCode());
+//            tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
+//        });
 
         //修改结算单状态
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.WAIT_CHECK.getCode());
+        updateTXfSettlementEntity.setUpdateTime(new Date());
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
@@ -121,6 +119,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
+            updateTXfBillDeductEntity.setUpdateTime(new Date());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
         // 需要将数据放入到问题列表清单(关联一期)
@@ -129,7 +128,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         //日志
         TXfSettlementEntity settlement = tXfSettlementDao.selectById(tXfSettlementEntity.getId());
         operateLogService.add(settlement.getId(), OperateLogEnum.APPLY_VERDICT,
-                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),"",
                 UserUtil.getUserId(),UserUtil.getUserName());
     }
 
@@ -152,22 +151,23 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         billDeductEntityWrapper.eq(TXfBillDeductEntity.STATUS, TXfDeductStatusEnum.CLAIM_WAIT_CHECK.getCode());
         List<TXfBillDeductEntity> billDeductList = tXfBillDeductDao.selectList(billDeductEntityWrapper);
         //预制发票
-        QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
-        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
-        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
+//        QueryWrapper<TXfPreInvoiceEntity> preInvoiceEntityWrapper = new QueryWrapper<>();
+//        preInvoiceEntityWrapper.eq(TXfPreInvoiceEntity.SETTLEMENT_ID, tXfSettlementEntity.getId());
+//        List<TXfPreInvoiceEntity> tXfPreInvoiceEntityList = tXfPreInvoiceDao.selectList(preInvoiceEntityWrapper);
 
         //修改预制发票状态
-        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
-            TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
-            updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
-            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
-            tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
-        });
+//        tXfPreInvoiceEntityList.forEach(tXfPreInvoiceEntity -> {
+//            TXfPreInvoiceEntity updateTXfPreInvoiceEntity = new TXfPreInvoiceEntity();
+//            updateTXfPreInvoiceEntity.setId(tXfPreInvoiceEntity.getId());
+//            updateTXfPreInvoiceEntity.setPreInvoiceStatus(TXfPreInvoiceStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+//            tXfPreInvoiceDao.updateById(updateTXfPreInvoiceEntity);
+//        });
 
         //修改结算单状态
         TXfSettlementEntity updateTXfSettlementEntity = new TXfSettlementEntity();
         updateTXfSettlementEntity.setId(tXfSettlementEntity.getId());
         updateTXfSettlementEntity.setSettlementStatus(TXfSettlementStatusEnum.NO_UPLOAD_RED_INVOICE.getCode());
+        updateTXfSettlementEntity.setUpdateTime(new Date());
         tXfSettlementDao.updateById(updateTXfSettlementEntity);
 
         //修改索赔单状态
@@ -175,13 +175,14 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
             TXfBillDeductEntity updateTXfBillDeductEntity = new TXfBillDeductEntity();
             updateTXfBillDeductEntity.setId(tXfBillDeduct.getId());
             updateTXfBillDeductEntity.setStatus(TXfDeductStatusEnum.CLAIM_MATCH_SETTLEMENT.getCode());
+            updateTXfBillDeductEntity.setUpdateTime(new Date());
             tXfBillDeductDao.updateById(updateTXfBillDeductEntity);
         });
 
         //日志
         TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
         operateLogService.add(settlementId, OperateLogEnum.REJECT_VERDICT,
-                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),"",
                 0L,"系统");
     }
 
@@ -198,7 +199,7 @@ public class ClaimService extends ServiceImpl<TXfBillDeductDao, TXfBillDeductEnt
         //日志
         TXfSettlementEntity settlement = tXfSettlementDao.selectById(settlementId);
         operateLogService.add(settlementId, OperateLogEnum.PASS_VERDICT,
-                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),
+                TXfSettlementStatusEnum.getTXfSettlementStatusEnum(settlement.getSettlementStatus()).getDesc(),"",
                 0L,"系统");
     }
 

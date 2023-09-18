@@ -4,7 +4,9 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.xforceplus.wapp.modules.job.dto.OriginClaimItemHyperDto;
 import com.xforceplus.wapp.modules.job.service.OriginClaimItemHyperService;
+import com.xforceplus.wapp.repository.entity.TXfOriginClaimBillEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginClaimItemHyperEntity;
+import jodd.util.StringUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -12,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -76,6 +79,7 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
      * 加上存储数据库
      */
     private void saveData() {
+        long start = System.currentTimeMillis();
         List<TXfOriginClaimItemHyperEntity> entities = new ArrayList<>(list.size());
         Date now = new Date();
         list.forEach(
@@ -85,12 +89,80 @@ public class OriginClaimItemHyperDataListener extends AnalysisEventListener<Orig
                     v2.setJobId(jobId);
                     v2.setCreateTime(now);
                     v2.setUpdateTime(now);
+                    v2.setVnpkCost(v2.getVnpkCost().replace(",",""));
+                    v2.setUnitCost(v2.getUnitCost().replace(",",""));
+                    v2.setItemQty(v2.getItemQty().replace(",",""));
+                    v2.setLineCost(v2.getLineCost().replace(",",""));
+                    v2.setTaxRate(v2.getTaxRate().replace(",",""));
+                    check(v2);
                     entities.add(v2);
                 }
         );
         service.saveBatch(entities);
         cursor += list.size();
         // cursor - 1 排除表头行
-        log.info("jobId={}, 已入库{}条原始索赔单Hyper明细数据！", jobId, cursor - 1);
+        log.info("jobId={}, 已入库{}条原始索赔单Hyper明细数据！本次{}条花费{}ms", jobId, cursor - 1, list.size(), System.currentTimeMillis() - start);
+    }
+
+    private void check(TXfOriginClaimItemHyperEntity entity) {
+        String checkRemark = "";
+        if (StringUtil.isBlank(entity.getClaimNbr())) {
+            checkRemark += "CLAIM_NBR为空;";
+        }
+        if (StringUtil.isBlank(entity.getItemNbr())) {
+            checkRemark += "ITEM_NBR为空;";
+        }
+        if (StringUtil.isBlank(entity.getUpcNbr())) {
+            checkRemark += "UPC_NBR为空;";
+        }
+        if (StringUtil.isBlank(entity.getUnitCost())) {
+            checkRemark += "UNIT_COST为空;";
+        }else{
+            try {
+                new BigDecimal(entity.getUnitCost().replace(",",""));
+            } catch (Exception e) {
+                checkRemark += "UNIT_COST格式错误;";
+            }
+        }
+        if (StringUtil.isBlank(entity.getItemQty())) {
+            checkRemark += "ITEM_QTY为空;";
+        }else{
+            try {
+                new BigDecimal(entity.getItemQty().replace(",",""));
+            } catch (Exception e) {
+                checkRemark += "ITEM_QTY格式错误;";
+            }
+        }
+        if (StringUtil.isBlank(entity.getLineCost())) {
+            checkRemark += "LINE_COST为空;";
+        } else {
+            try {
+                new BigDecimal(entity.getLineCost().replace(",",""));
+            } catch (Exception e) {
+                checkRemark += "LINE_COST格式错误;";
+            }
+        }
+        if (StringUtil.isBlank(entity.getTaxRate())) {
+            checkRemark += "TAX_RATE为空;";
+        } else {
+            try {
+                if (!entity.getTaxRate().contains("%")) {
+                    checkRemark += "TAX_RATE格式错误;";
+                } else {
+                    BigDecimal taxRate = new BigDecimal(entity.getTaxRate().replace("%", "")).
+                            divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+                    if (taxRate.compareTo(BigDecimal.ZERO) == -1
+                            || taxRate.compareTo(BigDecimal.ONE) >= 0) {
+                        checkRemark += "TAX_RATE格式错误;";
+                    }
+                }
+            } catch (Exception e) {
+                checkRemark += "TAX_RATE格式错误;";
+            }
+        }
+        if (StringUtil.isNotBlank(checkRemark)) {
+            entity.setCheckRemark(checkRemark);
+            entity.setCheckStatus(1);
+        }
     }
 }

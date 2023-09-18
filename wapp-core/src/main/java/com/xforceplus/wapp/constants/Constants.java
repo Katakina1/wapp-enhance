@@ -9,6 +9,11 @@ public interface Constants {
      * 上传文件类型-pdf
      */
     public static final int FILE_TYPE_PDF = 1;
+
+    /**
+     * 上传文件类型-xml
+     */
+    public static final int FILE_TYPE_XML = 4;
 	
 	 /**
      * pdf后缀名
@@ -18,6 +23,12 @@ public interface Constants {
      * odf后缀名
      */
     public static final String SUFFIX_OF_OFD = "ofd";
+
+    /**
+     * xml后缀名
+     */
+    public static final String SUFFIX_OF_XML = "xml";
+
 
     /**
      * 导入类型 01 对应po单
@@ -70,4 +81,15 @@ public interface Constants {
      * 非商是否提交标识 已提交
      */
     String SUBMIT_NONE_BUSINESS_DONE_FLAG="1";
+
+    String ZERO_STR = "0";
+
+    String ONE_STR = "1";
+
+    String TWO_STR = "2";
+
+    /**
+     * 结算单撤销时撤销红字轮训key
+     */
+    String DESTROY_SETTLEMENT_RED_NO_PRE = "destroy_settlement_red_no_pre_";
 }

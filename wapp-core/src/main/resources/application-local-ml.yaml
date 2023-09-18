@@ -1,0 +1,197 @@
+wapp:
+  integration:
+    authentication: wapp-enhance-local202209201444229315242381
+    client-id: T395054492022092014442293152421
+    customer-no: T395054492022092014442293152421
+    tenant-id: 5793722992790675456
+    tenant-code: Walmart
+    tenant-name: Walmart
+    action:
+      # ofd解析 验签
+      ofd: 0D65D1B9BF42F41550C1B14C34531048
+      # 发票验真
+      verification: 33D6A565FB79B66FFBD9C032C9B37767
+      # 申请红字信息表
+      rednotification: 3DD2BFFF19716C647E458C384762CD5D
+      # 获取终端
+      terminals: CA55AC2878B95EBFB35A6AC769186DC0
+      splitInvoice: 586ACFC18CF4AABC2B381B21B0EEDE80
+      # 红字信息撤销
+      rollback: 9C6A9AC0AD227B3159E7CB8A85244797
+      # 红字信息生成pdf
+      genredpdf: 525002AEDBC268A6E25EB2432FC356C0
+      #识别
+      discern: 04B81510EB92BF11D04004BB6F9242EA
+      discern-callbackUrl: inte-janus.melete
+      #下载附件
+      downLoadAction: A10E9457108E98C01AACAF3C21F9E014
+      # 税编查询
+      tax-code: DB2CDA6B27E9DDEAF8BD8871DE50544C
+      #上传3.0平台 税编
+      send-tax-code: 5619FD51355672D81557FB2233E99F6B
+    host:
+      tcp: janus-tcp-inte-tx.xforceplus.com
+      http: https://janus-inte-tx.xforceplus.com:443
+    sign:
+      splitInvoice: 0618de7ca5a54e44b85293cc7929312e
+      tax-code: 9afc34ea775683aa44fc1787da9bbeaf
+      send-tax-code: 0618de7ca5a54e44b85293cc7929312e
+    port:
+      tcp: 443
+    # riversand的税编同步接口地址-生产
+    riversand:
+      url: http://esb-qa.cn.wal-mart.com/ssp-item-oe/riversand/export/v1/page/info
+  #      url: https://aloha-qa.walmartmobile.cn/item-oe/riversand/export/v1/page/info
+  db2:
+    base-url: http://127.0.0.1:8071
+  export:
+    tmp: D:/tomcattmp
+  rednotification:
+    maxApply: 99
+
+activemq:
+  queue-name:
+    export-request: local-cn.wm.host.enhance.export-request.queue # 导出申请
+    enhance-claim-verdict-queue: local-cn.wm.host.enhance.claim.verdict.queue #索赔单不定案逻辑处理
+    export-success-queue-gfone: local-cn.wm.host.export.success.queue.gfone
+    deduct-notification: fat-cn.wm.host.enhance.deduct.notification.queue
+    import-riversand-taxcode-queue: import.riverand.taxcode.queque #riversand税编导入比较逻辑处理
+taxRateSet: 0.13,0.11,0.09,0.06,0.05,0.03,0.01,0.00
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    use-generated-keys: false
+#图片存储路径
+filePathConstan:
+  remoteImageRootPath: /home/wappftp/jxfp/image/
+  remoteCostFileRootPath: /home/wappftp/jxfp/cost/
+  remoteKnowFileRootPath: /home/wappftp/jxfp/knowCenter/
+  remoteAnnouncementRootPath: /home/wappftp/jxfp/announcement/
+  remoteQuestionPaperFileRootPath: /home/wappftp/jxfp/question/
+  remoteQuestionPaperFileTempRootPath: /home/wappftp/jxfp/temp/question/
+  remoteCostFileTempRootPath: /home/wappftp/jxfp/temp/cost/
+  remoteExcelFileRootPath: /home/wappftp/wapp/excel/
+  remoteFixedRootPath: /jxfp/fixed/ #供应商红票remoteFixedRootPath
+  remoteFixedTempRootPath: /jxfp/temp/fixed/ #供应商红票远程文件临时存放路径
+  localImageRootPath: /home/vn03qsx/jxfp/image/
+  tempPath: /home/wappftp/jxfp/temp/zip/      # 文件暂存路径
+  depositPath: /home/wappftp/jxfp/zipto/ # 文件存储路
+  tempImgPath: /home/wappftp/jxfp/temp/imgzip/      # 图片临时存储路径
+  signInImgPath: /home/wappftp/jxfp/temp/image/     #扫码签收图片暂存路径
+  tempDir: /home/wappftp/jxfp/temp/excelZip/
+  sapRemoteRootPath: /jxfp/sap/source/   #sap源文件目录
+  sapRemoteBakPath: /jxfp/sap/bak/       #sap备份目录
+  sapLocalTempPath: /home/wappftp/jxfp/sap/temp/         #sap本地临时目录
+  aribatempPath: /usr/users/dxhy152/wapp/jxfp/temp/zip/      # 文件暂存路径
+  aribadepositPath: /usr/users/dxhy152/wapp/jxfp/zipto/ # 文件存储路
+  erweimaPath: /usr/users/dxhy152/wapp/jxfp/QRCode/image/
+  orderSapRemoteRootPath: /jxfp/order/sap/source/   #sap源文件目录（订单获取）
+  orderSapRemoteBakPath: /jxfp/order/sap/bak/       #sap备份目录（订单获取）
+  orderSapLocalTempPath: /usr/users/dxhy152/wapp/jxfp/order/sap/temp/
+  vendorRemoteRootPath: /jxfp/vendor/source/   #vendor源文件目录(导入10位供应商号)
+  vendorRemoteBakPath: /jxfp/vendor/bak/       #vendor备份目录
+  vendorLocalTempPath: /usr/users/dxhy152/wapp/jxfp/vendor/temp/         #vendor本地临时目录
+  localFixedRootPath: /usr/users/dxhy152/wapp/jxfp/fixed/temp/ #供应商红票本地文件存放路径
+  sso: d:/sso/sso.txt
+
+#sftp配置
+pro:
+  sftp:
+    host: 172.18.211.69  #10.44.100.123
+    username: wappftp
+    password: testwapp123
+    # 授权方式：公私钥和密码选择一个，测试时选择密码,pwd密码，private 私钥，默认private
+    auth-method: pwd
+    default:
+      port: 22
+      timeout: 60000
+      privateKey: /home/wappftp/.ssh/id_rsa
+      passphrase:
+
+agreementBill:
+  local:
+    path: /usr/local/wapp/agreement
+claimBill:
+  local:
+    path: /usr/local/wapp/claim
+epdBill:
+  local:
+    path: /usr/local/wapp/epd
+
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
+    database: 2
+  datasource:
+    druid:
+      url: jdbc:sqlserver://10.100.20.5:1433;DatabaseName=testdb01
+      driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      username: testuser01
+      password: aGSsdsJFWd_w_1
+      initial-size: 10
+      max-active: 1000
+      min-idle: 100
+      max-wait: 60000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      # testOnBorrow和testOnReturn在生产环境一般是不开启的，主要是性能考虑。失效连接主要通过testWhileIdle保证
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: admin
+        login-password: admin456123
+      filter:
+        stat:
+          log-slow-sql: true
+          slow-sql-millis: 1000
+          merge-sql: false
+          enabled: true
+        wall:
+          config:
+            multi-statement-allow: true
+    #      web-stat-filter:
+    #        url-pattern: /*
+    #        enabled: true
+    #      aop-patterns: com.xforceplus.wapp.*
+    hikari:
+      minimum-idle: 30
+      maximum-pool-size: 100
+  activemq:
+    broker-url: tcp://127.0.0.1:61616
+    user: admin
+    password: admin
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+server:
+  tomcat:
+    basedir: D:\tomcattmp
+riverSand:
+  synchro-cron: 0 0/3 * * * ?
+  latestTime: 2011-11-11 11:11:11
+#springfox:
+#  documentation:
+#    swagger:
+#      v2:
+#        path: /enhance-swagger/v2/api-docs
+
+#swagger:
+#  base:
+springfox:
+  documentation:
+    swagger-ui:
+      base-url: /enhance-swagger
+    swagger:
+      v2:
+        path: /enhance-swagger/v2/api-docs
+
+#    ui-path: /enhance-swagger

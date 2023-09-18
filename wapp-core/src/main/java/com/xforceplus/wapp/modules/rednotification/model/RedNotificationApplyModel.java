@@ -19,4 +19,10 @@ public class RedNotificationApplyModel {
     @ApiModelProperty(value = "设备唯一码")
     @NotBlank(message = "设备唯一码不能为空")
     private String deviceUn;
+    
+    @ApiModelProperty(value = "红字信息表ID，撤销时候才用")
+	private String[] redId;
+
+    @ApiModelProperty("事件类型  DESTROY_SETTLEMENT:结算单作废 SPLIT_AGAIN:结算单重新拆票")
+    private String eventType;
 }

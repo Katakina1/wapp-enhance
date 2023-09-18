@@ -57,6 +57,7 @@ public interface ElectronicInvoiceDao {
     Integer saveInvoicePP(Map<String, Object> map);
 
     void updateNoDeduction(@Param("uuid") List<String> uuid);
+    void updateDxNoDeduction(@Param("uuid") List<String> uuid);
 
 
 }

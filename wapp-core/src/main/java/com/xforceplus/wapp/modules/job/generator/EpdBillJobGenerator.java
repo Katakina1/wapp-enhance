@@ -43,7 +43,7 @@ public class EpdBillJobGenerator extends AbstractBillJobGenerator {
     @Value("${epdBill.remote.path}")
     private String remotePath;
 
-    @Async
+    @Async("taskThreadPoolExecutor")
     @Scheduled(cron = "${epdBill.scan-cron}")
     @Override
     public void generate() {
@@ -93,3 +93,4 @@ public class EpdBillJobGenerator extends AbstractBillJobGenerator {
         );
     }
 }
+

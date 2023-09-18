@@ -10,8 +10,8 @@ import java.util.List;
  * @author mashaopeng@xforceplus.com
  */
 @Data
-public class IdsDto {
+public class IdsDto<T> {
     @NotNull
     @Size(min = 1, message = "数据不能为空")
-    private List<Long> ids;
+    private List<T> ids;
 }

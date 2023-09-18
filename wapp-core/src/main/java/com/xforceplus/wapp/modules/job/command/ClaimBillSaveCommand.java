@@ -16,6 +16,7 @@ import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,7 @@ public class ClaimBillSaveCommand implements Command {
 
     @Override
     public boolean execute(Context context) throws Exception {
+    	log.info("4. start ClaimBillSaveCommand");
         String fileName = String.valueOf(context.get(TXfBillJobEntity.JOB_NAME));
         int jobStatus = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.JOB_STATUS)));
         if (isValidJobStatus(jobStatus) && isValidJobAcquisitionObject(context.get(TXfBillJobEntity.JOB_ACQUISITION_OBJECT))) {
@@ -140,8 +142,9 @@ public class ClaimBillSaveCommand implements Command {
         // 获取当前进度
         int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
-        File file = new File(localPath, fileName);
+        File file = FileUtils.getFile(localPath, fileName);
         OriginClaimBillDataListener readListener = new OriginClaimBillDataListener(jobId, cursor, service, validator);
+        long start  = System.currentTimeMillis();
         try {
             EasyExcel.read(file, OriginClaimBillDto.class, readListener)
                     .sheet(sheetName)
@@ -158,6 +161,7 @@ public class ClaimBillSaveCommand implements Command {
             // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
+        log.info("索赔单:{} 主信息原始数据入库花费{}ms", jobId, System.currentTimeMillis() - start);
     }
 
 }

@@ -1,13 +1,11 @@
 package com.xforceplus.wapp.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-
+import java.math.BigDecimal;
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -25,8 +23,6 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @TableName(value = "t_ac_org")
 public class TAcOrgEntity extends BaseEntity {
-
-    private static final long serialVersionUID = 1L;
 
     /**
      * 机构编码
@@ -264,6 +260,18 @@ public class TAcOrgEntity extends BaseEntity {
     @TableField("dq_code")
     private String dqCode;
 
+    /**
+     * 税盘类型
+     */
+    @TableField("tax_device_type")
+    private Integer taxDeviceType;
+    
+    /**
+     * 折让率
+     */
+    @TableField("discount_rate")
+    private BigDecimal discountRate;
+
     public static final String ORG_CODE = "orgCode";
 
     public static final String ORG_TYPE = "orgType";
@@ -280,7 +288,7 @@ public class TAcOrgEntity extends BaseEntity {
 
     public static final String QUOTA = "quota";
 
-
+    public static final String TAX_DEVICE_TYPE ="tax_device_type";
 
 
 }

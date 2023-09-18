@@ -23,6 +23,8 @@ public class InvoiceUtil {
     public static String getInvoiceType(String invoiceType, String invoiceCode) {
         if (Objects.nonNull(invoiceType)) {
             switch (invoiceType) {
+                case "cb":
+                    return "07";
                 case "se":
                     return "08";
                 case "ce":
@@ -35,6 +37,11 @@ public class InvoiceUtil {
                     return "01";
                 case "v":
                     return "03";
+                //qc-电子发票（普通发票），qs-电子发票（增值税专用发票）
+                case "qc":
+                    return "16";
+                case "qs":
+                    return "18";
                 default:
                     return CommonUtil.getFplx(invoiceCode);
             }

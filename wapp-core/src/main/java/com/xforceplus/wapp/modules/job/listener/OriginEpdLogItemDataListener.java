@@ -4,7 +4,9 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.xforceplus.wapp.modules.job.dto.OriginEpdLogItemDto;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
+import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
 import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
+import jodd.util.StringUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +80,7 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
      * 加上存储数据库
      */
     private void saveData() {
+        long start  = System.currentTimeMillis();
         List<TXfOriginEpdLogItemEntity> entities = new ArrayList<>(list.size());
         Date now = new Date();
         list.forEach(
@@ -86,12 +90,43 @@ public class OriginEpdLogItemDataListener extends AnalysisEventListener<OriginEp
                     v2.setJobId(jobId);
                     v2.setCreateTime(now);
                     v2.setUpdateTime(now);
+                    v2.setTaxRate(v2.getTaxRate().replace(",",""));
+                    check(v2);
                     entities.add(v2);
                 }
         );
         service.saveBatch(entities);
         cursor += list.size();
         // cursor - 1 排除表头行
-        log.info("jobId={}, 已入库{}条原始EPD单LOG明细数据！", jobId, cursor - 1);
+        log.info("jobId={}, 已入库{}条原始EPD单LOG明细数据！本次{}条花费{}ms", jobId, cursor - 1,list.size(),System.currentTimeMillis()-start);
+    }
+
+    private void check(TXfOriginEpdLogItemEntity entity){
+        String checkRemark = "";
+        if(StringUtil.isBlank(entity.getDocType())){
+            checkRemark += "Doc. Type为空;";
+        }
+        if(StringUtil.isBlank(entity.getReference())){
+            checkRemark += "Reference为空;";
+        }
+        if(StringUtil.isBlank(entity.getVendor())){
+            checkRemark += "Vendor为空;";
+        }
+        if(StringUtil.isBlank(entity.getStatusMessage())){
+            checkRemark += "Status Message为空;";
+        }
+        if(StringUtil.isBlank(entity.getTaxRate())){
+            checkRemark += "Tax Rate为空;";
+        }else {
+            try {
+                new BigDecimal(entity.getTaxRate().replace(",",""));
+            } catch (Exception e) {
+                checkRemark += "Tax Rate格式错误;";
+            }
+        }
+        if(StringUtil.isNotBlank(checkRemark)){
+            entity.setCheckRemark(checkRemark);
+            entity.setCheckStatus(1);
+        }
     }
 }

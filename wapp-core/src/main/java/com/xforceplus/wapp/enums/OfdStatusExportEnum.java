@@ -36,6 +36,13 @@ public enum OfdStatusExportEnum {
         }
         return null;
     }
-
+    public static  String getCode(String val){
+        for(OfdStatusExportEnum ele:values()){
+            if(ele.getDescription().equals(val)){
+                return ele.getCode();
+            }
+        }
+        return null;
+    }
 
 }

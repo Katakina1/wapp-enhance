@@ -1,10 +1,12 @@
 package com.xforceplus.wapp.modules.claim.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author malong@xforceplus.com
@@ -146,5 +148,15 @@ public class DeductListResponse {
     private Integer lock;
 
     private Integer settlementStatus;
+
+    private Date createTime;
+    
+    private String redNotificationNo;
+
+    @ApiModelProperty("红字信息表状态（0：无需申请；1：待申请；2：已申请；3：申请中；4：申请失败；5：撤销中；6：撤销失败；7：已撤销）")
+    private List<Integer> redNotificationStatus;
+
+    @ApiModelProperty("红字信息表编号列表")
+    private List<String> redNotificationNos;
 
 }

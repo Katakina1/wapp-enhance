@@ -2,6 +2,8 @@ package com.xforceplus.wapp.modules.deduct.model;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 类描述：接收数据清洗EPD单数据结构
  *
@@ -26,7 +28,7 @@ public class EPDBillData extends DeductBillBaseData {
     private String taxCode;
 
     /**
-     * 供应商6D
+     * 供应商sap编号
      */
     private String memo;
 
@@ -42,7 +44,7 @@ public class EPDBillData extends DeductBillBaseData {
     /**
      * 入账日期
      */
-    private String postingDate;
+    private Date postingDate;
     /**
      *付款日期
      */

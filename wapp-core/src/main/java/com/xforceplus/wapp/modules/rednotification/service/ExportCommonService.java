@@ -92,7 +92,7 @@ public class ExportCommonService {
     public  String putFile(String ftpPath ,String localFilePath,String  fileName) {
         File localFile = null;
         try {
-            localFile = new File(localFilePath);
+            localFile = FileUtils.getFile(localFilePath);
             if (!localFile.getParentFile().exists()) {
                 localFile.getParentFile().mkdirs();
             }
@@ -179,7 +179,7 @@ public class ExportCommonService {
         content.append("申请时间：");
         String createDate = DateUtils.format(new Date());
         content.append(createDate);
-        content.append("。申请导出失败，请重新申请！");
+        content.append(errmsg);
         return content.toString();
     }
 

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 
-@Mapper
+@Mapper(uses = BaseConverter.class, imports = {BigDecimal.class})
 public interface TXfOriginClaimBillEntityConvertor {
 
     TXfOriginClaimBillEntityConvertor INSTANCE = Mappers.getMapper(TXfOriginClaimBillEntityConvertor.class);
@@ -61,3 +61,4 @@ public interface TXfOriginClaimBillEntityConvertor {
         return (BigDecimal) format.parse(number, position);
     }
 }
+

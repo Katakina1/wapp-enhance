@@ -8,6 +8,7 @@ import com.xforceplus.wapp.modules.claim.dto.DeductListResponse;
 import com.xforceplus.wapp.modules.deduct.service.DeductViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
@@ -23,22 +24,23 @@ public class ClaimBillServiceTest extends BaseUnitTest {
 
     @Test
     public void testApplyClaimVerdict() {
-        // claimService.applyClaimVerdict(1853061001646080L, Collections.singletonList(50L));
+         claimService.applyClaimVerdict(1853061001646080L, Collections.singletonList(50L));
+
     }
 
     @Test
     public void testRejectClaimVerdict() {
-        //  claimService.rejectClaimVerdict(1853061001646080L);
+          claimService.rejectClaimVerdict(1853061001646080L);
     }
 
     @Test
     public void testAgreeClaimVerdict() {
-         // claimService.agreeClaimVerdict(1853061001646080L);
+          claimService.agreeClaimVerdict(1853061001646080L);
     }
 
     @Test
     public void testApplyClaimVerdictByBillDeductId() {
-        // claimService.applyClaimVerdictByBillDeductId(Arrays.asList(1L));
+         claimService.applyClaimVerdictByBillDeductId(Arrays.asList(1L));
     }
 
     @Test

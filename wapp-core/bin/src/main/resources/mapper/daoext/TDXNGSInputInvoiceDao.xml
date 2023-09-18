@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xforceplus.wapp.repository.dao.TDxNgsInputInvoiceDao">
+
+    <select id="queryPageCustoms" resultType="com.xforceplus.evat.common.entity.TDxNgsInputInvoiceEntity">
+        select *  from t_dx_ngs_input_invoice
+        WHERE id is not null
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tax_period = #{taxPeriod}
+        </if>
+        <if test="gfTaxNo != null and gfTaxNo != ''">
+            and gf_tax_no = #{gfTaxNo}
+        </if>
+        <if test="offset != null and next != null">
+            ORDER by paper_drew_date desc offset #{offset} rows fetch next #{next} rows only
+        </if>
+    </select>
+</mapper>

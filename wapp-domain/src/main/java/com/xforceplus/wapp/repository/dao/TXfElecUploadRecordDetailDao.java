@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-11-17
+* @since 2021-12-23
 */
 public interface TXfElecUploadRecordDetailDao extends BaseMapper<TXfElecUploadRecordDetailEntity> {
 

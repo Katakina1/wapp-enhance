@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -64,9 +66,24 @@ public class QueryDeductListRequest {
     @ApiModelProperty("页码")
     private Integer pageNo=1;
 
-    @ApiModelProperty("tab页标签 待匹配蓝票：0,已匹配待开票：1，已申请红字信息：2，已开票：3，已撤销：4")
+    @ApiModelProperty("tab页标签 0：待匹配蓝票（业务单）,1：已匹配待开红字信息表（结算单），2：已申请红字信息（结算单），3：已开红票（结算单），4：已撤销（业务单）")
     private String key;
 
     @ApiModelProperty("id数组")
     private String ids;
+
+    @ApiModelProperty("入库日期开始时间，YYYY-MM-DD")
+    private String createTimeBegin;
+    @ApiModelProperty("入库日期结束时间，YYYY-MM-DD")
+    private String createTimeEnd;
+    
+
+    @ApiModelProperty("红字信息表编号")
+    private String redNotificationNo;
+
+    @ApiModelProperty("结算单号")
+    private String refSettlementNo;
+    
+    @ApiModelProperty("业务单税率")
+    private BigDecimal taxRate;
 }

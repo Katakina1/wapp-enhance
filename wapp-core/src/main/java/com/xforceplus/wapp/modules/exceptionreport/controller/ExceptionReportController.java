@@ -1,5 +1,19 @@
 package com.xforceplus.wapp.modules.exceptionreport.controller;
 
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xforceplus.wapp.annotation.EnhanceApi;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -15,14 +29,9 @@ import com.xforceplus.wapp.modules.exceptionreport.dto.ReportCodeResponse;
 import com.xforceplus.wapp.modules.exceptionreport.mapstruct.ExceptionReportMapper;
 import com.xforceplus.wapp.modules.exceptionreport.service.ExceptionReportService;
 import com.xforceplus.wapp.repository.entity.TXfExceptionReportEntity;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author malong@xforceplus.com
@@ -43,6 +52,9 @@ public class ExceptionReportController {
 
     @Autowired
     private ClaimBillService claimBillService;
+
+    @Value("${wapp.bill.export.limit:99999}")
+    Integer billExportLimit;
 
     @GetMapping("claim")
     @ApiOperation("列外报告-索赔单")
@@ -96,6 +108,10 @@ public class ExceptionReportController {
     @GetMapping("agreement/export")
     @ApiOperation(value = "协议单导出")
     public R agreementExport(ExceptionReportRequest request) {
+        final Page<TXfExceptionReportEntity> page = exceptionReportService.getPage(request, ExceptionReportTypeEnum.AGREEMENT);
+        if (page.getTotal() > billExportLimit) {
+            return R.fail(String.format("操作失败,数据导出上限为:%s", billExportLimit));
+        }
         exceptionReportService.export(request, ExceptionReportTypeEnum.AGREEMENT);
         return R.ok("单据导出正在处理，请在消息中心");
     }
@@ -103,6 +119,10 @@ public class ExceptionReportController {
     @GetMapping("claim/export")
     @ApiOperation(value = "索赔单导出")
     public R claimExport(ExceptionReportRequest request) {
+        final Page<TXfExceptionReportEntity> page = exceptionReportService.getPage(request, ExceptionReportTypeEnum.CLAIM);
+        if (page.getTotal() > billExportLimit) {
+            return R.fail(String.format("操作失败,数据导出上限为:%s", billExportLimit));
+        }
         exceptionReportService.export(request, ExceptionReportTypeEnum.CLAIM);
         return R.ok("单据导出正在处理，请在消息中心");
     }
@@ -110,6 +130,10 @@ public class ExceptionReportController {
     @GetMapping("epd/export")
     @ApiOperation(value = "例外报告EPD导出")
     public R epdExport(ExceptionReportRequest request) {
+        final Page<TXfExceptionReportEntity> page = exceptionReportService.getPage(request, ExceptionReportTypeEnum.EPD);
+        if (page.getTotal() > billExportLimit) {
+            return R.fail(String.format("操作失败,数据导出上限为:%s", billExportLimit));
+        }
         exceptionReportService.export(request, ExceptionReportTypeEnum.EPD);
         return R.ok("单据导出正在处理，请在消息中心");
     }
@@ -119,5 +143,15 @@ public class ExceptionReportController {
         return PageResult.of(exceptionReportDtos, page.getTotal(), page.getPages(), page.getSize());
     }
 
-
+    @PostMapping("/import")
+    @ApiOperation(value = "例外报告导入")
+    public R exceptionReportImport(@RequestParam("file") MultipartFile file) {
+    	return exceptionReportService.exceptionReportImport(file);
+    }
+    @PostMapping("/update")
+    @ApiOperation(value = "修改例外报告")
+    public R update(@RequestBody ExceptionReportDto exceptionReportDto) {
+    	return exceptionReportService.update(exceptionReportDto);
+    }
+    
 }

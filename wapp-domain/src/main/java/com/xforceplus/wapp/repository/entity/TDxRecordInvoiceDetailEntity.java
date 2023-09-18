@@ -1,14 +1,12 @@
 package com.xforceplus.wapp.repository.entity;
 
-import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+
 /**
  * <p>
     * 底账明细表
@@ -70,13 +68,13 @@ public class TDxRecordInvoiceDetailEntity extends BaseEntity {
     /**
      * 数量
      */
-    @TableField("num")
+    @TableField(value = "num",updateStrategy= FieldStrategy.IGNORED,insertStrategy = FieldStrategy.IGNORED)
     private String num;
 
     /**
      * 单价
      */
-    @TableField("unit_price")
+    @TableField(value = "unit_price",updateStrategy= FieldStrategy.IGNORED,insertStrategy = FieldStrategy.IGNORED)
     private String unitPrice;
 
     /**
@@ -162,7 +160,47 @@ public class TDxRecordInvoiceDetailEntity extends BaseEntity {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-
+    
+    /**
+     * （业务字段）折扣金额 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal discountDetailAmount;
+    /**
+     * （业务字段）被占用的不含税金额 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal useAmountWithoutTax;
+    /**
+     * （业务字段）被占用的含税金额 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal useAmountWithTax;
+    /**
+     * （业务字段）被占用的数量 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal useQuantity;
+    /**
+     * （业务字段）协议被占用的不含税金额 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal agreementUseAmountWithoutTax;
+    /**
+     * （业务字段）协议被占用的含税金额 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal agreementUseAmountWithTax;
+    /**
+     * （业务字段）协议被占用的数量 2023-06-15新增
+     */
+    @TableField(exist = false)
+    private BigDecimal agreementUseQuantity;
+//    /**
+//     * 税收分类编码
+//     */
+//    @TableField("goods_tax_no")
+//    private String goodsTaxNo;
 
     public static final String UUID = "uuid";
 

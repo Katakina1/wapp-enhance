@@ -33,5 +33,14 @@ public enum InvoiceStatusEnum {
         return null;
     }
 
+    public static String getCode(String val) {
+        for (InvoiceStatusEnum ele : values()) {
+            if (ele.getDescription().equals(val)) {
+                return ele.getCode();
+            }
+        }
+        return null;
+    }
+
 
 }

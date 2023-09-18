@@ -11,9 +11,9 @@ import java.util.List;
  */
 @ApiModel("业务单导出请求")
 @Data
-public class DeductExportRequest extends QueryDeductListRequest{
+public class DeductExportRequest extends QueryDeductListNewRequest {
 
-    @ApiModelProperty("业务单id列表")
-    private List<Long> idList;
+    @ApiModelProperty("导出数据类型;1:主信息,默认;2:主信息及明细")
+    private Integer exportDataType = 1;
 
 }

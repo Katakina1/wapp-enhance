@@ -16,7 +16,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author malong@xforceplus.com
@@ -33,6 +36,19 @@ public class WappConfigration {
         return new IDSequence(dataCenter,false );
     }
 
+    @Bean
+    public Executor taskThreadPoolExecutor() {
+        return new ThreadPoolExecutor(2, 5, 10, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(20),
+                new ThreadFactory() {
+                    private final AtomicInteger number = new AtomicInteger(1);
+                    @Override
+                    public Thread newThread(@Nonnull Runnable r) {
+                        return new Thread(r, "ScheduledTaskPoll-" + number.getAndIncrement());
+                    }
+                });
+    }
+  
 //    @Bean
 //    public RestTemplate restTemplate(RestTemplateBuilder builder){
 //        return builder.build();

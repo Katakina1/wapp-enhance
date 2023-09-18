@@ -10,12 +10,21 @@ import lombok.Getter;
 @Getter
 public enum InvoiceExchangeStatusEnum {
 
-    TO_BE_EXCHANGE(0,"待换票"),
-    UPLOADED(1,"已上传"),
-    FINISHED(2,"已完成"),
-    DELETE(9,"删除");
+    DEFAULT(0,"初始"),
+    TO_BE_EXCHANGE(1,"待换票"),
+    UPLOADED(2,"已上传"),
+    FINISHED(3,"已完成");
 
 
-    private int code;
+    private Integer code;
     private String desc;
+
+    public static  String getValue(String code){
+        for(InvoiceExchangeStatusEnum ele:values()){
+            if(ele.getCode().equals(code)){
+                return ele.getDesc();
+            }
+        }
+        return null;
+    }
 }

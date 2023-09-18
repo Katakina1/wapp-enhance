@@ -97,8 +97,14 @@ public class PreInvoice {
     private Integer redNotificationFlag;
     @ApiModelProperty("是否有销货清单")
     private Integer goodsListFlag;
+    @ApiModelProperty("是否是成品油")
+    private Boolean isOil;
     @ApiModelProperty("更新时间")
     private Long updateTime;
     @ApiModelProperty("明细列表")
     private List<PreInvoiceItem> items;
+    @ApiModelProperty("红字信息状态")
+    private List<Integer> redNotificationStatus;
+    @ApiModelProperty("创建时间")
+    private Long createTime;
 }

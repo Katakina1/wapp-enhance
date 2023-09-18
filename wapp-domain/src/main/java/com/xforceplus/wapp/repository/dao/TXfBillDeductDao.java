@@ -1,7 +1,7 @@
 package com.xforceplus.wapp.repository.dao;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 
 /**
@@ -10,7 +10,7 @@ import com.xforceplus.wapp.repository.entity.TXfBillDeductEntity;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-10-28
+* @since 2021-12-21
 */
 public interface TXfBillDeductDao extends BaseMapper<TXfBillDeductEntity> {
 

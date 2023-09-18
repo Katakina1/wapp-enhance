@@ -1,13 +1,16 @@
 package com.xforceplus.wapp.modules.blue.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xforceplus.wapp.modules.backFill.model.BackFillVerifyBean;
+import com.xforceplus.wapp.common.utils.Asserts;
+import com.xforceplus.wapp.modules.backfill.model.BackFillVerifyBean;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
 import com.xforceplus.wapp.repository.dao.TXfBlueRelationDao;
 import com.xforceplus.wapp.repository.entity.TXfBlueRelationEntity;
 import com.xforceplus.wapp.sequence.IDSequence;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,5 +62,54 @@ public class BlueInvoiceRelationServiceImpl extends ServiceImpl<TXfBlueRelationD
         wrapper.eq(TXfBlueRelationEntity::getBlueInvoiceNo, blueInvoiceNo);
         wrapper.eq(TXfBlueRelationEntity::getBlueInvoiceCode, blueInvoiceCode);
         return super.count(wrapper) > 0;
+    }
+    
+    /**
+     * 查询红字发票对应的蓝字发票
+     *
+     * @param blueInvoiceNo 蓝字发票号码
+     * @param blueInvoiceCode 蓝字发票代码
+     * @return
+     */
+    @Override
+    public boolean existsByRedInvoice(String redInvoiceNo, String redInvoiceCode) {
+        LambdaQueryWrapper<TXfBlueRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TXfBlueRelationEntity::getRedInvoiceNo, redInvoiceNo);
+        wrapper.eq(TXfBlueRelationEntity::getRedInvoiceCode, redInvoiceCode);
+        return super.count(wrapper) > 0;
+    }
+
+    @Override
+    public boolean deleteByRedInvoice(String redInvoiceNo, String redInvoiceCode) {
+        Asserts.isNull(redInvoiceNo, "红字发票号码不能为空");
+        Asserts.isNull(redInvoiceCode, "红字发票代码不能为空");
+
+        LambdaQueryWrapper<TXfBlueRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TXfBlueRelationEntity::getRedInvoiceNo, redInvoiceNo);
+        wrapper.eq(TXfBlueRelationEntity::getRedInvoiceCode, redInvoiceCode);
+        return super.remove(wrapper);
+    }
+
+    @Override
+    public List<TXfBlueRelationEntity> getByRedInfo(String redInvoiceNo, String redInvoiceCode) {
+        Asserts.isNull(redInvoiceNo, "红字发票号码不能为空");
+        Asserts.isNull(redInvoiceCode, "红字发票代码不能为空");
+
+        LambdaQueryWrapper<TXfBlueRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TXfBlueRelationEntity::getRedInvoiceNo, redInvoiceNo);
+        wrapper.eq(TXfBlueRelationEntity::getRedInvoiceCode, redInvoiceCode);
+        return super.list(wrapper);
+    }
+
+    @Override
+    public TXfBlueRelationEntity getByBlueInfo(String blueInvoiceNo, String blueInvoiceCode) {
+        Asserts.isNull(blueInvoiceNo, "蓝字发票号码不能为空");
+        Asserts.isNull(blueInvoiceCode, "蓝字发票代码不能为空");
+
+        LambdaQueryWrapper<TXfBlueRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TXfBlueRelationEntity::getBlueInvoiceNo, blueInvoiceNo);
+        wrapper.eq(TXfBlueRelationEntity::getBlueInvoiceCode, blueInvoiceCode);
+        List<TXfBlueRelationEntity> list = super.list(wrapper);
+        return CollectionUtil.isEmpty(list) ? null : list.get(0);
     }
 }

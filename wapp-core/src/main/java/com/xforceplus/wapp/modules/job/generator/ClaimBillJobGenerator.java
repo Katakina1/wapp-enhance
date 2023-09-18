@@ -43,7 +43,7 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
     @Value("${claimBill.remote.path}")
     private String remotePath;
 
-    @Async
+    @Async("taskThreadPoolExecutor")
     @Scheduled(cron = "${claimBill.scan-cron}")
     @Override
     public void generate() {
@@ -93,3 +93,4 @@ public class ClaimBillJobGenerator extends AbstractBillJobGenerator {
         );
     }
 }
+

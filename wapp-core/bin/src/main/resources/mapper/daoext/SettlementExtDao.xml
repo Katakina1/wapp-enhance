@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xforceplus.wapp.repository.daoExt.SettlementExtDao">
+  <select id="redList" resultType="com.xforceplus.wapp.repository.vo.SettlementRedVo">
+    SELECT txrn.red_notification_no, tdri.qs_status, tds.settlement_no
+    FROM t_xf_settlement tds
+    left join t_dx_record_invoice tdri on tdri.settlement_no = tds.settlement_no
+    left join t_xf_red_notification txrn on tdri.red_notice_number = txrn.red_notification_no
+    where 1=1
+    <if test="sellerNo != null and sellerNo != ''">
+      and tds.seller_no = #{sellerNo,jdbcType=VARCHAR}
+    </if>
+
+    <if test="qsStatus != null and qsStatus != ''">
+      and tdri.qs_status = #{qsStatus,jdbcType=VARCHAR}
+    </if>
+    <if test="settlementNo != null and settlementNo != ''">
+      and tds.settlement_no = #{settlementNo,jdbcType=VARCHAR}
+    </if>
+
+    <if test="redNotification != null and redNotification != ''">
+      and txrn.red_notification_no = #{redNotification,jdbcType=VARCHAR}
+    </if>
+  </select>
+
+</mapper>

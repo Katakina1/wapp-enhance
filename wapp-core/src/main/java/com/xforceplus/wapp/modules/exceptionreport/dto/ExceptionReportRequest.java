@@ -48,6 +48,21 @@ public class ExceptionReportRequest extends PageViewRequest {
     @ApiModelProperty("例外报告代码")
     private String code;
 
+    @ApiModelProperty("处理状态,1未处理，2已处理，3无需处理，默认空全部")
+    private Integer status;
+
+    /**
+     * 报告日期开始时间
+     */
+    @ApiModelProperty("报告日期-开始 yyyy-MM-dd")
+    private String startCreateTime;
+
+    /**
+     * 报告日期结束时间
+     */
+    @ApiModelProperty("报告日期-结束 yyyy-MM-dd")
+    private String endCreateTime;
+
 
 
 }

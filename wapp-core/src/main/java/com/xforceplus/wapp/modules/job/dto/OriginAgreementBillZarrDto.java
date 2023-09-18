@@ -62,7 +62,7 @@ public class OriginAgreementBillZarrDto {
     @Length(max = 20)
     private String sapAccountingDocument;
 
-    @ExcelProperty("Reason Code")
+    @ExcelProperty(index = 12)
     @Length(max = 20)
     private String reasonCode;
 

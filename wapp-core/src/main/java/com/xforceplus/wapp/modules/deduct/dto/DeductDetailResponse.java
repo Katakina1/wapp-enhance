@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.dto;
 
+import com.xforceplus.wapp.common.dto.PageResult;
 import com.xforceplus.wapp.modules.deduct.model.DeductBillItemModel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,6 +19,8 @@ public class DeductDetailResponse {
 
     @ApiModelProperty("业务单明细列表")
     private List<DeductBillItemModel> deductBillItemList;
+    @ApiModelProperty("业务单分页信息")
+    private PageResult.Summary summary;
 
     /**
      * 业务单据编号

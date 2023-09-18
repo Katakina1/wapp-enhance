@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-11-29
+* @since 2021-12-19
 */
 public interface TXfRedNotificationDao extends BaseMapper<TXfRedNotificationEntity> {
 

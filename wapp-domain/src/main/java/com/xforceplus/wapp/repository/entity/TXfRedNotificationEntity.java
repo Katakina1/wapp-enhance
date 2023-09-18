@@ -16,7 +16,7 @@ import lombok.ToString;
     * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-11-29
+ * @since 2021-12-19
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -69,7 +69,7 @@ public class TXfRedNotificationEntity extends BaseEntity {
     private String applyRemark;
 
     /**
-     * 1.未申请 2.申请中 3.已申请 4.撤销待审核 
+     * 1.未申请 2.申请中 3.已申请 4.撤销待审核 5.挂起申请
      */
     @TableField("applying_status")
     private Integer applyingStatus;
@@ -121,6 +121,12 @@ public class TXfRedNotificationEntity extends BaseEntity {
      */
     @TableField("origin_invoice_type")
     private String originInvoiceType;
+    
+    /**
+     * 原发票类型
+     */
+    @TableField("origin_invoice_date")
+    private String originInvoiceDate;
 
     /**
      * 购方税号
@@ -278,6 +284,14 @@ public class TXfRedNotificationEntity extends BaseEntity {
     @TableField("revert_remark")
     private String revertRemark;
 
+    /**
+     * 成品油操作类型(成品油时必填)
+0-成品油涉及销售数量变更 （单位、数量和单价必填）
+1-成品油仅涉及销售金额变更 （单位、数量和单价为空）
+     */
+    @TableField("oil_memo")
+    private Integer oilMemo;
+
     @TableField("user_id")
     private Long userId;
 
@@ -289,6 +303,12 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     @TableField("terminal_type")
     private Integer terminalType;
+    
+    /**
+     * 红字信息表修改时间
+     */
+    @TableField("cancel_time")
+    private Date cancelTime;
 
 
     public static final String ID = "id";
@@ -375,6 +395,8 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String REVERT_REMARK = "revert_remark";
 
+    public static final String OIL_MEMO = "oil_memo";
+
     public static final String USER_ID = "user_id";
 
     public static final String REMARK = "remark";
@@ -383,4 +405,5 @@ public class TXfRedNotificationEntity extends BaseEntity {
 
     public static final String TERMINAL_TYPE = "terminal_type";
 
+    public static final String CANCEL_TIME = "cancel_time";
 }

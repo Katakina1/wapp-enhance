@@ -77,7 +77,12 @@ public class ShiroConfig {
         filterMap.put("/analysis/materialInvoicesSubmitStatistics/export", "anon");
         filterMap.put("/analysis/materialInvoicesSubmitStatistics/exportByEasy", "anon");
         filterMap.put("/claimOpeation/downLoadTemplate", "anon");
+        filterMap.put("/**/deduct/mock/**", "anon");
         filterMap.put("/api/red-notification/template", "anon");
+        filterMap.put("/enhance/api/agreement-temp/repairSettlementItemId", "anon");
+        filterMap.put("/enhance/api/pre-invoice/view-red-pdf/**", "anon");
+        filterMap.put("/enhance/api/job/run/**", "anon");
+        filterMap.put("/enhance/api/noneBusiness/saveMtrInfo", "anon");
 
         filterMap.put("/**/*.css", "anon");
         filterMap.put("/**/*.js", "anon");
@@ -90,13 +95,17 @@ public class ShiroConfig {
         filterMap.put("/captcha.jpg", "anon");
         filterMap.put("/websocket/**", "anon");
         filterMap.put("/core/ftp/download", "anon");
+        filterMap.put("/swagger-ui", "anon");
+        filterMap.put("/enhance-swagger/**", "anon");
         filterMap.put("/swagger-ui.html", "anon");
         filterMap.put("/item-oe/findByNbrs", "anon");
+        filterMap.put("/sendUpc", "anon");
         filterMap.put("/v2/api-docs", "anon");
         filterMap.put("/swagger-resources/**", "anon");
         filterMap.put("/", "anon");
         filterMap.put("/health", "anon");
         filterMap.put("/env", "anon");
+        filterMap.put("/enhance/api/entryAccount/*", "anon");
         filterMap.put("/**", "oauth2");
 
         shiroFilter.setFilterChainDefinitionMap(filterMap);

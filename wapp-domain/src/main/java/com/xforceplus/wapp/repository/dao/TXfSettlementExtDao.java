@@ -43,4 +43,8 @@ public interface TXfSettlementExtDao extends BaseMapper<TXfSettlementEntity> {
             " </script> "  )
      TXfSettlementEntity  querySettlementByNo(@Param("id") Long id, @Param("settlementNo") String settlementNo, @Param("status") Integer status);
 
+
+    @Select("select business_type from t_xf_settlement where settlement_no = (select settlement_no from t_xf_pre_invoice where id=#{preInvoiceId} )")
+    Integer queryBusinessTypeByPreInvoiceId(@Param("preInvoiceId")Long preInvoiceId);
+
 }

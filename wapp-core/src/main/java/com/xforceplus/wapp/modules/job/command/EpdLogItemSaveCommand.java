@@ -16,6 +16,7 @@ import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -145,8 +146,9 @@ public class EpdLogItemSaveCommand implements Command {
         }
         int cursor = 1;
         int jobId = Integer.parseInt(String.valueOf(context.get(TXfBillJobEntity.ID)));
-        File file = new File(localPath, fileName);
+        File file = FileUtils.getFile(localPath, fileName);
         OriginEpdLogItemDataListener readListener = new OriginEpdLogItemDataListener(jobId, cursor, service, validator);
+        long start  = System.currentTimeMillis();
         try {
             EasyExcel.read(file, OriginEpdLogItemDto.class, readListener)
                     .sheet(sheetName)
@@ -164,5 +166,6 @@ public class EpdLogItemSaveCommand implements Command {
             // 处理出现异常
             context.put(TXfBillJobEntity.REMARK, e.getMessage());
         }
+        log.info("EPD单:{} log原始数据入库花费{}ms", jobId, System.currentTimeMillis() - start);
     }
 }

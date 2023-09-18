@@ -1,47 +1,43 @@
 package com.xforceplus.wapp.modules.deduct.schedule;
 
-import com.xforceplus.wapp.enums.TXfDeductStatusEnum;
-import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
-import com.xforceplus.wapp.modules.deduct.service.AgreementBillService;
-import lombok.extern.slf4j.Slf4j;
+import com.xforceplus.wapp.modules.deduct.service.AgreementSchedulerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import com.xforceplus.wapp.client.LockClient;
 
-import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
 public class AgreementDeductScheduler {
 
     @Autowired
-    private AgreementBillService agreementBillService;
+    private AgreementSchedulerService agreementSchedulerService;
     public static String KEY = "Agreement-MergeSettlement";
     @Autowired
-    private StringRedisTemplate redisTemplate;
-     /**
+    private LockClient lockClient;
+
+    /**
      * 协议单合并结算单
      */
-    @Scheduled(cron="${task.AgreementDeductScheduler-cron}")
-    public void AgreementDeductDeal(){
-         if (!redisTemplate.opsForValue().setIfAbsent(KEY, KEY)) {
-                log.info("Agreement-MergeSettlement job 已经在执行，结束此次执行");
-                return;
-         }
-        redisTemplate.opsForValue().set(KEY, KEY, 2, TimeUnit.HOURS);
+    @Async("taskThreadPoolExecutor")
+    @Scheduled(cron = "${task.AgreementDeductScheduler-cron}")
+    public void AgreementDeductDeal() {
         log.info("Agreement-MergeSettlement job 开始");
-        try {
-            agreementBillService.mergeEPDandAgreementSettlement(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL, TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT, TXfDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT);
-        } catch (Exception e) {
-            log.info("Agreement-MergeSettlement job 异常：{}",e);
-        }finally {
+        lockClient.tryLock(KEY, () -> {
+            log.info("Agreement-MergeSettlement job 获取锁");
             try {
-                redisTemplate.delete(KEY);
+//                agreementBillService.mergeEPDandAgreementSettlement(TXfDeductionBusinessTypeEnum.AGREEMENT_BILL, TXfDeductStatusEnum.AGREEMENT_NO_MATCH_SETTLEMENT, TXfDeductStatusEnum.AGREEMENT_MATCH_SETTLEMENT);
+                //超期协议单执行合并结算单
+                agreementSchedulerService.makeSettlementByScheduler();
             } catch (Exception e) {
-                log.info("Agreement-MergeSettlement job 释放锁Redis： {}", e);
+                log.error(e.getMessage(), e);
             }
-            log.info("Agreement-MergeSettlement job 结束");
-        }
+            log.info("Agreement-MergeSettlement job 获取锁结束");
+        }, -1, 1);
+        log.info("Agreement-MergeSettlement job 结束");
     }
 }
+

@@ -85,6 +85,16 @@ public class OrgEntity {
     private String comType;//公司类型 0国家，1企业
     private String isBlack;//是否加入黑名单  0未加入 1 已加入
 
+    private Long discountRate; //协议折让率
+
+    public Long getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(Long discountRate) {
+        this.discountRate = discountRate;
+    }
+
     public Long getOrgid() {
         return orgid;
     }

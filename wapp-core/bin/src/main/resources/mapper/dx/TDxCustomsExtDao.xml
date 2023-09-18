@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.repository.dao.TDxCustomsExtDao">
+
+    <select id="countCustoms" resultType="java.lang.Integer">
+        select COUNT(*) from t_dx_customs
+        WHERE id is not null
+        <if test="customsNo != null and customsNo != ''">
+            and customs_no in (${customsNo})
+        </if>
+        <if test="companyTaxNo != null and companyTaxNo != ''">
+            and company_tax_no=#{companyTaxNo}
+        </if>
+        <if test="manageStatus != null and manageStatus != '' and manageStatus == 1">
+            and manage_status=#{manageStatus} and bill_status = '1' and customs_no is not null and voucher_account_time
+            is not null and voucher_no is not null
+        </if>
+        <if test="manageStatus != null and manageStatus != '' and manageStatus == 0">
+            and manage_status=#{manageStatus}
+        </if>
+        <if test="voucherNo != null and voucherNo != ''">
+            and voucher_no=#{voucherNo}
+        </if>
+        <if test="accountStatus != null and accountStatus != ''">
+            and account_status=#{accountStatus}
+        </if>
+        <if test="confirmStatus != null and confirmStatus != ''">
+            and confirm_status=#{confirmStatus}
+        </if>
+        <if test="isCheck != null and isCheck != ''">
+            and is_check in (${isCheck})
+        </if>
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tax_period=#{taxPeriod}
+        </if>
+        <if test="billStatus != null and billStatus != ''">
+            and bill_status=#{billStatus}
+        </if>
+        <if test="checkTimeStart != null and checkTimeStart != ''">
+            <![CDATA[ and (check_time BETWEEN #{checkTimeStart} and #{checkTimeEnd}) ]]>
+        </if>
+        <if test="paperDrewDateStart != null and paperDrewDateStart != ''">
+            <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
+        </if>
+        <if test="companyName != null and companyName != ''">
+            and company_name like concat("%",#{companyName})
+        </if>
+    </select>
+
+    <select id="queryPageCustoms" resultType="com.xforceplus.wapp.repository.entity.TDxCustomsEntity">
+        select * from t_dx_customs
+        WHERE id is not null
+        <if test="customsNo != null and customsNo != ''">
+            and customs_no in (${customsNo})
+        </if>
+        <if test="companyTaxNo != null and companyTaxNo != ''">
+            and company_tax_no=#{companyTaxNo}
+        </if>
+        <if test="manageStatus != null and manageStatus != '' and manageStatus == 1">
+            and manage_status=#{manageStatus} and bill_status = '1' and customs_no is not null and voucher_account_time
+            is not null and voucher_no is not null
+        </if>
+        <if test="manageStatus != null and manageStatus != '' and manageStatus == 0">
+            and manage_status=#{manageStatus}
+        </if>
+        <if test="voucherNo != null and voucherNo != ''">
+            and voucher_no=#{voucherNo}
+        </if>
+        <if test="accountStatus != null and accountStatus != ''">
+            and account_status=#{accountStatus}
+        </if>
+        <if test="confirmStatus != null and confirmStatus != ''">
+            and confirm_status=#{confirmStatus}
+        </if>
+        <if test="isCheck != null and isCheck != ''">
+            and is_check in (${isCheck})
+        </if>
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tax_period=#{taxPeriod}
+        </if>
+        <if test="billStatus != null and billStatus != ''">
+            and bill_status=#{billStatus}
+        </if>
+        <if test="checkTimeStart != null and checkTimeStart != ''">
+            <![CDATA[ and (check_time BETWEEN #{checkTimeStart} and #{checkTimeEnd}) ]]></if>
+        <if test="paperDrewDateStart != null and paperDrewDateStart != ''">
+            <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
+        </if>
+        <if test="companyName != null and companyName != ''">
+            and company_name like concat("%",#{companyName})
+        </if>
+        <if test="offset != null and next !=null">
+            ORDER by paper_drew_date desc offset #{offset} rows fetch next #{next} rows only
+        </if>
+    </select>
+
+    <update id="updateCustoms">
+        update t_dx_customs
+        set update_time          = #{updateTime},
+            effective_tax_amount = ${effectiveTaxAmount}
+        WHERE id = #{id}
+    </update>
+
+    <select id="queryAuthCount" resultType="map">
+        SELECT is_check, COUNT(*) as num
+        from t_dx_customs
+        group by is_check
+    </select>
+
+    <select id="queryEntryCount" resultType="map">
+        SELECT account_status, COUNT(*) as num
+        from t_dx_customs
+        group by account_status
+    </select>
+
+    <update id="updateByCustoms">
+        update t_dx_customs
+        set update_time = #{updateTime},
+            voucher_no  = #{voucherNo}
+        WHERE customs_no = #{customsNo}
+    </update>
+
+    <select id="countEntryCustoms" resultType="java.lang.Integer">
+        select COUNT(*) from t_dx_customs
+        WHERE id is not null
+        <if test="customsNo != null and customsNo != ''">
+            and customs_no in (${customsNo})
+        </if>
+        <if test="companyTaxNo != null and companyTaxNo != ''">
+            and company_tax_no=#{companyTaxNo}
+        </if>
+        <if test="voucherNo != null and voucherNo != ''">
+            and voucher_no=#{voucherNo}
+        </if>
+        <if test="accountStatus != null and accountStatus != ''">
+            and account_status=#{accountStatus}
+        </if>
+        <if test="confirmStatus != null and confirmStatus != ''">
+            and confirm_status=#{confirmStatus}
+        </if>
+        <if test="isCheck != null and isCheck != ''">
+            and is_check in (${isCheck})
+        </if>
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tax_period=#{taxPeriod}
+        </if>
+        <if test="billStatus != null and billStatus != ''">
+            and bill_status=#{billStatus}
+        </if>
+        <if test="unCheckTimeStart != null and unCheckTimeStart != ''">
+            <![CDATA[ and (un_check_time BETWEEN #{unCheckTimeStart} and #{unCheckTimeEnd}) ]]>
+        </if>
+        <if test="contractNo != null and contractNo != ''">
+            and contract_no=#{contractNo}
+        </if>
+        <if test="customsDocNo != null and customsDocNo != ''">
+            and customs_doc_no=#{customsDocNo}
+        </if>
+        <if test="checkTimeStart != null and checkTimeStart != ''">
+            <![CDATA[ and (check_time BETWEEN #{checkTimeStart} and #{checkTimeEnd}) ]]>
+        </if>
+        <if test="paperDrewDateStart != null and paperDrewDateStart != ''">
+            <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
+        </if>
+        <if test="voucherAccountTimeStart != null and voucherAccountTimeStart != ''">
+            and (voucher_account_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:01'))
+        </if>
+        <if test="voucherAccountTimeEnd != null and voucherAccountTimeEnd != ''">
+            and (voucher_account_time &lt;= concat(#{voucherAccountTimeEnd}, ' 23:59:59'))
+        </if>
+        <if test="companyName != null and companyName != ''">
+            and company_name like concat("%",#{companyName})
+        </if>
+    </select>
+
+    <select id="queryEntryPageCustoms" resultType="com.xforceplus.wapp.repository.entity.TDxCustomsEntity">
+        select * from t_dx_customs
+        WHERE id is not null
+        <if test="customsNo != null and customsNo != ''">
+            and customs_no in (${customsNo})
+        </if>
+        <if test="companyTaxNo != null and companyTaxNo != ''">
+            and company_tax_no=#{companyTaxNo}
+        </if>
+        <if test="voucherNo != null and voucherNo != ''">
+            and voucher_no=#{voucherNo}
+        </if>
+        <if test="accountStatus != null and accountStatus != ''">
+            and account_status=#{accountStatus}
+        </if>
+        <if test="confirmStatus != null and confirmStatus != ''">
+            and confirm_status=#{confirmStatus}
+        </if>
+        <if test="isCheck != null and isCheck != ''">
+            and is_check in (${isCheck})
+        </if>
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tax_period=#{taxPeriod}
+        </if>
+        <if test="billStatus != null and billStatus != ''">
+            and bill_status=#{billStatus}
+        </if>
+        <if test="unCheckTimeStart != null and unCheckTimeStart != ''">
+            <![CDATA[ and (un_check_time BETWEEN #{unCheckTimeStart} and #{unCheckTimeEnd}) ]]>
+        </if>
+        <if test="contractNo != null and contractNo != ''">
+            and contract_no=#{contractNo}
+        </if>
+        <if test="customsDocNo != null and customsDocNo != ''">
+            and customs_doc_no=#{customsDocNo}
+        </if>
+        <if test="checkTimeStart != null and checkTimeStart != ''">
+            <![CDATA[ and (check_time BETWEEN #{checkTimeStart} and #{checkTimeEnd}) ]]>
+        </if>
+        <if test="paperDrewDateStart != null and paperDrewDateStart != ''">
+            <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
+        </if>
+        <if test="voucherAccountTimeStart != null and voucherAccountTimeStart != ''">
+            and (voucher_account_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:01'))
+        </if>
+        <if test="voucherAccountTimeEnd != null and voucherAccountTimeEnd != ''">
+            and (voucher_account_time &lt;= concat(#{voucherAccountTimeEnd}, ' 23:59:59'))
+        </if>
+        <if test="companyName != null and companyName != ''">
+            and company_name like concat("%",#{companyName})
+        </if>
+        <if test='offset != null and next !=null'>
+            ORDER by paper_drew_date desc offset #{offset} rows fetch next #{next} rows only
+        </if>
+    </select>
+
+</mapper>

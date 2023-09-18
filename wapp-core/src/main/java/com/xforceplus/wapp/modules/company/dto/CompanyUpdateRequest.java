@@ -28,6 +28,9 @@ public class CompanyUpdateRequest implements Serializable {
     @Digits(integer = 6, fraction = 2, message = "限额额度最大为100000 保留两位小数")
     private BigDecimal quota;
 
+    @ApiModelProperty("税盘类型：1 百望单盘 2 百望服务器 3 航信单盘 4 航信服务器 5 虚拟UKey设备 8 税务UKey设备 7 税务证书")
+    private Integer taxDeviceType;
+
     @ApiModelProperty(value = "地址")
     private String address;
 

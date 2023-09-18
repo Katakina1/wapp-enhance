@@ -50,8 +50,8 @@ public class SpeclialBlackCompanyImportListener extends AnalysisEventListener<Sp
     }
     public String checkData(SpecialCompanyBlackImportDto SpecialCompanyBlackImportDto){
         StringBuilder builder = new StringBuilder();
-        if(StringUtils.isEmpty(SpecialCompanyBlackImportDto.getSapNo())){
-            builder.append("供应商编号不能为空; ");
+        if(StringUtils.isEmpty(SpecialCompanyBlackImportDto.getSupplier6d())){
+            builder.append("供应商6D不能为空; ");
         }
         if(StringUtils.isEmpty(SpecialCompanyBlackImportDto.getCompanyName())){
             builder.append("供应商名称不能为空; ");

@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-10-23
+* @since 2021-12-10
 */
 public interface TXfExceptionReportDao extends BaseMapper<TXfExceptionReportEntity> {
 

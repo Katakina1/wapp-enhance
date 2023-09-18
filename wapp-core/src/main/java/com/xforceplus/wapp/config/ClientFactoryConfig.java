@@ -30,7 +30,6 @@ public class ClientFactoryConfig {
 
     @Bean
     HttpClientFactory getHttpClientFactory() {
-
         return HttpClientFactory.getHttpClientFactory(janusPath, authentication);
     }
 

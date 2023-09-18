@@ -26,6 +26,8 @@ public interface TXfOriginAgreementBillEntityConvertor {
                     .put("TN", BigDecimal.valueOf(0.10))
                     .put("TO", BigDecimal.valueOf(0.13))
                     .put("TP", BigDecimal.valueOf(0.09))
+                    .put("T139", BigDecimal.valueOf(0.13))
+                    .put("T913", BigDecimal.valueOf(0.09))
                     .build();
 
    Map<String,String> REASON_CODE_MAP = ImmutableMap
@@ -69,6 +71,7 @@ public interface TXfOriginAgreementBillEntityConvertor {
            .put("551", "品牌洞察服务费")
            .put("541", "推广服务费")
            .put("072", "彩页")
+           .put("72", "彩页")
            .put("188", "广告")
            .put("591", "逾期未领取退货违约金")
            .put("641", "多媒体促销服务费")
@@ -77,11 +80,15 @@ public interface TXfOriginAgreementBillEntityConvertor {
            .put("430", "不诚实行为违约金")
            .put("206", "销售返利")
            .put("046", "折扣券补偿")
+           .put("46", "折扣券补偿")
            .put("057", "降价")
+           .put("57", "降价")
            .put("548", "联合促销补偿")
            .put("033", "无退货折扣")
+           .put("33", "无退货折扣")
            .put("317", "无退货折扣")
            .put("064", "商品瑕疵违约金")
+           .put("64", "商品瑕疵违约金")
            .put("286", "未妥当送货/未送货违约金")
            .put("290", "未按预约时间送货违约金")
            .put("589", "运输及配送服务折扣")

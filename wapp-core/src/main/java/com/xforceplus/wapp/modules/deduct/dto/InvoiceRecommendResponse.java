@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.deduct.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,17 +15,20 @@ import java.math.BigDecimal;
  **/
 @Setter
 @Getter
+@ApiModel
 public class InvoiceRecommendResponse {
-    private String invoiceDate;
-    private String invoiceNo;
-    private String invoiceCode;
-    private String goodsName;
-    /**
-     * 可用金额
-     */
-    @ApiModelProperty("匹配金额")
-    private BigDecimal remainingAmount;
-
     @ApiModelProperty("发票ID")
     private Long id;
+    @ApiModelProperty("开票日期")
+    private String invoiceDate;
+    @ApiModelProperty("发票代码")
+    private String invoiceCode;
+    @ApiModelProperty("发票号码")
+    private String invoiceNo;
+    @ApiModelProperty("商品名称")
+    private String goodsName;
+    @ApiModelProperty("是否成品油")
+    private Boolean isOil;
+    @ApiModelProperty("剩余匹配金额")
+    private BigDecimal remainingAmount;
 }

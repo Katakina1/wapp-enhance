@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.billdeduct.service;
 
 
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,9 +10,11 @@ import com.xforceplus.wapp.repository.dao.TXfBillDeductItemDao;
 import com.xforceplus.wapp.repository.dao.TXfBillDeductItemRefDao;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemEntity;
 import com.xforceplus.wapp.repository.entity.TXfBillDeductItemRefEntity;
+import com.xforceplus.wapp.repository.entity.TaxCodeEntity;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -75,5 +78,16 @@ public class BillDeductItemServiceImpl extends ServiceImpl<TXfBillDeductItemDao,
             }
         });
         return map;
+    }
+
+    public void updateItem(String itemNo, String sellerNo, String goodsTaxNo) {
+        if (StringUtils.isBlank(goodsTaxNo)) {
+            return;
+        }
+        new LambdaUpdateChainWrapper<>(getBaseMapper())
+                .set(TXfBillDeductItemEntity::getGoodsTaxNo, goodsTaxNo)
+                .eq(TXfBillDeductItemEntity::getItemNo, itemNo)
+                .eq(TXfBillDeductItemEntity::getSellerNo, sellerNo)
+                .update();
     }
 }

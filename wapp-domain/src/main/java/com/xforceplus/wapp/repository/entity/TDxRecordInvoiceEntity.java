@@ -1,22 +1,22 @@
 package com.xforceplus.wapp.repository.entity;
 
-import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.xforceplus.wapp.repository.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.util.Date;
 /**
  * <p>
-    * 底账表
-    * </p>
+ * 底账表
+ * </p>
  *
  * @author malong@xforceplus.com
- * @since 2021-11-17
+ * @since 2021-12-02
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -902,6 +902,18 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     @TableField("remaining_amount")
     private BigDecimal remainingAmount;
 
+    /**
+     * 换票状态 0初始 1待换票 2已上传 3已完成
+     */
+    @TableField("exchange_status")
+    private Integer exchangeStatus;
+
+    /**
+     * 换票原因
+     */
+    @TableField("exchange_reason")
+    private String exchangeReason;
+
     @TableField("host_taxRate")
     private BigDecimal hostTaxrate;
 
@@ -970,6 +982,17 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     @TableField("sap")
     private String sap;
+
+    @TableField("is_oil")
+    private Integer isOil;
+    
+    @TableField("host_inv")
+    private String hostInv;
+    @TableField("special_flag")
+    private String specialFlag;
+
+    @TableField(exist = false)
+    private String scanUser;
 
 
     public static final String INVOICE_TYPE = "invoice_type";
@@ -1264,6 +1287,10 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
 
     public static final String REMAINING_AMOUNT = "remaining_amount";
 
+    public static final String EXCHANGE_STATUS = "exchange_status";
+
+    public static final String EXCHANGE_REASON = "exchange_reason";
+
     public static final String HOST_TAXRATE = "host_taxRate";
 
     public static final String CONFIRM_REASON = "confirm_reason";
@@ -1309,5 +1336,10 @@ public class TDxRecordInvoiceEntity extends BaseEntity {
     public static final String BORROW_USER = "borrow_user";
 
     public static final String SAP = "sap";
+
+    public static final String IS_OIL = "is_oil";
+
+    public static final String HOST_INV = "host_inv";
+    public static final String SPECIAL_FLAG = "special_flag";
 
 }

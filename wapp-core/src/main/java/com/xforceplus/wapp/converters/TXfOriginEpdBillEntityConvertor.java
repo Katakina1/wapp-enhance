@@ -35,7 +35,7 @@ public interface TXfOriginEpdBillEntityConvertor {
     @Mapping(source = "documentType", target = "documentType")
     // @Mapping(source = "referenceKey1", target = "")
     // @Mapping(source = "cashDiscAmtLc", target = "")
-    @Mapping(source = "account", target = "sellerNo")
+    @Mapping(source = "account", target = "memo")
     @Mapping(source = "clearingDate", target = "deductDate", dateFormat = "yyyy/MM/dd")
     @Mapping(target = "amountWithTax", expression = "java(parse(tXfOriginEpdBillEntity.getAmountInLocalCurrency(),0))")
     // @Mapping(source = "referenceKey2", target = "")
@@ -48,6 +48,7 @@ public interface TXfOriginEpdBillEntityConvertor {
     @Mapping(source = "companyCode", target = "purchaserNo")
     @Mapping(source = "text", target = "remark")
     @Mapping(target = "taxRate", expression = "java(TAX_CODE_TRANSLATOR.get(tXfOriginEpdBillEntity.getTaxCode()))")
+//    @Mapping( target = "sellerNo" ,expression = "java(com.xforceplus.wapp.common.utils.CommonUtil.fillZero(tXfOriginEpdBillEntity.getVendorNumber()))")
     /**
      * 转换成EPDBillData
      *

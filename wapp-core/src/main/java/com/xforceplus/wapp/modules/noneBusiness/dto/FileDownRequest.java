@@ -19,7 +19,9 @@ public class FileDownRequest implements Serializable {
 
     private Integer pdf;
     private Integer ofd;
+    private Integer xml;
     private List<Long> ids;
 
+    @Deprecated
     private String single;
 }

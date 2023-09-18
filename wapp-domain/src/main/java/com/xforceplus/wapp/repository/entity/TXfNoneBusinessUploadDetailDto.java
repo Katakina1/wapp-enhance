@@ -3,6 +3,7 @@ package com.xforceplus.wapp.repository.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 
@@ -97,9 +98,14 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
     private String bussinessNo;
 
     /**
-     * 发票类型 1 否 2 SGA 3 IC 4 EC 5 RE 6 SR
+     * 发票类型 1 SG 2 A 3 RE 4 FA
      */
     private String invoiceType;
+
+    /**
+     * 发票类型 01-增值税专用发票 03-机动车销售统一发票 04-增值税普通发票 10-电子发票 11-卷票 14-通行费发票
+     */
+    private String fpInvoiceType;
 
     /**
      * 源文件服务返回-文件ID
@@ -195,6 +201,24 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
      */
     private String taxRate;
     /**
+     * 税率字符串， 前端展示用
+     */
+    private String taxRateStr;
+
+    public String getTaxRateStr() {
+        String taxRateStr = "";
+        if (StringUtils.isNotEmpty(taxRate)) {
+            String split = "、";
+            String[] taxRates = taxRate.split(split);
+            for (String taxRate : taxRates) {
+                taxRateStr = taxRateStr +  taxRate + "%" + split;
+            }
+            taxRateStr = taxRateStr.replaceAll( split + "$", "");
+        }
+        return taxRateStr;
+    }
+
+    /**
      * 发票状态
      */
     private String invoiceStatus;
@@ -212,10 +236,40 @@ public class TXfNoneBusinessUploadDetailDto extends BaseEntity {
     private String sap;
 
     /**
-     * supplieId
+     * supplieId (沃尔玛结算平台-发票管理-非商电票上传 展示供应商id)
      */
     private String supplierId;
+    /**
+     * 备注
+     */
+    private String remark;
+    /**
+     * 发票备注
+     */
+    private String invoiceRemark;
+  
+   /**
+     * 公司代码
+     */
+    private String companyNo;
 
+    /**
+     * 税码
+     */
+    private String taxCode;
 
+    private String entryDate;
 
+    private String voucherNo;
+
+    /**
+     * 货物或应税劳务名称
+     * chc发票到web, t_xf_none_business_upload_detail表新增了 goods_name 可直接查询
+     */
+    private String goodsName;
+
+    /**
+     * 发票代码 + 发票号码
+     */
+    private String uuid;
 }

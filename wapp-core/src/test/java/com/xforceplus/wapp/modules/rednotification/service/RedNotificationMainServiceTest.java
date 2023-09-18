@@ -1,5 +1,6 @@
 package com.xforceplus.wapp.modules.rednotification.service;
 
+import com.alibaba.fastjson.JSON;
 import com.xforceplus.wapp.BaseUnitTest;
 import com.xforceplus.wapp.WappApplication;
 import com.xforceplus.wapp.common.dto.PageResult;
@@ -56,7 +57,15 @@ public class RedNotificationMainServiceTest extends BaseUnitTest {
     @Test
     public void applyByPage() {
     }
-
+    
+    @Test
+    public void test_deleteById() {
+    	String temp = "{\"queryModel\":{\"isAllSelected\":false},\"redId\":[\"12738027982074199\"]}";
+    	RedNotificationDeleteRequest request = JSON.parseObject(temp, RedNotificationDeleteRequest.class);
+    	Response<String> result = redNotificationMainService.deleteById(request,"admin","admin");
+    	System.err.println(JSON.toJSON(result));
+    }
+    
     @Test
     public void summary() {
         QueryModel queryModel = new QueryModel();

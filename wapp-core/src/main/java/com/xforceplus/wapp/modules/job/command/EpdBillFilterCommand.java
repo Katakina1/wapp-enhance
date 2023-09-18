@@ -2,6 +2,7 @@ package com.xforceplus.wapp.modules.job.command;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xforceplus.wapp.common.utils.CommonUtil;
 import com.xforceplus.wapp.converters.TXfOriginEpdBillEntityConvertor;
 import com.xforceplus.wapp.enums.BillJobEntryObjectEnum;
 import com.xforceplus.wapp.enums.BillJobStatusEnum;
@@ -13,10 +14,7 @@ import com.xforceplus.wapp.modules.deduct.service.DeductService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdBillService;
 import com.xforceplus.wapp.modules.job.service.OriginEpdLogItemService;
 import com.xforceplus.wapp.repository.dao.TXfBillJobDao;
-import com.xforceplus.wapp.repository.entity.TXfBillJobEntity;
-import com.xforceplus.wapp.repository.entity.TXfBlackWhiteCompanyEntity;
-import com.xforceplus.wapp.repository.entity.TXfOriginEpdBillEntity;
-import com.xforceplus.wapp.repository.entity.TXfOriginEpdLogItemEntity;
+import com.xforceplus.wapp.repository.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -28,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -107,11 +106,13 @@ public class EpdBillFilterCommand implements Command {
         }
         // 先获取分页总数
         long pages;
+        long start = System.currentTimeMillis();
         do {
             Page<TXfOriginEpdBillEntity> page = service.page(
                     new Page<>(++last, BATCH_COUNT),
                     new QueryWrapper<TXfOriginEpdBillEntity>()
                             .lambda()
+                            .eq(TXfOriginEpdBillEntity::getCheckStatus,0)
                             .eq(TXfOriginEpdBillEntity::getJobId, jobId)
                             .orderByAsc(TXfOriginEpdBillEntity::getId)
             );
@@ -125,6 +126,7 @@ public class EpdBillFilterCommand implements Command {
             updateTXfBillJobEntity.setJobEntryProgress(last);
             tXfBillJobDao.updateById(updateTXfBillJobEntity);
         } while (last < pages);
+        log.info("EPD单:{} 数据入业务表花费{}ms", jobId, System.currentTimeMillis() - start);
     }
 
     /**
@@ -135,6 +137,12 @@ public class EpdBillFilterCommand implements Command {
      * @param jobName
      */
     private void filter(int jobId, List<TXfOriginEpdBillEntity> list, String jobName) {
+        if(CollectionUtils.isEmpty(list)){
+            log.info("EPD单:{} 没有数据入业务表", jobId);
+            return;
+        }
+        List<String> accountList = list.stream().map(TXfOriginEpdBillEntity::getAccount).collect(Collectors.toList());
+        Map<String,TXfBlackWhiteCompanyEntity> hitBlackOrWhiteBySapNoMap = speacialCompanyService.hitBlackOrWhiteBySapNo("1", accountList);
         List<DeductBillBaseData> newList = list
                 .stream()
                 // Document Type 文档类型 只取KO类型
@@ -144,20 +152,21 @@ public class EpdBillFilterCommand implements Command {
                         return false;
                     } else {
                         // 白名单供应商
-                        boolean flag = speacialCompanyService.hitBlackOrWhiteBySapNo("1", v.getAccount());
-                        if(!flag){
+                        TXfBlackWhiteCompanyEntity flag = hitBlackOrWhiteBySapNoMap.get(v.getAccount());
+                        if(Objects.isNull(flag)){
                             log.warn("sap编号:{} 未配置白名单不能入库",v.getAccount());
+                            return false;
                         }
-                        return flag;
+                        return true;
                     }
                 })
                 .map(v -> {
                     try {
                         EPDBillData data = TXfOriginEpdBillEntityConvertor.INSTANCE.toEpdBillData(v);
                         if (StringUtils.isNotBlank(v.getAccount())) {
-                            TXfBlackWhiteCompanyEntity tXfBlackWhiteCompanyEntity = speacialCompanyService.getBlackListBySapNo(v.getAccount(), "1");
-                            if (tXfBlackWhiteCompanyEntity != null) {
-                                data.setMemo(tXfBlackWhiteCompanyEntity.getSupplier6d());
+                            TXfBlackWhiteCompanyEntity blackWhiteCompanyEntity = hitBlackOrWhiteBySapNoMap.get(v.getAccount());
+                            if (Objects.nonNull(blackWhiteCompanyEntity)) {
+                                data.setSellerNo(CommonUtil.fillZero(blackWhiteCompanyEntity.getSupplier6d()));
                             }
                         }
                         data.setBatchNo(jobName);
@@ -173,10 +182,12 @@ public class EpdBillFilterCommand implements Command {
                             if (Objects.isNull(v.getTaxRate())) {
                                 // 如税率不存在，根据发票号码去《EPD LOG 明细》中找
                                 // 根据account和reference
-                                String taxRate = getTaxRate(jobId, v.getSellerNo(), v.getReference());
+                                String taxRate = getTaxRate(jobId, v.getMemo(), v.getReference());
                                 if (NumberUtils.isNumber(taxRate)) {
                                     // LOG明细中的tax rate为整数，将小数点左移两位
                                     v.setTaxRate(new BigDecimal(taxRate).movePointLeft(2));
+                                }else{
+                                    log.warn("EPD-account:{} taxRate为空或者非法",v.getMemo());
                                 }
                             }
                         }
@@ -185,7 +196,10 @@ public class EpdBillFilterCommand implements Command {
                 .filter(v -> Objects.nonNull(v.getTaxRate()))
                 .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newList)) {
+            long start = System.currentTimeMillis();
             deductService.receiveData(newList, TXfDeductionBusinessTypeEnum.EPD_BILL);
+            log.info("EPD:{} 主信息调用创建业务单接口：{}条数据花费时间{}ms", jobId, newList.size(), System.currentTimeMillis() - start);
+
         }
     }
 
@@ -201,6 +215,7 @@ public class EpdBillFilterCommand implements Command {
                         // 只返回第一行数据，否则getOne可能会报错
                         .select("top 1 *")
                         .lambda()
+                        .eq(TXfOriginEpdLogItemEntity::getCheckStatus, 0)
                         .eq(TXfOriginEpdLogItemEntity::getJobId, jobId)
                         // 《EPD LOG 明细》只选Doc. Type = Z1,Satus Message = Successfully updated
                         .eq(TXfOriginEpdLogItemEntity::getDocType, "Z1")

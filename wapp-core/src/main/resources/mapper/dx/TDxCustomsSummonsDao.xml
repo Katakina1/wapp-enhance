@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xforceplus.wapp.repository.dao.TDxCustomsSummonsDao">
+
+    <select id="queryCount" resultType="int">
+        SELECT count(tdcs.id)
+        FROM t_dx_customs_summons tdcs left join t_dx_customs tdc on tdcs.invoice_no = tdc.customs_no
+        WHERE tdcs.id is not null
+        <if test="customsNo != null and customsNo != ''">
+            and tdcs.invoice_no = #{customsNo}
+        </if>
+        <if test="venderid != null and venderid != ''">
+            and tdcs.venderid = #{venderid}
+        </if>
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tdc.tax_period = #{taxPeriod}
+        </if>
+        <if test="certificateNo != null and certificateNo != ''">
+            and tdcs.certificate_no = #{certificateNo}
+        </if>
+        <if test="contractNo != null and contractNo != ''">
+            and tdc.contract_no = #{contractNo}
+        </if>
+        <if test="paperDrewDateStart != null and paperDrewDateEnd != null">
+            <![CDATA[ and (tdcs.invoice_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
+        </if>
+        <if test="voucherAccountTimeStart != null and voucherAccountTimeEnd != null">
+            <![CDATA[ and (tdc.voucher_account_time BETWEEN #{voucherAccountTimeStart} and #{voucherAccountTimeEnd} ) ]]>
+        </if>
+        <if test="isChecks != null ">
+            and tdcs.is_check in
+            <foreach collection="isChecks" item="isCkeck" open="(" close=")" separator=",">
+                #{isCkeck}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryByPage" resultType="com.xforceplus.wapp.repository.entity.TDxCustomsSummonsEntity">
+        SELECT tdcs.*,tdc.account_status,tdc.tax_period,tdc.voucher_account_time,tdc.contract_no FROM
+        t_dx_customs_summons tdcs left join t_dx_customs tdc on tdcs.invoice_no = tdc.customs_no
+        WHERE tdcs.id is not null
+        <if test="customsNo != null and customsNo != ''">
+            and tdcs.invoice_no = #{customsNo}
+        </if>
+        <if test="venderid != null and venderid != ''">
+            and tdcs.venderid = #{venderid}
+        </if>
+        <if test="taxPeriod != null and taxPeriod != ''">
+            and tdc.tax_period = #{taxPeriod}
+        </if>
+        <if test="certificateNo != null and certificateNo != ''">
+            and tdcs.certificate_no = #{certificateNo}
+        </if>
+        <if test="contractNo != null and contractNo != ''">
+            and tdc.contract_no = #{contractNo}
+        </if>
+        <if test="paperDrewDateStart != null and paperDrewDateEnd != null">
+            <![CDATA[ and (tdcs.invoice_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
+        </if>
+        <if test="voucherAccountTimeStart != null and voucherAccountTimeEnd != null">
+            <![CDATA[ and (tdc.voucher_account_time BETWEEN #{voucherAccountTimeStart} and #{voucherAccountTimeEnd} ) ]]>
+        </if>
+        <if test="offset != null and next !=null">
+            <if test='isChecks != null '>
+                and tdcs.is_check in
+                <foreach collection="isChecks" item="isCkeck" open="(" close=")" separator=",">
+                    #{isCkeck}
+                </foreach>
+            </if>
+            ORDER by tdcs.invoice_date desc offset #{offset} rows fetch next #{next} rows only
+        </if>
+    </select>
+
+    <select id="queryByIds" resultType="com.xforceplus.wapp.repository.entity.TDxCustomsSummonsEntity">
+        SELECT tdcs.*,tdc.account_status,tdc.tax_period,tdc.voucher_account_time,tdc.contract_no FROM
+        t_dx_customs_summons tdcs left join t_dx_customs tdc on tdcs.invoice_no = tdc.customs_no
+        WHERE tdcs.id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

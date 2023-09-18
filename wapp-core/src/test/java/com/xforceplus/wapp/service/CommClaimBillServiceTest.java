@@ -1,23 +1,19 @@
 package com.xforceplus.wapp.service;
 
-import com.xforceplus.wapp.BaseUnitTest;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Slf4j
+import com.xforceplus.wapp.BaseUnitTest;
+
 public class CommClaimBillServiceTest extends BaseUnitTest {
 
-    @Autowired
+	@Autowired
     private CommClaimService commClaimService;
 
     @Test
     public void testDestroyClaimSettlement() {
-       // commClaimService.destroyClaimSettlement(1L);
+        commClaimService.destroyClaimSettlement(108038736251535360L);
+        //Mockito.verify(commClaimService, Mockito.times(1)).destroyClaimSettlement(43181899665424384L);
     }
 
-    @Test
-    public void testSplitPreInvoice() {
-        // commClaimService.splitPreInvoice(1L);
-    }
 }

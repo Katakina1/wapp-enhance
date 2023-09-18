@@ -1,7 +1,5 @@
 package com.xforceplus.wapp.modules.blackwhitename.dto;
 
-import com.alibaba.excel.annotation.ExcelProperty;
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 /**

@@ -41,8 +41,8 @@ public class MessageListener implements IMessageListener {
         return Optional.ofNullable(map.get(requestName)).map(x -> x.handle(sealedMessage)).orElseGet(
                 () ->
                 {
-                    log.info("requestName:[{}] not found", requestName);
-                    return Boolean.FALSE;
+//                    log.info("requestName:[{}] not found", requestName);
+                    return Boolean.TRUE;
                 }
         );
     }

@@ -2,9 +2,14 @@ package com.xforceplus.wapp.converters;
 
 import com.xforceplus.wapp.modules.deduct.service.BlueInvoiceService;
 import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceDetailEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
+
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * @program: wapp-generator
@@ -12,7 +17,7 @@ import org.mapstruct.factory.Mappers;
  * @author: Kenny Wong
  * @create: 2021-10-20 16:57
  **/
-@Mapper
+@Mapper(uses = BaseConverter.class)
 public interface TDxRecordInvoiceDetailEntityConvertor {
 
     TDxRecordInvoiceDetailEntityConvertor INSTANCE = Mappers.getMapper(TDxRecordInvoiceDetailEntityConvertor.class);
@@ -31,9 +36,9 @@ public interface TDxRecordInvoiceDetailEntityConvertor {
     // 单位
     @Mapping(source = "unit", target = "unit")
     // 数量
-    @Mapping(source = "num", target = "num")
+    @Mapping(  target = "num" ,source = "num",qualifiedByName = "stringToBgDcmlOrZero")
     // 单价
-    @Mapping(source = "unitPrice", target = "unitPrice")
+    @Mapping(  target = "unitPrice",source = "unitPrice",qualifiedByName = "stringToBgDcmlOrZero")
     // 金额
     @Mapping(source = "detailAmount", target = "detailAmount")
     // 税率
@@ -51,4 +56,13 @@ public interface TDxRecordInvoiceDetailEntityConvertor {
      * @return
      */
     BlueInvoiceService.InvoiceItem toSettlementItem(TDxRecordInvoiceDetailEntity tXfInvoiceItemEntity);
+
+    @Named("stringToBgDcmlOrZero")
+    default BigDecimal stringToBgDcmlOrZero(String str){
+        if (StringUtils.isBlank(str)){
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(str);
+    }
 }
+

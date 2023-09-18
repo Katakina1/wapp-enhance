@@ -88,6 +88,17 @@ public class TXfOriginSapZarrEntity extends BaseEntity {
     @TableField("internal_invoice_no")
     private String internalInvoiceNo;
 
+    /**
+     * 数据校验状态；0:正常;1:异常
+     */
+    @TableField("check_status")
+    private Integer checkStatus;
+
+    /**
+     * 数据校验异常信息
+     */
+    @TableField("check_remark")
+    private String checkRemark;
 
     public static final String JOB_ID = "job_id";
 
@@ -129,4 +140,7 @@ public class TXfOriginSapZarrEntity extends BaseEntity {
 
     public static final String INTERNAL_INVOICE_NO = "internal_invoice_no";
 
+    public static final String CHECK_STATUS = "check_status";
+
+    public static final String CHECK_REMARK = "check_remark";
 }

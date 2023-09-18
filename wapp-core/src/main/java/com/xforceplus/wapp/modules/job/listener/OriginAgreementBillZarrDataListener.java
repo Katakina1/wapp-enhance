@@ -5,6 +5,7 @@ import com.alibaba.excel.event.AnalysisEventListener;
 import com.xforceplus.wapp.modules.job.dto.OriginAgreementBillZarrDto;
 import com.xforceplus.wapp.modules.job.service.OriginSapZarrService;
 import com.xforceplus.wapp.repository.entity.TXfOriginSapZarrEntity;
+import jodd.util.StringUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -13,6 +14,8 @@ import org.springframework.beans.BeanUtils;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +80,7 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
      * 加上存储数据库
      */
     private void saveData() {
+        long start  = System.currentTimeMillis();
         List<TXfOriginSapZarrEntity> entities = new ArrayList<>(list.size());
         Date now = new Date();
         list.forEach(
@@ -90,12 +94,47 @@ public class OriginAgreementBillZarrDataListener extends AnalysisEventListener<O
                         String reference = v2.getContents().substring(v2.getContents().length() - 10, v2.getContents().length());
                         v2.setReference(reference);
                     }
+                    v2.setAmountWithTax(v2.getAmountWithTax().replace(",",""));
+                    check(v2);
                     entities.add(v2);
                 }
         );
         service.saveBatch(entities);
         cursor += list.size();
         // cursor - 1 排除表头行
-        log.info("jobId={}, 已入库{}条原始协议单SAP-ZARR0355数据！", jobId, cursor - 1);
+        log.info("jobId={}, 已入库{}条原始协议单zarr数据！本次{}条花费{}ms", jobId, cursor - 1,list.size(),System.currentTimeMillis()-start);
+    }
+
+    private void check(TXfOriginSapZarrEntity entity){
+        String checkRemark = "";
+        if(StringUtil.isBlank(entity.getContents())){
+            checkRemark += "Contents为空;";
+        }
+        if(StringUtil.isBlank(entity.getAmountWithTax())){
+            checkRemark += "Amount With Tax为空;";
+        }else{
+            try{
+                new BigDecimal(entity.getAmountWithTax().replace(",",""));
+            }catch (Exception e){
+                checkRemark += "Amount With Tax格式错误;";
+            }
+        }
+        if(StringUtil.isBlank(entity.getMemo())){
+            checkRemark += "memo为空;";
+        }else{
+            try {
+                SimpleDateFormat fmt2 = new SimpleDateFormat("yyyy-MM-dd");
+                fmt2.parse(entity.getMemo().substring(entity.getMemo().length() - 10));
+            }catch (Exception e){
+                checkRemark += "memo中的日期格式错误;";
+            }
+        }
+        if(StringUtil.isBlank(entity.getReference())){
+            checkRemark += "Contents中没有reference相关信息;";
+        }
+        if(StringUtil.isNotBlank(checkRemark)){
+            entity.setCheckRemark(checkRemark);
+            entity.setCheckStatus(1);
+        }
     }
 }

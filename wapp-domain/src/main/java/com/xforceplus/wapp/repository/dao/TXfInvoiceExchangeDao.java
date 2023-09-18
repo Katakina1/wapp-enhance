@@ -10,7 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * </p>
 *
 * @author malong@xforceplus.com
-* @since 2021-11-22
+* @since 2021-12-02
 */
 public interface TXfInvoiceExchangeDao extends BaseMapper<TXfInvoiceExchangeEntity> {
 

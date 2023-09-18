@@ -4,6 +4,8 @@ import com.jcraft.jsch.*;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.xforceplus.wapp.util.LocalFileSystemManager;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,14 +57,14 @@ public class SFTPRemoteManager {
     private int port;
 
     @Value("${pro.sftp.username}")
-    private String userName;
+    private String un;
     @Value("${pro.sftp.password}")
-    private String password;
+    private String pd;
 
     @Value("${pro.sftp.default.timeout}")
     private int timeout;
 
-    @Value("${pro.sftp.auth-method}")
+    @Value("${pro.sftp.auth-method:private}")
     private String authMethod;
 
     /**
@@ -79,7 +81,7 @@ public class SFTPRemoteManager {
     /**
      * 以密钥链接方式打开SFTP通道
      */
-    public void openChannel() throws JSchException {
+    public void openChannel() throws JSchException, SftpException {
         if (isChannelConnected()) {
             return;
         } else {
@@ -107,10 +109,10 @@ public class SFTPRemoteManager {
         }
 
         // 通过 用户名，主机地址，端口 获取一个Session对象
-        session = jsch.getSession(userName, host, port);
+        session = jsch.getSession(un, host, port);
         // 设置密码
-        if (Objects.equals(authMethod, "pwd") && password != null) {
-            this.session.setPassword(password);
+        if (Objects.equals(authMethod, "pwd") && pd != null) {
+            this.session.setPassword(pd);
         }
         // 为Session对象设置properties
         Properties config = new Properties();
@@ -127,6 +129,7 @@ public class SFTPRemoteManager {
         // 建立SFTP通道的连接
         channel.connect();
         sftp = (ChannelSftp) channel;
+        sftp.setFilenameEncoding("UTF-8");
     }
 
     /**
@@ -177,7 +180,7 @@ public class SFTPRemoteManager {
             // 进入并设置为当前目录
             sftp.cd(path);
             // 下载
-            File file = new File(localPath, fileName);
+            File file = FileUtils.getFile(localPath, fileName);
             try (FileOutputStream out = new FileOutputStream(file)) {
                 sftp.get(fileName, out);
             } catch (Exception e) {
@@ -188,3 +191,4 @@ public class SFTPRemoteManager {
         }
     }
 }
+

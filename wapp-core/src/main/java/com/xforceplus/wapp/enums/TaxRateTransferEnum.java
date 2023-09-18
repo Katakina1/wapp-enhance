@@ -8,10 +8,10 @@ import java.util.Map;
 public enum  TaxRateTransferEnum  {
 
     TH("17%","TH" ,BigDecimal.valueOf (0.17),BigDecimal.valueOf(17)),
-    TM("16%", "TM" ,BigDecimal.valueOf (0.16),  BigDecimal.valueOf(17)),
-    TN("13%", "TN" ,BigDecimal.valueOf (0.13),BigDecimal.valueOf(13)),
+    TM("16%", "TM" ,BigDecimal.valueOf (0.16),  BigDecimal.valueOf(16)),
+    TN("10%", "TN" ,BigDecimal.valueOf (0.1),BigDecimal.valueOf(10)),
     TL("11%","TL" ,BigDecimal.valueOf (0.11),BigDecimal.valueOf(11)),
-    TO("10%", "TO" ,BigDecimal.valueOf (0.1),BigDecimal.valueOf(10)),
+    TO("13%", "TO" ,BigDecimal.valueOf (0.13),BigDecimal.valueOf(13)),
     TP("9%", "TP" ,BigDecimal.valueOf (0.09),BigDecimal.valueOf(9)),
     TG("3%","TG" ,BigDecimal.valueOf (0.03),BigDecimal.valueOf(3)),
 
