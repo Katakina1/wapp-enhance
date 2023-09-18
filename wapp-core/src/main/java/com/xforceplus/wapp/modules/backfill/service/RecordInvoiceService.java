@@ -395,6 +395,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             recordInvoiceEntityU.setIsDel(IsDealEnum.YES.getValue());
             recordInvoiceEntityU.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
             recordInvoiceEntityU.setSettlementNo("");
+            recordInvoiceEntityU.setFlowType("");//WALMART-3371
             recordInvoiceEntityU.setStatusUpdateDate(now);
             Asserts.isFalse(this.updateById(recordInvoiceEntityU), "删除失败，未找到发票");
 
@@ -452,6 +453,7 @@ public class RecordInvoiceService extends ServiceImpl<TDxRecordInvoiceDao, TDxRe
             recordInvoiceEntityU.setSettlementNo("");
             //recordInvoiceEntityU.setInvoiceStatus(TXfInvoiceStatusEnum.CANCEL.getCode());
             recordInvoiceEntityU.setStatusUpdateDate(now);
+            recordInvoiceEntityU.setFlowType("");//WALMART-3371
             recordInvoiceEntityU.setIsDel(IsDealEnum.YES.getValue());
             tDxRecordInvoiceDao.update(recordInvoiceEntityU, updateWrapper);
 

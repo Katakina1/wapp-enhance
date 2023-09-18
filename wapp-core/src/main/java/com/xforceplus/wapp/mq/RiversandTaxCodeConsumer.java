@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.google.gson.Gson;
 import com.xforceplus.wapp.client.JanusClient;
 import com.xforceplus.wapp.client.LockClient;
-import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.enums.TaxPreEnum;
 import com.xforceplus.wapp.enums.ZeroTaxEnum;
 import com.xforceplus.wapp.modules.rednotification.mapstruct.IdGenerator;
+import com.xforceplus.wapp.modules.taxcode.converters.StatusEnum;
 import com.xforceplus.wapp.modules.taxcode.dto.TaxCodeDto;
 import com.xforceplus.wapp.modules.taxcode.service.TaxCodeServiceImpl;
 import com.xforceplus.wapp.modules.taxcode.service.impl.TaxCodeReportServiceImpl;
@@ -29,7 +29,6 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 
 /**
@@ -72,7 +71,7 @@ public class RiversandTaxCodeConsumer {
             if(StringUtils.isBlank(taxCodeRiversandEntity.getItemNo()) || "1".equals(taxCodeRiversandEntity.getDeleteFlag())){
                 return;
             }
-            //更新riversand表状态 0-默认 1-比对一致 2-比对不一致 -1-上传失败 3-上传3.0平台成功 4-上传已经存在
+            //更新riversand表状态 0-默认 1-比对一致 2-比对不一致 -1-上传失败 3-上传3.0平台成功 4-上传已经存在,5-未同步，待手动同步
             UpdateWrapper<TXfTaxCodeRiversandEntity> refWrapper = new UpdateWrapper<>();
             refWrapper.eq(TXfTaxCodeRiversandEntity.ITEM_NO,taxCodeRiversandEntity.getItemNo());
 
@@ -182,6 +181,11 @@ public class RiversandTaxCodeConsumer {
                     refWrapper.set("status","2");
                 }
             } else {
+                //WALMART-3661
+                refWrapper.set(TXfTaxCodeRiversandEntity.STATUS, StatusEnum.STATUS_5.getCode());
+            }
+            //WALMART-3661 优化逻辑中更新为手动同步
+            /*else {
                 //3.0不存着税编，需要新增导入
                 log.info("商品编号:{}未匹配到税编", taxCodeRiversandEntity.getItemNo());
                 //税编同步更新到3.0平台
@@ -196,6 +200,7 @@ public class RiversandTaxCodeConsumer {
                     }
                 }
             }
+            */
             taxCodeRiversandService.update(refWrapper);//更新状态
             log.info("riversand的税编:" + message);
         } catch (Exception e) {

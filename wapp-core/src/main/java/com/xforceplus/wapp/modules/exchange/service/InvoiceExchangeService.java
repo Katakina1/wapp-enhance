@@ -300,13 +300,10 @@ public class InvoiceExchangeService {
         }
         String reason =  request.getExchangeReason();
         BigDecimal totalAmount = request.getVerifyBeanList().stream().filter(t -> new BigDecimal(t.getTotalAmount()).compareTo(BigDecimal.ZERO) > 0).map(t -> new BigDecimal(t.getTotalAmount())).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (StringUtils.isNotEmpty(reason)
-                && "税率变更".equals(reason)
-                && totalAmount.compareTo(recordInvoiceEntity.getTotalAmount()) != 0) {
+        if (StringUtils.isNotEmpty(reason) && "税率变更".equals(reason) && totalAmount.compareTo(recordInvoiceEntity.getTotalAmount()) != 0) {
             return R.fail("上传的发票与需要换票的价税合计不一致");
         }
-        if (StringUtils.isNotEmpty(reason)
-                && "作废或红冲".equals(reason)) {
+        if (StringUtils.isNotEmpty(reason) && "作废或红冲".equals(reason)) {
             for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
                 if (!new BigDecimal(backFillVerifyBean.getAmount()).equals(recordInvoiceEntity.getInvoiceAmount())) {
                     return R.fail("上传的发票与需要换票的金额不一致");
@@ -350,10 +347,8 @@ public class InvoiceExchangeService {
         LambdaQueryChainWrapper<TXfExchangeTicketEntity> exchangeQ = new LambdaQueryChainWrapper<>(tXfExchangeTicketDao);
         LambdaQueryChainWrapper<TXfBlueRelationEntity> blueQ = new LambdaQueryChainWrapper<>(tXfBlueRelationDao);
         verifyEntities.forEach(it -> {
-            exchangeQ.or(or -> or.eq(TXfExchangeTicketEntity::getInvoiceNo, it.getInvoiceNo())
-                    .eq(StringUtils.isNotBlank(it.getInvoiceCode()), TXfExchangeTicketEntity::getInvoiceCode, it.getInvoiceCode()));
-            blueQ.or(or -> or.eq(TXfBlueRelationEntity::getBlueInvoiceNo, it.getInvoiceNo())
-                    .eq(StringUtils.isNotBlank(it.getInvoiceCode()), TXfBlueRelationEntity::getBlueInvoiceCode, it.getInvoiceCode()));
+            exchangeQ.or(or -> or.eq(TXfExchangeTicketEntity::getInvoiceNo, it.getInvoiceNo()).eq(StringUtils.isNotBlank(it.getInvoiceCode()), TXfExchangeTicketEntity::getInvoiceCode, it.getInvoiceCode()));
+            blueQ.or(or -> or.eq(TXfBlueRelationEntity::getBlueInvoiceNo, it.getInvoiceNo()).eq(StringUtils.isNotBlank(it.getInvoiceCode()), TXfBlueRelationEntity::getBlueInvoiceCode, it.getInvoiceCode()));
         });
         List<TXfExchangeTicketEntity> exchangeOpt = exchangeQ.list();
         if (CollectionUtils.isNotEmpty(exchangeOpt)) {
@@ -363,6 +358,12 @@ public class InvoiceExchangeService {
         if (CollectionUtils.isNotEmpty(blueOpt)) {
             return R.fail("发票号码：" + blueOpt.get(0).getBlueInvoiceNo() + "，为蓝冲票，不允许换票");
         }
+        //修改换票成功的发票为FlowType = 7
+    	UpdateWrapper<TDxRecordInvoiceEntity> entityUpdateWrapper = new UpdateWrapper<>();
+        entityUpdateWrapper.in(TDxRecordInvoiceEntity.ID, verifyIds);
+        TDxRecordInvoiceEntity updateEntity = new TDxRecordInvoiceEntity();
+        updateEntity.setFlowType("7"); //WALMART-3411
+    	tDxRecordInvoiceDao.update(updateEntity, entityUpdateWrapper);
         //保存新上传发票id到换票
         TXfInvoiceExchangeEntity entity;
         for (BackFillVerifyBean backFillVerifyBean : request.getVerifyBeanList()) {
@@ -463,6 +464,7 @@ public class InvoiceExchangeService {
             TDxRecordInvoiceEntity entity = new TDxRecordInvoiceEntity();
             entity.setExchangeStatus(statusEnum.getCode());
             entity.setExchangeReason(reason);
+            //entity.setFlowType("7"); WALMART-3411
             successs= tDxRecordInvoiceDao.update(entity, entityUpdateWrapper);
         } catch (Exception e) {
             log.error("换票批量修改状态--异常",e);

@@ -1,6 +1,36 @@
 package com.xforceplus.wapp.modules.backfill.service;
 
-import cn.hutool.core.collection.CollectionUtil;
+import static com.xforceplus.wapp.constants.Constants.FILE_TYPE_OFD;
+import static com.xforceplus.wapp.constants.Constants.FILE_TYPE_PDF;
+import static com.xforceplus.wapp.constants.Constants.FILE_TYPE_XML;
+import static com.xforceplus.wapp.modules.sys.util.UserUtil.getUserId;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -20,8 +50,13 @@ import com.xforceplus.wapp.common.utils.Asserts;
 import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.JsonUtil;
 import com.xforceplus.wapp.constants.Constants;
-import com.xforceplus.wapp.dto.PreInvoiceDTO;
-import com.xforceplus.wapp.enums.*;
+import com.xforceplus.wapp.enums.InvoiceExchangeTypeEnum;
+import com.xforceplus.wapp.enums.InvoiceStatusEnum;
+import com.xforceplus.wapp.enums.InvoiceTypeEnum;
+import com.xforceplus.wapp.enums.OperateLogEnum;
+import com.xforceplus.wapp.enums.TXfDeductionBusinessTypeEnum;
+import com.xforceplus.wapp.enums.TXfPreInvoiceStatusEnum;
+import com.xforceplus.wapp.enums.TXfSettlementStatusEnum;
 import com.xforceplus.wapp.enums.invoice.InvoiceAuthStatusEnum;
 import com.xforceplus.wapp.enums.invoice.InvoicePaymentStatusEnum;
 import com.xforceplus.wapp.enums.invoice.InvoiceReceiptStatusEnum;
@@ -30,7 +65,18 @@ import com.xforceplus.wapp.enums.settlement.SettlementApproveTypeEnum;
 import com.xforceplus.wapp.modules.audit.enums.AuditStatusEnum;
 import com.xforceplus.wapp.modules.audit.service.InvoiceAuditService;
 import com.xforceplus.wapp.modules.audit.vo.InvoiceAuditVO;
-import com.xforceplus.wapp.modules.backfill.model.*;
+import com.xforceplus.wapp.modules.backfill.model.BackFillCommitVerifyRequest;
+import com.xforceplus.wapp.modules.backfill.model.BackFillMatchRequest;
+import com.xforceplus.wapp.modules.backfill.model.BackFillVerifyBean;
+import com.xforceplus.wapp.modules.backfill.model.InvoiceMain;
+import com.xforceplus.wapp.modules.backfill.model.OfdParseRequest;
+import com.xforceplus.wapp.modules.backfill.model.OfdResponse;
+import com.xforceplus.wapp.modules.backfill.model.SpecialElecUploadDto;
+import com.xforceplus.wapp.modules.backfill.model.UploadFileResult;
+import com.xforceplus.wapp.modules.backfill.model.UploadFileResultData;
+import com.xforceplus.wapp.modules.backfill.model.UploadResult;
+import com.xforceplus.wapp.modules.backfill.model.VerificationRequest;
+import com.xforceplus.wapp.modules.backfill.model.VerificationResponse;
 import com.xforceplus.wapp.modules.backfill.tools.BackFillCheckTools;
 import com.xforceplus.wapp.modules.blue.service.BlueInvoiceRelationService;
 import com.xforceplus.wapp.modules.log.controller.OperateLogService;
@@ -40,34 +86,30 @@ import com.xforceplus.wapp.modules.rednotification.model.Response;
 import com.xforceplus.wapp.modules.rednotification.service.RedNotificationOuterService;
 import com.xforceplus.wapp.modules.statement.service.StatementServiceImpl;
 import com.xforceplus.wapp.modules.sys.util.UserUtil;
-import com.xforceplus.wapp.repository.dao.*;
+import com.xforceplus.wapp.repository.dao.TDxInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TDxRecordInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfBillDeductInvoiceDetailDao;
+import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDao;
+import com.xforceplus.wapp.repository.dao.TXfElecUploadRecordDetailDao;
+import com.xforceplus.wapp.repository.dao.TXfPreInvoiceDao;
+import com.xforceplus.wapp.repository.dao.TXfSettlementDao;
 import com.xforceplus.wapp.repository.daoExt.ElectronicUploadRecordDao;
 import com.xforceplus.wapp.repository.daoExt.MatchDao;
-import com.xforceplus.wapp.repository.entity.*;
+import com.xforceplus.wapp.repository.entity.InvoiceAudit;
+import com.xforceplus.wapp.repository.entity.InvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TDxInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TDxRecordInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfBillDeductInvoiceDetailEntity;
+import com.xforceplus.wapp.repository.entity.TXfBlueRelationEntity;
+import com.xforceplus.wapp.repository.entity.TXfElecUploadRecordDetailEntity;
+import com.xforceplus.wapp.repository.entity.TXfElecUploadRecordEntity;
+import com.xforceplus.wapp.repository.entity.TXfPreInvoiceEntity;
+import com.xforceplus.wapp.repository.entity.TXfSettlementEntity;
 import com.xforceplus.wapp.sequence.IDSequence;
 import com.xforceplus.wapp.service.CommonMessageService;
-import com.xforceplus.wapp.service.CommRedNotificationService;
-import com.xforceplus.wapp.util.CoopFullHalfAngleUtil;
+
+import cn.hutool.core.collection.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.xforceplus.wapp.constants.Constants.*;
-import static com.xforceplus.wapp.modules.sys.util.UserUtil.getUserId;
 
 
 /**
@@ -93,11 +135,6 @@ public class BackFillService {
 
     @Value("${wapp.integration.tenant-code}")
     private String tenantCode;
-
-    /**
-     * 沃尔玛租户ID
-     */
-    private final String tenantId;
 
     @Autowired
     private VerificationService verificationService;
@@ -156,8 +193,8 @@ public class BackFillService {
     private CommonMessageService commonMessageService;
     @Autowired
     private PreinvoiceService preinvoiceService;
-    @Autowired
-    private CommRedNotificationService commRedNotificationService;
+//    @Autowired
+//    private CommRedNotificationService commRedNotificationService;
     @Autowired
     private LockClient lockClient;
     @Autowired
@@ -167,7 +204,7 @@ public class BackFillService {
 
     public BackFillService(@Value("${wapp.integration.tenant-id}")
                                    String tenantId) {
-        this.tenantId = tenantId;
+        //this.tenantId = tenantId;
         defaultHeader = new HashMap<>();
         defaultHeader.put("rpcType", "http");
         defaultHeader.put("x-app-client", "janus");
@@ -210,15 +247,20 @@ public class BackFillService {
         return R.ok("校验通过");
     }
 
-    public R commitVerify(BackFillCommitVerifyRequest request){
-        R r = checkCommitRequest(request);
+    /**
+     * 提交发票查验
+     * @param request
+     * @return
+     */
+    public R<String> commitVerify(BackFillCommitVerifyRequest request){
+        R<String> r = checkCommitRequest(request);
         if (R.FAIL.equals(r.getCode())) {
             return r;
         }
         return this.commitInvoiceVerify(request);
     }
 
-    public R commitInvoiceVerify(BackFillCommitVerifyRequest request) {
+    public R<String> commitInvoiceVerify(BackFillCommitVerifyRequest request) {
         String batchNo = UUID.randomUUID().toString().replace("-", "");
         TXfElecUploadRecordEntity recordEntity = new TXfElecUploadRecordEntity();
         recordEntity.setCreateTime(new Date());
@@ -282,7 +324,7 @@ public class BackFillService {
         return R.ok(batchNo);
     }
 
-    public R upload(MultipartFile[] files, String gfName,String jvCode,String vendorid, String settlementNo,Integer businessType) {
+    public R<String> upload(MultipartFile[] files, String gfName,String jvCode,String vendorid, String settlementNo,Integer businessType) {
         if (files.length == 0) {
             return R.fail("请选择您要上传的电票文件(pdf/ofd/xml)");
         }
@@ -292,54 +334,53 @@ public class BackFillService {
         List<byte[]> ofd = new ArrayList<>();
         List<byte[]> pdf = new ArrayList<>();
         List<byte[]> xml = new ArrayList<>();
-        try {
-            Set<String> fileNames=new LinkedHashSet<>();
-            for (int i = 0; i < files.length; i++) {
-                final MultipartFile file = files[i];
-                final String filename = file.getOriginalFilename();
-                if(!fileNames.add(filename)){
-                    return R.fail("文件["+filename+"]重复上传！");
-                }
-                final String suffix = filename.substring(filename.lastIndexOf(".") + 1);
-                if (org.apache.commons.lang.StringUtils.isNotBlank(suffix)) {
-                    switch (suffix.toLowerCase()) {
-                        case Constants.SUFFIX_OF_OFD:
-                            //OFD处理
-                            ofd.add(IOUtils.toByteArray(file.getInputStream()));
-                            break;
-                        case Constants.SUFFIX_OF_PDF:
-                            // PDF 处理
-                            pdf.add(IOUtils.toByteArray(file.getInputStream()));
-                            break;
-                        case Constants.SUFFIX_OF_XML:
-                            // PDF 处理
-                            xml.add(IOUtils.toByteArray(file.getInputStream()));
-                            break;
-                        default:
-                            throw new EnhanceRuntimeException("文件:[" + filename + "]类型不正确,应为:[ofd/pdf/xml]");
-                    }
-                } else {
-                    throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[ofd/pdf/xml]");
-                }
-            }
+		try {
+			Set<String> fileNames = new LinkedHashSet<>();
+			for (int i = 0; i < files.length; i++) {
+				final MultipartFile file = files[i];
+				final String filename = file.getOriginalFilename();
+				if (!fileNames.add(filename)) {
+					return R.fail("文件[" + filename + "]重复上传！");
+				}
+				final String suffix = filename.substring(filename.lastIndexOf(".") + 1);
+				if (org.apache.commons.lang.StringUtils.isNotBlank(suffix)) {
+					switch (suffix.toLowerCase()) {
+					case Constants.SUFFIX_OF_OFD:
+						// OFD处理
+						ofd.add(IOUtils.toByteArray(file.getInputStream()));
+						break;
+					case Constants.SUFFIX_OF_PDF:
+						// PDF 处理
+						pdf.add(IOUtils.toByteArray(file.getInputStream()));
+						break;
+					case Constants.SUFFIX_OF_XML:
+						// PDF 处理
+						xml.add(IOUtils.toByteArray(file.getInputStream()));
+						break;
+					default:
+						throw new EnhanceRuntimeException("文件:[" + filename + "]类型不正确,应为:[ofd/pdf/xml]");
+					}
+				} else {
+					throw new EnhanceRuntimeException("文件:[" + filename + "]后缀名不正确,应为:[ofd/pdf/xml]");
+				}
+			}
 
-            SpecialElecUploadDto dto = new SpecialElecUploadDto();
-            dto.setOfds(ofd);
-            dto.setJvCode(jvCode);
-            dto.setUserId(getUserId());
-            dto.setGfName(gfName);
-            dto.setPdfs(pdf);
-            dto.setVendorId(vendorid);
-            dto.setSettlementNo(settlementNo);
-            dto.setBusinessType(businessType);
-            dto.setXmls(xml);
-            log.info("电票发票上传--识别入参：{}",JSONObject.toJSONString(dto));
-            final String batchNo = this.uploadAndVerify(dto);
-
+			SpecialElecUploadDto dto = new SpecialElecUploadDto();
+			dto.setOfds(ofd);
+			dto.setJvCode(jvCode);
+			dto.setUserId(getUserId());
+			dto.setGfName(gfName);
+			dto.setPdfs(pdf);
+			dto.setVendorId(vendorid);
+			dto.setSettlementNo(settlementNo);
+			dto.setBusinessType(businessType);
+			dto.setXmls(xml);
+			log.info("电票发票上传--识别入参：{}", JSONObject.toJSONString(dto));
+			final String batchNo = this.uploadAndVerify(dto);
             return R.ok(batchNo);
         } catch (Exception e) {
-            log.error("上传过程中出现异常:" + e.getMessage(), e);
-            return R.fail("上传过程中出现错误，请重试");
+			log.error("上传过程中出现异常:{}", e.getMessage(), e);
+			return R.fail("上传过程中出现错误，请重试");
         }
     }
 
@@ -417,20 +458,20 @@ public class BackFillService {
         if (xmls == null) {
             xmls = Collections.emptyList();
         }
-        final int totalNum = ofds.size() + pdfs.size()+ xmls.size();
-        String batchNo = UUID.randomUUID().toString().replace("-", "");
-        TXfElecUploadRecordEntity recordEntity = new TXfElecUploadRecordEntity();
-        recordEntity.setCreateTime(new Date());
-        recordEntity.setTotalNum(totalNum);
-        recordEntity.setUpdateTime(recordEntity.getCreateTime());
-        recordEntity.setBatchNo(batchNo);
-        recordEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
-        recordEntity.setId(idSequence.nextId());
-        recordEntity.setJvCode(specialElecUploadDto.getJvCode());
-        recordEntity.setVendorId(specialElecUploadDto.getVendorId());
-        recordEntity.setGfName(specialElecUploadDto.getGfName());
-        recordEntity.setFailureNum(0);
-        recordEntity.setSucceedNum(0);
+		final int totalNum = ofds.size() + pdfs.size() + xmls.size();
+		String batchNo = UUID.randomUUID().toString().replace("-", "");
+		TXfElecUploadRecordEntity recordEntity = new TXfElecUploadRecordEntity();
+		recordEntity.setCreateTime(new Date());
+		recordEntity.setTotalNum(totalNum);
+		recordEntity.setUpdateTime(recordEntity.getCreateTime());
+		recordEntity.setBatchNo(batchNo);
+		recordEntity.setCreateUser(String.valueOf(specialElecUploadDto.getUserId()));
+		recordEntity.setId(idSequence.nextId());
+		recordEntity.setJvCode(specialElecUploadDto.getJvCode());
+		recordEntity.setVendorId(specialElecUploadDto.getVendorId());
+		recordEntity.setGfName(specialElecUploadDto.getGfName());
+		recordEntity.setFailureNum(0);
+		recordEntity.setSucceedNum(0);
         //先入库初始化，防止pdf识别/验真过早的回调返回
         // 不用考虑事务
         this.electronicUploadRecordDao.save(recordEntity);
@@ -528,9 +569,7 @@ public class BackFillService {
      * @param detailEntity
      */
     private void uploadFile(byte[] file, Integer fileType, TXfElecUploadRecordDetailEntity detailEntity,String venderId) {
-
         try {
-
             StringBuffer fileName = new StringBuffer();
             fileName.append(UUID.randomUUID().toString());
             fileName.append(".");
@@ -541,22 +580,15 @@ public class BackFillService {
             }else if (fileType.equals(Constants.FILE_TYPE_XML)) {
                 fileName.append(Constants.SUFFIX_OF_XML);
             }
-
             String uploadResult = fileService.uploadFile(file, fileName.toString(),venderId);
-
             UploadFileResult uploadFileResult = JsonUtil.fromJson(uploadResult, UploadFileResult.class);
-
             UploadFileResultData data = uploadFileResult.getData();
-
             detailEntity.setUploadId(data.getUploadId());
             detailEntity.setUploadPath(data.getUploadPath());
-
         } catch (Exception e) {
-
             log.error("调用文件服务器失败:{}", e);
             throw new RRException("调用文件服务器失败:" + e.getMessage());
         }
-
     }
 
     public UploadResult getUploadResult(String batchNo) {
@@ -1156,7 +1188,12 @@ public class BackFillService {
         operateLogService.addDeductLog(tXfSettlementEntity.getSettlementNo(), tXfSettlementEntity.getBusinessType(), TXfSettlementStatusEnum.getTXfSettlementStatusEnum(tXfSettlementEntity.getSettlementStatus()), deductOpLogEnum, "", UserUtil.getUserId(), UserUtil.getUserName());
     }
 
-    public R checkCommitRequest(BackFillCommitVerifyRequest request) {
+    /**
+     * 校验参数
+     * @param request
+     * @return
+     */
+    public R<String> checkCommitRequest(BackFillCommitVerifyRequest request) {
         if (StringUtils.isEmpty(request.getSettlementNo())) {
             return R.fail("结算单号不能为空");
         }

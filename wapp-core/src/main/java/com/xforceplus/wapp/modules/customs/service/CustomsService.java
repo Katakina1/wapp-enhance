@@ -1265,6 +1265,9 @@ public class CustomsService extends ServiceImpl<TDxCustomsDao, TDxCustomsEntity>
 
         Integer pageNo = request.getPageNo();
         Integer offset = (request.getPageNo() -1) * request.getPageSize();
+        // 设置时间格式
+        request.setVoucherAccountTimeStart(DateUtils.strToStrDate(request.getVoucherAccountTimeStart()));
+        request.setVoucherAccountTimeEnd(DateUtils.strToStrDate(request.getVoucherAccountTimeEnd()));
         request.setPageNo(offset);
         //海关缴款书号码处理
         dealCustomsNo(request);

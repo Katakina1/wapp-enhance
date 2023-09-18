@@ -302,7 +302,27 @@ public class DateUtils {
 		return cal_1.getTime();
 	}
 
+    public static Date getNextYearPreDay() {
+        Calendar ca = Calendar.getInstance();//得到一个Calendar的实例
+        ca.setTime(new Date());   //设置时间为当前时间
+        ca.add(Calendar.YEAR, -1); //年份-1
+        // ca.add(Calendar.MONTH, -1); // 月份-1
+//        ca.add(Calendar.DATE, -1); // 日期-1
+        return ca.getTime();
+    }
 
+    /**
+     * @Description 获取上一年，格式yyyyMMdd
+     * @Author pengtao
+     * @return 
+    **/
+    public static String getLastYearYM(){
+	    return dateToStrYM(getNextYearPreDay());
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getNextYearPreDay());
+    }
 	/**
 	 * 时间加减
 	 *
@@ -941,6 +961,9 @@ public class DateUtils {
      * @return
      */
     public static String strToStrDate(String strDate) {
+        if (StringUtils.isEmpty(strDate)) {
+            return null;
+        }
         String  strtostr="";
         try {
             SimpleDateFormat formatter  = new SimpleDateFormat("yyyy-MM-dd");

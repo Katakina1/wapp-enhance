@@ -1,51 +1,62 @@
 package com.xforceplus.wapp.modules.taxcode.service;
 
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
 import com.alibaba.fastjson.JSON;
-import com.xforceplus.wapp.common.dto.R;
-import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
-import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
-import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
-import com.xforceplus.wapp.modules.settlement.service.SettlementService;
-import com.xforceplus.wapp.modules.sys.entity.UserEntity;
-import com.xforceplus.wapp.modules.taxcode.models.TaxCodeLog;
-import com.xforceplus.wapp.modules.taxcode.service.impl.TaxCodeAuditServiceImpl;
-import com.xforceplus.wapp.repository.entity.TDxMessagecontrolEntity;
-import com.xforceplus.wapp.repository.entity.TaxCodeAuditEntity;
-import com.xforceplus.wapp.service.CommonMessageService;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xforceplus.wapp.client.JanusClient;
 import com.xforceplus.wapp.client.TaxCodeBean;
+import com.xforceplus.wapp.common.dto.PageResult;
+import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.common.exception.EnhanceRuntimeException;
+import com.xforceplus.wapp.common.utils.BeanUtil;
+import com.xforceplus.wapp.common.utils.DateUtils;
 import com.xforceplus.wapp.common.utils.JsonUtil;
-import com.xforceplus.wapp.modules.taxcode.converters.TaxCodeConverter;
-import com.xforceplus.wapp.modules.taxcode.dto.TaxCodeDto;
+import com.xforceplus.wapp.modules.billdeduct.service.BillDeductItemServiceImpl;
+import com.xforceplus.wapp.modules.preinvoice.service.PreinvoiceService;
+import com.xforceplus.wapp.modules.settlement.service.SettlementItemServiceImpl;
+import com.xforceplus.wapp.modules.settlement.service.SettlementService;
+import com.xforceplus.wapp.modules.sys.entity.UserEntity;
+import com.xforceplus.wapp.modules.sys.util.UserUtil;
+import com.xforceplus.wapp.modules.taxcode.converters.*;
+import com.xforceplus.wapp.modules.taxcode.dto.*;
 import com.xforceplus.wapp.modules.taxcode.models.TaxCode;
+import com.xforceplus.wapp.modules.taxcode.models.TaxCodeLog;
+import com.xforceplus.wapp.modules.taxcode.service.impl.TaxCodeAuditServiceImpl;
+import com.xforceplus.wapp.modules.taxcode.service.impl.TaxCodeRiversandServiceImpl;
+import com.xforceplus.wapp.repository.dao.TXfTaxCodeRiversandExtDao;
 import com.xforceplus.wapp.repository.dao.TaxCodeDao;
+import com.xforceplus.wapp.repository.entity.TDxMessagecontrolEntity;
+import com.xforceplus.wapp.repository.entity.TXfTaxCodeRiversandEntity;
+import com.xforceplus.wapp.repository.entity.TaxCodeAuditEntity;
 import com.xforceplus.wapp.repository.entity.TaxCodeEntity;
-
+import com.xforceplus.wapp.service.CommonMessageService;
+import com.xforceplus.wapp.util.ExcelExportUtils;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Either;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author mashaopeng@xforceplus.com
@@ -67,6 +78,14 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
     @Autowired
     private SettlementItemServiceImpl settlementItemService;
     private final RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private TXfTaxCodeRiversandExtDao tXfTaxCodeRiversandExtDao;
+
+    @Autowired
+    private TaxCodeRiversandServiceImpl taxCodeRiversandService;
+
+    @Autowired
+    private ExcelExportUtils excelExportUtils;
 
     public Tuple2<List<TaxCode>, Page<TaxCodeEntity>> page(Long current, Long size, String goodsTaxNo, String itemName, String itemNo, String medianCategoryCode) {
         log.debug("税编分页查询,入参,goodsTaxNo:{},itemName:{},itemNo:{},medianCategoryCode:{},分页数据,current:{},size:{}",
@@ -298,6 +317,100 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
     }
 
 
+    /**
+     * @Description riversand税编手动同步
+     * @Author pengtao
+     * @return
+    **/
+    public R reTaxCodeSync(Long id)  {
+        log.info("开始riversand税编同步,id:{}",id);
+        LambdaQueryWrapper<TXfTaxCodeRiversandEntity> query = new LambdaQueryWrapper<>();
+        query.eq(TXfTaxCodeRiversandEntity::getId, id);
+        TXfTaxCodeRiversandEntity entity = tXfTaxCodeRiversandExtDao.selectOne(query);
+        if (null != entity) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                log.error("调用riversand税编同步异常:",e);
+            }
+            R r = janusClient.riverSandSyncTaxCode(entity);
+            UpdateWrapper<TXfTaxCodeRiversandEntity> refWrapper = new UpdateWrapper<>();
+            refWrapper.eq(TXfTaxCodeRiversandEntity.ITEM_NO,entity.getItemNo());
+            if("1".equals(r.getCode())){
+                refWrapper.set(TXfTaxCodeRiversandEntity.STATUS,StatusEnum.STATUS_3.getCode());
+            }else{
+                if (r.getMessage().contains("存在")){
+                    refWrapper.set(TXfTaxCodeRiversandEntity.STATUS,StatusEnum.STATUS_4.getCode());
+                }else{
+                    //原逻辑更新为-1，现在更新为5，失败原因后期可通过运维查询日志获取
+                    refWrapper.set(TXfTaxCodeRiversandEntity.STATUS,StatusEnum.STATUS_5.getCode());
+                }
+            }
+            refWrapper.set(TXfTaxCodeRiversandEntity.UPDATE_TIME,new Date());
+            refWrapper.set(TXfTaxCodeRiversandEntity.UPDATE_USER,UserUtil.getUserId().toString());
+            taxCodeRiversandService.update(refWrapper);//更新状态
+            log.info("riversand的税编同步结果:{}",JSON.toJSON(r));
+            return r;
+        }
+        return R.fail("未查询到数据！");
+    }
+
+
+    /**
+     * @Description riversand税编手动同步
+     * @Author pengtao
+     * @return
+     **/
+    public R reTaxCodeSyncList(List<TXfTaxCodeRiversandEntity> entities)  {
+        log.info("开始riversand税编同步,entities:{}",JSON.toJSON(entities));
+        String successMsg = "同步成功";
+        String failMsg = "同步失败";
+        AtomicInteger successNum = new AtomicInteger();
+        AtomicInteger failNum = new AtomicInteger();
+        if(CollectionUtils.isNotEmpty(entities)){
+            //分组
+            List<List<TXfTaxCodeRiversandEntity>> entityListPar = ListUtils.partition(entities,20);
+            for(List<TXfTaxCodeRiversandEntity> entityList:entityListPar){
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    log.error("调用riversand税编同步异常:",e);
+                }
+                List<String> itemNos = entityList.stream().map(TXfTaxCodeRiversandEntity::getItemNo).distinct().collect(Collectors.toList());
+                //税编批量同步
+                R r = janusClient.riverSandSyncTaxCodeList(entityList);
+                log.info("riversand的税编同步结果:{},itemNos:{}",JSON.toJSON(r),itemNos);
+                if(StringUtils.equals("1",r.getCode())){
+                    //批量更新为已同步
+                    updateStatus(entityList,StatusEnum.STATUS_3.getCode());
+                    entityList.forEach(x ->{ successNum.getAndIncrement(); });
+                }else {
+                    if (StringUtils.contains(r.getMessage(),"存在")){
+                        updateStatus(entityList,StatusEnum.STATUS_4.getCode());
+                    }else{
+                        //原逻辑更新为-1，现在更新为5，失败原因后期可通过运维查询日志获取
+                        updateStatus(entityList,StatusEnum.STATUS_5.getCode());
+                    }
+                    entityList.forEach(x ->{ failNum.getAndIncrement(); });
+                }
+            }
+            return R.ok(true,successMsg+successNum+"个,"+failMsg+failNum+"个");
+        }
+        return R.fail("未查询到数据！");
+    }
+
+    public void updateStatus(List<TXfTaxCodeRiversandEntity> entities,String status){
+        List<String> itemNos = entities.stream().map(TXfTaxCodeRiversandEntity::getItemNo).distinct().collect(Collectors.toList());
+        UpdateWrapper<TXfTaxCodeRiversandEntity> refWrapper = new UpdateWrapper<>();
+        refWrapper.in(TXfTaxCodeRiversandEntity.ITEM_NO,itemNos);
+        refWrapper.set(TXfTaxCodeRiversandEntity.STATUS,status);
+        refWrapper.set(TXfTaxCodeRiversandEntity.UPDATE_TIME,new Date());
+        refWrapper.set(TXfTaxCodeRiversandEntity.UPDATE_USER,UserUtil.getUserId().toString());
+        taxCodeRiversandService.update(refWrapper);//更新状态
+    }
+
     public void updateTaxCodeForSettlementAndPreInvoice(TaxCodeAuditEntity entity) {
         TaxCodeEntity before = JSON.parseObject(entity.getBefore(), TaxCodeEntity.class);
         TaxCodeEntity after = JSON.parseObject(entity.getAfter(), TaxCodeEntity.class);
@@ -314,4 +427,187 @@ public class TaxCodeServiceImpl extends ServiceImpl<TaxCodeDao, TaxCodeEntity> {
         return list;
     }
 
+    //全选最大数量
+    private final Integer MAX_PAGE_SIZE = 5000;
+
+    /**
+     * @Description 分页查询
+     * @Author pengtao
+     * @return
+     **/
+    public PageResult<RiversandtTcDto> paged(RiversandTcQueryDto request) {
+        //校验请求参数
+        if(Objects.isNull(request)){
+            throw new EnhanceRuntimeException("查询参数不允许为空");
+        }
+        //日期处理
+        dealDate(request);
+        //状态处理
+        dealSyncStatus(request);
+
+        Integer pageNo = request.getPageNo();
+        Integer offset = (request.getPageNo() -1) * request.getPageSize();
+        request.setPageNo(offset);
+
+        log.info("riversand处理后的请求参数{}", JSON.toJSON(request));
+        //总个数
+        int count = queryCount(request);
+        //获取数据
+        List<TXfTaxCodeRiversandEntity> customsEntities = queryByPage(request);
+        List<RiversandtTcDto> response = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(customsEntities)){
+            for(TXfTaxCodeRiversandEntity customsEntitie:customsEntities){
+                RiversandtTcDto customsDto = copyEntity(customsEntitie);
+                //状态处理
+                customsDto.setStatus(dealStatus(customsDto.getStatus()));
+                response.add(customsDto);
+            }
+        }
+        return PageResult.of(response,count,pageNo, request.getPageSize());
+    }
+
+    /**
+     * @Description 请求日期处理
+     * @Author pengtao
+     * @return
+     **/
+    public void dealDate(RiversandTcQueryDto request){
+        //日期校验
+        if(StringUtils.isBlank(request.getCreateTimeStart())&&StringUtils.isNotBlank(request.getCreateTimeEnd())
+                ||StringUtils.isNotBlank(request.getCreateTimeStart())&&StringUtils.isBlank(request.getCreateTimeEnd())){
+            throw new EnhanceRuntimeException("新增日期开始和结束时间都需要有值");
+        }else if(StringUtils.isBlank(request.getCreateTimeStart())&&StringUtils.isBlank(request.getCreateTimeEnd())){
+            //时间为空默认为查询最近一年,结束日期需要加1天，数据库按照时分秒为0查询
+            request.setCreateTimeEnd(DateUtils.dateToStrYM(DateUtils.addDate(new Date(),1)));
+            request.setCreateTimeStart(DateUtils.getLastYearYM());
+        }else{
+            //日期格式处理，去掉-
+            request.setCreateTimeStart(request.getCreateTimeStart().replace("-",""));
+            request.setCreateTimeEnd(request.getCreateTimeEnd().replace("-",""));
+            //结束日期加1天
+            request.setCreateTimeEnd(DateUtils.dateToStrYM(DateUtils.addDate(DateUtils.strToDatePeriod(request.getCreateTimeEnd()),1)));
+        }
+    }
+
+
+    /**
+     * @Description 同步状态处理
+     * @Author pengtao
+     * @return
+     **/
+    public String dealStatus(String  status){
+        if(StringUtils.isNotBlank(status)){
+            if(Arrays.asList(StatusEnum.STATUS_1.getCode(),StatusEnum.STATUS_2.getCode(),StatusEnum.STATUS_3.getCode(),
+                    StatusEnum.STATUS_4.getCode(),StatusEnum.STATUS_N1.getCode()).contains(status)){
+                //已同步
+                return SyncStatusEnum.STATUS_1.getCode();
+            }else{
+                return SyncStatusEnum.STATUS_0.getCode();
+            }
+        }
+        return status;
+    }
+
+    /**
+     * @Description 实体转换
+     * @Author pengtao
+     * @return
+     **/
+    public RiversandtTcDto copyEntity(TXfTaxCodeRiversandEntity customsEntity){
+        RiversandtTcDto riversandtTcDto = new RiversandtTcDto();
+        BeanUtil.copyProperties(customsEntity,riversandtTcDto);
+        return riversandtTcDto;
+    }
+
+    /**
+     * @Description 查询数量
+     * @Author pengtao
+     * @return
+     **/
+    public Integer queryCount(RiversandTcQueryDto request){
+        return  tXfTaxCodeRiversandExtDao.count(request.getItemNo(),request.getStatus(),
+                request.getCreateTimeStart(),request.getCreateTimeEnd());
+    }
+
+    /**
+     * @Description 分页查询
+     * @Author pengtao
+     * @return
+    **/
+    public List<TXfTaxCodeRiversandEntity> queryByPage(RiversandTcQueryDto request) {
+        return tXfTaxCodeRiversandExtDao.queryByPage(request.getPageNo(),request.getPageSize(),request.getItemNo(),
+                request.getStatus(),request.getCreateTimeStart(),request.getCreateTimeEnd());
+    }
+
+    /**
+     * @Description 导出
+     * @Author pengtao
+     * @return
+    **/
+    public R export(List<TXfTaxCodeRiversandEntity> resultList, RiversandTcValidSubmitRequest request) {
+        String fileName = "Riversand新增税编";
+        try {
+            List<RiversandTcExportDto> exportDtos = new ArrayList<>();
+            for(TXfTaxCodeRiversandEntity entity:resultList){
+                RiversandTcExportDto dto = new RiversandTcExportDto();
+                BeanUtil.copyProperties(entity,dto);
+
+                if(Objects.nonNull(dto.getStatus())){
+                    //状态处理
+                    dto.setStatus(SyncStatusEnum.getValue(dealStatus(dto.getStatus())));
+                }
+                //新增日期格式调整为yyyy-MM-dd
+                if(Objects.nonNull(entity.getCreateTime())){
+                    dto.setCreateTime(DateUtils.format(entity.getCreateTime()));
+                }
+                //零税率标志
+                if(Objects.nonNull(entity.getZeroTax())){
+                    dto.setZeroTax(ZeroTaxEnum.getValue(entity.getZeroTax()));
+                }
+                //优惠政策标识
+                if(Objects.nonNull(entity.getTaxPre())){
+                    dto.setTaxPre(TaxPreEnum.getValue(entity.getTaxPre()));
+                }
+                exportDtos.add(dto);
+            }
+
+            excelExportUtils.messageExportOneSheet(exportDtos, RiversandTcExportDto.class, fileName, JSONObject.toJSONString(request), "sheet1");
+        } catch (Exception e) {
+            log.error("导出异常:{}", e.getMessage(), e);
+            return R.fail("导出异常");
+        }
+        return R.ok();
+    }
+
+    /**
+     * @Description 税编同步状态处理
+     * @Author pengtao
+     * @return
+     **/
+    public void dealSyncStatus(RiversandTcQueryDto request) {
+        //海关缴款书号码处理
+        String status = "0";
+        if(StringUtils.isNotBlank(request.getStatus())){
+            if(StringUtils.equals(SyncStatusEnum.STATUS_0.getCode(),request.getStatus())){
+                status = StringUtils.join(Arrays.asList(StatusEnum.STATUS_0.getCode(),StatusEnum.STATUS_5.getCode()),",");
+                request.setStatus(status);
+            }else if(StringUtils.equals(SyncStatusEnum.STATUS_1.getCode(),request.getStatus())){
+                status = StringUtils.join(Arrays.asList(StatusEnum.STATUS_N1.getCode(),StatusEnum.STATUS_1.getCode(),StatusEnum.STATUS_2.getCode(),
+                        StatusEnum.STATUS_3.getCode(),StatusEnum.STATUS_4.getCode()),",");
+                request.setStatus(status);
+            }
+            //补充单引号
+            String[] itemNoSplit = request.getStatus().split(",");
+            StringBuffer strBuf = new StringBuffer("");
+            for(String str:itemNoSplit){
+                if(!str.startsWith("'")&&!str.endsWith("'")){
+                    strBuf.append("'").append(str.trim()).append("',");
+                }
+            }
+            if(strBuf.length()>1){
+                strBuf.deleteCharAt(strBuf.length()-1);
+            }
+            request.setStatus(strBuf.toString());
+        }
+    }
 }

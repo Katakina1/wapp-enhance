@@ -456,7 +456,7 @@ public class EntryAccountServiceImpl implements EntryAccountService {
                 .taxDocNo(taxDocNo)
                 .matchState("01") // 成功状态01
                 .build();
-        String sign = SignUtils.getBMSSign(timestamp, JSONObject.toJSONString(sendTaxBill), bmsFeedbackConfig.getAppSecret());
+        String sign = SignUtils.getBMSSign(timestamp, JSONObject.toJSONString(sendTaxBill), bmsFeedbackConfig.getAppKey());
         SendBMSDTO<SendTaxBill> sendBMSDTO1 = SendBMSDTO.<SendTaxBill>builder()
                 .source("wapp")
                 .appName("wapp")
@@ -486,7 +486,7 @@ public class EntryAccountServiceImpl implements EntryAccountService {
     private String queryTaxBill(String taxDocNo) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         SendQueryTaxBill sendQueryTaxBill = SendQueryTaxBill.builder().taxDocNo(taxDocNo).build();
-        String sign = SignUtils.getBMSSign(timestamp, JSONObject.toJSONString(sendQueryTaxBill), bmsFeedbackConfig.getAppSecret());
+        String sign = SignUtils.getBMSSign(timestamp, JSONObject.toJSONString(sendQueryTaxBill), bmsFeedbackConfig.getAppKey());
         SendBMSDTO<SendQueryTaxBill> sendBMSDTO = SendBMSDTO.<SendQueryTaxBill>builder()
                 .source("wapp")
                 .appName("wapp")

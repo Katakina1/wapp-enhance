@@ -330,15 +330,16 @@ public class DeductPreInvoiceService extends ServiceImpl<TXfDeductPreInvoiceDao,
     }
 
     private void discard(Long preInvoice, Long timestamp) {
-//        TXfDeductPreInvoiceEntity entity=new TXfDeductPreInvoiceEntity();
-//        entity.setTriggerTime(new Date(timestamp));
-//        entity.setDeleted(1);
-//        entity.setUpdateTime(new Date());
-//        int update = this.getBaseMapper().update(entity,Wrappers.lambdaUpdate(TXfDeductPreInvoiceEntity.class).eq(TXfDeductPreInvoiceEntity::getPreInvoiceId, preInvoice));
-//        log.info("预制发票[{}]关联关系作废结果:{}",preInvoice,update);
-//        if (update>0){
-//        processDiscardAllPreInvoice(preInvoice);
-//        }
+        //WALMART-3691 功能放开
+        TXfDeductPreInvoiceEntity entity=new TXfDeductPreInvoiceEntity();
+        entity.setTriggerTime(new Date(timestamp));
+        entity.setDeleted(1);
+        entity.setUpdateTime(new Date());
+        int update = this.getBaseMapper().update(entity,Wrappers.lambdaUpdate(TXfDeductPreInvoiceEntity.class).eq(TXfDeductPreInvoiceEntity::getPreInvoiceId, preInvoice));
+        log.info("预制发票[{}]关联关系作废结果:{}",preInvoice,update);
+        if (update>0){
+        processDiscardAllPreInvoice(preInvoice);
+        }
     }
 
     private void delete(Long preInvoice, Long timestamp) {
@@ -359,6 +360,10 @@ public class DeductPreInvoiceService extends ServiceImpl<TXfDeductPreInvoiceDao,
                 .set(TXfDeductPreInvoiceEntity::getApplyStatus, eventEnum.toRedNotificationApplyStatus().getValue())
                 .set(TXfDeductPreInvoiceEntity::getUpdateTime, new Date())
                 .eq(TXfDeductPreInvoiceEntity::getPreInvoiceId, body.getPreInvoiceId());
+        //WALMART-3631 协议单匹配，撤销后协议单占用关系deleted字段需要更新为1
+        if(AgreementRedNotificationStatus.REVOKED.getValue()==eventEnum.toRedNotificationApplyStatus().getValue()){
+            updateWrapper.set(TXfDeductPreInvoiceEntity::getDeleted, 1);
+        }
         if (CollectionUtils.isNotEmpty(eventEnum.applyStatusParams())) {
             updateWrapper.in(TXfDeductPreInvoiceEntity::getApplyStatus, eventEnum.applyStatusParams().stream().map(AgreementRedNotificationStatus::getValue).collect(Collectors.toList()));
         }

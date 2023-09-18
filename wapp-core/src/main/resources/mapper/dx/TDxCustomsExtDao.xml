@@ -45,7 +45,7 @@
             <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
         </if>
         <if test="companyName != null and companyName != ''">
-            and company_name like concat("%",#{companyName})
+            and company_name like concat('%',#{companyName})
         </if>
     </select>
 
@@ -89,7 +89,7 @@
             <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
         </if>
         <if test="companyName != null and companyName != ''">
-            and company_name like concat("%",#{companyName})
+            and company_name like concat('%',#{companyName})
         </if>
         <if test="offset != null and next !=null">
             ORDER by paper_drew_date desc offset #{offset} rows fetch next #{next} rows only
@@ -165,13 +165,13 @@
             <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
         </if>
         <if test="voucherAccountTimeStart != null and voucherAccountTimeStart != ''">
-            and (voucher_account_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:01'))
+            and (voucher_account_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:00'))
         </if>
         <if test="voucherAccountTimeEnd != null and voucherAccountTimeEnd != ''">
             and (voucher_account_time &lt;= concat(#{voucherAccountTimeEnd}, ' 23:59:59'))
         </if>
         <if test="companyName != null and companyName != ''">
-            and company_name like concat("%",#{companyName})
+            and company_name like concat('%',#{companyName})
         </if>
     </select>
 
@@ -218,13 +218,13 @@
             <![CDATA[ and (paper_drew_date BETWEEN #{paperDrewDateStart} and #{paperDrewDateEnd}) ]]>
         </if>
         <if test="voucherAccountTimeStart != null and voucherAccountTimeStart != ''">
-            and (voucher_account_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:01'))
+            and (voucher_account_time &gt;= concat(#{voucherAccountTimeStart}, ' 00:00:00'))
         </if>
         <if test="voucherAccountTimeEnd != null and voucherAccountTimeEnd != ''">
             and (voucher_account_time &lt;= concat(#{voucherAccountTimeEnd}, ' 23:59:59'))
         </if>
         <if test="companyName != null and companyName != ''">
-            and company_name like concat("%",#{companyName})
+            and company_name like concat('%',#{companyName})
         </if>
         <if test='offset != null and next !=null'>
             ORDER by paper_drew_date desc offset #{offset} rows fetch next #{next} rows only

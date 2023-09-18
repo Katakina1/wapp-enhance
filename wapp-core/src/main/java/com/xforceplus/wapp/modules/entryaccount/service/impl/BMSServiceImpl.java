@@ -60,7 +60,7 @@ public class BMSServiceImpl implements BMSService {
                 .qsStatus("Y")
                 .remark("签收成功")
                 .build();
-        String sign = SignUtils.getBMSSign(timestamp, JSONObject.toJSONString(sendQueryTaxBill), bmsFeedbackConfig.getAppSecret());
+        String sign = SignUtils.getBMSSign(timestamp, JSONObject.toJSONString(sendQueryTaxBill), bmsFeedbackConfig.getAppKey());
         SendBMSDTO<SendInvoiceReceipt> sendBMSDTO = SendBMSDTO.<SendInvoiceReceipt>builder()
                 .source("wapp")
                 .appName("wapp")

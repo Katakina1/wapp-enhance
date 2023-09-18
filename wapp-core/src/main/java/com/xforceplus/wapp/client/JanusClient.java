@@ -12,6 +12,7 @@ import com.xforceplus.wapp.common.dto.R;
 import com.xforceplus.wapp.modules.rednotification.util.HttpUtils;
 import com.xforceplus.wapp.repository.entity.TXfTaxCodeRiversandEntity;
 import com.xforceplus.wapp.repository.entity.TaxCodeEntity;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -226,6 +227,96 @@ public class JanusClient {
         }
     }
 
+    /**
+     * @Description RiverSand税编同步3.0
+     * @Author pengtao
+     * @return
+    **/
+    public R riverSandSyncTaxCode(TXfTaxCodeRiversandEntity entity) {
+        if (entity == null || StringUtils.isBlank(entity.getItemNo())) {
+            return R.fail("商品编号或税收分类编码为空");
+        }
+        try {
+            Map<String, String> headerMap = new HashMap<>();
+            headerMap.put("serialNo", entity.getItemNo());
+            headerMap.put("Authentication", authentication);
+            headerMap.put("Action", syncTaxCodeAction);
 
+            TaxCodeSyncBean bean = new TaxCodeSyncBean();
+            bean.setQuantityUnit(Objects.toString(entity.getQuantityUnit(), StringUtils.EMPTY));
+            bean.setItemSpec(Objects.toString(entity.getItemSpec(), StringUtils.EMPTY));
+            bean.setItemName(Objects.toString(entity.getItemName(), StringUtils.EMPTY));
+            //必填
+            bean.setTaxConvertCode(entity.getItemNo());
+            //必填
+            bean.setGoodsTaxNo(entity.getGoodsTaxNo());
+            bean.setTaxPre(Objects.toString(entity.getTaxPre(), StringUtils.EMPTY));
+            bean.setTaxPreCon(Objects.toString(entity.getTaxPreCon(), StringUtils.EMPTY));
+            bean.setTaxRate(entity.getTaxRate().toPlainString());
+            bean.setZeroTax(Objects.toString(entity.getZeroTax(), StringUtils.EMPTY));
+            //必填
+            bean.setTenantCode("Walmart");
+            bean.setItemCode(Objects.toString(entity.getItemCode(), StringUtils.EMPTY));
+            //必填
+            bean.setStandardItemName("");
+            //必填
+            bean.setTenantName("Walmart");
 
+            log.info("上传3.0平台税编,集成流水号[serialNo]:{},taxCodeAction:{},header:{},param:{}", entity.getItemNo(), syncTaxCodeAction, headerMap, gson.toJson(bean));
+            final String post = HttpUtils.doPostJson(janusPath, gson.toJson(Lists.newArrayList(bean)), headerMap);
+            log.info("上传3.0平台税编结果:{}", post);
+            R taxCodeRsp = gson.fromJson(post, R.class);
+            return taxCodeRsp;
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * @Description RiverSand税编同步3.0 批量
+     * @Author pengtao
+     * @return
+     **/
+    public R riverSandSyncTaxCodeList(List<TXfTaxCodeRiversandEntity> entities) {
+        Map<String, String> headerMap = new HashMap<>();
+        try {
+            headerMap.put("Authentication", authentication);
+            headerMap.put("Action", syncTaxCodeAction);
+            List<TaxCodeSyncBean> requestList = new ArrayList<>();
+            if(CollectionUtils.isNotEmpty(entities)){
+                headerMap.put("serialNo", entities.stream().findFirst().get().getItemNo());
+                entities.forEach(entity ->{
+                    TaxCodeSyncBean bean = new TaxCodeSyncBean();
+                    bean.setQuantityUnit(Objects.toString(entity.getQuantityUnit(), StringUtils.EMPTY));
+                    bean.setItemSpec(Objects.toString(entity.getItemSpec(), StringUtils.EMPTY));
+                    bean.setItemName(Objects.toString(entity.getItemName(), StringUtils.EMPTY));
+                    //必填
+                    bean.setTaxConvertCode(entity.getItemNo());
+                    //必填
+                    bean.setGoodsTaxNo(entity.getGoodsTaxNo());
+                    bean.setTaxPre(Objects.toString(entity.getTaxPre(), StringUtils.EMPTY));
+                    bean.setTaxPreCon(Objects.toString(entity.getTaxPreCon(), StringUtils.EMPTY));
+                    bean.setTaxRate(entity.getTaxRate().toPlainString());
+                    bean.setZeroTax(Objects.toString(entity.getZeroTax(), StringUtils.EMPTY));
+                    //必填
+                    bean.setTenantCode("Walmart");
+                    bean.setItemCode(Objects.toString(entity.getItemCode(), StringUtils.EMPTY));
+                    //必填
+                    bean.setStandardItemName("");
+                    //必填
+                    bean.setTenantName("Walmart");
+                    requestList.add(bean);
+                });
+        }else{
+            return R.fail("传参有误请检查后重试");
+        }
+        log.info("上传3.0平台税编,集成流水号[serialNo]:{},taxCodeAction:{},header:{},param:{}", entities.stream().findFirst().get().getItemNo(), syncTaxCodeAction, headerMap, gson.toJson(requestList));
+        final String post = HttpUtils.doPostJson(janusPath, gson.toJson(requestList), headerMap);
+        log.info("上传3.0平台税编结果:{}", post);
+        R taxCodeRsp = gson.fromJson(post, R.class);
+        return taxCodeRsp;
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
 }

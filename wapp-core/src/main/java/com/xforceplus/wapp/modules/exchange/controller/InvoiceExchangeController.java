@@ -58,9 +58,9 @@ public class InvoiceExchangeController extends AbstractController {
     @ApiOperation(value = "保存上传的新票")
     @PostMapping("/match")
     public R match(@ApiParam(value = "保存上传的新票请求", required = true) @RequestBody @Valid BackFillExchangeRequest request) {
-        logger.info("发票回填后匹配--入参：{}", JSONObject.toJSONString(request));
         final String usercode = getUser().getUsercode();
         request.setVenderId(usercode);
+        logger.info("发票回填后匹配--入参：{}", JSONObject.toJSONString(request));
         return invoiceExchangeService.match(request);
     }
 

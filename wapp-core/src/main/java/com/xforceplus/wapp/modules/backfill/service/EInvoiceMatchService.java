@@ -479,13 +479,12 @@ public class EInvoiceMatchService {
         recordInvoice.setRemark(invoiceMain.getRemark());
         recordInvoice.setDxhyMatchStatus("0");
         recordInvoice.setDetailYesorno("1");
-		// 加if判断是满足：WALMART-3368，WALMART-3371 begin
-		if (electronicUploadRecordDetailEntity.getBusinessType() != null && electronicUploadRecordDetailEntity.getBusinessType() == 0) {
+		// 加if判断是满足：WALMART-3368，WALMART-3371 ,WALMART-3411 begin
+		if (electronicUploadRecordDetailEntity.getBusinessType() != null && 
+				(electronicUploadRecordDetailEntity.getBusinessType() == 0 || electronicUploadRecordDetailEntity.getBusinessType() == 1)) {//红冲,换票
 			recordInvoice.setFlowType("");
-		} else {
-			recordInvoice.setFlowType("7");
 		}
-		// 加if判断是满足：WALMART-3368，WALMART-3371 end
+		// 加if判断是满足：WALMART-3368，WALMART-3371,WALMART-3411 end
 
         recordInvoice.setTpStatus("0");
         recordInvoice.setIsDel(IsDealEnum.NO.getValue());
@@ -607,6 +606,11 @@ public class EInvoiceMatchService {
                 newEntity.setId(entity.getId());
                 newEntity.setIsDel(IsDealEnum.NO.getValue());
                 newEntity.setLastUpdateDate(new Date());
+                //加if判断是满足：WALMART-3368，WALMART-3371 ,WALMART-3411 begin
+                if(StringUtils.isNotBlank(entity.getFlowType())) {
+                	newEntity.setFlowType(entity.getFlowType());
+                }
+              //加if判断是满足：WALMART-3368，WALMART-3371 ,WALMART-3411 end
                 tDxRecordInvoiceDao.updateById(newEntity);
             }
         } catch (Exception e) {
